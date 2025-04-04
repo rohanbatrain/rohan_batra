@@ -1,27 +1,19 @@
 import 'package:flutter/material.dart';
+import 'sidebar.dart'; // Import the SidebarWidget from a separate file
 
-void main() {
-  runApp(PortfolioApp());
-}
-
-class PortfolioApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      home: PortfolioHome(),
-    );
-  }
-}
-
-class PortfolioHome extends StatelessWidget {
+class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Home Page'),
+        backgroundColor: Theme.of(context).appBarTheme.backgroundColor,
+      ),
+      drawer: SidebarWidget(), // SidebarWidget is correctly used as a drawer
       body: Center(
         child: Text(
-          'Welcome to My Portfolio',
-          style: Theme.of(context).textTheme.headlineSmall,
+          'Welcome to the Home Page!',
+          style: Theme.of(context).textTheme.bodyLarge,
         ),
       ),
     );
