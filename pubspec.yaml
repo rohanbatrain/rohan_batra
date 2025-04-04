@@ -56,8 +56,10 @@ dev_dependencies:
 flutter:
   assets:
     - assets/logo.png
-    - assets/loading.json  
-
+    - assets/loading.json 
+    - assets/panda.json 
+    - assets/icons/icon_navbar-light-bg.png
+    - assets/icons/icon_navbar-dark-bg.png
 
 flutter_launcher_icons:
   android: "launcher_icon"

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rohan_batra/main.dart';
+import 'package:rohan_batra/projects/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SidebarWidget extends StatefulWidget {
@@ -17,13 +18,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
       vsync: this,
       duration: Duration(milliseconds: 300),
     );
-    _loadThemePreference(); // Load saved theme preference
-  }
-
-  Future<void> _loadThemePreference() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isDarkMode = prefs.getBool('isDarkMode') ?? false;
-    themeNotifier.value = isDarkMode ? ThemeMode.dark : ThemeMode.light;
+    // Removed _loadThemePreference as it's now handled in main.dart
   }
 
   Future<void> _saveThemePreference(bool isDarkMode) async {
@@ -83,6 +78,15 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             },
           ),
           ListTile(
+            title: Text('Projects'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => ProjectsIndexPage()),
+              );
+            },
+          ),
+          ListTile(
             title: Text('Settings'),
             onTap: () {
               showDialog(
@@ -128,9 +132,11 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                                 title: Text('Dark Mode'),
                                 value: themeNotifier.value == ThemeMode.dark,
                                 onChanged: (bool value) {
-                                  themeNotifier.value =
-                                      value ? ThemeMode.dark : ThemeMode.light;
-                                  _saveThemePreference(value); // Save preference
+                                  setModalState(() {
+                                    themeNotifier.value =
+                                        value ? ThemeMode.dark : ThemeMode.light;
+                                    _saveThemePreference(value); // Save preference
+                                  });
                                 },
                               ),
                             ],

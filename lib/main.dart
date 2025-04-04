@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'dart:async';
-import 'home.dart';
+import 'home/index.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
+  final prefs = await SharedPreferences.getInstance();
+  final isDarkMode = prefs.getBool('isDarkMode') ?? false;
+  themeNotifier.value = isDarkMode ? ThemeMode.dark : ThemeMode.light; // Load theme preference
   runApp(PortfolioApp());
 }
 
@@ -17,8 +22,16 @@ class PortfolioApp extends StatelessWidget {
       builder: (context, ThemeMode currentTheme, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
-          theme: ThemeData.light(),
-          darkTheme: ThemeData.dark(),
+          theme: ThemeData.light().copyWith(
+            appBarTheme: AppBarTheme(
+              iconTheme: IconThemeData(color: Colors.black), // Light theme back button color
+            ),
+          ),
+          darkTheme: ThemeData.dark().copyWith(
+            appBarTheme: AppBarTheme(
+              iconTheme: IconThemeData(color: Colors.white), // Dark theme back button color
+            ),
+          ),
           themeMode: currentTheme,
           home: SplashScreen(),
         );
