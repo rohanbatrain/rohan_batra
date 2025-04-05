@@ -55,13 +55,22 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - assets/logo.png
-    - assets/loading.json 
-    - assets/panda.json 
+    - assets/logos/logo.png
+    - assets/animations/loading.json
+    - assets/animations/research.json
+    - assets/animations/panda.json 
+    - assets/animations/writer.json 
+    - assets/animations/developer.json 
     - assets/icons/icon_navbar-light-bg.png
     - assets/icons/icon_navbar-dark-bg.png
     - assets/icons/icon_back-arrow-light-bg.png
     - assets/icons/icon_back-arrow-dark-bg.png    
+    - assets/images/company_a.png
+    - assets/images/company_b.png
+    - assets/images/company_c.png
+    - assets/images/company_d.png
+    - assets/images/company_e.png
+    - assets/images/company_f.png
 
 flutter_launcher_icons:
   android: "launcher_icon"

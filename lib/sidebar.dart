@@ -57,7 +57,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
               children: [
                 CircleAvatar(
                   radius: 40,
-                  backgroundImage: AssetImage('assets/logo.png'),
+                  backgroundImage: AssetImage('assets/logos/logo.png'),
                   backgroundColor: Theme.of(context).scaffoldBackgroundColor,
                 ),
                 SizedBox(height: 10),
