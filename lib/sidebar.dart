@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rohan_batra/main.dart';
 import 'package:rohan_batra/professional-experience/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rohan_batra/formal-education/index.dart';
 
 class SidebarWidget extends StatefulWidget {
   @override
@@ -102,12 +103,12 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             },
           ),
           ListTile(
-            title: Text('Learning Experience'),
+            title: Text('Formal Education'),
             onTap: () {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => ProfessionalExperienceIndexPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => FormalEducationIndexPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {
                     const begin = Offset(1.0, 0.0); // Slide in from the right
                     const end = Offset.zero;
