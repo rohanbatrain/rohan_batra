@@ -5,8 +5,8 @@ final List<Map<String, Map<String, String>>> companies = [
     'role': {'value': 'Gamer'},
     'name': {'value': 'Rohan Batra Gaming'},
     'logo': {
-      'light': 'assets/logos/Rohan Batra Gaming/Dark Mode/logo.png',
-      'dark': 'assets/logos/Rohan Batra Gaming/Dark Mode/logo.png',
+      'light': 'assets/logos/Rohan-Batra-Gaming/Light-Mode/logo.png',
+      'dark': 'assets/logos/Rohan-Batra-Gaming/Dark-Mode/logo.png',
     },
     'employmentType': {'value': 'Self Employed'},
     'startDate': {'value': 'Mar 2025'},
@@ -16,8 +16,8 @@ final List<Map<String, Map<String, String>>> companies = [
     'role': {'value': 'Open Source Advocate'},
     'name': {'value': 'Second Brain Database'},
     'logo': {
-      'light': 'assets/logos/Second Brain Database/Light Mode/logo.png',
-      'dark': 'assets/logos/Second Brain Database/Dark Mode/logo.png',
+      'light': 'assets/logos/Second-Brain-Database/Light-Mode/logo.png',
+      'dark': 'assets/logos/Second-Brain-Database/Dark-Mode/logo.png',
     },
     'employmentType': {'value': 'Part-Time'},
     'startDate': {'value': 'Nov 2024'},
@@ -27,8 +27,9 @@ final List<Map<String, Map<String, String>>> companies = [
     'role': {'value': 'Co Founder'},
     'name': {'value': 'LinuxWale'},
     'logo': {
-      'light': 'assets/logos/Linuxwale/Light Mode/logo.png',
-      'dark': 'assets/logos/Linuxwale/Dark Mode/logo.png',
+      
+      'light': 'assets/logos/Linuxwale/Light-Mode/logo.png',
+      'dark': 'assets/logos/Linuxwale/Dark-Mode/logo.png',
     },
     'employmentType': {'value': 'Part-Time'},
     'startDate': {'value': 'Sep 2023'},
@@ -38,19 +39,19 @@ final List<Map<String, Map<String, String>>> companies = [
     'role': {'value': 'Open Source Contributor'},
     'name': {'value': 'Rohan Batra FOSS'},
     'logo': {
-      'light': 'assets/logos/Rohan Batra FOSS/Light Mode/logo.png',
-      'dark': 'assets/logos/Rohan Batra FOSS/Dark Mode/logo.png',
+      'light': 'assets/logos/Rohan-Batra-FOSS/Light-Mode/logo.png',
+      'dark': 'assets/logos/Rohan-Batra-FOSS/Dark-Mode/logo.png',
     },
     'employmentType': {'value': 'Self Employed'},
     'startDate': {'value': 'Oct 2022'},
-    'endDate': {'value': 'Currently Working'},
+    'endDate': {'value': 'Present'},
   },
   {
     'role': {'value': 'Co Founder'},
     'name': {'value': 'Kruxers'},
     'logo': {
-      'light': 'assets/logos/Kruxers/Light Mode/logo.jpg',
-      'dark': 'assets/logos/Kruxers/Dark Mode/logo.jpg',
+      'light': 'assets/logos/Kruxers/Light-Mode/logo.png',
+      'dark': 'assets/logos/Kruxers/Dark-Mode/logo.png',
     },
     'employmentType': {'value': 'Part time'},
     'startDate': {'value': 'Nov 2020'},
@@ -60,8 +61,8 @@ final List<Map<String, Map<String, String>>> companies = [
     'role': {'value': 'Founder'},
     'name': {'value': 'Ravage Gamer'},
     'logo': {
-      'light': 'assets/logos/Ravage Gamer/Mascots/Mascot.png',
-      'dark': 'assets/logos/Ravage Gamer/Mascots/Mascot.png',
+      'light': 'assets/logos/Ravage-Gamer/Mascots/Mascot.png',
+      'dark': 'assets/logos/Ravage-Gamer/Mascots/Mascot.png',
     },
     'employmentType': {'value': 'Part time'},
     'startDate': {'value': 'Aug 2019'},
@@ -222,6 +223,18 @@ class _AnimatedTileState extends State<AnimatedTile> {
                             height: tileSize * 0.30, // Slightly reduced size
                             width: tileSize * 0.30,
                             fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                height: tileSize * 0.30,
+                                width: tileSize * 0.30,
+                                color: Colors.grey, // Placeholder background color
+                                child: Icon(
+                                  Icons.broken_image,
+                                  size: tileSize * 0.15,
+                                  color: Colors.white, // Placeholder icon color
+                                ),
+                              );
+                            },
                           ),
                         ),
                         SizedBox(height: tileSize * 0.05), // Adjusted spacing

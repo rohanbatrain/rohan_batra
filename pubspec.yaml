@@ -55,28 +55,53 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
-    - assets/logos/
-    - assets/animations/
-    - assets/icons  
-    - assets/images/
+    - assets/icons/icon_navbar-light-bg.png
+    - assets/icons/icon_navbar-dark-bg.png
+    - assets/icons/icon_back-arrow-dark-bg.png
+    - assets/icons/icon_back-arrow-light-bg.png
+    - assets/animations/loading.json
+    - assets/animations/panda.json
+    - assets/animations/writer.json
+    - assets/animations/developer.json
+    - assets/animations/research.json
+    - assets/animations/about_me.json
+    - assets/logos/bg-logo.png
+    - assets/logos/legacy-logo.png
+    - assets/logos/logo.png
+    - assets/logos/Kruxers/Dark-Mode/logo.png
+    - assets/logos/Kruxers/Light-Mode/logo.png
+    - assets/logos/Linuxwale/Dark-Mode/logo.png
+    - assets/logos/Linuxwale/Light-Mode/logo.png
+    - assets/logos/Rohan-Batra-Gaming/Dark-Mode/logo.png
+    - assets/logos/Rohan-Batra-Gaming/Light-Mode/logo.png
+    - assets/logos/Rohan-Batra-FOSS/Dark-Mode/logo.png
+    - assets/logos/Rohan-Batra-FOSS/Dark-Mode/logo2.png
+    - assets/logos/Rohan-Batra-FOSS/Dark-Mode/logo3.png
+    - assets/logos/Rohan-Batra-FOSS/Light-Mode/logo.png
+    - assets/logos/Rohan-Batra-FOSS/Light-Mode/logo2.png
+    - assets/logos/Rohan-Batra-FOSS/Light-Mode/logo3.png
+    - assets/logos/Second-Brain-Database/Dark-Mode/logo.png
+    - assets/logos/Second-Brain-Database/Light-Mode/logo.png
+    - assets/logos/Ravage-Gamer/Mascots/Mascot.png
+  
 
-flutter_launcher_icons:
-  android: "launcher_icon"
-  ios: true
-  image_path: "assets/logo.png"
-  min_sdk_android: 21 # android min sdk min:16, default 21
-  web:
-    generate: true
-    image_path: "assets/logo.png"
-    background_color: "#FFFFFF" # Change to your preferred color
-    theme_color: "#000000" # Change to your preferred color
-  windows:
-    generate: true
-    image_path: "assets/logo.png"
-    icon_size: 256 # min:48, max:256, default: 48
-  macos:
-    generate: true
-    image_path: "assets/logo.png"
+# flutter_launcher_icons:
+#   android: "launcher_icon"
+#   ios: true
+#   image_path: "assets/logo.png"
+#   min_sdk_android: 21 # android min sdk min:16, default 21
+#   web:
+#     generate: true
+#     image_path: "assets/logo.png"
+#     background_color: "#FFFFFF" # Change to your preferred color
+#     theme_color: "#000000" # Change to your preferred color
+#   windows:
+#     generate: true
+#     image_path: "assets/logo.png"
+#     icon_size: 256 # min:48, max:256, default: 48
+#   macos:
+#     generate: true
+#     image_path: "assets/logo.png"
 
 
   # To add assets to your application, add an assets section, like this:
