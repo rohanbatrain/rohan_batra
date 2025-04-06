@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rohan_batra/main.dart';
-import 'package:rohan_batra/projects/index.dart';
+import 'package:rohan_batra/professional-experience/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class SidebarWidget extends StatefulWidget {
@@ -78,12 +78,36 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             },
           ),
           ListTile(
-            title: Text('Projects'),
+            title: Text('Professional Experience'),
             onTap: () {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => ProjectsIndexPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => ProfessionalExperienceIndexPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0); // Slide in from the right
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: Text('Learning Experience'),
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => ProfessionalExperienceIndexPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {
                     const begin = Offset(1.0, 0.0); // Slide in from the right
                     const end = Offset.zero;

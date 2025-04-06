@@ -180,8 +180,43 @@ class _HomePageState extends State<HomePage> {
             // Content Section (Scrollable)
             Padding(
               key: aboutMeKey, // Assign the GlobalKey to the AboutMe section
-              padding: EdgeInsets.all(20),
-              child: AboutMe(isDarkMode: isDarkMode), // Use the new AboutMe widget
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20), // Add consistent padding
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribute space evenly
+                children: [
+                  // Left Side: Animation
+                  Expanded(
+                    flex: 5, // Adjust space for animation
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final maxHeight = constraints.maxHeight * 0.8; // Slightly zoom in
+                        return ConstrainedBox(
+                          constraints: BoxConstraints(
+                            maxHeight: maxHeight,
+                            maxWidth: maxHeight, // Maintain aspect ratio
+                          ),
+                          child: Lottie.asset(
+                            'assets/animations/about_me.json', // Replace with your AboutMe animation
+                            fit: BoxFit.contain,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+
+                  SizedBox(width: 50), // Add more spacing between animation and text
+
+                  // Right Side: Text
+                  Expanded(
+                    flex: 6, // Adjust space for text
+                    child: Padding(
+                      padding: EdgeInsets.only(left: 20), // Add padding for better alignment
+                      child: AboutMe(isDarkMode: isDarkMode), // Use the existing AboutMe widget
+                    ),
+                  ),
+                ],
+              ),
             ),
           ],
         ),
