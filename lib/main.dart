@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 import 'dart:async';
 import 'home/index.dart';
 import 'package:flutter/services.dart'; // Import for rootBundle
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
@@ -25,12 +26,12 @@ class PortfolioApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeData.light().copyWith(
             appBarTheme: AppBarTheme(
-              iconTheme: IconThemeData(color: Colors.black), // Light theme back button color
+              iconTheme: IconThemeData(), // Removed incorrect 'icon' parameter
             ),
           ),
           darkTheme: ThemeData.dark().copyWith(
             appBarTheme: AppBarTheme(
-              iconTheme: IconThemeData(color: Colors.white), // Dark theme back button color
+              iconTheme: IconThemeData(), // Removed incorrect 'icon' parameter
             ),
           ),
           themeMode: currentTheme,

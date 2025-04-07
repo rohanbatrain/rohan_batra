@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'upes_page.dart';
+import 'smcs_page.dart';
 
 class FormalEducationIndexPage extends StatelessWidget {
   @override
@@ -12,12 +15,9 @@ class FormalEducationIndexPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: ImageIcon(
-            AssetImage(
-              isDark
-                  ? 'assets/icons/icon_back-arrow-dark-bg.png'
-                  : 'assets/icons/icon_back-arrow-light-bg.png',
-            ),
+          icon: Icon(
+            FontAwesomeIcons.arrowLeft,
+            color: Theme.of(context).iconTheme.color,
           ),
           onPressed: () {
             Navigator.pop(context);
@@ -78,6 +78,14 @@ class FormalEducationIndexPage extends StatelessWidget {
                   'Bachelor of Technology - BTech, Computer Science and Engineering\nAug 2023 - Aug 2027',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => UPESPage(),
+                    ),
+                  );
+                },
               ),
             ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2),
 
@@ -123,6 +131,14 @@ class FormalEducationIndexPage extends StatelessWidget {
                   'Middle and high school education.\nApr 2010 - Apr 2023',
                   style: Theme.of(context).textTheme.bodyMedium,
                 ),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SMCSPage(),
+                    ),
+                  );
+                },
               ),
             ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2),
           ],

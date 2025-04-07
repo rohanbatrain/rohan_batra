@@ -17,12 +17,9 @@ class NonProfitWorkIndexPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: ImageIcon(
-            AssetImage(
-              isDarkMode
-                  ? 'assets/icons/icon_back-arrow-dark-bg.png'
-                  : 'assets/icons/icon_back-arrow-light-bg.png',
-            ),
+          icon: Icon(
+            FontAwesomeIcons.arrowLeft, // Changed to FontAwesome icon
+            color: Theme.of(context).iconTheme.color,
           ),
           onPressed: () {
             Navigator.pop(context);

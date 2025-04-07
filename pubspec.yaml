@@ -95,6 +95,7 @@ flutter:
     - assets/animations/non-profit.json
     - assets/animations/portfolio.json
     - assets/animations/download.json
+    - assets/animations/contactus.json
   
 
 # flutter_launcher_icons:

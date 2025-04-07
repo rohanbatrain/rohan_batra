@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 final List<Map<String, Map<String, String>>> companies = [
   {
@@ -80,12 +81,9 @@ class ProfessionalExperienceIndexPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: ImageIcon(
-            AssetImage(
-              Theme.of(context).brightness == Brightness.dark
-                  ? 'assets/icons/icon_back-arrow-dark-bg.png'
-                  : 'assets/icons/icon_back-arrow-light-bg.png',
-            ),
+          icon: Icon(
+            FontAwesomeIcons.arrowLeft, // Changed to FontAwesome icon
+            color: Theme.of(context).iconTheme.color,
           ),
           onPressed: () {
             Navigator.pop(context);
