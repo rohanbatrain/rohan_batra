@@ -15,7 +15,29 @@ class ContactUs extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center, // Center items vertically
         mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute space evenly
         children: [
-          // Left Side: Text
+          // Left Side: Lottie Animation
+          Expanded(
+            flex: 4,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final maxHeight = constraints.maxHeight * 0.85; // Slightly zoom in
+                return ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxHeight: maxHeight,
+                    maxWidth: maxHeight, // Maintain aspect ratio
+                  ),
+                  child: Lottie.asset(
+                    'assets/animations/contactus.json', // Replace with your Lottie animation
+                    fit: BoxFit.contain,
+                  ),
+                );
+              },
+            ),
+          ),
+
+          SizedBox(width: 60), // Increased spacing between animation and text
+
+          // Right Side: Text
           Expanded(
             flex: 6,
             child: Column(
@@ -55,28 +77,6 @@ class ContactUs extends StatelessWidget {
                   child: Text('Get in Touch'),
                 ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2), // Add fade and slide animation
               ],
-            ),
-          ),
-
-          SizedBox(width: 60), // Increased spacing between text and animation
-
-          // Right Side: Lottie Animation
-          Expanded(
-            flex: 4,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final maxHeight = constraints.maxHeight * 0.85; // Slightly zoom in
-                return ConstrainedBox(
-                  constraints: BoxConstraints(
-                    maxHeight: maxHeight,
-                    maxWidth: maxHeight, // Maintain aspect ratio
-                  ),
-                  child: Lottie.asset(
-                    'assets/animations/contactus.json', // Replace with your Lottie animation
-                    fit: BoxFit.contain,
-                  ),
-                );
-              },
             ),
           ),
         ],

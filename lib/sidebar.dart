@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rohan_batra/main.dart';
 import 'package:rohan_batra/professional-experience/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:rohan_batra/formal-education/index.dart';
+import 'package:rohan_batra/education/index.dart';
 import 'package:rohan_batra/non-profit-work/index.dart'; // Import the new screen
 import 'package:rohan_batra/skillwise-portfolio/index.dart'; // Import the updated screen
 import 'package:rohan_batra/widgets/download_popup.dart'; // Import the new popup widget

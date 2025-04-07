@@ -39,6 +39,7 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_animate: ^4.2.0
   font_awesome_flutter: ^10.7.0 # Check for latest version
+  
 
 dev_dependencies:
   flutter_test:
@@ -96,6 +97,13 @@ flutter:
     - assets/animations/portfolio.json
     - assets/animations/download.json
     - assets/animations/contactus.json
+    - assets/images/certificates/certificate1.jpg
+    - assets/images/certificates/certificate2.jpg
+    - assets/images/certificates/certificate3.jpg
+    - assets/images/certificates/certificate4.jpg
+    - assets/images/certificates/certificate5.jpg
+    - assets/images/certificates/certificate6.jpg
+    - assets/images/certificates/certificate7.jpg
   
 
 # flutter_launcher_icons:

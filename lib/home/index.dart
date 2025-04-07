@@ -286,8 +286,11 @@ class _HomePageState extends State<HomePage> {
             // Add uniform spacing
             SizedBox(height: 20),
 
-            // Download Section
-            DownloadSection(isDarkMode: isDarkMode),
+            // Contact Us Section   
+
+            ContactUs(isDarkMode: isDarkMode),
+
+            // Add uniform spacing
 
             // Add subtle separation
             Padding(
@@ -298,11 +301,14 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // Contact Us Section
-            ContactUs(isDarkMode: isDarkMode),
-
-            // Add uniform spacing
             SizedBox(height: 20),
+            // Download Section
+            DownloadSection(isDarkMode: isDarkMode),
+
+
+
+          
+            
 
             // Footer Section
             Container(
