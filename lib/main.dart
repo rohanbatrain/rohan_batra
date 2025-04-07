@@ -3,6 +3,7 @@ import 'package:lottie/lottie.dart';
 import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPreferences
 import 'dart:async';
 import 'home/index.dart';
+import 'package:flutter/services.dart'; // Import for rootBundle
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
@@ -48,11 +49,59 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   late Timer _timer;
   bool _isPaused = false;
+  bool _assetsPrefetched = false; // Track if assets are prefetched
 
   @override
   void initState() {
     super.initState();
-    _startTimer();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_assetsPrefetched) {
+      _prefetchAssets().then((_) {
+        setState(() {
+          _assetsPrefetched = true;
+        });
+        _startTimer();
+      });
+    }
+  }
+
+  Future<void> _prefetchAssets() async {
+    // Prefetch images
+    final imageAssets = [
+      'assets/icons/icon_back-arrow-dark-bg.png',
+      'assets/icons/icon_back-arrow-light-bg.png',
+      'assets/icons/icon_navbar-dark-bg.png',
+      'assets/icons/icon_navbar-light-bg.png',
+      'assets/logos/logo.png',
+      'assets/logos/UPES/UPES1.png',
+      'assets/logos/UPES/UPES2.png',
+      'assets/logos/SMCS/building.jpg',
+      // Add more image assets here
+    ];
+    for (var asset in imageAssets) {
+      await precacheImage(AssetImage(asset), context);
+    }
+
+    // Prefetch Lottie animations
+    final lottieAssets = [
+      'assets/animations/panda.json',
+      'assets/animations/developer.json',
+      'assets/animations/writer.json',
+      'assets/animations/research.json',
+      'assets/animations/professional.json',
+      'assets/animations/experience.json',
+      'assets/animations/portfolio.json',
+      'assets/animations/non-profit.json',
+      'assets/animations/download.json',
+      // Add more Lottie assets here
+    ];
+    for (var asset in lottieAssets) {
+      await rootBundle.load(asset);
+    }
   }
 
   void _startTimer() {

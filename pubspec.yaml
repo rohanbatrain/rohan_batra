@@ -37,6 +37,7 @@ dependencies:
   flutter_launcher_icons: ^0.14.3
   lottie: ^3.3.1
   shared_preferences: ^2.5.3
+  flutter_animate: ^4.2.0
 
 dev_dependencies:
   flutter_test:
@@ -60,6 +61,7 @@ flutter:
     - assets/icons/icon_back-arrow-dark-bg.png
     - assets/icons/icon_back-arrow-light-bg.png
     - assets/animations/loading.json
+    - assets/animations/education.json
     - assets/animations/panda.json
     - assets/animations/writer.json
     - assets/animations/developer.json
@@ -83,6 +85,15 @@ flutter:
     - assets/logos/Second-Brain-Database/Dark-Mode/logo.png
     - assets/logos/Second-Brain-Database/Light-Mode/logo.png
     - assets/logos/Ravage-Gamer/Mascots/Mascot.png
+    - assets/logos/UPES/UPES1.png
+    - assets/logos/UPES/UPES2.png
+    - assets/logos/SMCS/building.jpg
+    - assets/animations/professional.json
+    - assets/animations/source-code.json
+    - assets/animations/experience.json
+    - assets/animations/non-profit.json
+    - assets/animations/portfolio.json
+    - assets/animations/download.json
   
 
 # flutter_launcher_icons:

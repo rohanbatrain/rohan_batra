@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:async'; // Import the dart:async package
 import '../sidebar.dart';
-import 'about_me.dart'; // Import the AboutMe widget
+import 'professional_summary.dart'; // Import the AboutMe widget
+import 'professional_experience.dart'; // Import the ProfessionalExperience widget
+import 'non_profit.dart'; // Import the NonProfit widget
+import 'portfolio.dart'; // Import the Portfolio widget
+import 'download.dart'; // Import the DownloadSection widget
 
 class HomePage extends StatefulWidget {
   @override
@@ -197,7 +201,7 @@ class _HomePageState extends State<HomePage> {
                             maxWidth: maxHeight, // Maintain aspect ratio
                           ),
                           child: Lottie.asset(
-                            'assets/animations/about_me.json', // Replace with your AboutMe animation
+                            'assets/animations/professional.json', // Replace with your AboutMe animation
                             fit: BoxFit.contain,
                           ),
                         );
@@ -218,6 +222,18 @@ class _HomePageState extends State<HomePage> {
                 ],
               ),
             ),
+
+            // Professional Experience Section
+            ProfessionalExperience(isDarkMode: isDarkMode),
+
+            // Non-Profit Section
+            NonProfit(isDarkMode: isDarkMode),
+
+            // Portfolio Section
+            Portfolio(isDarkMode: isDarkMode),
+
+            // Download Section
+            DownloadSection(isDarkMode: isDarkMode),
           ],
         ),
       ),

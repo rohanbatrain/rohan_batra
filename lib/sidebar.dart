@@ -3,6 +3,9 @@ import 'package:rohan_batra/main.dart';
 import 'package:rohan_batra/professional-experience/index.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:rohan_batra/formal-education/index.dart';
+import 'package:rohan_batra/non-profit-work/index.dart'; // Import the new screen
+import 'package:rohan_batra/skillwise-portfolio/index.dart'; // Import the updated screen
+import 'package:rohan_batra/widgets/download_popup.dart'; // Import the new popup widget
 
 class SidebarWidget extends StatefulWidget {
   @override
@@ -79,6 +82,30 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             },
           ),
           ListTile(
+            title: Text('Formal Education'),
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => FormalEducationIndexPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0); // Slide in from the right
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ListTile(
             title: Text('Professional Experience'),
             onTap: () {
               Navigator.push(
@@ -102,13 +129,38 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
               );
             },
           ),
+          
           ListTile(
-            title: Text('Formal Education'),
+            title: Text('Non-Profit Work'),
             onTap: () {
               Navigator.push(
                 context,
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) => FormalEducationIndexPage(),
+                  pageBuilder: (context, animation, secondaryAnimation) => NonProfitWorkIndexPage(),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0); // Slide in from the right
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  },
+                ),
+              );
+            },
+          ),
+          ListTile(
+            title: Text('Portfolio'),
+            onTap: () {
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => PortfolioPage(),
                   transitionsBuilder: (context, animation, secondaryAnimation, child) {
                     const begin = Offset(1.0, 0.0); // Slide in from the right
                     const end = Offset.zero;
@@ -185,6 +237,18 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                       ),
                     ),
                   );
+                },
+              );
+            },
+          ),
+          ListTile(
+            title: Text('Download'),
+            onTap: () {
+              Navigator.of(context).pop(); // Collapse the sidebar
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return DownloadPopup(); // Use the new popup widget
                 },
               );
             },
