@@ -9,17 +9,17 @@ class NonProfit extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+      padding: EdgeInsets.symmetric(horizontal: 60, vertical: 30), // Increased padding
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center, // Center items vertically
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute space evenly
         children: [
           // Left Side: Lottie Animation
           Expanded(
             flex: 4,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final maxHeight = constraints.maxHeight * 0.8; // Slightly zoom in
+                final maxHeight = constraints.maxHeight * 0.85; // Slightly zoom in
                 return ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: maxHeight,
@@ -34,7 +34,7 @@ class NonProfit extends StatelessWidget {
             ),
           ),
 
-          SizedBox(width: 50), // Add spacing between animation and text
+          SizedBox(width: 60), // Increased spacing between animation and text
 
           // Right Side: Text
           Expanded(
@@ -45,21 +45,23 @@ class NonProfit extends StatelessWidget {
                 Text(
                   'Non-Profit Initiatives',
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 32, // Increased font size
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 15), // Adjusted spacing
                 Text(
-                  'I actively contribute to non-profit organizations, focusing on community development, '
-                  'education, and technology for good.',
+                  'I have contributed to various non-profit initiatives, from teaching cybersecurity to army family wives, '
+                  'to making open-source contributions that empower communities. Some of my efforts remain undocumented by choice, '
+                  'as I believe true non-profit work shouldn’t always seek recognition or visibility.',
                   style: TextStyle(
                     fontSize: 18,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                    height: 1.6, // Improved line height for readability
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 25), // Adjusted spacing
                 ElevatedButton(
                   onPressed: () {
                     // Add functionality for "Learn More" button
@@ -67,9 +69,9 @@ class NonProfit extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDarkMode ? Colors.white : Colors.black,
                     foregroundColor: isDarkMode ? Colors.black : Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 14), // Adjusted padding
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10), // Slightly rounded corners
                     ),
                   ),
                   child: Text('Learn More'),

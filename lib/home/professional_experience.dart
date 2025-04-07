@@ -11,7 +11,7 @@ class ProfessionalExperience extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 60, vertical: 30), // Increased padding
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start, // Align items to the top
+        crossAxisAlignment: CrossAxisAlignment.center, // Center items vertically
         mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute space evenly
         children: [
           // Left Side: Text
@@ -30,9 +30,9 @@ class ProfessionalExperience extends StatelessWidget {
                 ),
                 SizedBox(height: 15), // Adjusted spacing
                 Text(
-                  'I have worked on various projects as a developer, writer, and researcher. '
-                  'My experience spans across multiple domains, including software development, '
-                  'technical writing, and academic research.',
+'I have worked on various startups—some that have concluded and others that are still ongoing. '
+'These ventures led to numerous projects, many of which are open-source and publicly available. '
+'My experience reflects a hands-on journey through building, learning, and sharing across different domains.',
                   style: TextStyle(
                     fontSize: 18,
                     height: 1.6, // Improved line height for readability

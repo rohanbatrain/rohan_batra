@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:async'; // Import the dart:async package
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import the FontAwesome package
 import '../sidebar.dart';
 import 'professional_summary.dart'; // Import the AboutMe widget
 import 'professional_experience.dart'; // Import the ProfessionalExperience widget
@@ -77,7 +78,7 @@ class _HomePageState extends State<HomePage> {
             Container(
               height: MediaQuery.of(context).size.height * 0.9, // Full-Screen Hero
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 40),
+              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 50), // Adjusted padding
               decoration: BoxDecoration(
                 color: isDarkMode ? Colors.black : Colors.white,
               ),
@@ -90,7 +91,7 @@ class _HomePageState extends State<HomePage> {
                     flex: 6, // Increase space for text
                     child: Padding(
                       padding: EdgeInsets.only(
-                        left: MediaQuery.of(context).size.width > 1200 ? 40 : 0, // Add padding for large screens
+                        left: MediaQuery.of(context).size.width > 1200 ? 50 : 20, // Add padding for large screens
                       ),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
@@ -100,28 +101,28 @@ class _HomePageState extends State<HomePage> {
                             'Hey, I am Rohan Batra',
                             style: TextStyle(
                               fontSize: MediaQuery.of(context).size.width > 1200
-                                  ? 60 // Large screens
+                                  ? 65 // Large screens
                                   : MediaQuery.of(context).size.width > 800
-                                      ? 50 // Medium screens
-                                      : 40, // Small screens
+                                      ? 55 // Medium screens
+                                      : 45, // Small screens
                               fontWeight: FontWeight.bold,
                               color: isDarkMode ? Colors.white : Colors.black,
                             ),
                           ),
-                          SizedBox(height: 10),
+                          SizedBox(height: 15), // Adjusted spacing
                           Text(
                             'Developer | Writer | Researcher',
                             style: TextStyle(
                               fontSize: MediaQuery.of(context).size.width > 1200
-                                  ? 30 // Large screens
+                                  ? 32 // Large screens
                                   : MediaQuery.of(context).size.width > 800
-                                      ? 25 // Medium screens
-                                      : 20, // Small screens
+                                      ? 28 // Medium screens
+                                      : 24, // Small screens
                               fontWeight: FontWeight.w500,
                               color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
                             ),
                           ),
-                          SizedBox(height: 20),
+                          SizedBox(height: 30), // Adjusted spacing
                           ElevatedButton(
                             onPressed: () {
                               // Smooth scroll to the AboutMe section
@@ -134,12 +135,15 @@ class _HomePageState extends State<HomePage> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: isDarkMode ? Colors.white : Colors.black,
                               foregroundColor: isDarkMode ? Colors.black : Colors.white,
-                              padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                              padding: EdgeInsets.symmetric(horizontal: 25, vertical: 14), // Adjusted padding
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
+                                borderRadius: BorderRadius.circular(10), // Slightly rounded corners
                               ),
                             ),
-                            child: Text('Explore More'),
+                            child: Text(
+                              'Explore More',
+                              style: TextStyle(fontSize: 18), // Increased button text size
+                            ),
                           ),
                         ],
                       ),
@@ -184,7 +188,7 @@ class _HomePageState extends State<HomePage> {
             // Content Section (Scrollable)
             Padding(
               key: aboutMeKey, // Assign the GlobalKey to the AboutMe section
-              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20), // Add consistent padding
+              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30), // Add consistent padding
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribute space evenly
@@ -209,13 +213,13 @@ class _HomePageState extends State<HomePage> {
                     ),
                   ),
 
-                  SizedBox(width: 50), // Add more spacing between animation and text
+                  SizedBox(width: 60), // Add more spacing between animation and text
 
                   // Right Side: Text
                   Expanded(
                     flex: 6, // Adjust space for text
                     child: Padding(
-                      padding: EdgeInsets.only(left: 20), // Add padding for better alignment
+                      padding: EdgeInsets.only(left: 30), // Add padding for better alignment
                       child: AboutMe(isDarkMode: isDarkMode), // Use the existing AboutMe widget
                     ),
                   ),
@@ -223,17 +227,97 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
+            // Add subtle separation
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 50),
+              child: Divider(
+                thickness: 1,
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[300], // Adjust color based on theme
+              ),
+            ),
+
+            // Add uniform spacing
+            SizedBox(height: 20),
+
             // Professional Experience Section
             ProfessionalExperience(isDarkMode: isDarkMode),
+
+            // Add subtle separation
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 50),
+              child: Divider(
+                thickness: 1,
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[300], // Adjust color based on theme
+              ),
+            ),
+
+            // Add uniform spacing
+            SizedBox(height: 20),
 
             // Non-Profit Section
             NonProfit(isDarkMode: isDarkMode),
 
+            // Add subtle separation
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 50),
+              child: Divider(
+                thickness: 1,
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[300], // Adjust color based on theme
+              ),
+            ),
+
+            // Add uniform spacing
+            SizedBox(height: 20),
+
             // Portfolio Section
             Portfolio(isDarkMode: isDarkMode),
 
+            // Add subtle separation
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 50),
+              child: Divider(
+                thickness: 1,
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[300], // Adjust color based on theme
+              ),
+            ),
+
+            // Add uniform spacing
+            SizedBox(height: 20),
+
             // Download Section
             DownloadSection(isDarkMode: isDarkMode),
+
+            // Footer Section
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+              color: isDarkMode ? Colors.black : Colors.white,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        icon: FaIcon(FontAwesomeIcons.linkedin),
+                        color: isDarkMode ? Colors.white : Colors.black,
+                        onPressed: () {
+                          // Add LinkedIn link
+                        },
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                  Text(
+                    '© 2025 Rohan Batra. All rights reserved.',
+                    style: TextStyle(
+                      color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                      fontSize: 14,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           ],
         ),
       ),

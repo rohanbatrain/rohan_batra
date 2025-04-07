@@ -9,10 +9,10 @@ class Portfolio extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+      padding: EdgeInsets.symmetric(horizontal: 60, vertical: 30), // Increased padding
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        crossAxisAlignment: CrossAxisAlignment.center, // Center items vertically
+        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute space evenly
         children: [
           // Left Side: Text
           Expanded(
@@ -23,21 +23,23 @@ class Portfolio extends StatelessWidget {
                 Text(
                   'Portfolio',
                   style: TextStyle(
-                    fontSize: 30,
+                    fontSize: 32, // Increased font size
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
                 ),
-                SizedBox(height: 10),
+                SizedBox(height: 15), // Adjusted spacing
                 Text(
-                  'Explore my portfolio to see the projects I have worked on, '
-                  'ranging from web development to mobile applications.',
+                  'I maintain a main portfolio showcasing my journey, along with a skill-based portfolio that highlights domain-specific work. '
+                  'Together, they reflect the diversity of my projects and passions. '
+                  'Explore my portfolio to see what I’ve built, what I’m building, and what drives my work.',
                   style: TextStyle(
                     fontSize: 18,
-                    color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                    height: 1.6, // Improved line height for readability
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 25), // Adjusted spacing
                 ElevatedButton(
                   onPressed: () {
                     // Add functionality for "View Portfolio" button
@@ -45,9 +47,9 @@ class Portfolio extends StatelessWidget {
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDarkMode ? Colors.white : Colors.black,
                     foregroundColor: isDarkMode ? Colors.black : Colors.white,
-                    padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 14), // Adjusted padding
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10), // Slightly rounded corners
                     ),
                   ),
                   child: Text('View Portfolio'),
@@ -56,14 +58,14 @@ class Portfolio extends StatelessWidget {
             ),
           ),
 
-          SizedBox(width: 50), // Add spacing between text and animation
+          SizedBox(width: 60), // Increased spacing between text and animation
 
           // Right Side: Lottie Animation
           Expanded(
             flex: 4,
             child: LayoutBuilder(
               builder: (context, constraints) {
-                final maxHeight = constraints.maxHeight * 0.8; // Slightly zoom in
+                final maxHeight = constraints.maxHeight * 0.85; // Slightly zoom in
                 return ConstrainedBox(
                   constraints: BoxConstraints(
                     maxHeight: maxHeight,

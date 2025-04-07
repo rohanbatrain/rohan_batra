@@ -6,6 +6,7 @@ import 'package:rohan_batra/formal-education/index.dart';
 import 'package:rohan_batra/non-profit-work/index.dart'; // Import the new screen
 import 'package:rohan_batra/skillwise-portfolio/index.dart'; // Import the updated screen
 import 'package:rohan_batra/widgets/download_popup.dart'; // Import the new popup widget
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SidebarWidget extends StatefulWidget {
   @override
@@ -76,12 +77,14 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             ),
           ),
           ListTile(
+            leading: Icon(FontAwesomeIcons.home, size: 18), // Adjust icon size
             title: Text('Home'),
             onTap: () {
               // Handle navigation to home
             },
           ),
           ListTile(
+            leading: Icon(FontAwesomeIcons.graduationCap, size: 18), // Adjust icon size
             title: Text('Formal Education'),
             onTap: () {
               Navigator.push(
@@ -106,6 +109,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             },
           ),
           ListTile(
+            leading: Icon(FontAwesomeIcons.briefcase, size: 18), // Adjust icon size
             title: Text('Professional Experience'),
             onTap: () {
               Navigator.push(
@@ -131,6 +135,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
           ),
           
           ListTile(
+            leading: Icon(FontAwesomeIcons.handsHelping, size: 18), // Adjust icon size
             title: Text('Non-Profit Work'),
             onTap: () {
               Navigator.push(
@@ -155,6 +160,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             },
           ),
           ListTile(
+            leading: Icon(FontAwesomeIcons.folderOpen, size: 18), // Adjust icon size
             title: Text('Portfolio'),
             onTap: () {
               Navigator.push(
@@ -179,6 +185,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             },
           ),
           ListTile(
+            leading: Icon(FontAwesomeIcons.cog, size: 18), // Adjust icon size
             title: Text('Settings'),
             onTap: () {
               showDialog(
@@ -242,6 +249,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             },
           ),
           ListTile(
+            leading: Icon(FontAwesomeIcons.download, size: 18), // Adjust icon size
             title: Text('Download'),
             onTap: () {
               Navigator.of(context).pop(); // Collapse the sidebar

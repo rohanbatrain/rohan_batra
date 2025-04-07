@@ -13,23 +13,23 @@ class AboutMe extends StatelessWidget {
         Text(
           'Professional Summary',
           style: TextStyle(
-            fontSize: 32, // Increased font size for better emphasis
+            fontSize: 36, // Increased font size for better emphasis
             fontWeight: FontWeight.w900, // Bolder font weight
             color: isDarkMode ? Colors.white : Colors.black,
           ),
         ),
-        SizedBox(height: 20), // Increased spacing for better layout
+        SizedBox(height: 30), // Increased spacing for better layout
         Text(
           'I am a developer and entrepreneur who gets things done, adapting across Linux, cybersecurity, cloud computing, and full-stack development. '
           'With 5+ years of Linux experience, I specialize in automation, optimization, and secure software while contributing to open-source without financial incentive. '
           'A 2-time semi-finalist at IIT Bombay’s E-Cell, I prioritize ethics over profit, driving community-focused innovation.',
           style: TextStyle(
-            fontSize: 18, // Slightly larger font size for readability
-            height: 1.5, // Added line height for better text spacing
+            fontSize: 20, // Slightly larger font size for readability
+            height: 1.4, // Reduced line height for better spacing
             color: isDarkMode ? Colors.grey[300] : Colors.grey[800], // Adjusted color for better contrast
           ),
         ),
-        SizedBox(height: 50), // Increased spacing for better separation
+        SizedBox(height: 60), // Increased spacing for better separation
       ],
     );
   }
