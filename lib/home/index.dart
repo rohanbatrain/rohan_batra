@@ -9,6 +9,7 @@ import 'non_profit.dart'; // Import the NonProfit widget
 import 'portfolio.dart'; // Import the Portfolio widget
 import 'download.dart'; // Import the DownloadSection widget
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
+import 'contactus.dart'; // Import the ContactUs widget
 
 class HomePage extends StatefulWidget {
   @override
@@ -287,6 +288,21 @@ class _HomePageState extends State<HomePage> {
 
             // Download Section
             DownloadSection(isDarkMode: isDarkMode),
+
+            // Add subtle separation
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 50),
+              child: Divider(
+                thickness: 1,
+                color: isDarkMode ? Colors.grey[800] : Colors.grey[300], // Adjust color based on theme
+              ),
+            ),
+
+            // Contact Us Section
+            ContactUs(isDarkMode: isDarkMode),
+
+            // Add uniform spacing
+            SizedBox(height: 20),
 
             // Footer Section
             Container(
