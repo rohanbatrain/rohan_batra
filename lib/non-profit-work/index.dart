@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class NonProfitWorkIndexPage extends StatelessWidget {
   @override
@@ -57,6 +58,13 @@ class NonProfitWorkIndexPage extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: FaIcon(
+                      FontAwesomeIcons.codeBranch,
+                      color: Theme.of(context).iconTheme.color,
+                    ),
+                  ),
                   title: Text(
                     'Open Source Contributions',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
@@ -79,6 +87,13 @@ class NonProfitWorkIndexPage extends StatelessWidget {
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
                 child: ListTile(
+                  leading: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: FaIcon(
+                      FontAwesomeIcons.chalkboardTeacher,
+                      color: Theme.of(context).iconTheme.color,
+                    ),
+                  ),
                   title: Text(
                     'Community Education',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(

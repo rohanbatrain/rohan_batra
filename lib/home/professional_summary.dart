@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
 
 class AboutMe extends StatelessWidget {
   final bool isDarkMode;
@@ -17,7 +18,7 @@ class AboutMe extends StatelessWidget {
             fontWeight: FontWeight.w900, // Bolder font weight
             color: isDarkMode ? Colors.white : Colors.black,
           ),
-        ),
+        ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2), // Add fade and slide animation
         SizedBox(height: 30), // Increased spacing for better layout
         Text(
           'I am a developer and entrepreneur who gets things done, adapting across Linux, cybersecurity, cloud computing, and full-stack development. '
@@ -28,7 +29,7 @@ class AboutMe extends StatelessWidget {
             height: 1.4, // Reduced line height for better spacing
             color: isDarkMode ? Colors.grey[300] : Colors.grey[800], // Adjusted color for better contrast
           ),
-        ),
+        ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2), // Add fade and slide animation
         SizedBox(height: 60), // Increased spacing for better separation
       ],
     );

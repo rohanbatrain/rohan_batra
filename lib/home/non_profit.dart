@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
 
 class NonProfit extends StatelessWidget {
   final bool isDarkMode;
@@ -49,7 +50,7 @@ class NonProfit extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
-                ),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2), // Add fade and slide animation
                 SizedBox(height: 15), // Adjusted spacing
                 Text(
                   'I have contributed to various non-profit initiatives, from teaching cybersecurity to army family wives, '
@@ -60,7 +61,7 @@ class NonProfit extends StatelessWidget {
                     height: 1.6, // Improved line height for readability
                     color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
                   ),
-                ),
+                ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2), // Add fade and slide animation
                 SizedBox(height: 25), // Adjusted spacing
                 ElevatedButton(
                   onPressed: () {
@@ -75,7 +76,7 @@ class NonProfit extends StatelessWidget {
                     ),
                   ),
                   child: Text('Learn More'),
-                ),
+                ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2), // Add fade and slide animation
               ],
             ),
           ),

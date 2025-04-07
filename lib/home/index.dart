@@ -8,6 +8,7 @@ import 'professional_experience.dart'; // Import the ProfessionalExperience widg
 import 'non_profit.dart'; // Import the NonProfit widget
 import 'portfolio.dart'; // Import the Portfolio widget
 import 'download.dart'; // Import the DownloadSection widget
+import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
 
 class HomePage extends StatefulWidget {
   @override
@@ -108,7 +109,7 @@ class _HomePageState extends State<HomePage> {
                               fontWeight: FontWeight.bold,
                               color: isDarkMode ? Colors.white : Colors.black,
                             ),
-                          ),
+                          ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2), // Add fade and slide animation
                           SizedBox(height: 15), // Adjusted spacing
                           Text(
                             'Developer | Writer | Researcher',
@@ -121,7 +122,7 @@ class _HomePageState extends State<HomePage> {
                               fontWeight: FontWeight.w500,
                               color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
                             ),
-                          ),
+                          ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2), // Add fade and slide animation
                           SizedBox(height: 30), // Adjusted spacing
                           ElevatedButton(
                             onPressed: () {
@@ -144,7 +145,7 @@ class _HomePageState extends State<HomePage> {
                               'Explore More',
                               style: TextStyle(fontSize: 18), // Increased button text size
                             ),
-                          ),
+                          ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2), // Add fade and slide animation
                         ],
                       ),
                     ),

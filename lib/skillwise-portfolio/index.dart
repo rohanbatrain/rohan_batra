@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Added import
 
 class PortfolioPage extends StatelessWidget {
-  final List<Map<String, String>> mainPortfolio = [
+  final List<Map<String, dynamic>> mainPortfolio = [
     {'title': 'Portfolio', 'description': 'A collection of my projects and achievements.'},
   ];
 
-  final List<Map<String, String>> skills = [
-    {'title': 'Cloud Computing', 'description': 'Experience with AWS, Azure, and Google Cloud.'},
-    {'title': 'Cyber Security', 'description': 'Expertise in penetration testing and secure software development.'},
-    {'title': 'Full-Stack Development', 'description': 'Proficient in building scalable web and mobile applications.'},
-    {'title': 'Linux Administration', 'description': '5+ years of experience in Linux system administration.'},
-    {'title': 'Automation', 'description': 'Skilled in automating workflows and processes using scripting languages.'},
+  final List<Map<String, dynamic>> skills = [
+    {'title': 'Cloud Computing', 'description': 'Experience with AWS, Azure, and Google Cloud.', 'icon': FontAwesomeIcons.cloud},
+    {'title': 'Cyber Security', 'description': 'Expertise in penetration testing and secure software development.', 'icon': FontAwesomeIcons.shieldAlt},
+    {'title': 'Full-Stack Development', 'description': 'Proficient in building scalable web and mobile applications.', 'icon': FontAwesomeIcons.code},
+    {'title': 'Linux Administration', 'description': '5+ years of experience in Linux system administration.', 'icon': FontAwesomeIcons.linux},
+    {'title': 'Automation', 'description': 'Skilled in automating workflows and processes using scripting languages.', 'icon': FontAwesomeIcons.robot},
   ];
 
   @override
@@ -47,13 +48,13 @@ class PortfolioPage extends StatelessWidget {
               // Main Portfolio Section
               _buildSectionHeader(context, 'Main Portfolio'),
               SizedBox(height: 16),
-              _buildPortfolioList(context, mainPortfolio),
+              _buildPortfolioList(context, mainPortfolio, FontAwesomeIcons.folder), // Added icon
               SizedBox(height: 32),
 
               // Skillwise Portfolio Section
               _buildSectionHeader(context, 'Skillwise Portfolio'),
               SizedBox(height: 16),
-              _buildPortfolioList(context, skills),
+              _buildSkillwisePortfolioList(context, skills), // Updated method call
             ],
           ),
         ),
@@ -80,7 +81,7 @@ class PortfolioPage extends StatelessWidget {
     );
   }
 
-  Widget _buildPortfolioList(BuildContext context, List<Map<String, String>> items) {
+  Widget _buildPortfolioList(BuildContext context, List<Map<String, dynamic>> items, IconData icon) {
     return ListView.builder(
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
@@ -94,6 +95,13 @@ class PortfolioPage extends StatelessWidget {
           elevation: 6,
           margin: EdgeInsets.symmetric(vertical: 8),
           child: ListTile(
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FaIcon(icon, color: Theme.of(context).iconTheme.color),
+                SizedBox(width: 12), // Added spacing
+              ],
+            ),
             contentPadding: EdgeInsets.all(16),
             title: Text(
               item['title']!,
@@ -107,7 +115,46 @@ class PortfolioPage extends StatelessWidget {
                     color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
                   ),
             ),
-            // Removed trailing icon
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildSkillwisePortfolioList(BuildContext context, List<Map<String, dynamic>> items) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: NeverScrollableScrollPhysics(),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        return Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          elevation: 6,
+          margin: EdgeInsets.symmetric(vertical: 8),
+          child: ListTile(
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                FaIcon(item['icon'], color: Theme.of(context).iconTheme.color),
+                SizedBox(width: 12), // Added spacing
+              ],
+            ),
+            contentPadding: EdgeInsets.all(16),
+            title: Text(
+              item['title']!,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+            ),
+            subtitle: Text(
+              item['description']!,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                  ),
+            ),
           ),
         );
       },

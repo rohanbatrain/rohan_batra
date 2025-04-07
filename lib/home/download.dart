@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:rohan_batra/widgets/download_popup.dart'; // Import the animate package
 
 class DownloadSection extends StatelessWidget {
   final bool isDarkMode;
@@ -43,26 +45,29 @@ class DownloadSection extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Download My Resume',
+                  'Download Portfolio',
                   style: TextStyle(
                     fontSize: 32, // Increased font size
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
-                ),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2), // Add fade and slide animation
                 SizedBox(height: 15), // Adjusted spacing
                 Text(
-                  'Download my resume to learn more about my skills, experience, and achievements.',
+                  'Download this webapp to learn more about my skills, experience, and achievements while being completly offline.',
                   style: TextStyle(
                     fontSize: 18,
                     height: 1.6, // Improved line height for readability
                     color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
                   ),
-                ),
+                ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2), // Add fade and slide animation
                 SizedBox(height: 25), // Adjusted spacing
                 ElevatedButton(
                   onPressed: () {
-                    // Add functionality for "Download" button
+                    showDialog(
+                      context: context,
+                      builder: (context) => DownloadPopup(),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDarkMode ? Colors.white : Colors.black,
@@ -73,7 +78,7 @@ class DownloadSection extends StatelessWidget {
                     ),
                   ),
                   child: Text('Download'),
-                ),
+                ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2), // Add fade and slide animation
               ],
             ),
           ),
