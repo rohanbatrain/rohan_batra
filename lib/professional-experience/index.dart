@@ -2,6 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 final List<Map<String, Map<String, String>>> companies = [
+    {
+    'role': {'value': 'Open Source Contributor'},
+    'name': {'value': 'Rohan Batra FOSS'},
+    'logo': {
+      'light': 'assets/logos/Rohan-Batra-FOSS/Light-Mode/logo.png',
+      'dark': 'assets/logos/Rohan-Batra-FOSS/Dark-Mode/logo.png',
+    },
+    'employmentType': {'value': 'Self Employed'},
+    'startDate': {'value': 'Oct 2022'},
+    'endDate': {'value': 'Present'},
+  },
+    {
+    'role': {'value': 'Open Source Advocate'},
+    'name': {'value': 'Second Brain Database'},
+    'logo': {
+      'light': 'assets/logos/Second-Brain-Database/Light-Mode/logo.png',
+      'dark': 'assets/logos/Second-Brain-Database/Dark-Mode/logo.png',
+    },
+    'employmentType': {'value': 'Part-Time'},
+    'startDate': {'value': 'Nov 2024'},
+    'endDate': {'value': 'Present'},
+  },
   {
     'role': {'value': 'Gamer'},
     'name': {'value': 'Rohan Batra Gaming'},
@@ -14,17 +36,6 @@ final List<Map<String, Map<String, String>>> companies = [
     'endDate': {'value': 'Present'},
   },
   {
-    'role': {'value': 'Open Source Advocate'},
-    'name': {'value': 'Second Brain Database'},
-    'logo': {
-      'light': 'assets/logos/Second-Brain-Database/Light-Mode/logo.png',
-      'dark': 'assets/logos/Second-Brain-Database/Dark-Mode/logo.png',
-    },
-    'employmentType': {'value': 'Part-Time'},
-    'startDate': {'value': 'Nov 2024'},
-    'endDate': {'value': 'Present'},
-  },
-  {
     'role': {'value': 'Co Founder'},
     'name': {'value': 'LinuxWale'},
     'logo': {
@@ -34,18 +45,7 @@ final List<Map<String, Map<String, String>>> companies = [
     },
     'employmentType': {'value': 'Part-Time'},
     'startDate': {'value': 'Sep 2023'},
-    'endDate': {'value': 'Present'},
-  },
-  {
-    'role': {'value': 'Open Source Contributor'},
-    'name': {'value': 'Rohan Batra FOSS'},
-    'logo': {
-      'light': 'assets/logos/Rohan-Batra-FOSS/Light-Mode/logo.png',
-      'dark': 'assets/logos/Rohan-Batra-FOSS/Dark-Mode/logo.png',
-    },
-    'employmentType': {'value': 'Self Employed'},
-    'startDate': {'value': 'Oct 2022'},
-    'endDate': {'value': 'Present'},
+    'endDate': {'value': 'Apr 2025'},
   },
   {
     'role': {'value': 'Co Founder'},

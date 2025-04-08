@@ -87,7 +87,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
               ),
               ListTile(
                 leading: Icon(FontAwesomeIcons.graduationCap, size: 18), // Adjust icon size
-                title: Text('Formal Education'),
+                title: Text('Education'),
                 onTap: () {
                   Navigator.push(
                     context,

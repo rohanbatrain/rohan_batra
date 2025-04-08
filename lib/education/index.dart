@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'upes_page.dart';
-import 'smcs_page.dart';
+import 'smcs/smcs_page.dart';
 
 class FormalEducationIndexPage extends StatelessWidget {
   @override
@@ -139,49 +139,6 @@ class FormalEducationIndexPage extends StatelessWidget {
                     ),
                   );
                 },
-              ),
-            ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2),
-
-            SizedBox(height: 32),
-
-            // Informal Education Section
-            Text(
-              'Informal Education',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Here is a summary of my informal education journey.',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            SizedBox(height: 24),
-
-            // Science Olympiad Foundation Card
-            Card(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              elevation: 4,
-              margin: EdgeInsets.symmetric(vertical: 12),
-              child: ListTile(
-                contentPadding: EdgeInsets.all(16),
-                leading: Icon(
-                  Icons.emoji_events,
-                  size: 50,
-                  color: Theme.of(context).primaryColor,
-                ),
-                title: Text(
-                  'Science Olympiad Foundation',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                subtitle: Text(
-                  'Participated in various science and mathematics olympiads.',
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
               ),
             ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2),
           ],

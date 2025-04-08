@@ -69,9 +69,9 @@ flutter:
     - assets/animations/developer.json
     - assets/animations/research.json
     - assets/animations/about_me.json
-    - assets/logos/bg-logo.png
-    - assets/logos/legacy-logo.png
-    - assets/logos/logo.png
+    - assets/logos/Rohan-Batra/bg-logo.png
+    - assets/logos/Rohan-Batra/legacy-logo.png
+    - assets/logos/Rohan-Batra/logo.png
     - assets/logos/Kruxers/Dark-Mode/logo.png
     - assets/logos/Kruxers/Light-Mode/logo.png
     - assets/logos/Linuxwale/Dark-Mode/logo.png
@@ -104,8 +104,31 @@ flutter:
     - assets/images/certificates/certificate5.jpg
     - assets/images/certificates/certificate6.jpg
     - assets/images/certificates/certificate7.jpg
-  
-
+    - assets/logos/IITB/ECELL/ecell_iitb_logo.jpg
+    - assets/logos/Science-Olympiad-Foundation/logo.jpg
+    - assets/logos/Pentasoft/pentelogo.png
+    - assets/logos/UNSW/unsw-logo.png
+    - assets/logos/TERI/teriin_logo.jpg
+    - assets/logos/Orange-Education/orangeeducation_logo.jpg
+    - assets/images/certificates/E-CELL/Eureka-2021-22.png
+    - assets/images/certificates/E-CELL/Eureka-2022-23.png
+    - assets/images/certificates/E-CELL/workshop.jpg
+    - assets/images/certificates/SOF/certificate-nco-3.jpg
+    - assets/images/certificates/SOF/certificate-nco-4.jpg
+    - assets/images/certificates/SOF/certificate-nco-5.jpg
+    - assets/images/certificates/SOF/certificate-imo-4.jpg
+    - assets/images/certificates/SOF/certificate-imo-5.jpg
+    - assets/images/certificates/SOF/certificate-imo-6.jpg
+    - assets/images/certificates/SOF/certificate-imo-7.jpg
+    - assets/images/certificates/SOF/certificate-nso-5.jpg
+    - assets/images/certificates/SOF/certificate-nso-6.jpg
+    - assets/images/certificates/SOF/certificate-nso-7.jpg    
+    - assets/images/certificates/Pentasoft/certificate2.jpg
+    - assets/images/certificates/Pentasoft/certificate1.jpg
+    - assets/images/certificates/UNSW/certificate2.jpg
+    - assets/images/certificates/UNSW/certificate1.jpg
+    - assets/images/certificates/TERI/certificate1.jpg
+    - assets/images/certificates/NAO/certificate1.jpg
 # flutter_launcher_icons:
 #   android: "launcher_icon"
 #   ios: true
