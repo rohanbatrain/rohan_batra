@@ -77,7 +77,7 @@ class _SplashScreenState extends State<SplashScreen> {
       'assets/icons/icon_back-arrow-light-bg.png',
       'assets/icons/icon_navbar-dark-bg.png',
       'assets/icons/icon_navbar-light-bg.png',
-      'assets/logos/logo.png',
+      'assets/logos/Rohan-Batra/logo.png',
       'assets/logos/UPES/UPES1.png',
       'assets/logos/UPES/UPES2.png',
       'assets/logos/SMCS/building.jpg',

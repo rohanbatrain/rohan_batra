@@ -40,6 +40,7 @@ dependencies:
   flutter_animate: ^4.2.0
   font_awesome_flutter: ^10.7.0 # Check for latest version
   
+  
 
 dev_dependencies:
   flutter_test:
@@ -129,6 +130,31 @@ flutter:
     - assets/images/certificates/UNSW/certificate1.jpg
     - assets/images/certificates/TERI/certificate1.jpg
     - assets/images/certificates/NAO/certificate1.jpg
+    - assets/images/certificates/UPES/certificate1.jpg
+    - assets/images/banners/branding-kit.jpg
+    - assets/images/banners/Emotion-Tracker/Light-Mode/banner.png
+    - assets/images/banners/Emotion-Tracker/Dark-Mode/banner.png
+    - assets/images/banners/Knowledge-Base/Dark-Mode/2.png
+    - assets/images/banners/Knowledge-Base/Light-Mode/1.png
+    - assets/images/banners/Second-Brain-2022/2.png
+    - assets/images/banners/Second-Brain-2022/1.png
+    - assets/images/banners/Configs/1.png
+    - assets/images/banners/Configs/2.png
+    - assets/images/banners/Landing-Pages/Light-Mode/banner.png
+    - assets/images/banners/Landing-Pages/Dark-Mode/banner.png
+    - assets/images/banners/Portfolio/Dark-Mode/2.png
+    - assets/images/banners/Portfolio/Light-Mode/1.png
+    - assets/images/banners/SBDFS/Light-Mode/1.png
+    - assets/images/banners/SBDFS/Dark-Mode/2.png
+    - assets/images/banners/SBD-Flutter-Template/Light-Mode/1.png
+    - assets/images/banners/SBD-Flutter-Template/Dark-Mode/2.png
+    - assets/images/banners/Scripts/Light-Mode/1.png
+    - assets/images/banners/Scripts/Dark-Mode/2.png
+    - assets/images/banners/Second-Brain-Tools-2022/Light-Mode/1.png
+    - assets/images/banners/Second-Brain-Tools-2022/Dark-Mode/2.png
+    - assets/images/banners/Second-Brain-Database/Dark-Mode/banner.png
+    - assets/images/banners/Second-Brain-Database/Light-Mode/banner.png
+
 # flutter_launcher_icons:
 #   android: "launcher_icon"
 #   ios: true
