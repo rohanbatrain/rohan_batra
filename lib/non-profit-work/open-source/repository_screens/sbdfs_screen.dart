@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SbdfsScreen extends StatelessWidget {
   const SbdfsScreen({super.key});
@@ -9,6 +10,10 @@ class SbdfsScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text('SBDFS'),
         centerTitle: true,
       ),

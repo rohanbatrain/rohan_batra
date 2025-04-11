@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SecondBrain2022Screen extends StatelessWidget {
   const SecondBrain2022Screen({super.key});
@@ -9,6 +10,10 @@ class SecondBrain2022Screen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text('Second Brain 2022'),
         centerTitle: true,
       ),

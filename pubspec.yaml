@@ -154,6 +154,16 @@ flutter:
     - assets/images/banners/Second-Brain-Tools-2022/Dark-Mode/2.png
     - assets/images/banners/Second-Brain-Database/Dark-Mode/banner.png
     - assets/images/banners/Second-Brain-Database/Light-Mode/banner.png
+    - assets/images/banners/Suckless-St/Light-Mode/2.png
+    - assets/images/banners/Suckless-St/Dark-Mode/1.png
+    - assets/images/banners/Dmenu/Light-Mode/1.png
+    - assets/images/banners/Dmenu/Dark-Mode/2.png
+    - assets/images/banners/Dwm/Light-Mode/1.png
+    - assets/images/banners/Dwm/Dark-Mode/2.png
+    - assets/images/banners/Second-Brain-Database-Flutter-Frontend/Dark-Mode/2.png
+    - assets/images/banners/Second-Brain-Database-Flutter-Frontend/Light-Mode/1.png
+    - assets/images/banners/Second-Brain-Database-Telegram-Bot/Light-Mode/1.png
+    - assets/images/banners/Second-Brain-Database-Telegram-Bot/Dark-Mode/2.png
 
 # flutter_launcher_icons:
 #   android: "launcher_icon"

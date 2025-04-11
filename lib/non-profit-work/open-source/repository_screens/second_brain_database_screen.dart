@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SecondBrainDatabaseScreen extends StatelessWidget {
   const SecondBrainDatabaseScreen({super.key});
@@ -12,6 +13,10 @@ class SecondBrainDatabaseScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text('Second Brain Database'),
         centerTitle: true,
       ),
@@ -41,7 +46,7 @@ class SecondBrainDatabaseScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '🚀 Introducing Second Brain Database',
+                    'Second Brain Database',
                     style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
                   ),
                   SizedBox(height: 10),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class SecondBrainTools2022Screen extends StatefulWidget {
   const SecondBrainTools2022Screen({super.key});
@@ -97,6 +98,10 @@ class _SecondBrainTools2022ScreenState extends State<SecondBrainTools2022Screen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text('Second Brain Tools 2022'),
         centerTitle: true,
       ),

@@ -13,7 +13,7 @@ import 'repository_screens/scripts_screen.dart';
 import 'repository_screens/second_brain_2022_screen.dart';
 import 'repository_screens/second_brain_tools_2022_screen.dart';
 import 'repository_screens/second_brain_database_screen.dart';
-import 'repository_screens/second_brain_database_bot_telegram_template_screen.dart';
+import 'repository_screens/second_brain_database_telegram_bot_screen.dart';
 import 'repository_screens/second_brain_database_flutter_frontend_screen.dart';
 import 'repository_screens/suckless_dmenu_screen.dart';
 import 'repository_screens/suckless_dwm_screen.dart';
@@ -33,7 +33,7 @@ class OpenSourceDetailsScreen extends StatelessWidget {
     'second-brain-2022',
     'second-brain-tools-2022',
     'second_brain_database',
-    'second_brain_database_bot_telegram_template',
+    'second_brain_database_telegram_bot',
     'second_brain_database_flutter_frontend',
     'suckless-dmenu',
     'suckless-dwm',
@@ -79,6 +79,10 @@ class OpenSourceDetailsScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text('Open Source Contributions'),
         elevation: 2,
+        leading: IconButton(
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft), // Added leading arrow
+          onPressed: () => Navigator.of(context).pop(),
+        ),
       ),
       body: ListView.separated(
         padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
@@ -124,8 +128,8 @@ class OpenSourceDetailsScreen extends StatelessWidget {
                           return SecondBrainTools2022Screen();
                         case 'second_brain_database':
                           return SecondBrainDatabaseScreen();
-                        case 'second_brain_database_bot_telegram_template':
-                          return SecondBrainDatabaseBotTelegramTemplateScreen();
+                        case 'second_brain_database_telegram_bot':
+                          return SecondBrainDatabaseTelegramBotScreen();
                         case 'second_brain_database_flutter_frontend':
                           return SecondBrainDatabaseFlutterFrontendScreen();
                         case 'suckless-dmenu':
@@ -195,7 +199,7 @@ class OpenSourceDetailsScreen extends StatelessWidget {
                         ),
                       ),
                     IconButton(
-                      icon: FaIcon(FontAwesomeIcons.arrowRight, color: buttonColor),
+                      icon: FaIcon(FontAwesomeIcons.copy, color: buttonColor),
                       onPressed: () {
                         Clipboard.setData(ClipboardData(text: url));
                         ScaffoldMessenger.of(context).showSnackBar(
