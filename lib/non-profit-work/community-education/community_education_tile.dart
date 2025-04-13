@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'open_source_details_screen.dart'; // Added import for the new screen
+import 'community_education_details_screen.dart';
 
-class OpenSourceTile extends StatelessWidget {
+class CommunityEducationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
@@ -11,7 +11,9 @@ class OpenSourceTile extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => OpenSourceDetailsScreen()),
+          MaterialPageRoute(
+            builder: (context) => CommunityEducationDetailsScreen(),
+          ),
         );
       },
       child: Card(
@@ -26,20 +28,20 @@ class OpenSourceTile extends StatelessWidget {
           child: ListTile(
             leading: Padding(
               padding: const EdgeInsets.only(right: 8.0),
-              child: FaIcon(
-                FontAwesomeIcons.codeBranch,
+              child: Icon(
+                FontAwesomeIcons.chalkboardTeacher,
                 color: isDarkMode ? Colors.white : Colors.black,
               ),
             ),
             title: Text(
-              'Open Source Contributions',
+              'Community Education',
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
             ),
             subtitle: Text(
-              'Contributed to various open-source projects to promote free and open software.',
+              'Organized workshops and seminars to educate the community on technology and cybersecurity.',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: isDarkMode ? Colors.white70 : Colors.black87,
                   ),
@@ -50,4 +52,3 @@ class OpenSourceTile extends StatelessWidget {
     );
   }
 }
-

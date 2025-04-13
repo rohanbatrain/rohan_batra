@@ -4,7 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 import 'dart:async';
 import 'home/index.dart';
 import 'package:flutter/services.dart'; // Import for rootBundle
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized

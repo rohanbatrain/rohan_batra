@@ -39,8 +39,6 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_animate: ^4.2.0
   font_awesome_flutter: ^10.7.0 # Check for latest version
-  
-  
 
 dev_dependencies:
   flutter_test:
@@ -164,7 +162,13 @@ flutter:
     - assets/images/banners/Second-Brain-Database-Flutter-Frontend/Light-Mode/1.png
     - assets/images/banners/Second-Brain-Database-Telegram-Bot/Light-Mode/1.png
     - assets/images/banners/Second-Brain-Database-Telegram-Bot/Dark-Mode/2.png
-
+    - assets/images/certificates/Caring-Souls/1.jpg
+    - assets/images/certificates/UBSA/1.jpg
+    - assets/logos/Indian-Armed-Forces/logo.png
+    - assets/images/certificates/IAF/1.jpg
+    - assets/images/certificates/IAF/2.jpg
+    - assets/images/certificates/IAF/3.jpg
+    
 # flutter_launcher_icons:
 #   android: "launcher_icon"
 #   ios: true

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:rohan_batra/non-profit-work/social_internship/social_internship_tile.dart';
 import 'open-source/open_source_tile.dart';
-import 'community-service/community_education_tile.dart';
+import 'community-education/community_education_tile.dart';
+import 'volunteering/volunteering_tile.dart';
 
 class NonProfitWorkIndexPage extends StatelessWidget {
   @override
@@ -50,6 +52,8 @@ class NonProfitWorkIndexPage extends StatelessWidget {
             SizedBox(height: 28),
             OpenSourceTile(),
             CommunityEducationTile(),
+            VolunteeringTile(),
+            SocialInternshipTile()
           ],
         ),
       ),
