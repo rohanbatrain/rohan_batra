@@ -121,8 +121,8 @@ class OpenSourceDetailsScreen extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) {
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation, secondaryAnimation) {
                               switch (repository) {
                                 case 'branding-kit':
                                   return BrandingKitScreen();
@@ -164,6 +164,19 @@ class OpenSourceDetailsScreen extends StatelessWidget {
                                     body: Center(child: Text('No screen available for $repository')),
                                   );
                               }
+                            },
+                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                              const begin = 0.9;
+                              const end = 1.0;
+                              const curve = Curves.easeInOut;
+
+                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                              var scaleAnimation = animation.drive(tween);
+
+                              return ScaleTransition(
+                                scale: scaleAnimation,
+                                child: child,
+                              );
                             },
                           ),
                         );
