@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'widgets/portfolio_tile.dart';
-import 'widgets/skill_tile.dart';
+import 'portfolio/portfolio_tile.dart';
+import 'skills/cloud_computing/cloud_computing_tile.dart';
+import 'skills/cyber_security/cyber_security_tile.dart';
+import 'skills/full_stack_development/full_stack_development_tile.dart';
+import 'skills/linux_administration/linux_administration_tile.dart';
+import 'skills/automation/automation_tile.dart';
 
 class PortfolioPage extends StatelessWidget {
-  final List<Map<String, dynamic>> mainPortfolio = [
-    {'title': 'Portfolio', 'description': 'A collection of my projects and achievements.'},
-  ];
+  final List<String> mainPortfolio = ['Portfolio'];
 
-  final List<Map<String, dynamic>> skills = [
-    {'title': 'Cloud Computing', 'description': 'Experience with AWS, Azure, and Google Cloud.', 'icon': FontAwesomeIcons.cloud},
-    {'title': 'Cyber Security', 'description': 'Expertise in penetration testing and secure software development.', 'icon': FontAwesomeIcons.shieldAlt},
-    {'title': 'Full-Stack Development', 'description': 'Proficient in building scalable web and mobile applications.', 'icon': FontAwesomeIcons.code},
-    {'title': 'Linux Administration', 'description': '5+ years of experience in Linux system administration.', 'icon': FontAwesomeIcons.linux},
-    {'title': 'Automation', 'description': 'Skilled in automating workflows and processes using scripting languages.', 'icon': FontAwesomeIcons.robot},
+  final List<String> skills = [
+    'Cloud Computing',
+    'Cyber Security',
+    'Full-Stack Development',
+    'Linux Administration',
+    'Automation',
   ];
 
   @override
@@ -38,6 +40,7 @@ class PortfolioPage extends StatelessWidget {
           color: Theme.of(context).iconTheme.color,
         ),
       ),
+      backgroundColor: isDarkMode ? Colors.black : Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -52,10 +55,7 @@ class PortfolioPage extends StatelessWidget {
                 physics: NeverScrollableScrollPhysics(),
                 itemCount: mainPortfolio.length,
                 itemBuilder: (context, index) {
-                  return PortfolioTile(
-                    item: mainPortfolio[index],
-                    icon: FontAwesomeIcons.folder,
-                  );
+                  return PortfolioTile(portfolio: mainPortfolio[index]);
                 },
               ),
               SizedBox(height: 32),
@@ -63,13 +63,16 @@ class PortfolioPage extends StatelessWidget {
               // Skillwise Portfolio Section
               _buildSectionHeader(context, 'Skillwise Portfolio'),
               SizedBox(height: 16),
-              ListView.builder(
+              ListView(
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
-                itemCount: skills.length,
-                itemBuilder: (context, index) {
-                  return SkillTile(item: skills[index]);
-                },
+                children: [
+                  CloudComputingTile(),
+                  CyberSecurityTile(),
+                  FullStackDevelopmentTile(),
+                  LinuxAdministrationTile(),
+                  AutomationTile(),
+                ],
               ),
             ],
           ),
