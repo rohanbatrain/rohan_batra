@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class VirtualizationContainersScreen extends StatelessWidget {
+class Windows10Screen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -10,7 +10,7 @@ class VirtualizationContainersScreen extends StatelessWidget {
           icon: const FaIcon(FontAwesomeIcons.arrowLeft),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Virtualization – Containers (Pi-hole)'),
+        title: const Text('Windows 10 Entertainment VM'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -18,7 +18,7 @@ class VirtualizationContainersScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Pi-hole DNS Sinkhole Deployment on Proxmox (LXC)',
+              'Windows 10 Entertainment VM on Proxmox',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -26,12 +26,12 @@ class VirtualizationContainersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'I deployed Pi-hole as a DNS-level ad blocker within a Proxmox LXC container to serve as a local DNS filter across internal devices. This setup is lightweight, efficient, and ideal for reducing unwanted content and telemetry across the network.',
+              'This virtual machine setup was designed for testing sketchy software, light gaming, and other Windows-based workflows in a controlled sandbox environment. It does not use GPU passthrough due to hardware limitations but aims to maximize compatibility and performance within a Proxmox virtualized setup.',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             const Text(
-              'LXC Container Configuration:',
+              '💡 Purpose',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -39,21 +39,14 @@ class VirtualizationContainersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              '- Hostname: pihole\n'
-              '- Disk Size: 4 GB\n'
-              '- Cores: 1\n'
-              '- RAM: 1024 MB\n'
-              '- Swap: 1024 MB\n'
-              '- IPv4: Static\n'
-              '- IPv6: DHCP (Request)\n'
-              '- DNS Domain: pihole.vina.xxxx.xx.x\n'
-              '- DNS Server: 1.1.1.1\n'
-              '- Autostart: Enabled',
+              '- Testing untrusted software safely\n'
+              '- Light gaming (without GPU passthrough)\n'
+              '- Creating a disposable environment that doesn’t affect the host',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             const Text(
-              'Installation Workflow:',
+              '🛠️ VM Configuration',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -61,17 +54,35 @@ class VirtualizationContainersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              '1. Updated the system and installed required packages:\n'
-              '   apt update && apt install curl\n'
-              '2. Installed Pi-hole using the official one-liner:\n'
-              '   curl -sSL https://install.pi-hole.net | bash\n'
-              '3. Ensured the container had a static IP to maintain consistent DNS availability.\n'
-              '4. Enabled autostart for persistent service uptime.',
+              'Name: win10-entertainment\n'
+              'BIOS: OVMF (UEFI)\n'
+              'Machine: pc-q35-8.1\n'
+              'CPU: host, flags=+aes\n'
+              'Cores: 4\n'
+              'Sockets: 1\n'
+              'NUMA: Enabled\n'
+              'Memory: 8192 MB\n'
+              'Ballooning: Disabled\n\n'
+              'Disks:\n'
+              '- EFI Disk: 4 MB (pre-enrolled keys)\n'
+              '- System Disk: 100 GB (VirtIO, writeback, discard enabled)\n\n'
+              'Boot Order:\n'
+              '- scsi0 (System Disk)\n'
+              '- ide0 (Windows ISO)\n'
+              '- ide2 (VirtIO Drivers ISO)\n'
+              '- net0 (Network)\n\n'
+              'ISOs:\n'
+              '- Windows 10 22H2 ISO\n'
+              '- VirtIO Drivers ISO\n\n'
+              'PCI:\n'
+              '- Host PCI device: 0000:00:1f (included for experimental setup)\n\n'
+              'VGA: Standard (No passthrough)\n'
+              'Agent: Enabled',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             const Text(
-              'Post-Installation Configuration:',
+              '⚙️ Post-Install Configuration',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -79,16 +90,30 @@ class VirtualizationContainersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Enhanced Pi-hole’s filtering capability by adding a custom adlist:\n'
-              '- Source: DeveloperDan\n'
-              '- Repository Link: lightswitch05/hosts\n\n'
-              'To sync and apply updated blocklists:\n'
-              '   pihole -g',
+              'Once Windows was installed, the first utility run was:',
               style: TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
             const Text(
-              'Reference:',
+              'CTT Windows Utility',
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 16,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'A powerful customization and debloating script provided by Chris Titus Tech:',
+              style: TextStyle(fontSize: 16),
+            ),
+            const SizedBox(height: 8),
+            const SelectableText(
+              'iwr -useb https://christitus.com/win | iex',
+              style: TextStyle(fontFamily: 'monospace', fontSize: 16),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              '🔗 Reference',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -102,7 +127,7 @@ class VirtualizationContainersScreen extends StatelessWidget {
                   builder: (BuildContext context) {
                     return AlertDialog(
                       content: const Text(
-                        'https://rohanbatrain.github.io/knowledge-base/Developement-Setup/Owned-Devices/Laptops/MSI/2023/August/Crucial-Drive/Promox/Containers/Pihole/',
+                        'https://rohanbatrain.github.io/knowledge-base/Archive/Developement-Setup/Owned-Devices/Laptops/MSI/2023/August/Crucial-Drive/Promox/Virtual-Machines/win10-entertainment/',
                       ),
                       actions: [
                         TextButton(

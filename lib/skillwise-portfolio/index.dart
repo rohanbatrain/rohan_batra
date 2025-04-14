@@ -42,7 +42,7 @@ class PortfolioPage extends StatelessWidget {
           color: Theme.of(context).iconTheme.color,
         ),
       ),
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(

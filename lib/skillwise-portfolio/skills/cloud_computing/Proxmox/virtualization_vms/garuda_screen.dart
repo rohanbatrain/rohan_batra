@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-class VirtualizationContainersScreen extends StatelessWidget {
+class GarudaScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -10,7 +10,7 @@ class VirtualizationContainersScreen extends StatelessWidget {
           icon: const FaIcon(FontAwesomeIcons.arrowLeft),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: const Text('Virtualization – Containers (Pi-hole)'),
+        title: const Text('Garuda Linux VM'),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -18,7 +18,7 @@ class VirtualizationContainersScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Pi-hole DNS Sinkhole Deployment on Proxmox (LXC)',
+              'Garuda Linux VM on Proxmox',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
@@ -26,12 +26,12 @@ class VirtualizationContainersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             const Text(
-              'I deployed Pi-hole as a DNS-level ad blocker within a Proxmox LXC container to serve as a local DNS filter across internal devices. This setup is lightweight, efficient, and ideal for reducing unwanted content and telemetry across the network.',
+              'Garuda Linux has been my choice for a high-performance, modern desktop experience running inside a virtualized environment on Proxmox. This setup, built on an MSI laptop with a Crucial drive, demonstrates how to effectively leverage Proxmox for a smooth and responsive Linux desktop.',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             const Text(
-              'LXC Container Configuration:',
+              '💡 Purpose',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -39,21 +39,14 @@ class VirtualizationContainersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              '- Hostname: pihole\n'
-              '- Disk Size: 4 GB\n'
-              '- Cores: 1\n'
-              '- RAM: 1024 MB\n'
-              '- Swap: 1024 MB\n'
-              '- IPv4: Static\n'
-              '- IPv6: DHCP (Request)\n'
-              '- DNS Domain: pihole.vina.xxxx.xx.x\n'
-              '- DNS Server: 1.1.1.1\n'
-              '- Autostart: Enabled',
+              '- Deliver a powerful yet lightweight Linux desktop in a virtualized environment.\n'
+              '- Optimize system performance and responsiveness using Proxmox’s virtualization capabilities.\n'
+              '- Provide a controlled environment for daily productivity and testing.',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             const Text(
-              'Installation Workflow:',
+              '🛠️ VM Configuration',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -61,17 +54,19 @@ class VirtualizationContainersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              '1. Updated the system and installed required packages:\n'
-              '   apt update && apt install curl\n'
-              '2. Installed Pi-hole using the official one-liner:\n'
-              '   curl -sSL https://install.pi-hole.net | bash\n'
-              '3. Ensured the container had a static IP to maintain consistent DNS availability.\n'
-              '4. Enabled autostart for persistent service uptime.',
+              'Hardware Environment:\n'
+              '- Platform: Proxmox on MSI Laptop with Crucial Drive\n'
+              '- VM Type: Virtual Machine\n\n'
+              'Key Settings:\n'
+              '- CPU & Memory: Allocated to balance performance with resource efficiency.\n'
+              '- Storage: Configured with VirtIO for enhanced disk I/O performance.\n'
+              '- Networking: Standard virtualized network adapters ensure reliable connectivity.\n'
+              '- Optimizations: Custom tweaks applied to Garuda Linux for improved desktop responsiveness.',
               style: TextStyle(fontSize: 16),
             ),
             const SizedBox(height: 16),
             const Text(
-              'Post-Installation Configuration:',
+              '🔧 Post-Installation Enhancements',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -79,16 +74,15 @@ class VirtualizationContainersScreen extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             const Text(
-              'Enhanced Pi-hole’s filtering capability by adding a custom adlist:\n'
-              '- Source: DeveloperDan\n'
-              '- Repository Link: lightswitch05/hosts\n\n'
-              'To sync and apply updated blocklists:\n'
-              '   pihole -g',
+              'After installing Garuda Linux on Proxmox, I implemented several customizations:\n'
+              '- System Optimization: Tweaked system parameters to reduce latency and improve multitasking.\n'
+              '- Theming & UI Customization: Enhanced the desktop environment for a modern and user-friendly experience.\n'
+              '- Monitoring: Deployed tools to continuously monitor system performance and resource usage.',
               style: TextStyle(fontSize: 16),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
             const Text(
-              'Reference:',
+              '🔗 Reference',
               style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
@@ -102,7 +96,7 @@ class VirtualizationContainersScreen extends StatelessWidget {
                   builder: (BuildContext context) {
                     return AlertDialog(
                       content: const Text(
-                        'https://rohanbatrain.github.io/knowledge-base/Developement-Setup/Owned-Devices/Laptops/MSI/2023/August/Crucial-Drive/Promox/Containers/Pihole/',
+                        'https://rohanbatrain.github.io/knowledge-base/Developement-Setup/Owned-Devices/Laptops/MSI/2023/August/Crucial-Drive/Promox/Virtual-Machines/garuda/?h=garuda',
                       ),
                       actions: [
                         TextButton(

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ProxmoxInstallationScreen extends StatelessWidget {
   void _showReferencePopup(BuildContext context, String link) {
@@ -22,6 +23,10 @@ class ProxmoxInstallationScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: const Text('Proxmox Installation'),
       ),
       body: SingleChildScrollView(
