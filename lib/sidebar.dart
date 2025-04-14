@@ -57,7 +57,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                 decoration: BoxDecoration(
                   color: Theme.of(context).brightness == Brightness.light
                       ? Colors.white // White in light mode
-                      : Theme.of(context).scaffoldBackgroundColor, // Match other screens in dark mode
+                      : Theme.of(context).primaryColor, // Default in dark mode
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,7 +273,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
             mini: true,
             backgroundColor: Theme.of(context).brightness == Brightness.light
                 ? Colors.grey[200] // Light mode background
-                : Theme.of(context).scaffoldBackgroundColor, // Match other screens in dark mode
+                : Colors.grey[800], // Dark mode background
             foregroundColor: Theme.of(context).textTheme.bodyLarge?.color, // Icon color based on theme
             onPressed: () {
               Navigator.pop(context);

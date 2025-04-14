@@ -16,9 +16,7 @@ class SbdfsScreen extends StatelessWidget {
         ),
         title: const Text('SBDFS'),
         centerTitle: true,
-        backgroundColor: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       ),
-      backgroundColor: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

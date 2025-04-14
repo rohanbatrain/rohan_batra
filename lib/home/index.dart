@@ -82,7 +82,7 @@ class _HomePageState extends State<HomePage> {
               width: double.infinity,
               padding: EdgeInsets.symmetric(horizontal: 30, vertical: 50), // Adjusted padding
               decoration: BoxDecoration(
-                color: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
+                color: isDarkMode ? Colors.black : Colors.white,
               ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
@@ -313,7 +313,7 @@ class _HomePageState extends State<HomePage> {
             // Footer Section
             Container(
               padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
-              color: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
+              color: isDarkMode ? Colors.black : Colors.white,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
