@@ -65,10 +65,13 @@ class SocialInternshipDetailsPage extends StatelessWidget {
                                 'Certificate Preview',
                                 style: Theme.of(context).textTheme.headlineSmall,
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Image.asset(
                                 'assets/images/certificates/UBSA/1.jpg', // Certificate image
                                 fit: BoxFit.contain,
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Icon(Icons.error, color: Colors.red);
+                                },
                               ),
                             ],
                           ),

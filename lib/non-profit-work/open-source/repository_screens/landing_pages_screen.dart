@@ -16,7 +16,9 @@ class LandingPagesScreen extends StatelessWidget {
         ),
         title: const Text('Landing Pages'),
         centerTitle: true,
+        backgroundColor: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       ),
+      backgroundColor: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

@@ -52,7 +52,7 @@ class VolunteeringScreen extends StatelessWidget {
                                 'Certificate Preview',
                                 style: Theme.of(context).textTheme.headlineSmall,
                               ),
-                              SizedBox(height: 16),
+                              const SizedBox(height: 16),
                               Image.asset(
                                 'assets/images/certificates/Caring-Souls/1.jpg', // Certificate image
                                 fit: BoxFit.contain,

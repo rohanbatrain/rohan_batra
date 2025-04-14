@@ -54,8 +54,24 @@ class CommunityEducationDetailsScreen extends StatelessWidget {
                 if (topic == 'Indian Armed Forces') {
                   return IndianArmedForcesTile(
                     onTap: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const IndianArmedForcesScreen(),
+                      PageRouteBuilder(
+                        pageBuilder: (context, animation, secondaryAnimation) =>
+                            const IndianArmedForcesScreen(),
+                        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                          const begin = 0.95;
+                          const end = 1.0;
+                          const curve = Curves.easeInOut;
+
+                          var tween = Tween(begin: begin, end: end).chain(
+                            CurveTween(curve: curve),
+                          );
+                          var scaleAnimation = animation.drive(tween);
+
+                          return ScaleTransition(
+                            scale: scaleAnimation,
+                            child: child,
+                          );
+                        },
                       ),
                     ),
                   );

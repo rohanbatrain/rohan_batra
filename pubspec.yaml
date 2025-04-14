@@ -168,7 +168,10 @@ flutter:
     - assets/images/certificates/IAF/1.jpg
     - assets/images/certificates/IAF/2.jpg
     - assets/images/certificates/IAF/3.jpg
-    
+    - assets/logos/Proxmox/whitemode-logo.png
+    - assets/logos/Proxmox/darkmode-logo.png
+    - assets/images/banners/Proxmox/darkmode-banner.png
+    - assets/images/banners/Proxmox/lightmode-banner.png
 # flutter_launcher_icons:
 #   android: "launcher_icon"
 #   ios: true

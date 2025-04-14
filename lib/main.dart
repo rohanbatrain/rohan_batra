@@ -29,6 +29,7 @@ class PortfolioApp extends StatelessWidget {
             ),
           ),
           darkTheme: ThemeData.dark().copyWith(
+            scaffoldBackgroundColor: Colors.grey[900], // Match other screens in dark mode
             appBarTheme: AppBarTheme(
               iconTheme: IconThemeData(), // Removed incorrect 'icon' parameter
             ),

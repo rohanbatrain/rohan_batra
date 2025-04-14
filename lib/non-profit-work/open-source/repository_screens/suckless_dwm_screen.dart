@@ -16,7 +16,9 @@ class SucklessDwmScreen extends StatelessWidget {
         ),
         title: const Text('suckless-dwm'),
         centerTitle: true,
+        backgroundColor: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       ),
+      backgroundColor: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 20),
         child: Column(

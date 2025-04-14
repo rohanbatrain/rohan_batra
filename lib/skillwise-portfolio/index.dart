@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'portfolio/portfolio_tile.dart';
-import 'skills/cloud_computing/cloud_computing_tile.dart';
+import 'skills/cloud_computing/private_cloud_devops_tile.dart';
 import 'skills/cyber_security/cyber_security_tile.dart';
 import 'skills/full_stack_development/full_stack_development_tile.dart';
 import 'skills/linux_administration/linux_administration_tile.dart';
 import 'skills/automation/automation_tile.dart';
+import 'skills/android_customization/android_customization_tile.dart';
 
 class PortfolioPage extends StatelessWidget {
   final List<String> mainPortfolio = ['Portfolio'];
@@ -16,6 +17,7 @@ class PortfolioPage extends StatelessWidget {
     'Full-Stack Development',
     'Linux Administration',
     'Automation',
+    ''
   ];
 
   @override
@@ -40,7 +42,7 @@ class PortfolioPage extends StatelessWidget {
           color: Theme.of(context).iconTheme.color,
         ),
       ),
-      backgroundColor: isDarkMode ? Colors.black : Colors.white,
+      backgroundColor: isDarkMode ? Theme.of(context).scaffoldBackgroundColor : Colors.white,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
@@ -67,11 +69,12 @@ class PortfolioPage extends StatelessWidget {
                 shrinkWrap: true,
                 physics: NeverScrollableScrollPhysics(),
                 children: [
-                  CloudComputingTile(),
+                  PrivateCloudDevOpsTile(),
                   CyberSecurityTile(),
                   FullStackDevelopmentTile(),
                   LinuxAdministrationTile(),
                   AutomationTile(),
+                  AndroidCustomizationTile(),
                 ],
               ),
             ],

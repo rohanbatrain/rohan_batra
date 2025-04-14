@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'cloud_computing_screen.dart';
+import 'android_customization_screen.dart';
 
-class CloudComputingTile extends StatelessWidget {
+class AndroidCustomizationTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textColor = Theme.of(context).brightness == Brightness.dark
@@ -21,14 +21,14 @@ class CloudComputingTile extends StatelessWidget {
           onTap: () {
             Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => CloudComputingScreen()),
+              MaterialPageRoute(builder: (context) => AndroidCustomizationScreen()),
             );
           },
           leading: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
-                FontAwesomeIcons.cloud,
+                FontAwesomeIcons.android,
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.white
                     : Colors.black,
@@ -38,14 +38,14 @@ class CloudComputingTile extends StatelessWidget {
             ],
           ),
           title: Text(
-            'Cloud Computing',
+            'Android Customization',
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: textColor,
                 ),
           ),
           subtitle: Text(
-            'Learn about cloud technologies and services.',
+            'Personalize and optimize Android devices.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: textColor),
           ),
         ),
