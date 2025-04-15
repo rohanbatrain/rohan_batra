@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'proxmox_installation_screen.dart';
 
 class ProxmoxInstallationTile extends StatelessWidget {
@@ -22,7 +23,7 @@ class ProxmoxInstallationTile extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: const Text('Learn how to install Proxmox.'),
-        trailing: const Icon(Icons.arrow_forward),
+        trailing: const FaIcon(FontAwesomeIcons.arrowRight),
       ),
     );
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'proxmox_host_config_screen.dart';
 
 class ProxmoxHostConfigTile extends StatelessWidget {
@@ -22,7 +23,7 @@ class ProxmoxHostConfigTile extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: const Text('Configure your Proxmox host effectively.'),
-        trailing: const Icon(Icons.arrow_forward),
+        trailing: const FaIcon(FontAwesomeIcons.arrowRight),
       ),
     );
   }

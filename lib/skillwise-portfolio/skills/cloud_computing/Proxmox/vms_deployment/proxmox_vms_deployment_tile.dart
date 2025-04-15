@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'proxmox_vms_deployment_screen.dart';
 
 class ProxmoxVMsDeploymentTile extends StatelessWidget {
@@ -22,7 +23,7 @@ class ProxmoxVMsDeploymentTile extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: const Text('Deploy virtual machines on Proxmox.'),
-        trailing: const Icon(Icons.arrow_forward),
+        trailing: const FaIcon(FontAwesomeIcons.arrowRight),
       ),
     );
   }

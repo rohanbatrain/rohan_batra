@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'proxmox_containers_management_screen.dart';
 
 class ProxmoxContainersManagementTile extends StatelessWidget {
@@ -22,7 +23,7 @@ class ProxmoxContainersManagementTile extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: const Text('Manage containers in Proxmox.'),
-        trailing: const Icon(Icons.arrow_forward),
+        trailing: const FaIcon(FontAwesomeIcons.arrowRight),
       ),
     );
   }

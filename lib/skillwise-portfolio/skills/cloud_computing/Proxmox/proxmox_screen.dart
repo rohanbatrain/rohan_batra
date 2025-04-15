@@ -25,29 +25,12 @@ class ProxmoxScreen extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Add banner images
-            Stack(
-              children: [
-                Image.asset(
-                  'assets/images/banners/Proxmox/lightmode-banner.png',
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                  color: MediaQuery.of(context).platformBrightness == Brightness.dark
-                      ? null
-                      : Colors.transparent,
-                  colorBlendMode: BlendMode.dst,
-                ),
-                Image.asset(
-                  'assets/images/banners/Proxmox/darkmode-banner.png',
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  alignment: Alignment.center,
-                  color: MediaQuery.of(context).platformBrightness == Brightness.light
-                      ? null
-                      : Colors.transparent,
-                  colorBlendMode: BlendMode.dst,
-                ),
-              ],
+            Image.asset(
+              MediaQuery.of(context).platformBrightness == Brightness.dark
+                  ? 'assets/images/banners/Proxmox/darkmode-banner.png'
+                  : 'assets/images/banners/Proxmox/lightmode-banner.png',
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
             const SizedBox(height: 16),
             Divider(

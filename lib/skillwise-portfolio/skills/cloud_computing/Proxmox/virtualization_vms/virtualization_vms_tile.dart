@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'virtualization_vms_screen.dart';
 
 class VirtualizationVMsTile extends StatelessWidget {
@@ -22,7 +23,7 @@ class VirtualizationVMsTile extends StatelessWidget {
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: const Text('Dive into VM virtualization with various OS.'),
-        trailing: const Icon(Icons.arrow_forward),
+        trailing: const FaIcon(FontAwesomeIcons.arrowRight),
       ),
     );
   }

@@ -172,6 +172,10 @@ flutter:
     - assets/logos/Proxmox/darkmode-logo.png
     - assets/images/banners/Proxmox/darkmode-banner.png
     - assets/images/banners/Proxmox/lightmode-banner.png
+    - assets/logos/THM/THMlogo-gray_scale.png
+    - assets/logos/THM/Tryhackme-light.png
+    - assets/images/banners/THM/1.png
+    - assets/images/banners/THM/2.png
 # flutter_launcher_icons:
 #   android: "launcher_icon"
 #   ios: true
