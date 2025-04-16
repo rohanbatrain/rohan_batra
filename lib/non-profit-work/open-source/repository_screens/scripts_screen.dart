@@ -29,7 +29,7 @@ class ScriptsScreen extends StatelessWidget {
                   constraints: const BoxConstraints(maxHeight: 200),
                   child: Image.asset(
                     isDarkMode
-                        ? 'assets/images/banners/Scripts/Dark-Mode/1.png'
+                        ? 'assets/images/banners/Scripts/Dark-Mode/2.png'
                         : 'assets/images/banners/Scripts/Light-Mode/1.png',
                     width: double.infinity,
                     fit: BoxFit.cover,

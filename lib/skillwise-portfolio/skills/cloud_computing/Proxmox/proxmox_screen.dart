@@ -10,6 +10,8 @@ import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/c
 class ProxmoxScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('Proxmox'),
@@ -26,7 +28,7 @@ class ProxmoxScreen extends StatelessWidget {
           children: [
             // Add banner images
             Image.asset(
-              MediaQuery.of(context).platformBrightness == Brightness.dark
+              isDarkMode
                   ? 'assets/images/banners/Proxmox/darkmode-banner.png'
                   : 'assets/images/banners/Proxmox/lightmode-banner.png',
               width: double.infinity,
