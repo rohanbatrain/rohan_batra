@@ -5,70 +5,39 @@ import 'proxmox_screen.dart';
 class ProxmoxTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
 
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => ProxmoxScreen(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = 0.95;
-              const end = 1.0;
-              const curve = Curves.easeInOut;
-
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var scaleAnimation = animation.drive(tween);
-
-              return ScaleTransition(
-                scale: scaleAnimation,
-                child: child,
-              );
-            },
-          ),
-        );
-      },
-      child: Card(
-        elevation: 4,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            children: [
-              Container(
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withOpacity(0.1),
-                  shape: BoxShape.circle,
-                ),
-                padding: const EdgeInsets.all(12),
-                child: Image.asset(
-                  theme.brightness == Brightness.dark
-                      ? 'assets/logos/Proxmox/darkmode-logo.png'
-                      : 'assets/logos/Proxmox/whitemode-logo.png',
-                  height: 40,
-                  width: 40,
-                  errorBuilder: (context, error, stackTrace) => FaIcon(
-                    FontAwesomeIcons.server,
-                    size: 24,
-                    color: theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Text(
-                  'Proxmox',
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 6,
+      margin: const EdgeInsets.all(8),
+      child: ListTile(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ProxmoxScreen()),
+          );
+        },
+        leading: Image.asset(
+          isDarkMode
+              ? 'assets/logos/Proxmox/darkmode-logo.png'
+              : 'assets/logos/Proxmox/whitemode-logo.png',
+          width: 40,
+          height: 40, // Ensure this matches the size in DockerTile
+          errorBuilder: (context, error, stackTrace) => FaIcon(
+            FontAwesomeIcons.server,
+            size: 40, // Ensure this matches the size in DockerTile
+            color: Colors.grey,
           ),
         ),
+        title: const Text(
+          'Proxmox',
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: const Text('Explore virtualization with Proxmox.'),
+        trailing: const FaIcon(FontAwesomeIcons.arrowRight),
       ),
     );
   }

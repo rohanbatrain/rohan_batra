@@ -97,6 +97,17 @@ class SecondBrainDatabaseScreen extends StatelessWidget {
                   Text('• 🛠️ Extensible with micro frontends like Emotion Tracker'),
                   Text('• 📚 Serves as your personal knowledge system'),
 
+                  SizedBox(height: 24),
+
+                  Text(
+                    '🐳 Docker Integration:',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  SizedBox(height: 8),
+                  Text(
+                    'The Second Brain Database is containerized using Docker, ensuring a consistent and portable environment for development and deployment.',
+                  ),
+
                   SizedBox(height: 30),
                   Center(
                     child: Text(

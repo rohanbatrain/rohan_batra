@@ -7,6 +7,7 @@ import 'tiles/make_tile.dart';
 import 'tiles/zapier_tile.dart';
 import 'tiles/ifttt_tile.dart';
 import 'tiles/selenium_tile.dart';
+import 'tiles/preseeded_debian_iso_tile.dart';
 
 class AutomationScreen extends StatelessWidget {
   @override
@@ -62,6 +63,7 @@ class AutomationScreen extends StatelessWidget {
                         ZapierTile(),
                         IftttTile(),
                         SeleniumTile(),
+                        PreseededDebianISOTile(), // New tile added
                       ],
                     ),
                   ],

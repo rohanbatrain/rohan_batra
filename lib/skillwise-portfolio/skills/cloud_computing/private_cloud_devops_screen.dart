@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'Proxmox/proxmox_tile.dart';
+import 'Docker/docker_tile.dart';
 
 class PrivateCloudDevOpsScreen extends StatelessWidget {
   @override
@@ -34,6 +35,7 @@ class PrivateCloudDevOpsScreen extends StatelessWidget {
             ),
             const SizedBox(height: 24),
             ProxmoxTile(),
+            DockerTile(), // Added DockerTile
           ],
         ),
       ),

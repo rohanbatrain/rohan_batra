@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:rohan_batra/professional-experience/secret_startup_page.dart';
 
 final List<Map<String, Map<String, String>>> companies = [
-    {
+  {
     'role': {'value': 'Open Source Contributor'},
     'name': {'value': 'Rohan Batra FOSS'},
     'logo': {
@@ -13,7 +14,7 @@ final List<Map<String, Map<String, String>>> companies = [
     'startDate': {'value': 'Oct 2022'},
     'endDate': {'value': 'Present'},
   },
-    {
+  {
     'role': {'value': 'Open Source Advocate'},
     'name': {'value': 'Second Brain Database'},
     'logo': {
@@ -39,7 +40,6 @@ final List<Map<String, Map<String, String>>> companies = [
     'role': {'value': 'Co Founder'},
     'name': {'value': 'LinuxWale'},
     'logo': {
-      
       'light': 'assets/logos/Linuxwale/Light-Mode/logo.png',
       'dark': 'assets/logos/Linuxwale/Dark-Mode/logo.png',
     },
@@ -69,6 +69,29 @@ final List<Map<String, Map<String, String>>> companies = [
     'startDate': {'value': 'Aug 2019'},
     'endDate': {'value': 'Dec 2019'},
   },
+  {
+    'role': {'value': 'Personal Project Creator'},
+    'name': {'value': 'Rohan Batra'},
+    'logo': {
+      'light': 'assets/logos/Rohan-Batra/legacy-logo.png',
+      'dark': 'assets/logos/Rohan-Batra/legacy-logo.png',
+    },
+    'employmentType': {'value': 'Independent'},
+    'startDate': {'value': 'Jan 2018'},
+    'endDate': {'value': 'Present'},
+  },
+  {
+    'role': {'value': 'Solo Engineer'},
+    'name': {'value': 'Secret Startup'},
+    'logo': {
+      'light': 'assets/logos/Secret-Startup/Light-Mode/logo.png',
+      'dark': 'assets/logos/Secret-Startup/Dark-Mode/logo.png',
+    },
+    'employmentType': {'value': 'Confidential'},
+    'startDate': {'value': 'Several Years Ago'},
+    'endDate': {'value': 'Present'},
+  },
+
 ];
 
 class ProfessionalExperienceIndexPage extends StatelessWidget {
@@ -151,9 +174,11 @@ class _AnimatedTileState extends State<AnimatedTile> {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final logoPath = isDarkMode
-        ? widget.company['logo']!['dark']!
-        : widget.company['logo']!['light']!;
+    final logoPath = widget.company['name']!['value']! == 'Secret Startup'
+        ? null // Use emoji instead of an image for "Secret Startup"
+        : (isDarkMode
+            ? widget.company['logo']!['dark']!
+            : widget.company['logo']!['light']!);
     return LayoutBuilder(
       builder: (context, constraints) {
         final tileSize = constraints.maxWidth; // Dynamically get the tile size
@@ -169,6 +194,16 @@ class _AnimatedTileState extends State<AnimatedTile> {
             });
           },
           child: GestureDetector(
+            onTap: () {
+              if (widget.company['name']!['value']! == 'Secret Startup') {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => SecretStartupPage(),
+                  ),
+                );
+              }
+            },
             onTapDown: (_) {
               setState(() {
                 _scale = 0.95;
@@ -214,34 +249,41 @@ class _AnimatedTileState extends State<AnimatedTile> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8),
-                          child: Image.asset(
-                            logoPath,
-                            height: tileSize * 0.30, // Slightly reduced size
-                            width: tileSize * 0.30,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                height: tileSize * 0.30,
-                                width: tileSize * 0.30,
-                                color: Colors.grey, // Placeholder background color
-                                child: Icon(
-                                  Icons.broken_image,
-                                  size: tileSize * 0.15,
-                                  color: Colors.white, // Placeholder icon color
-                                ),
-                              );
-                            },
+                        if (logoPath != null)
+                          ClipRRect(
+                            borderRadius: BorderRadius.circular(8),
+                            child: Image.asset(
+                              logoPath,
+                              height: tileSize * 0.30, // Logo size inside tile
+                              width: tileSize * 0.30,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Container(
+                                  height: tileSize * 0.30,
+                                  width: tileSize * 0.30,
+                                  color: Colors.grey,
+                                  child: Icon(
+                                    Icons.broken_image,
+                                    size: tileSize * 0.15,
+                                    color: Colors.white,
+                                  ),
+                                );
+                              },
+                            ),
+                          )
+                        else
+                          Icon(
+                            FontAwesomeIcons.userNinja, // Emoji for "Secret Startup"
+                            size: tileSize * 0.30,
+                            color: Theme.of(context).colorScheme.primary,
                           ),
-                        ),
-                        SizedBox(height: tileSize * 0.05), // Adjusted spacing
+                        SizedBox(height: tileSize * 0.05),
                         FittedBox(
                           child: Text(
                             widget.company['name']!['value']!,
                             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                                   fontWeight: FontWeight.bold,
-                                  fontSize: tileSize * 0.07, // Adjusted font size
+                                  fontSize: tileSize * 0.07,
                                 ),
                             textAlign: TextAlign.center,
                           ),
@@ -286,3 +328,4 @@ class _AnimatedTileState extends State<AnimatedTile> {
     );
   }
 }
+

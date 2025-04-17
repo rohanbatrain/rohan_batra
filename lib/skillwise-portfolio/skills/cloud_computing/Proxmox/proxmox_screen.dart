@@ -6,6 +6,7 @@ import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/v
 import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/host_config/proxmox_host_config_tile.dart';
 import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/vms_deployment/proxmox_vms_deployment_tile.dart';
 import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/containers_management/proxmox_containers_management_tile.dart';
+import '../Docker/docker_tile.dart';
 
 class ProxmoxScreen extends StatelessWidget {
   @override
@@ -16,7 +17,7 @@ class ProxmoxScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Proxmox'),
         leading: IconButton(
-          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft), // Updated to FontAwesome icon
           onPressed: () {
             Navigator.pop(context);
           },
@@ -61,6 +62,7 @@ class ProxmoxScreen extends StatelessWidget {
                   ProxmoxHostConfigTile(),
                   ProxmoxVMsDeploymentTile(),
                   ProxmoxContainersManagementTile(),
+                  // Removed DockerTile
                 ],
               ),
             ),

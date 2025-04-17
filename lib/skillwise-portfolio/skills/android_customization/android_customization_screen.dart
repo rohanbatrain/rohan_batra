@@ -9,6 +9,7 @@ import 'tiles/orangefox_tile.dart';
 import 'tiles/sp_flash_tool_tile.dart';
 import 'tiles/supersu_tile.dart';
 import 'tiles/twrp_tile.dart';
+import 'tiles/mtkclient_tile.dart';
 
 class AndroidCustomizationScreen extends StatelessWidget {
   @override
@@ -55,6 +56,7 @@ class AndroidCustomizationScreen extends StatelessWidget {
                   SpFlashToolTile(),
                   SuperSuTile(),
                   TwrpTile(),
+                  MtkClientTile(), // Added MTKClient tile
                 ],
               ),
             ),
