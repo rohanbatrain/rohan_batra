@@ -4,6 +4,8 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 class SocialInternshipDetailsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark; // Add dark mode check
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -30,14 +32,14 @@ class SocialInternshipDetailsPage extends StatelessWidget {
               'Social Internship',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: isDarkMode ? Colors.white : Colors.black, // Fix text color
                   ),
             ),
             SizedBox(height: 12),
             Text(
               'Here I provide detailed information about my social internship experiences, including the projects I worked on, the organizations I collaborated with, and the impact of my work.',
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Colors.white,
+                    color: isDarkMode ? Colors.white : Colors.black87, // Fix text color
                   ),
             ),
             SizedBox(height: 24),
@@ -45,7 +47,7 @@ class SocialInternshipDetailsPage extends StatelessWidget {
               'By Timeline',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: isDarkMode ? Colors.white : Colors.black, // Fix text color
                   ),
             ),
             SizedBox(height: 12),
@@ -82,7 +84,7 @@ class SocialInternshipDetailsPage extends StatelessWidget {
                 );
               },
               child: Card(
-                color: Colors.grey[900],
+                color: isDarkMode ? Colors.grey[900] : Colors.white, // Fix card color
                 elevation: 4,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -121,21 +123,21 @@ class SocialInternshipDetailsPage extends StatelessWidget {
                               'Summer Intern',
                               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.white,
+                                    color: isDarkMode ? Colors.white : Colors.black, // Fix text color
                                   ),
                             ),
                             SizedBox(height: 8),
                             Text(
                               'Uttrakhand Blind Sports Association\nJun 2024 - Aug 2024 · 3 mos',
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.white70,
+                                    color: isDarkMode ? Colors.white70 : Colors.black87, // Fix text color
                                   ),
                             ),
                             SizedBox(height: 8),
                             Text(
                               'As a Summer Intern, I contributed to the development of sports initiatives for visually impaired individuals. My role involved organizing events, coordinating with teams, and ensuring the success of the programs.',
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                    color: Colors.white70,
+                                    color: isDarkMode ? Colors.white70 : Colors.black87, // Fix text color
                                   ),
                             ),
                           ],
@@ -151,7 +153,7 @@ class SocialInternshipDetailsPage extends StatelessWidget {
               'By Project',
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: isDarkMode ? Colors.white : Colors.black, // Fix text color
                   ),
             ),
             SizedBox(height: 12),

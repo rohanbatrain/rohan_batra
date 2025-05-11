@@ -7,6 +7,7 @@ import 'package:rohan_batra/non-profit-work/index.dart'; // Import the new scree
 import 'package:rohan_batra/skillwise-portfolio/index.dart'; // Import the updated screen
 import 'package:rohan_batra/widgets/download_popup.dart'; // Import the new popup widget
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:rohan_batra/hobbies/index.dart'; // Import the new Hobbies screen
 
 class SidebarWidget extends StatefulWidget {
   @override
@@ -169,6 +170,31 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) => PortfolioPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(1.0, 0.0); // Slide in from the right
+                        const end = Offset.zero;
+                        const curve = Curves.easeInOut;
+
+                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                        var offsetAnimation = animation.drive(tween);
+
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(FontAwesomeIcons.smile, size: 18), // Adjust icon size
+                title: Text('Hobbies'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => HobbiesIndexPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         const begin = Offset(1.0, 0.0); // Slide in from the right
                         const end = Offset.zero;
