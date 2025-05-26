@@ -169,7 +169,7 @@ class _SplashScreenState extends State<SplashScreen> {
             AnimatedText(),
             SizedBox(height: 40), // Add spacing before the note
             Text(
-              'Hover or hold to admire "Dumbo" as he eats.',
+              'Hover or hold to admire him as he eats.',
               style: TextStyle(
                 fontSize: 14,
                 fontStyle: FontStyle.italic,

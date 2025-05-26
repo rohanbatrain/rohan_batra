@@ -45,7 +45,7 @@ class GamingTile extends StatelessWidget {
                 ),
           ),
           subtitle: Text(
-            'Dive into the world of gaming and esports.',
+            'PC & Android games portfolio.',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: textColor),
           ),
         ),

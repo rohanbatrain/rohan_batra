@@ -8,6 +8,8 @@ import 'package:rohan_batra/skillwise-portfolio/index.dart'; // Import the updat
 import 'package:rohan_batra/widgets/download_popup.dart'; // Import the new popup widget
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:rohan_batra/hobbies/index.dart'; // Import the new Hobbies screen
+import 'package:rohan_batra/socials/index.dart';
+import 'package:rohan_batra/donate/index.dart';
 
 class SidebarWidget extends StatefulWidget {
   @override
@@ -195,6 +197,56 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) => HobbiesIndexPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(1.0, 0.0); // Slide in from the right
+                        const end = Offset.zero;
+                        const curve = Curves.easeInOut;
+
+                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                        var offsetAnimation = animation.drive(tween);
+
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(FontAwesomeIcons.users, size: 18), // Socials icon
+                title: Text('Socials'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => SocialsIndexPage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(1.0, 0.0); // Slide in from the right
+                        const end = Offset.zero;
+                        const curve = Curves.easeInOut;
+
+                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                        var offsetAnimation = animation.drive(tween);
+
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(FontAwesomeIcons.donate, size: 18), // Donate icon
+                title: Text('Donate'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => DonatePage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         const begin = Offset(1.0, 0.0); // Slide in from the right
                         const end = Offset.zero;

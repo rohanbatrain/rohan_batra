@@ -7,9 +7,10 @@ import 'skills/full_stack_development/full_stack_development_tile.dart';
 import 'skills/linux_administration/linux_administration_tile.dart';
 import 'skills/automation/automation_tile.dart';
 import 'skills/android_customization/android_customization_tile.dart';
-import 'skills/web_development_tile.dart';
-import 'skills/project_management_tile.dart';
-import 'skills/gaming_tile.dart';
+import 'skills/project_management/project_management_tile.dart';
+import 'skills/gaming/gaming_tile.dart';
+import 'skills/time_management/time_management_tile.dart';
+import 'skills/game_development/game_development_tile.dart';
 
 class PortfolioPage extends StatelessWidget {
   final List<String> mainPortfolio = ['Portfolio'];
@@ -78,9 +79,10 @@ class PortfolioPage extends StatelessWidget {
                   LinuxAdministrationTile(),
                   AutomationTile(),
                   AndroidCustomizationTile(),
-                  WebDevelopmentTile(), // Added Web Development tile
-                  ProjectManagementTile(), // Added Project Management tile
-                  GamingTile(), // Added Gaming tile
+                  ProjectManagementTile(),
+                  GameDevelopmentTile(),
+                  TimeManagementTile(),
+                  GamingTile(),
                 ],
               ),
             ],
