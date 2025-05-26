@@ -224,6 +224,36 @@ flutter:
     - assets/images/banners/OrangeFox/2.png
     - assets/images/banners/MTKCLIENT/1.png
     - assets/images/banners/MTKCLIENT/2.png
+    - assets/images/banners/Asana/1.png
+    - assets/images/banners/Asana/2.png
+    - assets/images/banners/Clickup/1.png
+    - assets/images/banners/Clickup/2.png
+    - assets/images/banners/Monday/1.png
+    - assets/images/banners/Monday/2.png
+    - assets/images/banners/Trello/1.png
+    - assets/images/banners/Trello/2.png
+    - assets/images/banners/Alto-Adventure/1.png
+    - assets/images/banners/Alto-Adventure/2.png
+    - assets/images/banners/BGMI/1.png
+    - assets/images/banners/BGMI/2.png
+    - assets/images/banners/Call-of-duty/1.png
+    - assets/images/banners/Call-of-duty/2.png
+    - assets/images/banners/minecraft/1.png
+    - assets/images/banners/minecraft/2.png
+    - assets/images/banners/Godot/1.png
+    - assets/images/banners/Godot/2.png
+    - assets/images/banners/Renpy/1.png
+    - assets/images/banners/Renpy/2.png
+    - assets/images/banners/Unity/1.png
+    - assets/images/banners/Unity/2.png
+    - assets/images/banners/UnrealEngine/1.png
+    - assets/images/banners/UnrealEngine/2.png
+    - assets/images/banners/clockify/2.png
+    - assets/images/banners/clockify/1.png
+    - assets/images/banners/Anno-1800/2.png
+    - assets/images/banners/Anno-1800/1.png
+    
+
 
 # flutter_launcher_icons:
 #   android: "launcher_icon"

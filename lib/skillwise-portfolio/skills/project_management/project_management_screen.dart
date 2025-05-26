@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'trello_screen.dart';
-import 'asana_screen.dart';
-import 'clickup_screen.dart';
-import 'monday_screen.dart';
+import 'tiles/trello_screen.dart';
+import 'tiles/asana_screen.dart';
+import 'tiles/clickup_screen.dart';
+import 'tiles/monday_screen.dart';
 
 class ProjectManagementScreen extends StatelessWidget {
   final List<Map<String, dynamic>> tools = [

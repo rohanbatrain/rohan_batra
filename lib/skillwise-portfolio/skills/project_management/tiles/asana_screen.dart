@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class AltosAdventureScreen extends StatelessWidget {
+class AsanaScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      appBar: AppBar(title: const Text("Alto's Adventure")),
+      appBar: AppBar(title: const Text('Asana')),
       body: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -14,13 +14,13 @@ class AltosAdventureScreen extends StatelessWidget {
             width: double.infinity,
             child: Image.asset(
               isDarkMode
-                  ? 'assets/images/banners/Alto-Adventure/2.png'
-                  : 'assets/images/banners/Alto-Adventure/1.png',
+                  ? 'assets/images/banners/Asana/2.png'
+                  : 'assets/images/banners/Asana/1.png',
               fit: BoxFit.cover,
             ),
           ),
           const SizedBox(height: 24),
-          const Center(child: Text("Alto's Adventure – Endless snowboarding odyssey.")),
+          const Center(child: Text('Asana – Task assignments, timelines, and collaboration')),
         ],
       ),
     );
