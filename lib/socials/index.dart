@@ -30,6 +30,12 @@ class _SocialsIndexPageState extends State<SocialsIndexPage> {
     final isDark = theme.brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(FontAwesomeIcons.arrowLeft), // Replaced Material icon with FontAwesome
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Text('Socials'),
         backgroundColor: isDark ? theme.appBarTheme.backgroundColor ?? theme.primaryColor : Colors.white,
         iconTheme: IconThemeData(color: isDark ? Colors.white : Colors.black),

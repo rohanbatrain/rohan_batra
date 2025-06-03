@@ -94,12 +94,12 @@ class SucklessStScreen extends StatelessWidget {
                   Text('• fontconfig'),
                   SizedBox(height: 10),
                   Text('Clone and Build:'),
-                  SelectableText('git clone https://github.com/rohanbatrain/suckless-st.git'),
-                  SelectableText('cd suckless-st'),
-                  SelectableText('sudo make clean install'),
+                  CodeBlock('git clone https://github.com/rohanbatrain/suckless-st.git'),
+                  CodeBlock('cd suckless-st'),
+                  CodeBlock('sudo make clean install'),
                   SizedBox(height: 8),
                   Text('To install for your user only:'),
-                  SelectableText('make clean install PREFIX=\$HOME/.local'),
+                  CodeBlock('make clean install PREFIX=\$HOME/.local'),
                   SizedBox(height: 24),
 
                   Text(
@@ -108,10 +108,10 @@ class SucklessStScreen extends StatelessWidget {
                   ),
                   SizedBox(height: 8),
                   Text('Just run:'),
-                  SelectableText('st'),
+                  CodeBlock('st'),
                   SizedBox(height: 8),
                   Text('To set st as your default terminal emulator:'),
-                  SelectableText('exec st'),
+                  CodeBlock('exec st'),
                   SizedBox(height: 24),
 
                   Text(
@@ -161,6 +161,37 @@ class SucklessStScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for code blocks
+class CodeBlock extends StatelessWidget {
+  final String code;
+  const CodeBlock(this.code, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF23272F) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF444A54) : const Color(0xFFE0E0E0),
+        ),
+      ),
+      child: SelectableText(
+        code,
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
     );

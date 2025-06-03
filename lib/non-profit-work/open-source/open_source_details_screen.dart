@@ -79,13 +79,35 @@ class OpenSourceDetailsScreen extends StatelessWidget {
     final urlColor = theme.colorScheme.secondary;
     final buttonColor = theme.colorScheme.primary;
 
-    // Sort repositories based on featured status
-    final sortedRepositories = List<String>.from(repositories)
-      ..sort((a, b) {
-        final isAFeatured = featuredRepositories[a] ?? false;
-        final isBFeatured = featuredRepositories[b] ?? false;
-        return (isBFeatured ? 1 : 0).compareTo(isAFeatured ? 1 : 0);
-      });
+    // Categorize repositories
+    final activelyWorking = [
+      'blog',
+      'second-brain-database',
+
+    ];
+    final supported = [
+      'branding-kit',
+      'emotion_tracker',
+      'knowledge-base',
+      'marklang',
+      'proxmox-auto-install-assistant-docker',
+      'karmstrot-builds',
+      'configs',
+      'landing-pages',
+      'Portfolio',
+      'sbdfs',
+      'sbd_flutter_template',
+      'scripts',
+      'second-brain-database-telegram-bot',
+      'second-brain-database-flutter-frontend',
+      'suckless-dmenu',
+      'suckless-dwm',
+      'suckless-st',
+    ];
+    final eol = [
+      'second-brain-2022',
+      'second-brain-tools-2022', // Add your EOL repositories here
+    ]; 
 
     return Scaffold(
       appBar: AppBar(
@@ -95,62 +117,6 @@ class OpenSourceDetailsScreen extends StatelessWidget {
           icon: const FaIcon(FontAwesomeIcons.arrowLeft), // Added leading arrow
           onPressed: () => Navigator.of(context).pop(),
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.more_vert),
-            onPressed: () {
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-                ),
-                builder: (context) {
-                  return Padding(
-                    padding: MediaQuery.of(context).viewInsets,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('Search & Filter', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 16),
-                          TextField(
-                            decoration: InputDecoration(
-                              hintText: 'Search repositories...',
-                              prefixIcon: Icon(Icons.search),
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          Text('Filters', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-                          const SizedBox(height: 10),
-                          Row(
-                            children: [
-                              FilterChip(
-                                label: const Text('Featured'),
-                                selected: false,
-                                onSelected: (v) {},
-                              ),
-                              const SizedBox(width: 10),
-                              FilterChip(
-                                label: const Text('A-Z'),
-                                selected: false,
-                                onSelected: (v) {},
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -172,162 +138,173 @@ class OpenSourceDetailsScreen extends StatelessWidget {
             SizedBox(height: 24),
             // Repository List
             Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(vertical: 12.0),
-                itemCount: sortedRepositories.length,
-                separatorBuilder: (context, index) => const SizedBox(height: 12),
-                itemBuilder: (context, index) {
-                  final repository = sortedRepositories[index];
-                  final url = 'https://github.com/rohanbatrain/$repository';
-                  return Card(
-                    elevation: 4,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20.0),
-                    ),
-                    child: InkWell(
-                      borderRadius: BorderRadius.circular(20.0),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          PageRouteBuilder(
-                            pageBuilder: (context, animation, secondaryAnimation) {
-                              switch (repository) {
-                                case 'branding-kit':
-                                  return BrandingKitScreen();
-                                case 'configs':
-                                  return ConfigsScreen();
-                                case 'emotion_tracker':
-                                  return EmotionTrackerScreen();
-                                case 'knowledge-base':
-                                  return KnowledgeBaseScreen();
-                                case 'landing-pages':
-                                  return LandingPagesScreen();
-                                case 'Portfolio':
-                                  return PortfolioScreen();
-                                case 'sbdfs':
-                                  return SbdfsScreen();
-                                case 'sbd_flutter_template':
-                                  return SbdFlutterTemplateScreen();
-                                case 'scripts':
-                                  return ScriptsScreen();
-                                case 'second-brain-2022':
-                                  return SecondBrain2022Screen();
-                                case 'second-brain-tools-2022':
-                                  return SecondBrainTools2022Screen();
-                                case 'second-brain_database':
-                                  return SecondBrainDatabaseScreen();
-                                case 'second-brain-database-telegram-bot':
-                                  return SecondBrainDatabaseTelegramBotScreen();
-                                case 'second-brain-database-flutter-frontend':
-                                  return SecondBrainDatabaseFlutterFrontendScreen();
-                                case 'suckless-dmenu':
-                                  return SucklessDmenuScreen();
-                                case 'suckless-dwm':
-                                  return SucklessDwmScreen();
-                                case 'suckless-st':
-                                  return SucklessStScreen();
-                                case 'blog':
-                                  return BlogScreen();
-                                case 'marklang':
-                                  return MarklangScreen();
-                                case 'proxmox-auto-install-assistant-docker':
-                                  return ProxmoxAutoInstallAssistantDockerScreen();
-                                case 'karmstrot-builds':
-                                  return KarmstrotBuildsScreen();
-                                default:
-                                  return Scaffold(
-                                    appBar: AppBar(title: Text('Unknown Repository')),
-                                    body: Center(child: Text('No screen available for $repository')),
-                                  );
-                              }
-                            },
-                            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-                              const begin = 0.9;
-                              const end = 1.0;
-                              const curve = Curves.easeInOut;
+              child: ListView(
+                children: [
+                  Text('Actively Working', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  ...activelyWorking.map((repository) => _repoCard(context, repository, theme, textColor, urlColor, buttonColor, featuredRepositories)),
+                  const SizedBox(height: 24),
+                  Text('Supported', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 8),
+                  ...supported.map((repository) => _repoCard(context, repository, theme, textColor, urlColor, buttonColor, featuredRepositories)),
+                  if (eol.isNotEmpty) ...[
+                    const SizedBox(height: 24),
+                    Text('EOL', style: theme.textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    ...eol.map((repository) => _repoCard(context, repository, theme, textColor, urlColor, buttonColor, featuredRepositories)),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
-                              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-                              var scaleAnimation = animation.drive(tween);
-
-                              return ScaleTransition(
-                                scale: scaleAnimation,
-                                child: child,
-                              );
-                            },
-                          ),
-                        );
-                      },
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Row(
-                          children: [
-                            Container(
-                              decoration: BoxDecoration(
-                                color: buttonColor.withOpacity(0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              padding: const EdgeInsets.all(12),
-                              child: FaIcon(
-                                FontAwesomeIcons.github,
-                                size: 24,
-                                color: buttonColor,
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    sortedRepositories[index],
-                                    style: theme.textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.bold,
-                                      color: textColor,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    url,
-                                    style: theme.textTheme.bodySmall?.copyWith(
-                                      color: urlColor,
-                                      decoration: TextDecoration.underline,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            if (featuredRepositories[repository] ?? false)
-                              Padding(
-                                padding: const EdgeInsets.only(left: 8.0),
-                                child: Text(
-                                  'Featured',
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.primary,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                            IconButton(
-                              icon: FaIcon(FontAwesomeIcons.copy, color: buttonColor),
-                              onPressed: () {
-                                Clipboard.setData(ClipboardData(text: url));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                    content: Text('URL copied to clipboard!'),
-                                    behavior: SnackBarBehavior.floating,
-                                  ),
-                                );
-                              },
-                            ),
-                          ],
-                        ),
+  // Helper for repository card
+  Widget _repoCard(BuildContext context, String repository, ThemeData theme, Color? textColor, Color urlColor, Color buttonColor, Map<String, bool> featuredRepositories) {
+    final url = 'https://github.com/rohanbatrain/$repository';
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20.0),
+      ),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(20.0),
+        onTap: () {
+          Navigator.push(
+            context,
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) {
+                switch (repository) {
+                  case 'branding-kit':
+                    return BrandingKitScreen();
+                  case 'configs':
+                    return ConfigsScreen();
+                  case 'emotion_tracker':
+                    return EmotionTrackerScreen();
+                  case 'knowledge-base':
+                    return KnowledgeBaseScreen();
+                  case 'landing-pages':
+                    return LandingPagesScreen();
+                  case 'Portfolio':
+                    return PortfolioScreen();
+                  case 'sbdfs':
+                    return SbdfsScreen();
+                  case 'sbd_flutter_template':
+                    return SbdFlutterTemplateScreen();
+                  case 'scripts':
+                    return ScriptsScreen();
+                  case 'second-brain-2022':
+                    return SecondBrain2022Screen();
+                  case 'second-brain-tools-2022':
+                    return SecondBrainTools2022Screen();
+                  case 'second-brain-database':
+                    return SecondBrainDatabaseScreen();
+                  case 'second-brain-database-telegram-bot':
+                    return SecondBrainDatabaseTelegramBotScreen();
+                  case 'second-brain-database-flutter-frontend':
+                    return SecondBrainDatabaseFlutterFrontendScreen();
+                  case 'suckless-dmenu':
+                    return SucklessDmenuScreen();
+                  case 'suckless-dwm':
+                    return SucklessDwmScreen();
+                  case 'suckless-st':
+                    return SucklessStScreen();
+                  case 'blog':
+                    return BlogScreen();
+                  case 'marklang':
+                    return MarklangScreen();
+                  case 'proxmox-auto-install-assistant-docker':
+                    return ProxmoxAutoInstallAssistantDockerScreen();
+                  case 'karmstrot-builds':
+                    return KarmstrotBuildsScreen();
+                  default:
+                    return Scaffold(
+                      appBar: AppBar(title: Text('Unknown Repository')),
+                      body: Center(child: Text('No screen available for $repository')),
+                    );
+                }
+              },
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = 0.9;
+                const end = 1.0;
+                const curve = Curves.easeInOut;
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                var scaleAnimation = animation.drive(tween);
+                return ScaleTransition(
+                  scale: scaleAnimation,
+                  child: child,
+                );
+              },
+            ),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                  color: buttonColor.withOpacity(0.1),
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(12),
+                child: FaIcon(
+                  FontAwesomeIcons.github,
+                  size: 24,
+                  color: buttonColor,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      repository,
+                      style: theme.textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: textColor,
                       ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      url,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.secondary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (featuredRepositories[repository] ?? false)
+                Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Text(
+                    'Featured',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              IconButton(
+                icon: FaIcon(FontAwesomeIcons.copy, color: buttonColor),
+                onPressed: () {
+                  Clipboard.setData(ClipboardData(text: url));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('URL copied to clipboard!'),
+                      behavior: SnackBarBehavior.floating,
                     ),
                   );
                 },
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

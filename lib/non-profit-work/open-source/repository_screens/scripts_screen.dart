@@ -72,12 +72,12 @@ class ScriptsScreen extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   SizedBox(height: 8),
-                  SelectableText('git clone https://github.com/rohanabatrain/scripts.git'),
-                  SelectableText('cd scripts'),
+                  CodeBlock('git clone https://github.com/rohanabatrain/scripts.git'),
+                  CodeBlock('cd scripts'),
                   SizedBox(height: 6),
                   Text('Browse and run scripts:'),
-                  SelectableText('cd Application-Specific/Github'),
-                  SelectableText('bash Repo-Clone.sh'),
+                  CodeBlock('cd Application-Specific/Github'),
+                  CodeBlock('bash Repo-Clone.sh'),
                   SizedBox(height: 12),
                   Text(
                     '💡 Note: Some scripts require sudo or tools like jq.',
@@ -116,6 +116,37 @@ class ScriptsScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for code blocks
+class CodeBlock extends StatelessWidget {
+  final String code;
+  const CodeBlock(this.code, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF23272F) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF444A54) : const Color(0xFFE0E0E0),
+        ),
+      ),
+      child: SelectableText(
+        code,
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
     );

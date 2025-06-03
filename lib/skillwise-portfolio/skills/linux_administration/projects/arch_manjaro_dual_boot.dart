@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ArchManjaroDualBoot extends StatelessWidget {
   final bool isDarkMode = WidgetsBinding.instance.window.platformBrightness == Brightness.dark;
@@ -29,6 +30,12 @@ class ArchManjaroDualBoot extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Arch-Linux + Manjaro – Production Setup'),
+        leading: IconButton(
+          icon: Icon(FontAwesomeIcons.arrowLeft), // Replaced Material icon with FontAwesome
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
       ),
       body: Column(
         children: [

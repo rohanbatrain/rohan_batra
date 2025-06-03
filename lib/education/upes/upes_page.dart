@@ -45,10 +45,7 @@ class UPESPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(
-            FontAwesomeIcons.arrowLeft,
-            color: Theme.of(context).iconTheme.color,
-          ),
+          icon: Icon(FontAwesomeIcons.arrowLeft), // Replaced Material icon with FontAwesome
           onPressed: () {
             Navigator.pop(context);
           },

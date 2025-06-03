@@ -98,17 +98,13 @@ class SucklessDwmScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text('Dependencies:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SelectableText('make\ngcc\nlibX11\nlibXft\nlibXinerama\nfontconfig'),
+            CodeBlock('make\ngcc\nlibX11\nlibXft\nlibXinerama\nfontconfig'),
             const SizedBox(height: 10),
             const Text('Clone and Build:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SelectableText(
-              'git clone https://github.com/rohanbatrain/suckless-dwm.git\n'
-              'cd suckless-dwm\n'
-              'sudo make clean install',
-            ),
+            CodeBlock('git clone https://github.com/rohanbatrain/suckless-dwm.git\ncd suckless-dwm\nsudo make clean install'),
             const SizedBox(height: 10),
             const Text('User Installation:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SelectableText('make clean install PREFIX=\$HOME/.local'),
+            CodeBlock('make clean install PREFIX=\$HOME/.local'),
             const SizedBox(height: 30),
 
             // Usage
@@ -118,7 +114,7 @@ class SucklessDwmScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text('To launch dwm, configure your `.xinitrc` or login manager.'),
-            const SelectableText('exec dwm'),
+            CodeBlock('exec dwm'),
             const SizedBox(height: 8),
             const Text('Basic keybindings include:', style: TextStyle(fontWeight: FontWeight.bold)),
             const Text('• MOD+Enter → Terminal'),
@@ -139,7 +135,7 @@ class SucklessDwmScreen extends StatelessWidget {
             const Text('• Behavior: layouts, keybindings, rules'),
             const Text('• Autostart apps, Xresources integration'),
             const SizedBox(height: 8),
-            const SelectableText('sudo make clean install'),
+            CodeBlock('sudo make clean install'),
             const SizedBox(height: 30),
 
             // Version History
@@ -197,6 +193,37 @@ class SucklessDwmScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for code blocks
+class CodeBlock extends StatelessWidget {
+  final String code;
+  const CodeBlock(this.code, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF23272F) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF444A54) : const Color(0xFFE0E0E0),
+        ),
+      ),
+      child: SelectableText(
+        code,
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
     );

@@ -18,7 +18,7 @@ class AndroidCustomizationScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Android Customization'),
         leading: IconButton(
-          icon: const Icon(FontAwesomeIcons.arrowLeft),
+          icon: Icon(FontAwesomeIcons.arrowLeft), // Replaced Material icon with FontAwesome
           onPressed: () {
             Navigator.pop(context);
           },

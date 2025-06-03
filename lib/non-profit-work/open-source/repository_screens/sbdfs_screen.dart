@@ -104,12 +104,12 @@ class SbdfsScreen extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   SizedBox(height: 12),
-                  SelectableText('pip install fusepy pymongo'),
+                  CodeBlock('pip install fusepy pymongo'),
                   SizedBox(height: 6),
-                  SelectableText('git clone https://github.com/rohanbatrain/sbdfs.git'),
-                  SelectableText('cd sbdfs'),
+                  CodeBlock('git clone https://github.com/rohanbatrain/sbdfs.git'),
+                  CodeBlock('cd sbdfs'),
                   SizedBox(height: 6),
-                  SelectableText('python main.py /mnt/sbdfs'),
+                  CodeBlock('python main.py /mnt/sbdfs'),
 
                   SizedBox(height: 40),
                   Center(
@@ -123,6 +123,37 @@ class SbdfsScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for code blocks
+class CodeBlock extends StatelessWidget {
+  final String code;
+  const CodeBlock(this.code, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF23272F) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF444A54) : const Color(0xFFE0E0E0),
+        ),
+      ),
+      child: SelectableText(
+        code,
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
     );

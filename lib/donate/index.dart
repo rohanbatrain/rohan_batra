@@ -7,6 +7,12 @@ class DonatePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(FontAwesomeIcons.arrowLeft), // Replaced Material icon with FontAwesome
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Text('Donate'),
       ),
       body: Padding(

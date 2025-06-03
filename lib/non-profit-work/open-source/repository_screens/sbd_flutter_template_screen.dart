@@ -81,11 +81,11 @@ class SbdFlutterTemplateScreen extends StatelessWidget {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                   ),
                   SizedBox(height: 12),
-                  SelectableText('git clone https://github.com/rohanbatrain/sbd_flutter_template.git'),
-                  SelectableText('cd sbd_flutter_template'),
+                  CodeBlock('git clone https://github.com/rohanbatrain/sbd_flutter_template.git'),
+                  CodeBlock('cd sbd_flutter_template'),
                   SizedBox(height: 6),
-                  SelectableText('flutter pub get'),
-                  SelectableText('flutter run'),
+                  CodeBlock('flutter pub get'),
+                  CodeBlock('flutter run'),
                   SizedBox(height: 6),
                   Text('Then connect to your running SBD backend.'),
                   SizedBox(height: 24),
@@ -122,6 +122,37 @@ class SbdFlutterTemplateScreen extends StatelessWidget {
               ),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for code blocks
+class CodeBlock extends StatelessWidget {
+  final String code;
+  const CodeBlock(this.code, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF23272F) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF444A54) : const Color(0xFFE0E0E0),
+        ),
+      ),
+      child: SelectableText(
+        code,
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
     );

@@ -96,17 +96,13 @@ class SucklessDmenuScreen extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             const Text('Prerequisites:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SelectableText('make\ngcc\nlibX11\nlibXft\nfontconfig'),
+            CodeBlock('make\ngcc\nlibX11\nlibXft\nfontconfig'),
             const SizedBox(height: 10),
             const Text('Clone and Build:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SelectableText(
-              'git clone https://github.com/rohanbatrain/suckless-dmenu.git\n'
-              'cd suckless-dmenu\n'
-              'sudo make clean install',
-            ),
+            CodeBlock('git clone https://github.com/rohanbatrain/suckless-dmenu.git\ncd suckless-dmenu\nsudo make clean install'),
             const SizedBox(height: 10),
             const Text('User Installation:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SelectableText('make clean install PREFIX=\$HOME/.local'),
+            CodeBlock('make clean install PREFIX=\$HOME/.local'),
             const SizedBox(height: 30),
 
             // Usage
@@ -115,15 +111,13 @@ class SucklessDmenuScreen extends StatelessWidget {
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 10),
-            const SelectableText('dmenu_run'),
+            CodeBlock('dmenu_run'),
             const SizedBox(height: 8),
             const Text('Pipe list into dmenu:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SelectableText('ls | dmenu'),
+            CodeBlock('ls | dmenu'),
             const SizedBox(height: 8),
             const Text('DWM Keybinding Example:', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SelectableText(
-              '{ MODKEY, XK_p, spawn, SHCMD("dmenu_run") },',
-            ),
+            CodeBlock('{ MODKEY, XK_p, spawn, SHCMD("dmenu_run") },'),
             const SizedBox(height: 30),
 
             // Customization
@@ -139,7 +133,7 @@ class SucklessDmenuScreen extends StatelessWidget {
             const Text('• Prompt string and layout'),
             const Text('• Matching style (fuzzy, exact, etc.)'),
             const SizedBox(height: 8),
-            const SelectableText('sudo make clean install'),
+            CodeBlock('sudo make clean install'),
             const SizedBox(height: 30),
 
             // Version History
@@ -197,6 +191,37 @@ class SucklessDmenuScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for code blocks
+class CodeBlock extends StatelessWidget {
+  final String code;
+  const CodeBlock(this.code, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF23272F) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF444A54) : const Color(0xFFE0E0E0),
+        ),
+      ),
+      child: SelectableText(
+        code,
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
     );

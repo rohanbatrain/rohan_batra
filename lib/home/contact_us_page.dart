@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class ContactUsPage extends StatefulWidget {
   @override
@@ -66,6 +67,12 @@ class _ContactUsPageState extends State<ContactUsPage> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(FontAwesomeIcons.arrowLeft), // Replaced Material icon with FontAwesome
+          onPressed: () {
+            Navigator.pop(context);
+          },
+        ),
         title: Text('Contact Us'),
         backgroundColor: Colors.transparent,
         elevation: 0,

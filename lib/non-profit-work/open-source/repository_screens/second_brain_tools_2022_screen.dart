@@ -145,38 +145,69 @@ class _SecondBrainTools2022ScreenState extends State<SecondBrainTools2022Screen>
 
             const Text('📦 Installation', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            SelectableText('pip install second-brain-tools'),
+            CodeBlock('pip install second-brain-tools'),
             const SizedBox(height: 6),
-            SelectableText('pip install https://github.com/rohanbatrain/Second-Brain-Tools/archive/main.zip'),
+            CodeBlock('pip install https://github.com/rohanbatrain/Second-Brain-Tools/archive/main.zip'),
             const SizedBox(height: 24),
 
             const Text('💻 Usage', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            SelectableText('from second_brain_tools import cli\ncli.main()'),
+            CodeBlock('from second_brain_tools import cli\ncli.main()'),
             const SizedBox(height: 24),
 
             const Text('📚 Documentation', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
-            SelectableText('https://rohanbatrain.github.io/second-brain-tools-2022/'),
+            CodeBlock('https://rohanbatrain.github.io/second-brain-tools-2022/'),
             const SizedBox(height: 24),
 
             const Text('🧪 Development', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             const Text('To run all tests using tox:'),
             const SizedBox(height: 6),
-            SelectableText('tox'),
+            CodeBlock('tox'),
             const SizedBox(height: 12),
             const Text('To combine coverage on Windows:'),
-            SelectableText('set PYTEST_ADDOPTS=--cov-append\ntox'),
+            CodeBlock('set PYTEST_ADDOPTS=--cov-append\ntox'),
             const SizedBox(height: 12),
             const Text('To combine coverage on Unix/macOS:'),
-            SelectableText('PYTEST_ADDOPTS=--cov-append tox'),
+            CodeBlock('PYTEST_ADDOPTS=--cov-append tox'),
             const SizedBox(height: 24),
 
             const Text('📄 License', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const SizedBox(height: 8),
             const Text('Apache Software License 2.0'),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for code blocks
+class CodeBlock extends StatelessWidget {
+  final String code;
+  const CodeBlock(this.code, {super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF23272F) : const Color(0xFFF5F5F5),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: isDark ? const Color(0xFF444A54) : const Color(0xFFE0E0E0),
+        ),
+      ),
+      child: SelectableText(
+        code,
+        style: TextStyle(
+          fontFamily: 'monospace',
+          fontSize: 15,
+          color: isDark ? Colors.white : Colors.black,
         ),
       ),
     );
