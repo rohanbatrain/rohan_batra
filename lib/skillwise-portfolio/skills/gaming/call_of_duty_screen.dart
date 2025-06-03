@@ -4,35 +4,13 @@ class CallOfDutyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
-    final bgColor = isDarkMode ? Colors.black : Colors.grey[900];
-    final consoleGreen = const Color(0xFF00FF41);
-    final dossierStyle = TextStyle(
-      fontFamily: 'monospace',
-      color: consoleGreen,
-      fontSize: 16,
-      letterSpacing: 1.2,
-    );
-    final redacted = TextStyle(
-      color: Colors.red[900],
-      backgroundColor: Colors.black,
-      fontWeight: FontWeight.bold,
-      fontSize: 16,
-    );
-    final quotes = [
-      'This is for the record…',
-      'We get dirty, and the world stays clean.',
-      'Check those corners.',
-      'Bravo six, going dark.',
-      'Stay frosty.',
-    ];
-    int _quoteIndex = 0;
     return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(title: const Text('Call of Duty Series')),
+      appBar: AppBar(
+        title: const Text('Call of Duty'),
+      ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
               height: 200,
@@ -44,86 +22,232 @@ class CallOfDutyScreen extends StatelessWidget {
                 fit: BoxFit.cover,
               ),
             ),
-            const SizedBox(height: 16),
-            // Dossier-style folder
-            Container(
-              width: double.infinity,
-              margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.85),
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(color: consoleGreen, width: 1.5),
+            const SizedBox(height: 24),
+            Center(
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 22),
+                decoration: BoxDecoration(
+                  color: isDarkMode ? Colors.black : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.greenAccent, width: 2),
+                ),
+                child: Text(
+                  'BRAVO SIX GOING DARK',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 4,
+                    color: Colors.green[700],
+                    fontFamily: 'RobotoMono',
+                  ),
+                ),
               ),
+            ),
+            const SizedBox(height: 32),
+            // Notable Dialogues Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Notable Dialogues',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.amber[700],
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('🔥 TF141 — My Brothers in Arms', style: dossierStyle.copyWith(fontSize: 20, fontWeight: FontWeight.bold)),
-                  const SizedBox(height: 8),
-                  Text('"In the shadow of chaos, they don’t just survive — they strike back."', style: dossierStyle),
-                  const SizedBox(height: 12),
-                  Text('📍 Codename: TF141', style: dossierStyle),
-                  Text('📍 Status: Active', style: dossierStyle),
-                  Text('📍 Allegiance: None — Ghosts don’t need flags.', style: dossierStyle),
-                  Text('📍 Deployment Zones: Verdansk, Urzikstan, Kastovia, Las Almas, London, and beyond.', style: dossierStyle),
-                  const SizedBox(height: 12),
-                  Text('🪖 Personal Dossier', style: dossierStyle.copyWith(decoration: TextDecoration.underline)),
-                  const SizedBox(height: 4),
-                  Text('Operative Name: [Your Gamer Tag]', style: dossierStyle),
-                  Text('Rank: Veteran', style: dossierStyle),
-                  Text('Call of Duty: Bound by loyalty, adrenaline, and every mission that brought TF141 back together.', style: dossierStyle),
-                  const SizedBox(height: 12),
-                  Text('💣 Mission Debrief: Why TF141 Matters', style: dossierStyle.copyWith(decoration: TextDecoration.underline)),
-                  const SizedBox(height: 4),
-                  Text('Price – The commander with steel nerves and a heart that never flinches.', style: dossierStyle),
-                  Text('Soap – Loyal, loud, and lethal — the brother you want watching your six.', style: dossierStyle),
-                  Text('Ghost – A mask, a myth, a man whose silence speaks louder than war drums.', style: dossierStyle),
-                  Text('Gaz – Tactical, sharp, and calm under fire — the glue that holds it together.', style: dossierStyle),
-                  const SizedBox(height: 12),
-                  Text("🫡 TF141 isn't just a squad — it's a creed.", style: dossierStyle),
-                  Text('A belief that when the world breaks down, you don’t run — you suit up.', style: dossierStyle),
-                  const SizedBox(height: 12),
-                  Text('🎖️ Why I Bleed for MW', style: dossierStyle.copyWith(decoration: TextDecoration.underline)),
-                  const SizedBox(height: 4),
-                  Text('The Modern Warfare series isn’t a game — it’s a battlefield memoir.', style: dossierStyle),
-                  Text('I’ve fought alongside TF141 through deserts, bunkers, and betrayal.', style: dossierStyle),
-                  Text('I’ve rewatched cutscenes like sacred tapes, memorized every line.', style: dossierStyle),
-                  Text('These are more than characters — they’re fragments of who I am as a gamer.', style: dossierStyle),
-                  const SizedBox(height: 12),
-                  Text('🎮 Loadout of Love', style: dossierStyle.copyWith(decoration: TextDecoration.underline)),
-                  const SizedBox(height: 4),
-                  Text('Primary Weapon: Loyalty to the franchise', style: dossierStyle),
-                  Text('Secondary: Tactical nostalgia', style: dossierStyle),
-                  Text('Lethal: Teammate moments that hit like airstrikes', style: dossierStyle),
-                  Text('Perk: Deep emotional attachment', style: dossierStyle),
-                  const SizedBox(height: 12),
-                  // Redacted line effect
-                  Row(children: [
-                    Text('████████████████████████████████████████████████████████████████████████████████████████████', style: redacted),
-                  ]),
-                  const SizedBox(height: 8),
-                  // Quote slider (simple, not interactive)
-                  Row(
-                    children: [
-                      Icon(Icons.format_quote, color: consoleGreen, size: 20),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          quotes[0],
-                          style: dossierStyle.copyWith(fontStyle: FontStyle.italic),
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
-                    ],
+                  _DialogueCard(
+                    dialogue: '"Stay frosty."',
+                    character: '— Soap MacTavish',
+                  ),
+                  _DialogueCard(
+                    dialogue: '"The healthy human mind doesn\'t wake up in the morning thinking this is its last day on Earth."',
+                    character: '— Captain Price',
+                  ),
+                  _DialogueCard(
+                    dialogue: '"These aren\'t your average muppets. They\'re well trained."',
+                    character: '— Gaz',
+                  ),
+                  _DialogueCard(
+                    dialogue: '"It’s time to get to work."',
+                    character: '— Ghost',
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 16),
-            const Center(child: Text('Call of Duty Series – First-person shooter franchise.')),
+            const SizedBox(height: 32),
+            // Mission Planning Section
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Text(
+                'Mission Planning',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.greenAccent,
+                  letterSpacing: 1.2,
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: isDarkMode ? Colors.grey[900] : Colors.grey[200],
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.green, width: 2),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.lock_open, color: Colors.blueAccent, size: 28),
+                        const SizedBox(width: 8),
+                        Text(
+                          'Operation: The Gulag',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blueAccent,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'Reference: Rescue Captain Price (Prisoner 627) from the gulag.',
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: isDarkMode ? Colors.white70 : Colors.black87,
+                        fontSize: 15,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Objectives:',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isDarkMode ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    _MissionObjective(text: '1. Infiltrate the gulag facility.'),
+                    _MissionObjective(text: '2. Locate Prisoner 627.'),
+                    _MissionObjective(text: '3. Extract Captain Price safely.'),
+                    const SizedBox(height: 16),
+                    Center(
+                      child: ElevatedButton.icon(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue[800],
+                          padding: const EdgeInsets.symmetric(horizontal: 36, vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          elevation: 6,
+                        ),
+                        icon: const Icon(Icons.directions_run, color: Colors.white),
+                        label: const Text(
+                          'DEPLOY',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 17,
+                            letterSpacing: 2,
+                            color: Colors.white,
+                          ),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Row(
+                                children: const [
+                                  Icon(Icons.lock_open, color: Colors.yellow, size: 28),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Mission started! Breach the gulag and free Captain Price. "Prisoner 627 is Captain Price!"',
+                                      style: TextStyle(fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              backgroundColor: Colors.blueGrey,
+                              duration: const Duration(seconds: 4),
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 32),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DialogueCard extends StatelessWidget {
+  final String dialogue;
+  final String character;
+
+  const _DialogueCard({
+    required this.dialogue,
+    required this.character,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 8.0),
+      child: ListTile(
+        title: Text(
+          dialogue,
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text(character),
+      ),
+    );
+  }
+}
+
+class _MissionObjective extends StatelessWidget {
+  final String text;
+
+  const _MissionObjective({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        const Icon(Icons.check_circle, color: Colors.green),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Text(
+            text,
+            style: const TextStyle(fontSize: 16),
+          ),
+        ),
+      ],
     );
   }
 }
