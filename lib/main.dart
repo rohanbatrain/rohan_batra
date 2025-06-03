@@ -46,14 +46,15 @@ class SplashScreen extends StatefulWidget {
   _SplashScreenState createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late Timer _timer;
-  bool _isPaused = false;
   bool _assetsPrefetched = false; // Track if assets are prefetched
+  late final AnimationController _lottieController;
 
   @override
   void initState() {
     super.initState();
+    _lottieController = AnimationController(vsync: this);
   }
 
   @override
@@ -106,77 +107,67 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _startTimer() {
     _timer = Timer(Duration(seconds: 3), () {
-      if (!_isPaused) {
-        Navigator.of(context).pushReplacement(
-          PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
-            transitionsBuilder: (context, animation, secondaryAnimation, child) {
-              const begin = Offset(1.0, 0.0); // Slide in from the right
-              const end = Offset.zero;
-              const curve = Curves.easeInOut;
+      Navigator.of(context).pushReplacement(
+        PageRouteBuilder(
+          pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            const begin = Offset(1.0, 0.0); // Slide in from the right
+            const end = Offset.zero;
+            const curve = Curves.easeInOut;
 
-              var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-              var offsetAnimation = animation.drive(tween);
+            var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+            var offsetAnimation = animation.drive(tween);
 
-              return SlideTransition(
-                position: offsetAnimation,
-                child: child,
-              );
-            },
-          ),
-        );
-      }
+            return SlideTransition(
+              position: offsetAnimation,
+              child: child,
+            );
+          },
+        ),
+      );
     });
   }
 
-  void _pauseTimer() {
-    _timer.cancel();
-    setState(() {
-      _isPaused = true;
-    });
-  }
-
-  void _resumeTimer() {
-    setState(() {
-      _isPaused = false;
-    });
-    _startTimer();
+  void _replayLottie() {
+    _lottieController.reset();
+    _lottieController.forward();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            MouseRegion(
-              onEnter: (_) => _pauseTimer(), // Pause on hover
-              onExit: (_) => _resumeTimer(), // Resume on hover exit
-              child: GestureDetector(
-                onTapDown: (_) => _pauseTimer(), // Pause on hold
-                onTapUp: (_) => _resumeTimer(), // Resume on release
+      body: SafeArea(
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 300,
+                height: 300,
                 child: Lottie.asset(
                   'assets/animations/panda.json',
-                  width: 300, // Reduced width
-                  height: 300, // Reduced height
+                  controller: _lottieController,
+                  onLoaded: (composition) {
+                    _lottieController.duration = composition.duration;
+                    _lottieController.repeat();
+                  },
                   fit: BoxFit.cover,
                 ),
               ),
-            ),
-            SizedBox(height: 20), // Add spacing between animation and text
-            AnimatedText(),
-            SizedBox(height: 40), // Add spacing before the note
-            Text(
-              'Hover or hold to admire him as he eats.',
-              style: TextStyle(
-                fontSize: 14,
-                fontStyle: FontStyle.italic,
-                color: Theme.of(context).textTheme.bodySmall?.color,
+              SizedBox(height: 20),
+              AnimatedText(),
+              SizedBox(height: 20),
+              Text(
+                'Enjoy the animation!',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontStyle: FontStyle.italic,
+                  color: Theme.of(context).textTheme.bodySmall?.color,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -185,6 +176,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void dispose() {
     _timer.cancel();
+    _lottieController.dispose();
     super.dispose();
   }
 }
