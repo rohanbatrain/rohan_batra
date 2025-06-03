@@ -8,28 +8,29 @@ import 'renpy_screen.dart';
 class GameDevelopmentScreen extends StatelessWidget {
   final List<Map<String, dynamic>> tools = [
     {
+      'icon': FontAwesomeIcons.shapes,
+      'title': 'Unreal Engine',
+      'description': 'AAA-quality game engine with Blueprint scripting.',
+      'screen': UnrealEngineScreen(),
+      'label': 'Most Recently Used',
+    },
+    {
       'icon': FontAwesomeIcons.cube,
       'title': 'Unity',
       'description': 'Popular cross-platform game engine for 2D/3D games.',
       'screen': UnityScreen(),
     },
     {
-      'icon': FontAwesomeIcons.shapes,
-      'title': 'Unreal Engine',
-      'description': 'AAA-quality game engine with Blueprint scripting.',
-      'screen': UnrealEngineScreen(),
+      'icon': FontAwesomeIcons.bookOpen,
+      'title': "Ren'Py",
+      'description': 'Visual novel engine for creating story-based games.',
+      'screen': RenpyScreen(),
     },
     {
       'icon': FontAwesomeIcons.chessBoard,
       'title': 'Godot',
       'description': 'Open-source, lightweight, and flexible game engine.',
       'screen': GodotScreen(),
-    },
-    {
-      'icon': FontAwesomeIcons.bookOpen,
-      'title': "Ren'Py",
-      'description': 'Visual novel engine for creating story-based games.',
-      'screen': RenpyScreen(),
     },
   ];
 
@@ -77,7 +78,29 @@ class GameDevelopmentScreen extends StatelessWidget {
                           color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
-                      title: Text(tool['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Row(
+                        children: [
+                          Text(tool['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                          if (tool['label'] != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.purple.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                tool['label'],
+                                style: const TextStyle(
+                                  color: Colors.purple,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ]
+                        ],
+                      ),
                       subtitle: Text(tool['description']),
                     ),
                   );

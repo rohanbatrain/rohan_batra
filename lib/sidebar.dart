@@ -10,6 +10,7 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:rohan_batra/hobbies/index.dart'; // Import the new Hobbies screen
 import 'package:rohan_batra/socials/index.dart';
 import 'package:rohan_batra/donate/index.dart';
+import 'package:rohan_batra/home/contact_us_page.dart';
 
 class SidebarWidget extends StatefulWidget {
   @override
@@ -247,6 +248,31 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, animation, secondaryAnimation) => DonatePage(),
+                      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                        const begin = Offset(1.0, 0.0); // Slide in from the right
+                        const end = Offset.zero;
+                        const curve = Curves.easeInOut;
+
+                        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                        var offsetAnimation = animation.drive(tween);
+
+                        return SlideTransition(
+                          position: offsetAnimation,
+                          child: child,
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(FontAwesomeIcons.envelope, size: 18), // Envelope icon
+                title: Text('Get in Touch'),
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation, secondaryAnimation) => ContactUsPage(),
                       transitionsBuilder: (context, animation, secondaryAnimation, child) {
                         const begin = Offset(1.0, 0.0); // Slide in from the right
                         const end = Offset.zero;

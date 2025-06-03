@@ -39,18 +39,18 @@ class DonatePage extends StatelessWidget {
                       children: [
                         Row(
                           children: const [
-                            Icon(FontAwesomeIcons.indianRupeeSign, color: Colors.green, size: 28),
+                            FaIcon(FontAwesomeIcons.indianRupeeSign, color: Colors.green, size: 28),
                             SizedBox(width: 10),
                             Text('UPI', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                           ],
                         ),
                         const SizedBox(height: 12),
                         ListTile(
-                          leading: Icon(FontAwesomeIcons.buildingColumns, color: Colors.blueGrey),
+                          leading: FaIcon(FontAwesomeIcons.buildingColumns, color: Colors.blueGrey),
                           title: const Text('Kredit.pe UPI'),
                           subtitle: const Text('rohanbatra@kphdfc'),
                           trailing: IconButton(
-                            icon: const Icon(Icons.copy, size: 20),
+                            icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: 'rohanbatra@kphdfc'));
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('UPI ID copied!')));
@@ -73,18 +73,18 @@ class DonatePage extends StatelessWidget {
                       children: [
                         Row(
                           children: const [
-                            Icon(FontAwesomeIcons.university, color: Colors.orange, size: 28),
+                            FaIcon(FontAwesomeIcons.university, color: Colors.orange, size: 28),
                             SizedBox(width: 10),
                             Text('Federal Bank Account', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                           ],
                         ),
                         const SizedBox(height: 12),
                         ListTile(
-                          leading: Icon(FontAwesomeIcons.idCard, color: Colors.orangeAccent),
+                          leading: FaIcon(FontAwesomeIcons.idCard, color: Colors.orangeAccent),
                           title: const Text('Account Number'),
                           subtitle: const Text('77770138456849'),
                           trailing: IconButton(
-                            icon: const Icon(Icons.copy, size: 20),
+                            icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: '77770138456849'));
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Account number copied!')));
@@ -92,11 +92,11 @@ class DonatePage extends StatelessWidget {
                           ),
                         ),
                         ListTile(
-                          leading: Icon(FontAwesomeIcons.code, color: Colors.blueAccent),
+                          leading: FaIcon(FontAwesomeIcons.code, color: Colors.blueAccent),
                           title: const Text('IFSC Code'),
                           subtitle: const Text('FDRL0007777'),
                           trailing: IconButton(
-                            icon: const Icon(Icons.copy, size: 20),
+                            icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: 'FDRL0007777'));
                               ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('IFSC code copied!')));
@@ -119,18 +119,18 @@ class DonatePage extends StatelessWidget {
                       children: [
                         Row(
                           children: const [
-                            Icon(FontAwesomeIcons.coffee, color: Colors.brown, size: 28),
+                            FaIcon(FontAwesomeIcons.coffee, color: Colors.brown, size: 28),
                             SizedBox(width: 10),
                             Text('Buy Me a Coffee / Ko-fi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                           ],
                         ),
                         const SizedBox(height: 12),
                         ListTile(
-                          leading: Icon(FontAwesomeIcons.mugHot, color: Colors.amber),
+                          leading: FaIcon(FontAwesomeIcons.mugHot, color: Colors.amber),
                           title: const Text('BuyMeACoffee'),
                           subtitle: const Text('@rohanbatrain'),
                           trailing: IconButton(
-                            icon: const Icon(Icons.copy, size: 20),
+                            icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: '@rohanbatrain'));
                               WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -140,11 +140,11 @@ class DonatePage extends StatelessWidget {
                           ),
                         ),
                         ListTile(
-                          leading: Icon(FontAwesomeIcons.donate, color: Colors.blueAccent),
+                          leading: FaIcon(FontAwesomeIcons.donate, color: Colors.blueAccent),
                           title: const Text('Ko-fi'),
                           subtitle: const Text('@rohanbatrain'),
                           trailing: IconButton(
-                            icon: const Icon(Icons.copy, size: 20),
+                            icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: '@rohanbatrain'));
                               WidgetsBinding.instance.addPostFrameCallback((_) {

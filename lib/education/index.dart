@@ -64,7 +64,7 @@ class FormalEducationIndexPage extends StatelessWidget {
                     width: 50,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.school, size: 50);
+                      return FaIcon(FontAwesomeIcons.school, size: 50);
                     },
                   ),
                 ),
@@ -117,7 +117,7 @@ class FormalEducationIndexPage extends StatelessWidget {
                     width: 50,
                     fit: BoxFit.cover,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(Icons.school, size: 50);
+                      return FaIcon(FontAwesomeIcons.school, size: 50);
                     },
                   ),
                 ),

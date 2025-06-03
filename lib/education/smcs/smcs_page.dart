@@ -22,8 +22,8 @@ class SMCSPage extends StatelessWidget {
               errorBuilder: (context, error, stackTrace) {
                 return Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: Icon(
-                    Icons.image_not_supported,
+                  child: FaIcon(
+                    FontAwesomeIcons.image,
                     size: 100,
                     color: Colors.grey,
                   ),
@@ -92,8 +92,8 @@ class SMCSPage extends StatelessWidget {
                     width: 50,
                     height: 50,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.image_not_supported,
+                      return FaIcon(
+                        FontAwesomeIcons.image,
                         size: 50,
                         color: Colors.grey,
                       );
@@ -116,8 +116,8 @@ class SMCSPage extends StatelessWidget {
                     width: 50,
                     height: 50,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.image_not_supported,
+                      return FaIcon(
+                        FontAwesomeIcons.image,
                         size: 50,
                         color: Colors.grey,
                       );
@@ -140,8 +140,8 @@ class SMCSPage extends StatelessWidget {
                     width: 50,
                     height: 50,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.image_not_supported,
+                      return FaIcon(
+                        FontAwesomeIcons.image,
                         size: 50,
                         color: Colors.grey,
                       );
@@ -164,8 +164,8 @@ class SMCSPage extends StatelessWidget {
                     width: 50,
                     height: 50,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.image_not_supported,
+                      return FaIcon(
+                        FontAwesomeIcons.image,
                         size: 50,
                         color: Colors.grey,
                       );
@@ -188,8 +188,8 @@ class SMCSPage extends StatelessWidget {
                     width: 50,
                     height: 50,
                     errorBuilder: (context, error, stackTrace) {
-                      return Icon(
-                        Icons.image_not_supported,
+                      return FaIcon(
+                        FontAwesomeIcons.image,
                         size: 50,
                         color: Colors.grey,
                       );

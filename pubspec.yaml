@@ -39,6 +39,7 @@ dependencies:
   shared_preferences: ^2.5.3
   flutter_animate: ^4.2.0
   font_awesome_flutter: ^10.7.0 # Check for latest version
+  url_launcher: ^6.2.5
 
 dev_dependencies:
   flutter_test:
@@ -252,9 +253,17 @@ flutter:
     - assets/images/banners/clockify/1.png
     - assets/images/banners/Anno-1800/2.png
     - assets/images/banners/Anno-1800/1.png
+    - assets/images/banners/obsidian/2.png
+    - assets/images/banners/obsidian/1.png
+    - assets/images/banners/marklang/1.png
+    - assets/images/banners/marklang/2.png
+    - assets/images/banners/proxmox-auto-install-assistant-docker/1.png
+    - assets/images/banners/proxmox-auto-install-assistant-docker/2.png
+    - assets/images/banners/karmstrot-builds/1.png
+    - assets/images/banners/karmstrot-builds/2.png
+    - assets/images/banners/blog/2.png
+    - assets/images/banners/blog/1.png
     
-
-
 # flutter_launcher_icons:
 #   android: "launcher_icon"
 #   ios: true

@@ -24,8 +24,8 @@ class ECellPage extends StatelessWidget {
                     errorBuilder: (context, error, stackTrace) {
                       return Padding(
                         padding: const EdgeInsets.all(16.0),
-                        child: Icon(
-                          Icons.image_not_supported,
+                        child: FaIcon(
+                          FontAwesomeIcons.image,
                           size: 100,
                           color: Colors.grey,
                         ),

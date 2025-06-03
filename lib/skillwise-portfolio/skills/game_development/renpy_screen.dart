@@ -21,6 +21,26 @@ class RenpyScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           const Center(child: Text("Ren'Py – Visual novel engine for creating story-based games.")),
+          const SizedBox(height: 24),
+          const Divider(thickness: 1, indent: 16, endIndent: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('Ren\'Py is a visual novel engine designed for creating story-driven games using Python. It is widely used for interactive fiction and visual novels, offering a simple scripting language and strong community support.', textAlign: TextAlign.left),
+          ),
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Personal Experience', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('I plan to use Ren\'Py for developing visual novel games. Its Python-based scripting and focus on story-driven experiences make it an excellent choice for anyone interested in creating interactive narratives.', textAlign: TextAlign.left),
+          ),
+          const SizedBox(height: 32),
         ],
       ),
     );

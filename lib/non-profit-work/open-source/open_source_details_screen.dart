@@ -18,6 +18,10 @@ import 'repository_screens/second_brain_database_flutter_frontend_screen.dart';
 import 'repository_screens/suckless_dmenu_screen.dart';
 import 'repository_screens/suckless_dwm_screen.dart';
 import 'repository_screens/suckless_st_screen.dart';
+import 'repository_screens/blog_screen.dart';
+import 'repository_screens/marklang_screen.dart';
+import 'repository_screens/proxmox_auto_install_assistant_docker_screen.dart';
+import 'repository_screens/karmstrot_builds_screen.dart';
 
 class OpenSourceDetailsScreen extends StatelessWidget {
   final List<String> repositories = [
@@ -38,6 +42,10 @@ class OpenSourceDetailsScreen extends StatelessWidget {
     'suckless-dmenu',
     'suckless-dwm',
     'suckless-st',
+    'blog',
+    'marklang',
+    'proxmox-auto-install-assistant-docker',
+    'karmstrot-builds',
   ];
 
   final Map<String, bool> featuredRepositories = {
@@ -58,6 +66,10 @@ class OpenSourceDetailsScreen extends StatelessWidget {
     'suckless-dmenu': false,
     'suckless-dwm': false,
     'suckless-st': false,
+    'blog': true,
+    'marklang': true,
+    'proxmox-auto-install-assistant-docker': true,
+    'karmstrot-builds': true,
   };
 
   @override
@@ -83,6 +95,62 @@ class OpenSourceDetailsScreen extends StatelessWidget {
           icon: const FaIcon(FontAwesomeIcons.arrowLeft), // Added leading arrow
           onPressed: () => Navigator.of(context).pop(),
         ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.more_vert),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+                ),
+                builder: (context) {
+                  return Padding(
+                    padding: MediaQuery.of(context).viewInsets,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text('Search & Filter', style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 16),
+                          TextField(
+                            decoration: InputDecoration(
+                              hintText: 'Search repositories...',
+                              prefixIcon: Icon(Icons.search),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                          Text('Filters', style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 10),
+                          Row(
+                            children: [
+                              FilterChip(
+                                label: const Text('Featured'),
+                                selected: false,
+                                onSelected: (v) {},
+                              ),
+                              const SizedBox(width: 10),
+                              FilterChip(
+                                label: const Text('A-Z'),
+                                selected: false,
+                                onSelected: (v) {},
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -158,6 +226,14 @@ class OpenSourceDetailsScreen extends StatelessWidget {
                                   return SucklessDwmScreen();
                                 case 'suckless-st':
                                   return SucklessStScreen();
+                                case 'blog':
+                                  return BlogScreen();
+                                case 'marklang':
+                                  return MarklangScreen();
+                                case 'proxmox-auto-install-assistant-docker':
+                                  return ProxmoxAutoInstallAssistantDockerScreen();
+                                case 'karmstrot-builds':
+                                  return KarmstrotBuildsScreen();
                                 default:
                                   return Scaffold(
                                     appBar: AppBar(title: Text('Unknown Repository')),

@@ -8,10 +8,17 @@ import 'tiles/monday_screen.dart';
 class ProjectManagementScreen extends StatelessWidget {
   final List<Map<String, dynamic>> tools = [
     {
-      'icon': FontAwesomeIcons.trello,
-      'title': 'Trello',
-      'description': 'Simple Kanban-style boards (great for visual task tracking)',
-      'color': Colors.blue
+      'icon': FontAwesomeIcons.arrowAltCircleUp,
+      'title': 'ClickUp',
+      'description': 'All-in-one platform with docs, goals, and time tracking',
+      'color': Colors.purple,
+      'label': 'Most Recently Used',
+    },
+    {
+      'icon': FontAwesomeIcons.calendarCheck,
+      'title': 'Monday.com',
+      'description': 'Highly customizable work management platform',
+      'color': Colors.orange
     },
     {
       'icon': FontAwesomeIcons.tasks,
@@ -20,16 +27,10 @@ class ProjectManagementScreen extends StatelessWidget {
       'color': Colors.pink
     },
     {
-      'icon': FontAwesomeIcons.arrowAltCircleUp,
-      'title': 'ClickUp',
-      'description': 'All-in-one platform with docs, goals, and time tracking',
-      'color': Colors.purple
-    },
-    {
-      'icon': FontAwesomeIcons.calendarCheck,
-      'title': 'Monday.com',
-      'description': 'Highly customizable work management platform',
-      'color': Colors.orange
+      'icon': FontAwesomeIcons.trello,
+      'title': 'Trello',
+      'description': 'Simple Kanban-style boards (great for visual task tracking)',
+      'color': Colors.blue
     },
   ];
 
@@ -87,7 +88,29 @@ class ProjectManagementScreen extends StatelessWidget {
                           color: isDark ? Colors.white : Colors.black,
                         ),
                       ),
-                      title: Text(tool['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                      title: Row(
+                        children: [
+                          Text(tool['title'], style: const TextStyle(fontWeight: FontWeight.bold)),
+                          if (tool['label'] != null) ...[
+                            const SizedBox(width: 8),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: Colors.purple.withOpacity(0.1),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                tool['label'],
+                                style: const TextStyle(
+                                  color: Colors.purple,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ]
+                        ],
+                      ),
                       subtitle: Text(tool['description']),
                     ),
                   );

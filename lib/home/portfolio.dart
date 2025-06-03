@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
+import 'package:rohan_batra/skillwise-portfolio/index.dart';
 
 class Portfolio extends StatelessWidget {
   final bool isDarkMode;
@@ -43,7 +44,11 @@ class Portfolio extends StatelessWidget {
                 SizedBox(height: 25), // Adjusted spacing
                 ElevatedButton(
                   onPressed: () {
-                    // Add functionality for "View Portfolio" button
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PortfolioPage(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDarkMode ? Colors.white : Colors.black,

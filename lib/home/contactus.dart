@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
+import 'contact_us_page.dart';
 
 class ContactUs extends StatelessWidget {
   final bool isDarkMode;
@@ -64,7 +65,11 @@ class ContactUs extends StatelessWidget {
                 SizedBox(height: 25), // Adjusted spacing
                 ElevatedButton(
                   onPressed: () {
-                    // Add functionality for "Get in Touch" button
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ContactUsPage(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDarkMode ? Colors.white : Colors.black,

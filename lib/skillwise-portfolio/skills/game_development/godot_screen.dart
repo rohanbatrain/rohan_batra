@@ -21,6 +21,26 @@ class GodotScreen extends StatelessWidget {
           ),
           const SizedBox(height: 24),
           const Center(child: Text('Godot – Open-source, lightweight, and flexible game engine.')),
+          const SizedBox(height: 24),
+          const Divider(thickness: 1, indent: 16, endIndent: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Details', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('Godot is a fully open-source, lightweight, and flexible game engine that supports both 2D and 3D development. Its accessible interface and active community make it a great choice for indie developers and open-source enthusiasts.', textAlign: TextAlign.left),
+          ),
+          const SizedBox(height: 16),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+            child: Text('Personal Experience', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+          ),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 16.0),
+            child: Text('My experience with Godot has been exploratory, driven by my interest in open-source tools. I learned the interface and experimented with its features out of curiosity and appreciation for its open development model, making it a fun engine to explore.', textAlign: TextAlign.left),
+          ),
+          const SizedBox(height: 32),
         ],
       ),
     );

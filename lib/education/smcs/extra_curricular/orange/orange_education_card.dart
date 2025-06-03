@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'orange_education_page.dart'; // Import the new screen
 
 class OrangeEducationCard extends StatelessWidget {
@@ -21,7 +22,7 @@ class OrangeEducationCard extends StatelessWidget {
             width: 50,
             fit: BoxFit.cover,
             errorBuilder: (context, error, stackTrace) {
-              return Icon(Icons.palette, size: 50);
+              return FaIcon(FontAwesomeIcons.palette, size: 50);
             },
           ),
         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
+import 'package:rohan_batra/non-profit-work/index.dart';
 
 class NonProfit extends StatelessWidget {
   final bool isDarkMode;
@@ -65,7 +66,11 @@ class NonProfit extends StatelessWidget {
                 SizedBox(height: 25), // Adjusted spacing
                 ElevatedButton(
                   onPressed: () {
-                    // Add functionality for "Learn More" button
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => NonProfitWorkIndexPage(),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: isDarkMode ? Colors.white : Colors.black,

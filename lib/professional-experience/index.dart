@@ -262,8 +262,8 @@ class _AnimatedTileState extends State<AnimatedTile> {
                                   height: tileSize * 0.30,
                                   width: tileSize * 0.30,
                                   color: Colors.grey,
-                                  child: Icon(
-                                    Icons.broken_image,
+                                  child: FaIcon(
+                                    FontAwesomeIcons.image,
                                     size: tileSize * 0.15,
                                     color: Colors.white,
                                   ),

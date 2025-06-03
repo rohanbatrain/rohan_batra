@@ -58,11 +58,15 @@ class GamingScreen extends StatelessWidget {
               const SizedBox(height: 12),
               ...pcGames.map((game) {
                 final isFavorite = game['title'] == "Call of Duty Series";
+                final cardColor = isFavorite
+                    ? (isDark ? Colors.green[900] : Colors.green[50])
+                    : null;
+                final favoriteLabelColor = isDark ? Colors.amber[800] : Colors.amber[700];
                 return Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                   elevation: 4,
                   margin: const EdgeInsets.symmetric(vertical: 6),
-                  color: isFavorite ? Colors.green[50] : null,
+                  color: cardColor,
                   child: ListTile(
                     onTap: () {
                       Navigator.push(context, MaterialPageRoute(builder: (_) => game['screen']));
@@ -86,7 +90,7 @@ class GamingScreen extends StatelessWidget {
                             margin: const EdgeInsets.only(left: 8),
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                             decoration: BoxDecoration(
-                              color: Colors.amber[700],
+                              color: favoriteLabelColor,
                               borderRadius: BorderRadius.circular(8),
                             ),
                             child: const Text(
