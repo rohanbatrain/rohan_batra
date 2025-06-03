@@ -87,14 +87,14 @@ jobs:
           flutter config --enable-web
           flutter build web --release
 
-      - name: Deploy to GitHub Pages (Web)
-        uses: crazy-max/ghaction-github-pages@v4.1.0
-        with:
-          build_dir: build/web
-          repo: ${{ github.repository }}
-          target_branch: gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Deploy to GitHub Pages (Web)
+      #   uses: crazy-max/ghaction-github-pages@v4.1.0
+      #   with:
+      #     build_dir: build/web
+      #     repo: ${{ github.repository }}
+      #     target_branch: gh-pages
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Verify Files Exist
         run: |
