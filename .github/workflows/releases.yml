@@ -122,13 +122,13 @@ jobs:
             echo "release_exists=false" >> $GITHUB_ENV
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
       - name: Delete Existing Release (if any)
         if: env.release_exists == 'true'
         run: gh release delete $VERSION --yes --repo $GITHUB_REPOSITORY
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
       - name: Create New Release
         run: |
@@ -141,7 +141,7 @@ jobs:
             --notes "Release $VERSION for branch $GITHUB_REF" \
             --repo $GITHUB_REPOSITORY
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
       - name: Cleanup Temporary Files
         run: |
@@ -152,3 +152,4 @@ jobs:
           unset ANDROID_KEY_ALIAS
           unset ANDROID_KEY_PASSWORD
           unset ANDROID_KEYSTORE_PASSWORD
+          unset GH_SECRET
