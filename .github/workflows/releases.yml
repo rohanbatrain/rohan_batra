@@ -3,7 +3,7 @@ name: Unified Release - Rohan Batra
 on:
   push:
     branches:
-      - main
+      - 'v0.0.*'
 
 jobs:
   deploy:
@@ -56,9 +56,9 @@ jobs:
       # --- Run Android, Linux, and Web Builds in Parallel ---
       - name: Build Android and Linux in Parallel
         run: |
-          flutter build apk --release & 
-          flutter build appbundle --release & 
-          flutter build linux --release &
+          flutter build apk --release  
+          flutter build appbundle --release  
+          flutter build linux --release 
           wait
 
       - name: Cache AppImage Tool
@@ -75,7 +75,7 @@ jobs:
           fi
 
       - name: Build AppImage
-        run: ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.Appimage
+        run: ARCH=x86_64 ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.Appimage
 
       - name: Create tar.gz archive for Linux executable
         run: |
@@ -122,13 +122,13 @@ jobs:
             echo "release_exists=false" >> $GITHUB_ENV
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
       - name: Delete Existing Release (if any)
         if: env.release_exists == 'true'
         run: gh release delete $VERSION --yes --repo $GITHUB_REPOSITORY
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
       - name: Create New Release
         run: |
@@ -141,7 +141,7 @@ jobs:
             --notes "Release $VERSION for branch $GITHUB_REF" \
             --repo $GITHUB_REPOSITORY
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
       - name: Cleanup Temporary Files
         run: |
@@ -152,3 +152,4 @@ jobs:
           unset ANDROID_KEY_ALIAS
           unset ANDROID_KEY_PASSWORD
           unset ANDROID_KEYSTORE_PASSWORD
+          unset GH_SECRET
