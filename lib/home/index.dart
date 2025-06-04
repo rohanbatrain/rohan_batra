@@ -89,39 +89,43 @@ class _HomePageState extends State<HomePage> {
               decoration: BoxDecoration(
                 color: isDarkMode ? Colors.black : Colors.white,
               ),
-              child: isMobile
+              child: (isMobile && MediaQuery.of(context).orientation == Orientation.portrait)
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
-                          height: 220,
+                          height: 180,
                           child: Lottie.asset(
                             _getLottieAsset(),
                             key: ValueKey(_currentLottieIndex),
                             fit: BoxFit.contain,
                           ),
                         ),
-                        SizedBox(height: 30),
+                        SizedBox(height: 24),
                         Text(
                           'Hey, I am Rohan Batra',
                           style: TextStyle(
                             fontSize: 32,
                             fontWeight: FontWeight.bold,
                             color: isDarkMode ? Colors.white : Colors.black,
+                            letterSpacing: 1.2,
+                            height: 1.2,
                           ),
                           textAlign: TextAlign.center,
-                        ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2), // Add fade and slide animation
-                        SizedBox(height: 10), // Adjusted spacing
+                        ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2),
+                        SizedBox(height: 10),
                         Text(
                           'Developer | Writer | Researcher',
                           style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.w500,
                             color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                            letterSpacing: 0.8,
+                            height: 1.3,
                           ),
                           textAlign: TextAlign.center,
-                        ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2), // Add fade and slide animation
-                        SizedBox(height: 20), // Adjusted spacing
+                        ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
+                        SizedBox(height: 24),
                         ElevatedButton(
                           onPressed: () {
                             // Smooth scroll to the AboutMe section
@@ -134,16 +138,17 @@ class _HomePageState extends State<HomePage> {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: isDarkMode ? Colors.white : Colors.black,
                             foregroundColor: isDarkMode ? Colors.black : Colors.white,
-                            padding: EdgeInsets.symmetric(horizontal: 20, vertical: 12), // Adjusted padding
+                            padding: EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10), // Slightly rounded corners
+                              borderRadius: BorderRadius.circular(10),
                             ),
+                            elevation: 2,
                           ),
                           child: Text(
                             'Explore More',
-                            style: TextStyle(fontSize: 16), // Increased button text size
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                           ),
-                        ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2), // Add fade and slide animation
+                        ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2),
                       ],
                     )
                   : Row(
