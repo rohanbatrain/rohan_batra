@@ -134,13 +134,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: start
     steps:
-      - name: Cache Android SDK NDK
+      - name: Cache Android SDK and NDK
         uses: actions/cache@v3
         with:
           path: |
-            ~/.android
-            ~/android-sdk
-          key: android-sdk-ndk-${{ runner.os }}
+            ~/.android/sdk
+            /usr/local/lib/android/sdk/ndk
+          key: android-sdk-ndk-${{ runner.os }}-${{ hashFiles('android/app/build.gradle', 'android/build.gradle') }}
+          restore-keys: |
+            android-sdk-ndk-${{ runner.os }}-
+
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
         with:
@@ -154,6 +157,11 @@ jobs:
         uses: subosito/flutter-action@v2
       - name: Install dependencies
         run: flutter pub get
+      - name: Accept Android Licenses
+        run: yes | sdkmanager --licenses || true
+        env:
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
       - name: Build APK
         run: flutter build apk --release
       - name: Rename APK for Release
@@ -168,13 +176,16 @@ jobs:
     runs-on: ubuntu-latest
     needs: start
     steps:
-      - name: Cache Android SDK NDK
+      - name: Cache Android SDK and NDK
         uses: actions/cache@v3
         with:
           path: |
-            ~/.android
-            ~/android-sdk
-          key: android-sdk-ndk-${{ runner.os }}
+            ~/.android/sdk
+            /usr/local/lib/android/sdk/ndk
+          key: android-sdk-ndk-${{ runner.os }}-${{ hashFiles('android/app/build.gradle', 'android/build.gradle') }}
+          restore-keys: |
+            android-sdk-ndk-${{ runner.os }}-
+
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
         with:
@@ -188,6 +199,11 @@ jobs:
         uses: subosito/flutter-action@v2
       - name: Install dependencies
         run: flutter pub get
+      - name: Accept Android Licenses
+        run: yes | sdkmanager --licenses || true
+        env:
+          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+
       - name: Build AAB
         run: flutter build appbundle --release
       - name: Rename AAB for Release
@@ -229,7 +245,8 @@ jobs:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
 
-  build-ios:
+  # NEW JOB: Build iOS .app bundle for direct use/testing
+  build-ios-app:
     runs-on: macos-latest
     needs: start
     steps:
@@ -246,85 +263,135 @@ jobs:
         uses: subosito/flutter-action@v2
       - name: Install dependencies
         run: flutter pub get
-      - name: Build iOS Archive
+      - name: Build iOS App
         run: flutter build ios --release --no-codesign
-      - name: Upload iOS Artifact
+      - name: Rename iOS App for Release
+        run: mv build/ios/iphoneos/Runner.app build/ios/iphoneos/Rohan-Batra.app
+      - name: Upload iOS App Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-artifact
-          path: build/ios/iphoneos/*.xcarchive
+          name: ios-app-artifact
+          path: build/ios/iphoneos/Rohan-Batra.app
+
+  # NEW JOB: Build iOS .xcarchive for App Store Connect submission
+  build-ios-archive:
+    runs-on: macos-latest
+    needs: start
+    steps:
+      - name: Cache Flutter Dependencies
+        uses: actions/cache@v3
+        with:
+          path: ~/.pub-cache
+          key: ios-flutter-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: |
+            ios-flutter-
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Clean Xcode build folder
+        run: flutter clean
+      - name: Create iOS Archive
+        run: |
+          ARCHIVE_PATH="$GITHUB_WORKSPACE/build/Runner.xcarchive"
+          xcodebuild archive \
+            -workspace ios/Runner.xcworkspace \
+            -scheme Runner \
+            -configuration Release \
+            -archivePath "$ARCHIVE_PATH" \
+            SKIP_INSTALL=NO \
+            BUILD_LIBRARIES_FOR_DISTRIBUTION=YES
+      - name: Upload iOS Archive Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-archive-artifact
+          path: build/Runner.xcarchive
 
   release:
-      runs-on: ubuntu-latest
-      needs: [build-linux, build-windows, build-macos, build-apk, build-aab, build-web, build-ios]
-      steps:
-        - name: Download all artifacts
-          uses: actions/download-artifact@v4
-          with:
-            path: ./artifacts
-        - name: Move all release files to a single directory
-          run: |
-            mkdir -p release
-            # Move Linux artifacts
-            find ./artifacts/linux-artifact -type f -name '*.tar.gz' -exec mv {} release/ \;
-            find ./artifacts/appimage-artifact -type f -name '*.AppImage' -exec mv {} release/ \;
-            # Move Windows artifacts
-            find ./artifacts/windows-artifact -type f -name '*.tar.gz' -exec mv {} release/ \;
-            # Move macOS artifacts
-            find ./artifacts/macos-artifact -type f -name '*.tar.gz' -exec mv {} release/ \;
-            # Move APK and AAB
-            find ./artifacts/apk-artifact -type f -name '*.apk' -exec mv {} release/ \;
-            find ./artifacts/aab-artifact -type f -name '*.aab' -exec mv {} release/ \;
-            # Move Web artifacts
-            find ./artifacts/web-artifact -type f -name '*.tar.gz' -exec mv {} release/ \;
-            # iOS artifacts are not directly moved as part of the release creation but are downloaded for completeness if needed elsewhere.
-        - name: Create GitHub Release
-          run: |
-            VERSION=${{ needs.build-linux.outputs.version }}
-            FILES=""
-            # Use consistent naming for files when constructing the FILES string
-            for f in release/Rohan-Batra-Linux-x86-64-$VERSION.tar.gz \
-                    release/Rohan-Batra-Web-$VERSION.tar.gz \
-                    release/Rohan-Batra-Windows-x86-64-$VERSION.tar.gz \
-                    release/Rohan-Batra-macOS-x86-64-$VERSION.tar.gz \
-                    release/Rohan-Batra.aab \
-                    release/Rohan-Batra.apk \
-                    release/Rohan-Batra-$VERSION.AppImage; do
-              if [ -f "$f" ]; then
-                FILES+="$f ";
-              else
-                echo "Warning: File not found: $f" # Add a warning to debug if a file is still missing
-              fi
-            done
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-windows, build-macos, build-apk, build-aab, build-web, build-ios-app, build-ios-archive]
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+      - name: Move all release files to a single directory
+        run: |
+          mkdir -p release
+          # Move Linux artifacts
+          find ./artifacts/linux-artifact -type f -name '*.tar.gz' -exec mv {} release/ \;
+          find ./artifacts/appimage-artifact -type f -name '*.AppImage' -exec mv {} release/ \;
+          # Move Windows artifacts
+          find ./artifacts/windows-artifact -type f -name '*.tar.gz' -exec mv {} release/ \;
+          # Move macOS artifacts
+          find ./artifacts/macos-artifact -type f -name '*.tar.gz' -exec mv {} release/ \;
+          # Move APK and AAB
+          find ./artifacts/apk-artifact -type f -name '*.apk' -exec mv {} release/ \;
+          find ./artifacts/aab-artifact -type f -name '*.aab' -exec mv {} release/ \;
+          # Move Web artifacts
+          find ./artifacts/web-artifact -type f -name '*.tar.gz' -exec mv {} release/ \;
+          # Move iOS .app bundle
+          find ./artifacts/ios-app-artifact -type f -name '*.app' -exec mv {} release/ \;
+          # iOS .xcarchive is usually not moved to 'release' for direct GitHub release attachment,
+          # as it's large and primarily for App Store Connect.
+          # If you do want to include it, uncomment and adjust the following:
+          # find ./artifacts/ios-archive-artifact -type d -name '*.xcarchive' -exec cp -r {} release/ \;
 
-            if [ -z "$FILES" ]; then
-              echo "Error: No release files found to create a release."
-              exit 1
+      - name: Create GitHub Release
+        run: |
+          VERSION=${{ needs.build-linux.outputs.version }}
+          FILES=""
+          # Collect all files to attach to the GitHub Release
+          for f in release/Rohan-Batra-Linux-x86-64-$VERSION.tar.gz \
+                   release/Rohan-Batra-Web-$VERSION.tar.gz \
+                   release/Rohan-Batra-Windows-x86-64-$VERSION.tar.gz \
+                   release/Rohan-Batra-macOS-x86-64-$VERSION.tar.gz \
+                   release/Rohan-Batra.aab \
+                   release/Rohan-Batra.apk \
+                   release/Rohan-Batra-$VERSION.AppImage \
+                   release/Rohan-Batra.app; do
+            if [ -f "$f" ]; then
+              FILES+="$f ";
+            else
+              echo "Warning: File not found for GitHub Release attachment: $f"
             fi
+          done
 
-            echo "Attempting to create release with files: $FILES"
+          if [ -z "$FILES" ]; then
+            echo "Error: No release files found to create a GitHub release."
+            exit 1
+          fi
 
-            gh release create $VERSION $FILES \
-              --title "Release $VERSION" \
-              --notes "Release $VERSION for branch $GITHUB_REF" \
-              --repo $GITHUB_REPOSITORY
-          env:
-            GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
-        - name: Push Release Artifacts to rohan_batra_releases
-          run: |
-            git config --global user.email "github-actions[bot]@users.noreply.github.com"
-            git config --global user.name "github-actions[bot]"
-            rm -rf rohan_batra_releases
-            git clone https://x-access-token:${{ secrets.GH_SECRET }}@github.com/rohanbatrain/rohan_batra_releases.git
-            cd rohan_batra_releases
-            mkdir -p $VERSION
-            # Copy the files that were successfully moved to the 'release' directory
-            cp ../release/*$VERSION*.tar.gz $VERSION/ || true
-            cp ../release/Rohan-Batra.aab $VERSION/ || true
-            cp ../release/Rohan-Batra.apk $VERSION/ || true
-            cp ../release/Rohan-Batra-$VERSION.AppImage $VERSION/ || true
-            git add .
-            git commit -m "Add release artifacts for $VERSION" || echo "Nothing to commit"
-            git push origin main
-          env:
-            GH_SECRET: ${{ secrets.GH_SECRET }}
+          echo "Attempting to create GitHub release with files: $FILES"
+
+          gh release create $VERSION $FILES \
+            --title "Release $VERSION" \
+            --notes "Release $VERSION for branch $GITHUB_REF" \
+            --repo $GITHUB_REPOSITORY
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
+
+      - name: Push Release Artifacts to rohan_batra_releases
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          rm -rf rohan_batra_releases
+          git clone https://x-access-token:${{ secrets.GH_SECRET }}@github.com/rohanbatrain/rohan_batra_releases.git
+          cd rohan_batra_releases
+          mkdir -p $VERSION
+          # Copy all relevant release files
+          cp ../release/*$VERSION*.tar.gz $VERSION/ || true
+          cp ../release/Rohan-Batra.aab $VERSION/ || true
+          cp ../release/Rohan-Batra.apk $VERSION/ || true
+          cp ../release/Rohan-Batra-$VERSION.AppImage $VERSION/ || true
+          cp ../release/Rohan-Batra.app $VERSION/ || true
+          # If you want to include .xcarchive in this separate repo:
+          # find ../artifacts/ios-archive-artifact -type d -name '*.xcarchive' -exec cp -r {} $VERSION/ \; || true
+          
+          git add .
+          git commit -m "Add release artifacts for $VERSION" || echo "Nothing to commit"
+          git push origin main
+        env:
+          GH_SECRET: ${{ secrets.GH_SECRET }}
