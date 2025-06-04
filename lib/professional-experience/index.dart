@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rohan_batra/professional-experience/secret_startup_page.dart';
+import 'package:rohanbatra/professional-experience/secret_startup_page.dart';
 
 final List<Map<String, Map<String, String>>> companies = [
   {

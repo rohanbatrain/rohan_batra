@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:rohan_batra/widgets/download_popup.dart'; // Import the animate package
+import 'package:rohanbatra/widgets/download_popup.dart'; // Import the animate package
 
 class DownloadSection extends StatelessWidget {
   final bool isDarkMode;

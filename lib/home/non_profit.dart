@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
-import 'package:rohan_batra/non-profit-work/index.dart';
+import 'package:rohanbatra/non-profit-work/index.dart';
 
 class NonProfit extends StatelessWidget {
   final bool isDarkMode;

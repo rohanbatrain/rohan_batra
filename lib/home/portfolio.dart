@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
-import 'package:rohan_batra/skillwise-portfolio/index.dart';
+import 'package:rohanbatra/skillwise-portfolio/index.dart';
 
 class Portfolio extends StatelessWidget {
   final bool isDarkMode;

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rohan_batra/professional-experience/secret_startup_page.dart';
+import 'package:rohanbatra/professional-experience/secret_startup_page.dart';
 import '../widgets/related_to_section.dart'; // Updated import for RelatedToSection
 
 class PreseededDebianISOScreen extends StatelessWidget {

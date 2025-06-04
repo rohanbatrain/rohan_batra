@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rohan_batra/non-profit-work/open-source/repository_screens/configs_screen.dart';
-import 'package:rohan_batra/non-profit-work/open-source/repository_screens/scripts_screen.dart';
-import 'package:rohan_batra/non-profit-work/open-source/repository_screens/suckless_dmenu_screen.dart';
-import 'package:rohan_batra/non-profit-work/open-source/repository_screens/suckless_dwm_screen.dart';
-import 'package:rohan_batra/non-profit-work/open-source/repository_screens/suckless_st_screen.dart';
+import 'package:rohanbatra/non-profit-work/open-source/repository_screens/configs_screen.dart';
+import 'package:rohanbatra/non-profit-work/open-source/repository_screens/scripts_screen.dart';
+import 'package:rohanbatra/non-profit-work/open-source/repository_screens/suckless_dmenu_screen.dart';
+import 'package:rohanbatra/non-profit-work/open-source/repository_screens/suckless_dwm_screen.dart';
+import 'package:rohanbatra/non-profit-work/open-source/repository_screens/suckless_st_screen.dart';
 
 import 'projects/garuda_linux_on_msi_laptop.dart';
 import 'projects/kali_linux.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rohan_batra/non-profit-work/open-source/repository_screens/second_brain_database_screen.dart';
+import 'package:rohanbatra/non-profit-work/open-source/repository_screens/second_brain_database_screen.dart';
 
 class DockerScreen extends StatelessWidget {
   @override

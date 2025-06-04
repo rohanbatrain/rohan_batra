@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:rohan_batra/education/smcs/extra_curricular/sports/sports_page.dart';
+import 'package:rohanbatra/education/smcs/extra_curricular/sports/sports_page.dart';
 
 class SportsCard extends StatelessWidget {
   @override

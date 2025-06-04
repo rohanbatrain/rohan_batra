@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rohan_batra/skillwise-portfolio/skills/personal_knowledge_management/personal_knowledge_management_tile.dart';
+import 'package:rohanbatra/skillwise-portfolio/skills/personal_knowledge_management/personal_knowledge_management_tile.dart';
 import 'portfolio/portfolio_tile.dart';
 import 'skills/cloud_computing/private_cloud_devops_tile.dart';
 import 'skills/cyber_security/cyber_security_tile.dart';

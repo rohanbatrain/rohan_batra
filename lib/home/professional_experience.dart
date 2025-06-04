@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
-import 'package:rohan_batra/professional-experience/index.dart';
+import 'package:rohanbatra/professional-experience/index.dart';
 
 class ProfessionalExperience extends StatelessWidget {
   final bool isDarkMode;
