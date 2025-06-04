@@ -3,7 +3,7 @@ name: Unified Release - Rohan Batra
 on:
   push:
     branches:
-      - main
+      - 'v0.0.*'
 
 jobs:
   deploy:
