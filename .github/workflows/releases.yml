@@ -286,7 +286,6 @@ jobs:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
 
-  ---
 
   # Release Job:
   # This job depends on all build jobs and 'get-version' to ensure all artifacts
