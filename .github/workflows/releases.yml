@@ -30,6 +30,27 @@ jobs:
         run: |
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Linux-x86-64-${{ steps.extract_version.outputs.version }}.tar.gz" -C build/linux/x64/release bundle
+      - name: Install appimagetool
+        run: |
+          mkdir -p appimage
+          if [ ! -f "./appimage/appimagetool-x86_64.AppImage" ]; then
+            wget -O ./appimage/appimagetool-x86_64.AppImage "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+            chmod +x ./appimage/appimagetool-x86_64.AppImage
+          fi
+      - name: Prepare AppDir
+        run: |
+          mkdir -p appimage/Rohan-Batra.AppDir
+          cp -r ./build/linux/x64/release/bundle/* ./appimage/Rohan-Batra.AppDir/
+      - name: Build AppImage
+        run: |
+          ARCH=x86_64 ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.AppImage
+          mkdir -p release
+          mv ./appimage/Rohan-Batra.AppImage release/Rohan-Batra-${{ steps.extract_version.outputs.version }}.AppImage
+      - name: Upload AppImage Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appimage-artifact
+          path: release/Rohan-Batra-*.AppImage
       - name: Upload Linux Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -130,6 +151,7 @@ jobs:
           find ./artifacts -type f -name '*.tar.gz' -exec mv {} release/ \;
           find ./artifacts -type f -name '*.aab' -exec mv {} release/ \;
           find ./artifacts -type f -name '*.apk' -exec mv {} release/ \;
+          find ./artifacts -type f -name '*.AppImage' -exec mv {} release/ \;
       - name: Create GitHub Release
         run: |
           VERSION=${{ needs.build-linux.outputs.version }}
@@ -140,6 +162,7 @@ jobs:
             release/Rohan-Batra-macOS-x86-64-$VERSION.tar.gz \
             release/Rohan-Batra.aab \
             release/Rohan-Batra.apk \
+            release/Rohan-Batra-$VERSION.AppImage \
             --title "Release $VERSION" \
             --notes "Release $VERSION for branch $GITHUB_REF" \
             --repo $GITHUB_REPOSITORY
@@ -156,6 +179,7 @@ jobs:
           cp ../release/*$VERSION*.tar.gz $VERSION/ || true
           cp ../release/Rohan-Batra.aab $VERSION/ || true
           cp ../release/Rohan-Batra.apk $VERSION/ || true
+          cp ../release/Rohan-Batra-$VERSION.AppImage $VERSION/ || true
           git add .
           git commit -m "Add release artifacts for $VERSION" || echo "Nothing to commit"
           git push origin main
