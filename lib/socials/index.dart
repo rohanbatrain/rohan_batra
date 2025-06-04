@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:flutter/services.dart'; // Added for clipboard
 
 class SocialsIndexPage extends StatefulWidget {
   @override
@@ -10,15 +11,23 @@ class _SocialsIndexPageState extends State<SocialsIndexPage> {
   final Map<String, Map<String, dynamic>> socials = {
     'Instagram': {
       'icon': FontAwesomeIcons.instagram,
-      'handles': ['@rohanbatrain', '@rohanbatrain_personal'],
+      'handles': ['@rohanbatrain', '@rohanbatrain_personal', '@rohanbatrain_lens'],
     },
-    'Twitter': {
+    'X (formerly Twitter)': {
       'icon': FontAwesomeIcons.twitter,
-      'handles': ['@rohanbatrain', '@rohanbatrain_lens'],
+      'handles': ['@rohanbatrain'],
     },
     'GitHub': {
       'icon': FontAwesomeIcons.github,
       'handles': ['@rohanbatrain'],
+    },
+    'Telegram Group': {
+      'icon': FontAwesomeIcons.telegram,
+      'handles': ['t.me/rohanbatra_tg'],
+    },
+    'Telegram Channel (broadcast)': {
+      'icon': FontAwesomeIcons.telegram,
+      'handles': ['t.me/rohanbatra'],
     },
   };
 
@@ -49,9 +58,9 @@ class _SocialsIndexPageState extends State<SocialsIndexPage> {
             Row(
               children: [
                 Icon(
-                  FontAwesomeIcons.userFriends,
+                  FontAwesomeIcons.userGroup,
                   size: 28,
-                  color: isDark ? theme.primaryColor : Colors.black,
+                  color: theme.iconTheme.color,
                 ),
                 SizedBox(width: 12),
                 Text(
@@ -100,9 +109,28 @@ class _SocialsIndexPageState extends State<SocialsIndexPage> {
                       ...List.generate(entry.value['handles'].length, (i) {
                         final handle = entry.value['handles'][i];
                         final displayHandle = handle.startsWith('@') ? handle.substring(1) : handle;
-                        return ListTile(
-                          leading: Icon(FontAwesomeIcons.at, size: 16, color: theme.iconTheme.color),
-                          title: Text(displayHandle, style: theme.textTheme.bodyLarge),
+                        return InkWell(
+                          onTap: () async {
+                            await Clipboard.setData(ClipboardData(text: handle));
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Copied to clipboard: ' + handle)),
+                            );
+                          },
+                          borderRadius: BorderRadius.circular(8),
+                          child: ListTile(
+                            leading: Icon(FontAwesomeIcons.at, size: 16, color: theme.iconTheme.color),
+                            title: Text(displayHandle, style: theme.textTheme.bodyLarge),
+                            trailing: IconButton(
+                              icon: Icon(FontAwesomeIcons.copy, size: 16, color: theme.iconTheme.color),
+                              tooltip: 'Copy',
+                              onPressed: () async {
+                                await Clipboard.setData(ClipboardData(text: handle));
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Copied to clipboard: ' + handle)),
+                                );
+                              },
+                            ),
+                          ),
                         );
                       })
                     ],
