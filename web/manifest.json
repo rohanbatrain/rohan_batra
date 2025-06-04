@@ -1,11 +1,11 @@
 {
-    "name": "rohan_batra",
-    "short_name": "rohan_batra",
+    "name": "Rohan Batra's Portfolio",
+    "short_name": "Rohan Batra",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#FFFFFF",
     "theme_color": "#000000",
-    "description": "A new Flutter project.",
+    "description": "A developer, researcher, and writer creating purposeful tools, systems, and ideas that solve real problems.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

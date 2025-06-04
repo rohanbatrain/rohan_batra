@@ -61,6 +61,11 @@ jobs:
           flutter build linux --release 
           wait
 
+      - name: Rename APK and AAB for Release
+        run: |
+          mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/Rohan-Batra.apk
+          mv build/app/outputs/bundle/release/app-release.aab build/app/outputs/bundle/release/Rohan-Batra.aab
+
       - name: Cache AppImage Tool
         uses: actions/cache@v3
         with:
@@ -92,6 +97,27 @@ jobs:
           flutter config --enable-web
           flutter build web --release
 
+      - name: Create tar.gz archive for Web build
+        run: |
+          mkdir -p release
+          tar -czvf "release/Rohan-Batra-Web-${{ env.VERSION }}.tar.gz" -C build/web .
+
+      - name: Build Windows Release
+        run: flutter build windows --release
+
+      - name: Create tar.gz archive for Windows executable
+        run: |
+          mkdir -p release
+          tar -czvf "release/Rohan-Batra-Windows-x86-64-${{ env.VERSION }}.tar.gz" -C build/windows/x64/runner/Release .
+
+      - name: Build macOS Release
+        run: flutter build macos --release
+
+      - name: Create tar.gz archive for macOS executable
+        run: |
+          mkdir -p release
+          tar -czvf "release/Rohan-Batra-macOS-x86-64-${{ env.VERSION }}.tar.gz" -C build/macos/Build/Products/Release .
+
       # - name: Deploy to GitHub Pages (Web)
       #   uses: crazy-max/ghaction-github-pages@v4.1.0
       #   with:
@@ -105,10 +131,13 @@ jobs:
         run: |
           echo "Verifying required files..."
           FILES=(
-            "build/app/outputs/bundle/release/app-release.aab"
-            "build/app/outputs/flutter-apk/app-release.apk"
+            "build/app/outputs/bundle/release/Rohan-Batra.aab"
+            "build/app/outputs/flutter-apk/Rohan-Batra.apk"
             "appimage/Rohan-Batra.Appimage"
             "release/Rohan-Batra-Linux-x86-64-${{ env.VERSION }}.tar.gz"
+            "release/Rohan-Batra-Web-${{ env.VERSION }}.tar.gz"
+            "release/Rohan-Batra-Windows-x86-64-${{ env.VERSION }}.tar.gz"
+            "release/Rohan-Batra-macOS-x86-64-${{ env.VERSION }}.tar.gz"
           )
           for file in "${FILES[@]}"; do
             if [ ! -f "$file" ]; then
@@ -139,8 +168,11 @@ jobs:
         run: |
           gh release create $VERSION \
             release/Rohan-Batra-Linux-x86-64-${{ env.VERSION }}.tar.gz \
-            build/app/outputs/bundle/release/app-release.aab \
-            build/app/outputs/flutter-apk/app-release.apk \
+            release/Rohan-Batra-Web-${{ env.VERSION }}.tar.gz \
+            release/Rohan-Batra-Windows-x86-64-${{ env.VERSION }}.tar.gz \
+            release/Rohan-Batra-macOS-x86-64-${{ env.VERSION }}.tar.gz \
+            build/app/outputs/bundle/release/Rohan-Batra.aab \
+            build/app/outputs/flutter-apk/Rohan-Batra.apk \
             appimage/Rohan-Batra.Appimage \
             --title "Release $VERSION" \
             --notes "Release $VERSION for branch $GITHUB_REF" \
