@@ -74,6 +74,11 @@ jobs:
             chmod +x ./appimage/appimagetool-x86_64.AppImage
           fi
 
+
+      - name: Copying linux build 
+        run: cp -r ./build/linux/x64/release/bundle/* ./appimage/Rohan-Batra.AppDir/
+
+        
       - name: Build AppImage
         run: ARCH=x86_64 ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.Appimage
 
