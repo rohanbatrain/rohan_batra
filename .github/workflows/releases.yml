@@ -197,7 +197,7 @@ jobs:
       - name: Accept Android Licenses
         run: yes | sdkmanager --licenses || true
         env:
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT || '/usr/local/lib/android/sdk' }} # Fallback if not set by flutter-action
 
       - name: Build APK
         run: flutter build apk --release
@@ -239,7 +239,8 @@ jobs:
       - name: Accept Android Licenses
         run: yes | sdkmanager --licenses || true
         env:
-          ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
+          env:
+          ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT || '/usr/local/lib/android/sdk' }} # Fallback if not set by flutter-action
 
       - name: Build AAB
         run: flutter build appbundle --release
