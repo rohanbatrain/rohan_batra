@@ -93,6 +93,15 @@ class _HomePageState extends State<HomePage> {
                   ? Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
+                        SizedBox(
+                          height: 220,
+                          child: Lottie.asset(
+                            _getLottieAsset(),
+                            key: ValueKey(_currentLottieIndex),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        SizedBox(height: 30),
                         Text(
                           'Hey, I am Rohan Batra',
                           style: TextStyle(
@@ -135,15 +144,6 @@ class _HomePageState extends State<HomePage> {
                             style: TextStyle(fontSize: 16), // Increased button text size
                           ),
                         ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2), // Add fade and slide animation
-                        SizedBox(height: 30),
-                        SizedBox(
-                          height: 220,
-                          child: Lottie.asset(
-                            _getLottieAsset(),
-                            key: ValueKey(_currentLottieIndex),
-                            fit: BoxFit.contain,
-                          ),
-                        ),
                       ],
                     )
                   : Row(
@@ -255,58 +255,35 @@ class _HomePageState extends State<HomePage> {
               padding: EdgeInsets.symmetric(
                 horizontal: isMobile ? 12 : 50,
                 vertical: isMobile ? 18 : 30,
-              ), // Add consistent padding
-              child: isMobile
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        SizedBox(
-                          height: 180,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+
+                  SizedBox(height: 24),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Expanded(
+                        flex: 5,
+                        child: SizedBox(
+                          height: isMobile ? 140 : 180,
                           child: Lottie.asset(
                             'assets/animations/professional.json',
                             fit: BoxFit.contain,
                           ),
                         ),
-                        SizedBox(height: 24),
-                        AboutMe(isDarkMode: isDarkMode),
-                      ],
-                    )
-                  : Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribute space evenly
-                      children: [
-                        // Left Side: Animation
-                        Expanded(
-                          flex: 5, // Adjust space for animation
-                          child: LayoutBuilder(
-                            builder: (context, constraints) {
-                              final maxHeight = constraints.maxHeight * 0.8; // Slightly zoom in
-                              return ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxHeight: maxHeight,
-                                  maxWidth: maxHeight, // Maintain aspect ratio
-                                ),
-                                child: Lottie.asset(
-                                  'assets/animations/professional.json', // Replace with your AboutMe animation
-                                  fit: BoxFit.contain,
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-
-                        SizedBox(width: 60), // Add more spacing between animation and text
-
-                        // Right Side: Text
-                        Expanded(
-                          flex: 6, // Adjust space for text
-                          child: Padding(
-                            padding: EdgeInsets.only(left: 30), // Add padding for better alignment
-                            child: AboutMe(isDarkMode: isDarkMode), // Use the existing AboutMe widget
-                          ),
-                        ),
-                      ],
-                    ),
+                      ),
+                      SizedBox(width: isMobile ? 20 : 60),
+                      Expanded(
+                        flex: 6,
+                        child: AboutMe(isDarkMode: isDarkMode),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
 
             // Add subtle separation
