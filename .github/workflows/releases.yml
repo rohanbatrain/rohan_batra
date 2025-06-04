@@ -306,7 +306,7 @@ jobs:
             echo "Release '$VERSION' does not exist. Proceeding with creation."
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use default GITHUB_TOKEN for current repo operations
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Use default GITHUB_TOKEN for current repo operations
 
       - name: Download all artifacts to a single directory
         uses: actions/download-artifact@v4
@@ -330,7 +330,7 @@ jobs:
             --notes "Release $VERSION for branch $GITHUB_REF" \
             --repo "$GITHUB_REPOSITORY"
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
       - name: Push Release Artifacts to rohan_batra_releases
         run: |
