@@ -245,7 +245,6 @@ jobs:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
 
-  # NEW JOB: Build iOS .app bundle for direct use/testing
   build-ios-app:
     runs-on: macos-latest
     needs: start
@@ -273,7 +272,6 @@ jobs:
           name: ios-app-artifact
           path: build/ios/iphoneos/Rohan-Batra.app
 
-  # NEW JOB: Build iOS .xcarchive for App Store Connect submission
   build-ios-archive:
     runs-on: macos-latest
     needs: start
@@ -313,6 +311,31 @@ jobs:
     runs-on: ubuntu-latest
     needs: [build-linux, build-windows, build-macos, build-apk, build-aab, build-web, build-ios-app, build-ios-archive]
     steps:
+      # Step to define VERSION early for gh CLI usage
+      - name: Set Release Version
+        id: set_version
+        run: |
+          VERSION="${{ needs.build-linux.outputs.version }}"
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Check if Release Exists
+        id: check_release
+        run: |
+          # Use the VERSION environment variable set in the previous step
+          if gh release view "$VERSION" --json name --jq '.name' > /dev/null 2>&1; then
+            echo "release_exists=true" >> $GITHUB_ENV
+          else
+            echo "release_exists=false" >> $GITHUB_ENV
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use default GITHUB_TOKEN for current repo operations
+
+      - name: Delete Existing Release (if any)
+        if: env.release_exists == 'true'
+        run: gh release delete "$VERSION" --yes --repo "$GITHUB_REPOSITORY"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use default GITHUB_TOKEN
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
@@ -341,7 +364,7 @@ jobs:
 
       - name: Create GitHub Release
         run: |
-          VERSION=${{ needs.build-linux.outputs.version }}
+          # VERSION is now available as an environment variable
           FILES=""
           # Collect all files to attach to the GitHub Release
           for f in release/Rohan-Batra-Linux-x86-64-$VERSION.tar.gz \
@@ -366,12 +389,12 @@ jobs:
 
           echo "Attempting to create GitHub release with files: $FILES"
 
-          gh release create $VERSION $FILES \
+          gh release create "$VERSION" $FILES \
             --title "Release $VERSION" \
             --notes "Release $VERSION for branch $GITHUB_REF" \
-            --repo $GITHUB_REPOSITORY
+            --repo "$GITHUB_REPOSITORY"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use default GITHUB_TOKEN for current repo operations
 
       - name: Push Release Artifacts to rohan_batra_releases
         run: |
@@ -380,18 +403,18 @@ jobs:
           rm -rf rohan_batra_releases
           git clone https://x-access-token:${{ secrets.GH_SECRET }}@github.com/rohanbatrain/rohan_batra_releases.git
           cd rohan_batra_releases
-          mkdir -p $VERSION
+          mkdir -p "$VERSION" # Use VERSION environment variable
           # Copy all relevant release files
-          cp ../release/*$VERSION*.tar.gz $VERSION/ || true
-          cp ../release/Rohan-Batra.aab $VERSION/ || true
-          cp ../release/Rohan-Batra.apk $VERSION/ || true
-          cp ../release/Rohan-Batra-$VERSION.AppImage $VERSION/ || true
-          cp ../release/Rohan-Batra.app $VERSION/ || true
+          cp ../release/*"$VERSION"*.tar.gz "$VERSION"/ || true # Use VERSION environment variable
+          cp ../release/Rohan-Batra.aab "$VERSION"/ || true
+          cp ../release/Rohan-Batra.apk "$VERSION"/ || true
+          cp ../release/Rohan-Batra-"$VERSION".AppImage "$VERSION"/ || true # Use VERSION environment variable
+          cp ../release/Rohan-Batra.app "$VERSION"/ || true
           # If you want to include .xcarchive in this separate repo:
-          # find ../artifacts/ios-archive-artifact -type d -name '*.xcarchive' -exec cp -r {} $VERSION/ \; || true
+          # find ../artifacts/ios-archive-artifact -type d -name '*.xcarchive' -exec cp -r {} "$VERSION"/ \; || true
           
           git add .
           git commit -m "Add release artifacts for $VERSION" || echo "Nothing to commit"
           git push origin main
         env:
-          GH_SECRET: ${{ secrets.GH_SECRET }}
+          GH_SECRET: ${{ secrets.GH_SECRET }} # This secret is specific to your rohan_batra_releases repo
