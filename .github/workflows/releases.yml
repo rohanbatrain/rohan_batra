@@ -274,23 +274,11 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Use default GITHUB_TOKEN
 
-      ---
-
-      ## Simplified Artifact Download
-
-      Instead of individual `download-artifact` steps and then `find` and `mv`, you can use a single step to download all artifacts into a flattened structure:
-
       - name: Download all artifacts to a single directory
         uses: actions/download-artifact@v4
         with:
           path: ./release # All artifacts will be downloaded directly into the 'release' directory
           merge-multiple: true # This option flattens all downloaded artifacts into the specified path
-
-      ---
-
-      ## Streamlined Release Creation
-
-      Since all artifacts are now directly in the `release` directory, you can simplify the `Create GitHub Release` and `Push Release Artifacts` steps.
 
       - name: Create GitHub Release
         run: |
