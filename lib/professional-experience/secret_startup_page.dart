@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import FontAwesome for icons
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:lottie/lottie.dart';
 
 class SecretStartupPage extends StatelessWidget {
   @override
@@ -10,37 +11,42 @@ class SecretStartupPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const FaIcon(FontAwesomeIcons.arrowLeft), // Updated to FontAwesome icon
+          icon: const FaIcon(FontAwesomeIcons.arrowLeft),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      body: Container(
+        width: double.infinity,
+        height: double.infinity,
+        color: Theme.of(context).scaffoldBackgroundColor,
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Lottie.network(
+              'https://lottie.host/af787683-1074-446e-96b5-ee5fbc90f48e/pUBqZ5WbTy.json',
+              width: 180,
+              height: 180,
+              repeat: true,
+              fit: BoxFit.contain,
+            ),
+            SizedBox(height: 32),
             Text(
-              'Shhh... It\'s a Secret!',
+              'This Startup is Classified',
               style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
+              textAlign: TextAlign.center,
             ),
-            SizedBox(height: 16),
+            SizedBox(height: 12),
             Text(
-              'You\'ve stumbled upon something truly enigmatic. This startup is so secretive that even its name is classified. '
-              'I\'ve been working on this mysterious project for years, crafting something that will leave the world in awe. '
-              'Stay tuned... or maybe not. Secrets are best kept hidden.',
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            SizedBox(height: 24),
-            Center(
-              child: Icon(
-                FontAwesomeIcons.userNinja, // A more mischievous icon
-                size: 100,
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              'Access Denied.\nDetails are top secret.',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),

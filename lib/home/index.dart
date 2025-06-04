@@ -305,30 +305,14 @@ class _HomePageState extends State<HomePage> {
             // Download Section
             DownloadSection(isDarkMode: isDarkMode),
 
-
-
-          
-            
-
             // Footer Section
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+              width: double.infinity,
               color: isDarkMode ? Colors.black : Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 30),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: FaIcon(FontAwesomeIcons.linkedin),
-                        color: isDarkMode ? Colors.white : Colors.black,
-                        onPressed: () {
-                          // Add LinkedIn link
-                        },
-                      ),
-                    ],
-                  ),
                   SizedBox(height: 20),
                   Text(
                     '© 2025 Rohan Batra. All rights reserved.',
