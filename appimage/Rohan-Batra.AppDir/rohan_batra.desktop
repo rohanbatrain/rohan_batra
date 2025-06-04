@@ -3,6 +3,6 @@ Version=1.0
 Type=Application
 Terminal=false
 Name=Rohan Batra
-Exec=rohan_batra %u
+Exec=RohanBatra %u
 Icon=logo
 Categories=Utility;
