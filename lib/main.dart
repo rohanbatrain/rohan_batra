@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 import 'dart:async';
 import 'home/index.dart';
 import 'package:flutter/services.dart'; // Import for rootBundle
+import 'dart:math'; // For random selection
+import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import FontAwesome
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
@@ -14,6 +16,43 @@ void main() async {
 }
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
+
+// Map animations to their quotes
+final Map<String, List<String>> animationQuotes = {
+  'assets/animations/panda.json': [
+    'Stay curious, keep learning!',
+    'Pandas are proof that you can be cute and productive.',
+    'Embrace the journey, not just the destination.',
+    'Loading my portfolio... please wait!',
+    'My portfolio is almost ready!',
+    'Gathering my experience, one paw at a time.'
+  ],
+  // Add more animation-quote pairs as needed
+  'https://lottie.host/19451328-7e45-47bb-858c-921d5d71134d/5b6C8UQeUj.json': [
+    'Fetching fun, just a moment!',
+    'Playing fetch with pixels, almost there!',
+    'Sit, stay, and enjoy the show... almost ready!',
+    'Our best friends are preparing my portfolio!',
+    'Unleashing creativity, one bark at a time!',
+    'Loading my portfolio, wagging our tails!',
+    'My portfolio is on its way!'
+  ],
+  'https://lottie.host/ae38f19e-c506-4c3f-bf5c-d2c72e642c82/IceAcvKhR4.json': [
+    "Get ready to jump for joy - my portfolio's almost here!",
+    "Leaping into new adventures, just a moment!",
+    "We're thrilled to show you what's next!",
+    'Loading my portfolio, get ready to leap!',
+    'Excitement is building... my portfolio is loading!'
+  ],
+  'https://lottie.host/3a43f20e-9cef-4ba8-892a-001dff271c1c/iNi4lrRvEq.json': [
+    "Boo! my portfolio is almost here!",
+    "Don't be scared, just loading my portfolio...",
+    "A ghostly 'boo' while we fetch my portfolio!",
+    "Spooking up my portfolio, please wait...",
+    "Peek-a-boo! Portfolio coming soon!",
+    "Even ghosts need to load portfolios!"
+  ],
+};
 
 class PortfolioApp extends StatelessWidget {
   @override
@@ -49,12 +88,33 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late Timer _timer;
   bool _assetsPrefetched = false; // Track if assets are prefetched
+  bool _lottieReady = false;
   late final AnimationController _lottieController;
+  late String _selectedAnimation;
+  late String _selectedQuote;
+  int _splashDuration = 3; // Default duration
 
   @override
   void initState() {
     super.initState();
     _lottieController = AnimationController(vsync: this);
+    _selectRandomAnimationAndQuote();
+    _loadSplashDuration();
+  }
+
+  Future<void> _loadSplashDuration() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _splashDuration = prefs.getInt('splashDuration') ?? 3;
+    });
+  }
+
+  void _selectRandomAnimationAndQuote() {
+    final keys = animationQuotes.keys.toList();
+    final random = Random();
+    _selectedAnimation = keys[random.nextInt(keys.length)];
+    final quotes = animationQuotes[_selectedAnimation]!;
+    _selectedQuote = quotes[random.nextInt(quotes.length)];
   }
 
   @override
@@ -89,15 +149,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     // Prefetch Lottie animations
     final lottieAssets = [
-      'assets/animations/panda.json',
-      'assets/animations/developer.json',
-      'assets/animations/writer.json',
-      'assets/animations/research.json',
-      'assets/animations/professional.json',
-      'assets/animations/experience.json',
-      'assets/animations/portfolio.json',
-      'assets/animations/non-profit.json',
-      'assets/animations/download.json',
+      ...animationQuotes.keys.where((k) => k.startsWith('assets/animations/')),
       // Add more Lottie assets here
     ];
     for (var asset in lottieAssets) {
@@ -106,7 +158,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   void _startTimer() {
-    _timer = Timer(Duration(seconds: 3), () {
+    _timer = Timer(Duration(seconds: _splashDuration), () {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
@@ -145,18 +197,28 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
               SizedBox(
                 width: 300,
                 height: 300,
-                child: Lottie.asset(
-                  'assets/animations/panda.json',
-                  controller: _lottieController,
-                  onLoaded: (composition) {
-                    _lottieController.duration = composition.duration;
-                    _lottieController.repeat();
-                  },
-                  fit: BoxFit.cover,
-                ),
+                child: _selectedAnimation.startsWith('http')
+                    ? Lottie.network(
+                        _selectedAnimation,
+                        controller: _lottieController,
+                        onLoaded: (composition) {
+                          _lottieController.duration = composition.duration;
+                          _lottieController.repeat();
+                        },
+                        fit: BoxFit.cover,
+                      )
+                    : Lottie.asset(
+                        _selectedAnimation,
+                        controller: _lottieController,
+                        onLoaded: (composition) {
+                          _lottieController.duration = composition.duration;
+                          _lottieController.repeat();
+                        },
+                        fit: BoxFit.cover,
+                      ),
               ),
               SizedBox(height: 20),
-              AnimatedText(),
+              AnimatedText(text: _selectedQuote),
               SizedBox(height: 20),
               Text(
                 'Enjoy the animation!',
@@ -182,6 +244,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 }
 
 class AnimatedText extends StatefulWidget {
+  final String text;
+  AnimatedText({required this.text});
   @override
   _AnimatedTextState createState() => _AnimatedTextState();
 }
@@ -207,7 +271,7 @@ class _AnimatedTextState extends State<AnimatedText>
     return FadeTransition(
       opacity: _opacity,
       child: Text(
-        'Loading...',
+        widget.text,
         style: TextStyle(
           fontSize: 24, // Increased font size
           fontWeight: FontWeight.w600, // Slightly bolder weight

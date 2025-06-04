@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DownloadPopup extends StatelessWidget {
   @override
@@ -26,49 +27,92 @@ class DownloadPopup extends StatelessWidget {
             children: [
               _buildPlatformButton(
                 context,
-                label: 'Windows',
+                label: 'Windows Executable',
                 icon: FontAwesomeIcons.windows,
                 color: Colors.blue,
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
+                  await _launchDownload('https://github.com/rohanbatrain/rohan_batra_releases/releases/download/main/Rohan-Batra-Windows-x86-64-main.tar.gz');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Downloading for Windows...')),
+                    SnackBar(content: Text('Downloading Windows Executable...')),
                   );
                 },
               ),
               _buildPlatformButton(
                 context,
-                label: 'MacOS',
+                label: 'Mac Executable',
                 icon: FontAwesomeIcons.apple,
                 color: Colors.black,
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
+                  await _launchDownload('https://github.com/rohanbatrain/rohan_batra_releases/releases/download/main/Rohan-Batra-macOS-x86-64-main.tar.gz');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Downloading for MacOS...')),
+                    SnackBar(content: Text('Downloading Mac Executable...')),
                   );
                 },
               ),
               _buildPlatformButton(
                 context,
-                label: 'Linux',
+                label: 'Linux Executable',
                 icon: FontAwesomeIcons.linux,
                 color: Colors.orange,
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
+                  await _launchDownload('https://github.com/rohanbatrain/rohan_batra_releases/releases/download/main/Rohan-Batra-Linux-x86-64-main.tar.gz');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Downloading for Linux...')),
+                    SnackBar(content: Text('Downloading Linux Executable...')),
                   );
                 },
               ),
               _buildPlatformButton(
                 context,
-                label: 'Android',
+                label: 'Linux AppImage',
+                icon: FontAwesomeIcons.linux,
+                color: Colors.deepOrange,
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _launchDownload('https://github.com/rohanbatrain/rohan_batra_releases/releases/download/main/Rohan-Batra-main.AppImage');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Downloading Linux AppImage...')),
+                  );
+                },
+              ),
+              _buildPlatformButton(
+                context,
+                label: 'Android (APK)',
                 icon: FontAwesomeIcons.android,
                 color: Colors.green,
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
+                  await _launchDownload('https://github.com/rohanbatrain/rohan_batra_releases/releases/download/main/Rohan-Batra-main.apk');
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Downloading for Android...')),
+                    SnackBar(content: Text('Downloading Android APK...')),
+                  );
+                },
+              ),
+              _buildPlatformButton(
+                context,
+                label: 'Android (AAB)',
+                icon: FontAwesomeIcons.android,
+                color: Colors.lightGreen,
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _launchDownload('https://github.com/rohanbatrain/rohan_batra_releases/releases/download/main/Rohan-Batra-main.aab');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Downloading Android AAB...')),
+                  );
+                },
+              ),
+              _buildPlatformButton(
+                context,
+                label: 'iPhone (IPA)',
+                icon: FontAwesomeIcons.apple,
+                color: Colors.grey,
+                onPressed: () async {
+                  Navigator.of(context).pop();
+                  await _launchDownload('https://github.com/rohanbatrain/rohan_batra_releases/releases/download/main/Rohan-Batra-iOS-x86-64-main.ipa');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Downloading iPhone IPA...')),
                   );
                 },
               ),
@@ -77,8 +121,9 @@ class DownloadPopup extends StatelessWidget {
                 label: 'Web',
                 icon: FontAwesomeIcons.chrome,
                 color: Colors.teal,
-                onPressed: () {
+                onPressed: () async {
                   Navigator.of(context).pop();
+                  await _launchDownload('https://github.com/rohanbatrain/rohan_batra_releases/releases/download/main/Rohan-Batra-Web-main.tar.gz');
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Downloading for Web...')),
                   );
@@ -118,5 +163,12 @@ class DownloadPopup extends StatelessWidget {
       ),
       onPressed: onPressed,
     );
+  }
+
+  Future<void> _launchDownload(String url) async {
+    final uri = Uri.parse(url);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 }

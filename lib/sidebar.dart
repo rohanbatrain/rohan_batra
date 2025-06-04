@@ -19,6 +19,7 @@ class SidebarWidget extends StatefulWidget {
 
 class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
+  int? _splashDuration;
 
   @override
   void initState() {
@@ -28,11 +29,19 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
       duration: Duration(milliseconds: 300),
     );
     // Removed _loadThemePreference as it's now handled in main.dart
+    _loadSplashDuration();
   }
 
   Future<void> _saveThemePreference(bool isDarkMode) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('isDarkMode', isDarkMode);
+  }
+
+  Future<void> _loadSplashDuration() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _splashDuration = prefs.getInt('splashDuration') ?? 3;
+    });
   }
 
   @override
@@ -342,6 +351,47 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                                             value ? ThemeMode.dark : ThemeMode.light;
                                         _saveThemePreference(value); // Save preference
                                       });
+                                    },
+                                  ),
+                                  SizedBox(height: 20),
+                                  Text(
+                                    'Splash Animation Duration',
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Tooltip(
+                                    message: 'This setting controls how long the splash animation is displayed when the app starts. Increase for a longer intro, decrease for a faster launch.',
+                                    child: Icon(
+                                      FontAwesomeIcons.infoCircle,
+                                      size: 18,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                  StatefulBuilder(
+                                    builder: (context, setSliderState) {
+                                      return Column(
+                                        children: [
+                                          Slider(
+                                            value: (_splashDuration ?? 3).toDouble(),
+                                            min: 3,
+                                            max: 10,
+                                            divisions: 7,
+                                            label: '${_splashDuration ?? 3} seconds',
+                                            onChanged: (double value) async {
+                                              setSliderState(() {
+                                                _splashDuration = value.round();
+                                              });
+                                              setModalState(() {});
+                                              final prefs = await SharedPreferences.getInstance();
+                                              await prefs.setInt('splashDuration', _splashDuration!);
+                                            },
+                                          ),
+                                          Text('${_splashDuration ?? 3} seconds'),
+                                        ],
+                                      );
                                     },
                                   ),
                                 ],
