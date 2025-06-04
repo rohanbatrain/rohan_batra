@@ -75,7 +75,7 @@ jobs:
           fi
 
       - name: Build AppImage
-        run: ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.Appimage
+        run: ARCH=x86_64 ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.Appimage
 
       - name: Create tar.gz archive for Linux executable
         run: |
