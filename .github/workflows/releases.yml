@@ -36,8 +36,9 @@ jobs:
       - name: Extract release version
         id: extract_version
         run: |
-          VERSION=$(echo ${GITHUB_REF} | sed 's/refs\/heads\///')
-          # Fallback if GITHUB_REF doesn't provide a clean version (e.g., if triggered manually without a branch name)
+          # Use GITHUB_REF_NAME directly, which is the branch name for push events
+          VERSION="${GITHUB_REF_NAME}"
+          # Fallback if GITHUB_REF_NAME is empty (e.g., in very specific edge cases or if triggered manually without a branch)
           if [ -z "$VERSION" ]; then
             VERSION="v$(date +%Y%m%d%H%M%S)" # Example: v20231027153045
           fi
@@ -63,6 +64,7 @@ jobs:
         run: |
           ARCH=x86_64 ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.AppImage
           mkdir -p release
+          # Ensure AppImage filename also includes the version
           mv ./appimage/Rohan-Batra.AppImage release/Rohan-Batra-${{ steps.extract_version.outputs.version }}.AppImage
       - name: Upload AppImage Artifact
         uses: actions/upload-artifact@v4
@@ -77,7 +79,7 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    needs: start
+    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -107,7 +109,7 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    needs: start
+    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -136,7 +138,7 @@ jobs:
 
   build-ios:
     runs-on: macos-latest
-    needs: start
+    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -169,7 +171,7 @@ jobs:
 
   build-apk:
     runs-on: ubuntu-latest
-    needs: start
+    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
     steps:
       - name: Cache Android SDK and NDK
         uses: actions/cache@v3
@@ -202,16 +204,17 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
       - name: Rename APK for Release
-        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/Rohan-Batra.apk
+        # Use the version from build-linux to ensure consistency
+        run: mv build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/Rohan-Batra-${{ needs.build-linux.outputs.version }}.apk"
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: apk-artifact
-          path: build/app/outputs/flutter-apk/Rohan-Batra.apk
+          path: build/app/outputs/flutter-apk/Rohan-Batra-*.apk
 
   build-aab:
     runs-on: ubuntu-latest
-    needs: start
+    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
     steps:
       - name: Cache Android SDK and NDK
         uses: actions/cache@v3
@@ -239,22 +242,22 @@ jobs:
       - name: Accept Android Licenses
         run: yes | sdkmanager --licenses || true
         env:
-          env:
           ANDROID_SDK_ROOT: ${{ env.ANDROID_SDK_ROOT || '/usr/local/lib/android/sdk' }} # Fallback if not set by flutter-action
 
       - name: Build AAB
         run: flutter build appbundle --release
       - name: Rename AAB for Release
-        run: mv build/app/outputs/bundle/release/app-release.aab build/app/outputs/bundle/release/Rohan-Batra.aab
+        # Use the version from build-linux to ensure consistency
+        run: mv build/app/outputs/bundle/release/app-release.aab "build/app/outputs/bundle/release/Rohan-Batra-${{ needs.build-linux.outputs.version }}.aab"
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
           name: aab-artifact
-          path: build/app/outputs/bundle/release/Rohan-Batra.aab
+          path: build/app/outputs/bundle/release/Rohan-Batra-*.aab
 
   build-web:
     runs-on: ubuntu-latest
-    needs: start
+    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -285,7 +288,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
-    needs: [build-linux, build-windows, build-macos, build-ios, build-apk, build-aab, build-web] # Added build-ios
+    needs: [build-linux, build-windows, build-macos, build-ios, build-apk, build-aab, build-web]
     steps:
       - name: Set Release Version
         id: set_version
@@ -298,55 +301,66 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y gh
 
-      - name: Check if Release Exists and Delete if it does
-        run: |
-          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
-            echo "Release '$VERSION' already exists. Deleting..."
-            gh release delete "$VERSION" --yes --repo "$GITHUB_REPOSITORY"
-          else
-            echo "Release '$VERSION' does not exist. Proceeding with creation."
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Use default GITHUB_TOKEN for current repo operations
-
       - name: Download all artifacts to a single directory
         uses: actions/download-artifact@v4
         with:
           path: ./release
           merge-multiple: true
 
-      - name: Create GitHub Release
+      - name: Check if Release Exists and Delete if it does (Current Repo)
+        run: |
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
+            echo "Release '$VERSION' already exists in current repo. Deleting..."
+            gh release delete "$VERSION" --yes --repo "$GITHUB_REPOSITORY"
+          else
+            echo "Release '$VERSION' does not exist in current repo. Proceeding with creation."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Use your custom secret for repo operations
+
+      - name: Create GitHub Release (Current Repo)
         run: |
           FILES=$(find release -type f -print | tr '\n' ' ')
 
           if [ -z "$FILES" ]; then
-            echo "Error: No release files found to create a GitHub release."
+            echo "Error: No release files found to create a GitHub release in the current repository."
             exit 1
           fi
 
-          echo "Attempting to create GitHub release with files: $FILES"
+          echo "Attempting to create GitHub release in current repo with files: $FILES"
 
           gh release create "$VERSION" $FILES \
             --title "Release $VERSION" \
             --notes "Release $VERSION for branch $GITHUB_REF" \
             --repo "$GITHUB_REPOSITORY"
         env:
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Use your custom secret for repo operations
+
+      - name: Check if Release Exists and Delete if it does (rohan_batra_releases)
+        run: |
+          if gh release view "$VERSION" --repo "rohanbatrain/rohan_batra_releases" > /dev/null 2>&1; then
+            echo "Release '$VERSION' already exists in rohan_batra_releases. Deleting..."
+            gh release delete "$VERSION" --yes --repo "rohanbatrain/rohan_batra_releases"
+          else
+            echo "Release '$VERSION' does not exist in rohan_batra_releases. Proceeding with creation."
+          fi
+        env:
           GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
 
-      - name: Push Release Artifacts to rohan_batra_releases
+      - name: Create GitHub Release in rohan_batra_releases
         run: |
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git config --global user.name "github-actions[bot]"
-          
-          # Clone the release repository
-          git clone "https://x-access-token:${{ secrets.GH_SECRET }}@github.com/rohanbatrain/rohan_batra_releases.git" rohan_batra_releases_repo
-          cd rohan_batra_releases_repo
-          
-          mkdir -p "$VERSION"
-          cp -r ../release/* "$VERSION"/ || true
+          FILES=$(find release -type f -print | tr '\n' ' ')
 
-          git add .
-          git commit -m "Add release artifacts for $VERSION" || echo "Nothing to commit"
-          git push origin main
+          if [ -z "$FILES" ]; then
+            echo "Error: No release files found to create a GitHub release in rohan_batra_releases."
+            exit 1
+          fi
+
+          echo "Attempting to create GitHub release in rohan_batra_releases with files: $FILES"
+
+          gh release create "$VERSION" $FILES \
+            --title "Release $VERSION" \
+            --notes "Release $VERSION for branch $GITHUB_REF" \
+            --repo "rohanbatrain/rohan_batra_releases"
         env:
-          GH_SECRET: ${{ secrets.GH_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
