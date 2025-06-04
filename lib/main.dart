@@ -187,6 +187,12 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
+    final screenSize = MediaQuery.of(context).size;
+    final isMobile = screenSize.width < 700;
+    final animationSize = isMobile ? screenSize.width * 0.7 : 300.0;
+    final quoteFontSize = isMobile ? 18.0 : 24.0;
+    final enjoyFontSize = isMobile ? 12.0 : 14.0;
+    final verticalSpacing = isMobile ? 12.0 : 20.0;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -195,8 +201,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               SizedBox(
-                width: 300,
-                height: 300,
+                width: animationSize,
+                height: animationSize,
                 child: _selectedAnimation.startsWith('http')
                     ? Lottie.network(
                         _selectedAnimation,
@@ -217,13 +223,13 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         fit: BoxFit.cover,
                       ),
               ),
-              SizedBox(height: 20),
-              AnimatedText(text: _selectedQuote),
-              SizedBox(height: 20),
+              SizedBox(height: verticalSpacing),
+              AnimatedText(text: _selectedQuote, fontSize: quoteFontSize),
+              SizedBox(height: verticalSpacing),
               Text(
                 'Enjoy the animation!',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: enjoyFontSize,
                   fontStyle: FontStyle.italic,
                   color: Theme.of(context).textTheme.bodySmall?.color,
                 ),
@@ -245,7 +251,8 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
 class AnimatedText extends StatefulWidget {
   final String text;
-  AnimatedText({required this.text});
+  final double fontSize;
+  AnimatedText({required this.text, this.fontSize = 24});
   @override
   _AnimatedTextState createState() => _AnimatedTextState();
 }
@@ -273,10 +280,11 @@ class _AnimatedTextState extends State<AnimatedText>
       child: Text(
         widget.text,
         style: TextStyle(
-          fontSize: 24, // Increased font size
-          fontWeight: FontWeight.w600, // Slightly bolder weight
+          fontSize: widget.fontSize, // Responsive font size
+          fontWeight: FontWeight.w600,
           color: Theme.of(context).textTheme.bodyLarge?.color,
         ),
+        textAlign: TextAlign.center,
       ),
     );
   }
