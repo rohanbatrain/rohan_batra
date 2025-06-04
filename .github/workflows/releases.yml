@@ -26,7 +26,6 @@ jobs:
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Determined release version: $VERSION"
 
-  ---
 
   # Parallel Build Jobs:
   # These jobs now run in parallel, all depending on 'get-version'
