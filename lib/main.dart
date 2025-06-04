@@ -187,61 +187,82 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final isMobile = screenSize.width < 700;
-    final animationSize = isMobile ? screenSize.width * 0.7 : 300.0;
-    final quoteFontSize = isMobile ? 18.0 : 24.0;
-    final enjoyFontSize = isMobile ? 12.0 : 14.0;
-    final verticalSpacing = isMobile ? 12.0 : 20.0;
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
+            final screenSize = MediaQuery.of(context).size;
+            final isMobile = screenSize.width < 700;
+            final animationSize = isMobile
+                ? screenSize.width * 0.7
+                : screenSize.width < 1200
+                    ? 300.0
+                    : 400.0;
+            final quoteFontSize = isMobile
+                ? screenSize.width * 0.045
+                : screenSize.width < 1200
+                    ? 24.0
+                    : 28.0;
+            final enjoyFontSize = isMobile
+                ? screenSize.width * 0.03
+                : screenSize.width < 1200
+                    ? 14.0
+                    : 16.0;
+            final verticalSpacing = isMobile
+                ? screenSize.height * 0.02
+                : screenSize.height * 0.03;
             return SizedBox(
               width: double.infinity,
               height: double.infinity,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  Center(
-                    child: SizedBox(
-                      width: animationSize,
-                      height: animationSize,
-                      child: _selectedAnimation.startsWith('http')
-                          ? Lottie.network(
-                              _selectedAnimation,
-                              controller: _lottieController,
-                              onLoaded: (composition) {
-                                _lottieController.duration = composition.duration;
-                                _lottieController.repeat();
-                              },
-                              fit: BoxFit.cover,
-                            )
-                          : Lottie.asset(
-                              _selectedAnimation,
-                              controller: _lottieController,
-                              onLoaded: (composition) {
-                                _lottieController.duration = composition.duration;
-                                _lottieController.repeat();
-                              },
-                              fit: BoxFit.cover,
-                            ),
-                    ),
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: 500,
+                    minWidth: 200,
                   ),
-                  SizedBox(height: verticalSpacing),
-                  AnimatedText(text: _selectedQuote, fontSize: quoteFontSize),
-                  SizedBox(height: verticalSpacing),
-                  Text(
-                    'Enjoy the animation!',
-                    style: TextStyle(
-                      fontSize: enjoyFontSize,
-                      fontStyle: FontStyle.italic,
-                      color: Theme.of(context).textTheme.bodySmall?.color,
-                    ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: animationSize,
+                        height: animationSize,
+                        child: _selectedAnimation.startsWith('http')
+                            ? Lottie.network(
+                                _selectedAnimation,
+                                controller: _lottieController,
+                                onLoaded: (composition) {
+                                  _lottieController.duration = composition.duration;
+                                  _lottieController.repeat();
+                                },
+                                fit: BoxFit.cover,
+                              )
+                            : Lottie.asset(
+                                _selectedAnimation,
+                                controller: _lottieController,
+                                onLoaded: (composition) {
+                                  _lottieController.duration = composition.duration;
+                                  _lottieController.repeat();
+                                },
+                                fit: BoxFit.cover,
+                              ),
+                      ),
+                      SizedBox(height: verticalSpacing),
+                      AnimatedText(text: _selectedQuote, fontSize: quoteFontSize),
+                      SizedBox(height: verticalSpacing),
+                      Text(
+                        'Enjoy the animation!',
+                        style: TextStyle(
+                          fontSize: enjoyFontSize,
+                          fontStyle: FontStyle.italic,
+                          color: Theme.of(context).textTheme.bodySmall?.color,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             );
           },
