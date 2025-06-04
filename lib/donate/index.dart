@@ -22,13 +22,7 @@ class DonatePage extends StatelessWidget {
           },
         ),
         title: Text('Donate'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () => _shareDonationDetails(context),
-            tooltip: 'Share',
-          ),
-        ],
+        // Removed the share icon from the actions
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

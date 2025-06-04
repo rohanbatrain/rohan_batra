@@ -373,14 +373,6 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                                     ),
                                   ),
                                   SizedBox(width: 8),
-                                  Tooltip(
-                                    message: 'This setting controls how long the splash animation is displayed when the app starts. Increase for a longer intro, decrease for a faster launch.',
-                                    child: Icon(
-                                      FontAwesomeIcons.infoCircle,
-                                      size: 18,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
                                   StatefulBuilder(
                                     builder: (context, setSliderState) {
                                       return Column(
