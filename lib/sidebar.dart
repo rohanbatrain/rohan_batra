@@ -11,6 +11,7 @@ import 'package:rohanbatra/hobbies/index.dart'; // Import the new Hobbies screen
 import 'package:rohanbatra/socials/index.dart';
 import 'package:rohanbatra/donate/index.dart';
 import 'package:rohanbatra/home/contact_us_page.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SidebarWidget extends StatefulWidget {
   @override
@@ -297,6 +298,16 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                       },
                     ),
                   );
+                },
+              ),
+              ListTile(
+                leading: Icon(FontAwesomeIcons.blog, size: 18), // Blog icon
+                title: Text('Blog'),
+                onTap: () async {
+                  final url = Uri.parse('https://blog.rohanbatra.in');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url, mode: LaunchMode.externalApplication);
+                  }
                 },
               ),
               ListTile(
