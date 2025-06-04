@@ -29,7 +29,7 @@ jobs:
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Linux-x86-64-${{ steps.extract_version.outputs.version }}.tar.gz" -C build/linux/x64/release bundle
       - name: Upload Linux Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: linux-artifact
           path: release/Rohan-Batra-Linux-x86-64-*.tar.gz
@@ -52,7 +52,7 @@ jobs:
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Windows-x86-64-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/windows/x64/runner/Release .
       - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: windows-artifact
           path: release/Rohan-Batra-Windows-x86-64-*.tar.gz
@@ -74,7 +74,7 @@ jobs:
           mkdir -p release
           tar -czvf "release/Rohan-Batra-macOS-x86-64-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/macos/Build/Products/Release .
       - name: Upload macOS Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: macos-artifact
           path: release/Rohan-Batra-macOS-x86-64-*.tar.gz
@@ -106,7 +106,7 @@ jobs:
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Web-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/web .
       - name: Upload Web/Android Artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: web-android-artifact
           path: |
