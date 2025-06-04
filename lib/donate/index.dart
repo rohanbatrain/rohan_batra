@@ -1,19 +1,34 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:flutter/services.dart';
+import 'package:lottie/lottie.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class DonatePage extends StatelessWidget {
+  void _shareDonationDetails(BuildContext context) {
+    final details = '''Support My Work\n\nUPI: rohanbatra@kphdfc\nFederal Bank Account: 77770138456849\nIFSC: FDRL0007777\nBuyMeACoffee: https://www.buymeacoffee.com/rohanbatrain\nKo-fi: https://ko-fi.com/rohanbatrain''';
+    Clipboard.setData(ClipboardData(text: details));
+    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Donation details copied!')));
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(FontAwesomeIcons.arrowLeft), // Replaced Material icon with FontAwesome
+          icon: Icon(FontAwesomeIcons.arrowLeft),
           onPressed: () {
             Navigator.pop(context);
           },
         ),
         title: Text('Donate'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.share),
+            onPressed: () => _shareDonationDetails(context),
+            tooltip: 'Share',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -22,6 +37,14 @@ class DonatePage extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Lottie Animation for Donation
+                Lottie.network(
+                  'https://lottie.host/430b72e5-d109-45a3-8f67-a2602a4b4aac/GGN8CoO0KB.json', // Example donation animation URL
+                  height: 180,
+                  repeat: true,
+                  fit: BoxFit.contain,
+                ),
+                const SizedBox(height: 16),
                 Text(
                   'Support My Work',
                   style: Theme.of(context).textTheme.titleLarge,
@@ -59,7 +82,7 @@ class DonatePage extends StatelessWidget {
                             icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: 'rohanbatra@kphdfc'));
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('UPI ID copied!')));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied!')));
                             },
                           ),
                         ),
@@ -93,7 +116,7 @@ class DonatePage extends StatelessWidget {
                             icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: '77770138456849'));
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Account number copied!')));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied!')));
                             },
                           ),
                         ),
@@ -105,7 +128,7 @@ class DonatePage extends StatelessWidget {
                             icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: 'FDRL0007777'));
-                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('IFSC code copied!')));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied!')));
                             },
                           ),
                         ),
@@ -113,7 +136,7 @@ class DonatePage extends StatelessWidget {
                     ),
                   ),
                 ),
-                // BuyMeACoffee / Ko-fi Section
+                // BuyMeACoffee / Ko-fi / PayPal Section
                 Card(
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   elevation: 3,
@@ -127,35 +150,67 @@ class DonatePage extends StatelessWidget {
                           children: const [
                             FaIcon(FontAwesomeIcons.coffee, color: Colors.brown, size: 28),
                             SizedBox(width: 10),
-                            Text('Buy Me a Coffee / Ko-fi', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+                            Text('Buy Me a Coffee / Ko-fi / PayPal', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
                           ],
                         ),
                         const SizedBox(height: 12),
                         ListTile(
                           leading: FaIcon(FontAwesomeIcons.mugHot, color: Colors.amber),
                           title: const Text('BuyMeACoffee'),
-                          subtitle: const Text('@rohanbatrain'),
+                          subtitle: GestureDetector(
+                            onTap: () async {
+                              final url = Uri.parse('https://www.buymeacoffee.com/rohanbatrain');
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url);
+                              }
+                            },
+                            child: const Text('@rohanbatrain', style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
+                          ),
                           trailing: IconButton(
                             icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: '@rohanbatrain'));
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Username copied!')));
-                              });
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied!')));
                             },
                           ),
                         ),
                         ListTile(
                           leading: FaIcon(FontAwesomeIcons.donate, color: Colors.blueAccent),
                           title: const Text('Ko-fi'),
-                          subtitle: const Text('@rohanbatrain'),
+                          subtitle: GestureDetector(
+                            onTap: () async {
+                              final url = Uri.parse('https://ko-fi.com/rohanbatrain');
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url);
+                              }
+                            },
+                            child: const Text('@rohanbatrain', style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
+                          ),
                           trailing: IconButton(
                             icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
                             onPressed: () {
                               Clipboard.setData(const ClipboardData(text: '@rohanbatrain'));
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Username copied!')));
-                              });
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied!')));
+                            },
+                          ),
+                        ),
+                        ListTile(
+                          leading: FaIcon(FontAwesomeIcons.paypal, color: Colors.indigo),
+                          title: const Text('PayPal'),
+                          subtitle: GestureDetector(
+                            onTap: () async {
+                              final url = Uri.parse('https://paypal.me/Rohanbatrain?country.x=IN&locale.x=en_GB');
+                              if (await canLaunchUrl(url)) {
+                                await launchUrl(url);
+                              }
+                            },
+                            child: const Text('paypal.me/Rohanbatrain', style: TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
+                          ),
+                          trailing: IconButton(
+                            icon: FaIcon(FontAwesomeIcons.copy, size: 20, color: Theme.of(context).iconTheme.color),
+                            onPressed: () {
+                              Clipboard.setData(const ClipboardData(text: 'https://paypal.me/Rohanbatrain?country.x=IN&locale.x=en_GB'));
+                              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Copied!')));
                             },
                           ),
                         ),
