@@ -6,187 +6,156 @@ on:
       - main
 
 jobs:
-  deploy:
+  build-linux:
     runs-on: ubuntu-latest
-
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-
-      - name: Cache Flutter Dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: ${{ runner.os }}-flutter-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-flutter-
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-
       - name: Install dependencies
         run: flutter pub get
-
       - name: Extract release version
         id: extract_version
         run: |
           VERSION=$(echo ${GITHUB_REF} | sed 's/refs\/heads\///')
-          echo "VERSION=${VERSION}" >> $GITHUB_ENV
-
-      - name: Cache Linux Dependencies
-        uses: actions/cache@v3
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Build Linux
+        run: flutter build linux --release
+      - name: Create tar.gz archive for Linux executable
+        run: |
+          mkdir -p release
+          tar -czvf "release/Rohan-Batra-Linux-x86-64-${{ steps.extract_version.outputs.version }}.tar.gz" -C build/linux/x64/release bundle
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v3
         with:
-          path: /var/cache/apt/archives
-          key: linux-dependencies
-          restore-keys: linux-dependencies
+          name: linux-artifact
+          path: release/Rohan-Batra-Linux-x86-64-*.tar.gz
 
-      - name: Install Linux Dependencies (Only if not cached)
+  build-windows:
+    runs-on: windows-latest
+    needs: build-linux
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build Windows
+        run: flutter build windows --release
+      - name: Create tar.gz archive for Windows executable
+        shell: bash
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev pkg-config
+          mkdir -p release
+          tar -czvf "release/Rohan-Batra-Windows-x86-64-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/windows/x64/runner/Release .
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-artifact
+          path: release/Rohan-Batra-Windows-x86-64-*.tar.gz
 
-      - name: Generate Keystore (Android)
+  build-macos:
+    runs-on: macos-latest
+    needs: build-linux
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build macOS
+        run: flutter build macos --release
+      - name: Create tar.gz archive for macOS executable
         run: |
-          keytool -genkey -v -keystore $HOME/keystore.jks -storetype JKS -keyalg RSA -keysize 2048 -validity 10000 -alias "$ANDROID_KEY_ALIAS" -dname "CN=Rohan Batra, OU=Open Source, O=Second Brain Database, L=Bidholi, ST=UK, C=IN" -storepass $ANDROID_KEYSTORE_PASSWORD -keypass $ANDROID_KEY_PASSWORD
-        env:
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          mkdir -p release
+          tar -czvf "release/Rohan-Batra-macOS-x86-64-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/macos/Build/Products/Release .
+      - name: Upload macOS Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: macos-artifact
+          path: release/Rohan-Batra-macOS-x86-64-*.tar.gz
 
-      # --- Run Android, Linux, and Web Builds in Parallel ---
-      - name: Build Android and Linux in Parallel
+  build-web-android:
+    runs-on: ubuntu-latest
+    needs: build-linux
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Build APK and AAB
         run: |
-          flutter build apk --release  
-          flutter build appbundle --release  
-          flutter build linux --release 
-          wait
-
+          flutter build apk --release
+          flutter build appbundle --release
       - name: Rename APK and AAB for Release
         run: |
           mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/Rohan-Batra.apk
           mv build/app/outputs/bundle/release/app-release.aab build/app/outputs/bundle/release/Rohan-Batra.aab
-
-      - name: Cache AppImage Tool
-        uses: actions/cache@v3
-        with:
-          path: ./appimage/appimagetool-x86_64.AppImage
-          key: appimage-tool
-
-      - name: Ensure AppImage Tool Exists
-        run: |
-          if [ ! -f "./appimage/appimagetool-x86_64.AppImage" ]; then
-            wget -O ./appimage/appimagetool-x86_64.AppImage "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
-            chmod +x ./appimage/appimagetool-x86_64.AppImage
-          fi
-
-
-      - name: Copying linux build 
-        run: cp -r ./build/linux/x64/release/bundle/* ./appimage/Rohan-Batra.AppDir/
-
-        
-      - name: Build AppImage
-        run: ARCH=x86_64 ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.Appimage
-
-      - name: Create tar.gz archive for Linux executable
-        run: |
-          mkdir -p release
-          tar -czvf "release/Rohan-Batra-Linux-x86-64-${{ env.VERSION }}.tar.gz" -C build/linux/x64/release bundle
-
-      - name: Enable Web for Flutter (Web) and Build
+      - name: Build Web
         run: |
           flutter config --enable-web
           flutter build web --release
-
       - name: Create tar.gz archive for Web build
         run: |
           mkdir -p release
-          tar -czvf "release/Rohan-Batra-Web-${{ env.VERSION }}.tar.gz" -C build/web .
+          tar -czvf "release/Rohan-Batra-Web-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/web .
+      - name: Upload Web/Android Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: web-android-artifact
+          path: |
+            release/Rohan-Batra-Web-*.tar.gz
+            build/app/outputs/bundle/release/Rohan-Batra.aab
+            build/app/outputs/flutter-apk/Rohan-Batra.apk
 
-      - name: Build Windows Release
-        run: flutter build windows --release
-
-      - name: Create tar.gz archive for Windows executable
+  release:
+    runs-on: ubuntu-latest
+    needs: [build-linux, build-windows, build-macos, build-web-android]
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: ./artifacts
+      - name: Move all release files to a single directory
         run: |
           mkdir -p release
-          tar -czvf "release/Rohan-Batra-Windows-x86-64-${{ env.VERSION }}.tar.gz" -C build/windows/x64/runner/Release .
-
-      - name: Build macOS Release
-        run: flutter build macos --release
-
-      - name: Create tar.gz archive for macOS executable
+          find ./artifacts -type f -name '*.tar.gz' -exec mv {} release/ \;
+          find ./artifacts -type f -name '*.aab' -exec mv {} release/ \;
+          find ./artifacts -type f -name '*.apk' -exec mv {} release/ \;
+      - name: Create GitHub Release
         run: |
-          mkdir -p release
-          tar -czvf "release/Rohan-Batra-macOS-x86-64-${{ env.VERSION }}.tar.gz" -C build/macos/Build/Products/Release .
-
-      # - name: Deploy to GitHub Pages (Web)
-      #   uses: crazy-max/ghaction-github-pages@v4.1.0
-      #   with:
-      #     build_dir: build/web
-      #     repo: ${{ github.repository }}
-      #     target_branch: gh-pages
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Verify Files Exist
-        run: |
-          echo "Verifying required files..."
-          FILES=(
-            "build/app/outputs/bundle/release/Rohan-Batra.aab"
-            "build/app/outputs/flutter-apk/Rohan-Batra.apk"
-            "appimage/Rohan-Batra.Appimage"
-            "release/Rohan-Batra-Linux-x86-64-${{ env.VERSION }}.tar.gz"
-            "release/Rohan-Batra-Web-${{ env.VERSION }}.tar.gz"
-            "release/Rohan-Batra-Windows-x86-64-${{ env.VERSION }}.tar.gz"
-            "release/Rohan-Batra-macOS-x86-64-${{ env.VERSION }}.tar.gz"
-          )
-          for file in "${FILES[@]}"; do
-            if [ ! -f "$file" ]; then
-              echo "Error: $file does not exist!" >&2
-              exit 1
-            fi
-          done
-          echo "All files verified successfully."
-
-      - name: Check if Release Exists
-        id: check_release
-        run: |
-          if gh release view $VERSION --json name --jq '.name' > /dev/null 2>&1; then
-            echo "release_exists=true" >> $GITHUB_ENV
-          else
-            echo "release_exists=false" >> $GITHUB_ENV
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
-
-      - name: Delete Existing Release (if any)
-        if: env.release_exists == 'true'
-        run: gh release delete $VERSION --yes --repo $GITHUB_REPOSITORY
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
-
-      - name: Create New Release
-        run: |
+          VERSION=${{ needs.build-linux.outputs.version }}
           gh release create $VERSION \
-            release/Rohan-Batra-Linux-x86-64-${{ env.VERSION }}.tar.gz \
-            release/Rohan-Batra-Web-${{ env.VERSION }}.tar.gz \
-            release/Rohan-Batra-Windows-x86-64-${{ env.VERSION }}.tar.gz \
-            release/Rohan-Batra-macOS-x86-64-${{ env.VERSION }}.tar.gz \
-            build/app/outputs/bundle/release/Rohan-Batra.aab \
-            build/app/outputs/flutter-apk/Rohan-Batra.apk \
-            appimage/Rohan-Batra.Appimage \
+            release/Rohan-Batra-Linux-x86-64-$VERSION.tar.gz \
+            release/Rohan-Batra-Web-$VERSION.tar.gz \
+            release/Rohan-Batra-Windows-x86-64-$VERSION.tar.gz \
+            release/Rohan-Batra-macOS-x86-64-$VERSION.tar.gz \
+            release/Rohan-Batra.aab \
+            release/Rohan-Batra.apk \
             --title "Release $VERSION" \
             --notes "Release $VERSION for branch $GITHUB_REF" \
             --repo $GITHUB_REPOSITORY
         env:
           GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
-
-      - name: Cleanup Temporary Files
+      - name: Push Release Artifacts to rohan_batra_releases
         run: |
-          echo "Cleaning up temporary files..."
-          rm -rf $HOME/keystore.jks
-          rm -rf build/
-          rm -rf release/
-          unset ANDROID_KEY_ALIAS
-          unset ANDROID_KEY_PASSWORD
-          unset ANDROID_KEYSTORE_PASSWORD
-          unset GH_SECRET
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          rm -rf rohan_batra_releases
+          git clone https://x-access-token:${{ secrets.GH_SECRET }}@github.com/rohanbatrain/rohan_batra_releases.git
+          cd rohan_batra_releases
+          mkdir -p $VERSION
+          cp ../release/*$VERSION*.tar.gz $VERSION/ || true
+          cp ../release/Rohan-Batra.aab $VERSION/ || true
+          cp ../release/Rohan-Batra.apk $VERSION/ || true
+          git add .
+          git commit -m "Add release artifacts for $VERSION" || echo "Nothing to commit"
+          git push origin main
+        env:
+          GH_SECRET: ${{ secrets.GH_SECRET }}
