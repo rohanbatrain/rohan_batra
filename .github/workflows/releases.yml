@@ -6,17 +6,35 @@ on:
       - main
 
 jobs:
-  start:
+  # Job 1: Determine the Release Version
+  # This job runs first to ensure a consistent version string is generated
+  # and used across all subsequent build and release jobs.
+  get-version:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.extract_version.outputs.version }}
     steps:
-      - name: Start Pipeline
-        run: echo "Starting all builds in parallel."
+      - name: Extract Release Version
+        id: extract_version
+        run: |
+          # Use GITHUB_REF_NAME directly for the branch name (e.g., 'main')
+          VERSION="${GITHUB_REF_NAME}"
+          # Fallback if GITHUB_REF_NAME is empty (e.g., in edge cases or manual triggers without a branch)
+          if [ -z "$VERSION" ]; then
+            VERSION="v$(date +%Y%m%d%H%M%S)" # Example: v20250604211432
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Determined release version: $VERSION"
+
+  ---
+
+  # Parallel Build Jobs:
+  # These jobs now run in parallel, all depending on 'get-version'
+  # to get the consistent release version.
 
   build-linux:
     runs-on: ubuntu-latest
-    needs: start
-    outputs:
-      version: ${{ steps.extract_version.outputs.version }}
+    needs: get-version # Depends on 'get-version' to obtain the release string
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -25,31 +43,21 @@ jobs:
           key: linux-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             linux-flutter-
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-      - name: Install GTK dependencies
+      - name: Install GTK Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
-      - name: Extract release version
-        id: extract_version
-        run: |
-          # Use GITHUB_REF_NAME directly, which is the branch name for push events
-          VERSION="${GITHUB_REF_NAME}"
-          # Fallback if GITHUB_REF_NAME is empty (e.g., in very specific edge cases or if triggered manually without a branch)
-          if [ -z "$VERSION" ]; then
-            VERSION="v$(date +%Y%m%d%H%M%S)" # Example: v20231027153045
-          fi
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
       - name: Build Linux
         run: flutter build linux --release
       - name: Create tar.gz archive for Linux executable
         run: |
           mkdir -p release
-          tar -czvf "release/Rohan-Batra-Linux-x86-64-${{ steps.extract_version.outputs.version }}.tar.gz" -C build/linux/x64/release bundle
-      - name: Install appimagetool
+          tar -czvf "release/Rohan-Batra-Linux-x86-64-${{ needs.get-version.outputs.version }}.tar.gz" -C build/linux/x64/release bundle
+      - name: Install AppImageTool
         run: |
           mkdir -p appimage
           if [ ! -f "./appimage/appimagetool-x86_64.AppImage" ]; then
@@ -62,10 +70,9 @@ jobs:
           cp -r ./build/linux/x64/release/bundle/* ./appimage/Rohan-Batra.AppDir/
       - name: Build AppImage
         run: |
-          ARCH=x86_64 ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra.AppImage
+          ARCH=x86_64 ./appimage/appimagetool-x86_64.AppImage ./appimage/Rohan-Batra.AppDir ./appimage/Rohan-Batra-${{ needs.get-version.outputs.version }}.AppImage
           mkdir -p release
-          # Ensure AppImage filename also includes the version
-          mv ./appimage/Rohan-Batra.AppImage release/Rohan-Batra-${{ steps.extract_version.outputs.version }}.AppImage
+          mv ./appimage/Rohan-Batra-${{ needs.get-version.outputs.version }}.AppImage release/Rohan-Batra-${{ needs.get-version.outputs.version }}.AppImage
       - name: Upload AppImage Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -79,7 +86,7 @@ jobs:
 
   build-windows:
     runs-on: windows-latest
-    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
+    needs: get-version # Depends on 'get-version'
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -88,11 +95,11 @@ jobs:
           key: windows-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             windows-flutter-
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
       - name: Build Windows
         run: flutter build windows --release
@@ -100,7 +107,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p release
-          tar -czvf "release/Rohan-Batra-Windows-x86-64-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/windows/x64/runner/Release .
+          tar -czvf "release/Rohan-Batra-Windows-x86-64-${{ needs.get-version.outputs.version }}.tar.gz" -C build/windows/x64/runner/Release .
       - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -109,7 +116,7 @@ jobs:
 
   build-macos:
     runs-on: macos-latest
-    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
+    needs: get-version # Depends on 'get-version'
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -118,18 +125,18 @@ jobs:
           key: macos-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             macos-flutter-
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
       - name: Build macOS
         run: flutter build macos --release
       - name: Create tar.gz archive for macOS executable
         run: |
           mkdir -p release
-          tar -czvf "release/Rohan-Batra-macOS-x86-64-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/macos/Build/Products/Release .
+          tar -czvf "release/Rohan-Batra-macOS-x86-64-${{ needs.get-version.outputs.version }}.tar.gz" -C build/macos/Build/Products/Release .
       - name: Upload macOS Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -138,7 +145,7 @@ jobs:
 
   build-ios:
     runs-on: macos-latest
-    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
+    needs: get-version # Depends on 'get-version'
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -147,22 +154,18 @@ jobs:
           key: ios-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             ios-flutter-
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
       - name: Build iOS (unsigned)
         run: flutter build ios --no-codesign --release
       - name: Create .ipa archive for iOS
         run: |
           mkdir -p release
-          # The IPA will be in build/ios/iphoneos, and it's named Runner.app. We need to package it correctly.
-          # For unsigned builds, you often get a Runner.app directory.
-          # To create an IPA, you typically compress the .app directory into a .ipa file.
-          # Note: This .ipa will be unsigned and cannot be directly installed on devices without manual signing.
-          ditto -ck --rsrc --arch x86_64 build/ios/iphoneos/Runner.app release/Rohan-Batra-iOS-x86-64-${{ needs.build-linux.outputs.version }}.ipa
+          ditto -ck --rsrc --arch x86_64 build/ios/iphoneos/Runner.app release/Rohan-Batra-iOS-x86-64-${{ needs.get-version.outputs.version }}.ipa
       - name: Upload iOS Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -171,7 +174,7 @@ jobs:
 
   build-apk:
     runs-on: ubuntu-latest
-    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
+    needs: get-version # Depends on 'get-version'
     steps:
       - name: Cache Android SDK and NDK
         uses: actions/cache@v3
@@ -190,11 +193,11 @@ jobs:
           key: apk-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             apk-flutter-
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
       - name: Accept Android Licenses
         run: yes | sdkmanager --licenses || true
@@ -204,8 +207,7 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
       - name: Rename APK for Release
-        # Use the version from build-linux to ensure consistency
-        run: mv build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/Rohan-Batra-${{ needs.build-linux.outputs.version }}.apk"
+        run: mv build/app/outputs/flutter-apk/app-release.apk "build/app/outputs/flutter-apk/Rohan-Batra-${{ needs.get-version.outputs.version }}.apk"
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -214,7 +216,7 @@ jobs:
 
   build-aab:
     runs-on: ubuntu-latest
-    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
+    needs: get-version # Depends on 'get-version'
     steps:
       - name: Cache Android SDK and NDK
         uses: actions/cache@v3
@@ -233,11 +235,11 @@ jobs:
           key: aab-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             aab-flutter-
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
       - name: Accept Android Licenses
         run: yes | sdkmanager --licenses || true
@@ -247,8 +249,7 @@ jobs:
       - name: Build AAB
         run: flutter build appbundle --release
       - name: Rename AAB for Release
-        # Use the version from build-linux to ensure consistency
-        run: mv build/app/outputs/bundle/release/app-release.aab "build/app/outputs/bundle/release/Rohan-Batra-${{ needs.build-linux.outputs.version }}.aab"
+        run: mv build/app/outputs/bundle/release/app-release.aab "build/app/outputs/bundle/release/Rohan-Batra-${{ needs.get-version.outputs.version }}.aab"
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -257,7 +258,7 @@ jobs:
 
   build-web:
     runs-on: ubuntu-latest
-    needs: build-linux # Changed from 'start' to 'build-linux' to access its outputs
+    needs: get-version # Depends on 'get-version'
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -266,11 +267,11 @@ jobs:
           key: web-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             web-flutter-
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
       - name: Enable Web for Flutter
         run: flutter config --enable-web
@@ -279,21 +280,27 @@ jobs:
       - name: Create tar.gz archive for Web build
         run: |
           mkdir -p release
-          tar -czvf "release/Rohan-Batra-Web-${{ needs.build-linux.outputs.version }}.tar.gz" -C build/web .
+          tar -czvf "release/Rohan-Batra-Web-${{ needs.get-version.outputs.version }}.tar.gz" -C build/web .
       - name: Upload Web Artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
 
+  ---
+
+  # Release Job:
+  # This job depends on all build jobs and 'get-version' to ensure all artifacts
+  # are ready and the version is known before creating releases.
+
   release:
     runs-on: ubuntu-latest
-    needs: [build-linux, build-windows, build-macos, build-ios, build-apk, build-aab, build-web]
+    needs: [get-version, build-linux, build-windows, build-macos, build-ios, build-apk, build-aab, build-web]
     steps:
       - name: Set Release Version
         id: set_version
         run: |
-          VERSION="${{ needs.build-linux.outputs.version }}"
+          VERSION="${{ needs.get-version.outputs.version }}" # Get the version from the 'get-version' job
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Install GitHub CLI
@@ -307,7 +314,7 @@ jobs:
           path: ./release
           merge-multiple: true
 
-      - name: Check if Release Exists and Delete if it does (Current Repo)
+      - name: Check if Release Exists and Delete if it does (Current Repository)
         run: |
           if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" > /dev/null 2>&1; then
             echo "Release '$VERSION' already exists in current repo. Deleting..."
@@ -318,7 +325,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Use your custom secret for repo operations
 
-      - name: Create GitHub Release (Current Repo)
+      - name: Create GitHub Release (Current Repository)
         run: |
           FILES=$(find release -type f -print | tr '\n' ' ')
 
@@ -338,6 +345,7 @@ jobs:
 
       - name: Check if Release Exists and Delete if it does (rohan_batra_releases)
         run: |
+          # Check for existing release in the target repository
           if gh release view "$VERSION" --repo "rohanbatrain/rohan_batra_releases" > /dev/null 2>&1; then
             echo "Release '$VERSION' already exists in rohan_batra_releases. Deleting..."
             gh release delete "$VERSION" --yes --repo "rohanbatrain/rohan_batra_releases"
@@ -345,7 +353,7 @@ jobs:
             echo "Release '$VERSION' does not exist in rohan_batra_releases. Proceeding with creation."
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Important: Use a PAT with repo scope for other repos
 
       - name: Create GitHub Release in rohan_batra_releases
         run: |
@@ -363,4 +371,4 @@ jobs:
             --notes "Release $VERSION for branch $GITHUB_REF" \
             --repo "rohanbatrain/rohan_batra_releases"
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }}
+          GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Important: Use a PAT with repo scope for other repos
