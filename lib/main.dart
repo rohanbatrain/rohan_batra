@@ -28,7 +28,7 @@ final Map<String, List<String>> animationQuotes = {
     'Gathering my experience, one paw at a time.'
   ],
   // Add more animation-quote pairs as needed
-  'https://lottie.host/19451328-7e45-47bb-858c-921d5d71134d/5b6C8UQeUj.json': [
+  'assets/animations/5b6C8UQeUj.json': [
     'Fetching fun, just a moment!',
     'Playing fetch with pixels, almost there!',
     'Sit, stay, and enjoy the show... almost ready!',
@@ -37,14 +37,14 @@ final Map<String, List<String>> animationQuotes = {
     'Loading my portfolio, wagging our tails!',
     'My portfolio is on its way!'
   ],
-  'https://lottie.host/ae38f19e-c506-4c3f-bf5c-d2c72e642c82/IceAcvKhR4.json': [
+  'assets/animations/IceAcvKhR4.json': [
     "Get ready to jump for joy - my portfolio's almost here!",
     "Leaping into new adventures, just a moment!",
     "We're thrilled to show you what's next!",
     'Loading my portfolio, get ready to leap!',
     'Excitement is building... my portfolio is loading!'
   ],
-  'https://lottie.host/3a43f20e-9cef-4ba8-892a-001dff271c1c/iNi4lrRvEq.json': [
+  'assets/animations/iNi4lrRvEq.json': [
     "Boo! my portfolio is almost here!",
     "Don't be scared, just loading my portfolio...",
     "A ghostly 'boo' while we fetch my portfolio!",

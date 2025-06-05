@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:async'; // Import the dart:async package
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import the FontAwesome package
+// Import the FontAwesome package
 import '../sidebar.dart';
 import 'professional_summary.dart'; // Import the AboutMe widget
 import 'professional_experience.dart'; // Import the ProfessionalExperience widget

@@ -263,6 +263,10 @@ flutter:
     - assets/images/banners/karmstrot-builds/2.png
     - assets/images/banners/blog/2.png
     - assets/images/banners/blog/1.png
+    - assets/animations/iNi4lrRvEq.json
+    - assets/animations/IceAcvKhR4.json
+    - assets/animations/5b6C8UQeUj.json
+
     
 # flutter_launcher_icons:
 #   android: "launcher_icon"
