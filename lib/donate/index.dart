@@ -32,8 +32,8 @@ class DonatePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Lottie Animation for Donation
-                Lottie.network(
-                  'https://lottie.host/430b72e5-d109-45a3-8f67-a2602a4b4aac/GGN8CoO0KB.json', // Example donation animation URL
+                Lottie.asset(
+                  'assets/animations/GGN8CoO0KB.json',
                   height: 180,
                   repeat: true,
                   fit: BoxFit.contain,

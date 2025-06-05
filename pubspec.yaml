@@ -266,8 +266,9 @@ flutter:
     - assets/animations/iNi4lrRvEq.json
     - assets/animations/IceAcvKhR4.json
     - assets/animations/5b6C8UQeUj.json
-
-    
+    - assets/animations/GGN8CoO0KB.json
+    - assets/animations/pUBqZ5WbTy.json
+    - assets/animations/gBuOxKdbdC.json
 # flutter_launcher_icons:
 #   android: "launcher_icon"
 #   ios: true

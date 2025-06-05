@@ -94,7 +94,7 @@ class _HomePageState extends State<HomePage> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         SizedBox(
-                          height: 180,
+                          height: 250,
                           child: Lottie.asset(
                             _getLottieAsset(),
                             key: ValueKey(_currentLottieIndex),
@@ -266,27 +266,42 @@ class _HomePageState extends State<HomePage> {
                 children: [
 
                   SizedBox(height: 24),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Expanded(
-                        flex: 5,
-                        child: SizedBox(
-                          height: isMobile ? 140 : 180,
-                          child: Lottie.asset(
-                            'assets/animations/professional.json',
-                            fit: BoxFit.contain,
+                  isMobile 
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 250,
+                            child: Lottie.asset(
+                              'assets/animations/professional.json',
+                              fit: BoxFit.contain,
+                            ),
                           ),
-                        ),
+                          SizedBox(height: 32),
+                          AboutMe(isDarkMode: isDarkMode),
+                        ],
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 5,
+                            child: SizedBox(
+                              height: 180,
+                              child: Lottie.asset(
+                                'assets/animations/professional.json',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 60),
+                          Expanded(
+                            flex: 6,
+                            child: AboutMe(isDarkMode: isDarkMode),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: isMobile ? 20 : 60),
-                      Expanded(
-                        flex: 6,
-                        child: AboutMe(isDarkMode: isDarkMode),
-                      ),
-                    ],
-                  ),
                 ],
               ),
             ),

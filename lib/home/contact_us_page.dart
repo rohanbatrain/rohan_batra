@@ -91,8 +91,8 @@ class _ContactUsPageState extends State<ContactUsPage> {
                       Expanded(
                         child: Padding(
                           padding: const EdgeInsets.all(24.0),
-                          child: Lottie.network(
-                            'https://lottie.host/4aaccb60-6bd0-418d-85d0-b21940605a14/gBuOxKdbdC.json',
+                          child: Lottie.asset(
+                        'assets/animations/gBuOxKdbdC.json',
                             height: 340,
                             fit: BoxFit.contain,
                           ),
@@ -115,8 +115,8 @@ class _ContactUsPageState extends State<ContactUsPage> {
                 : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Lottie.network(
-                        'https://lottie.host/4aaccb60-6bd0-418d-85d0-b21940605a14/gBuOxKdbdC.json',
+                      Lottie.asset(
+                        'assets/animations/gBuOxKdbdC.json',
                         height: 180,
                         fit: BoxFit.contain,
                       ),
