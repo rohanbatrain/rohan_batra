@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:   # allows manual trigger from GitHub UI
+
 
 jobs:
   # Job 1: Determine the Release Version
@@ -35,17 +37,12 @@ jobs:
     runs-on: ubuntu-latest
     needs: get-version # Depends on 'get-version' to obtain the release string
     steps:
-      - name: Cache Flutter Dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: linux-flutter-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            linux-flutter-
       - name: Checkout Code
         uses: actions/checkout@v4
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
+        with:
+         cache: true # this is the default
       - name: Install GTK Dependencies
         run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev
       - name: Install Dependencies
@@ -257,34 +254,75 @@ jobs:
 
   build-web:
     runs-on: ubuntu-latest
-    needs: get-version # Depends on 'get-version'
+    needs: get-version
     steps:
-      - name: Cache Flutter Dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.pub-cache
-          key: web-flutter-${{ hashFiles('**/pubspec.yaml') }}
-          restore-keys: |
-            web-flutter-
       - name: Checkout Code
         uses: actions/checkout@v4
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
+
       - name: Install Dependencies
         run: flutter pub get
+
       - name: Enable Web for Flutter
         run: flutter config --enable-web
-      - name: Build Web
-        run: flutter build web --release
+
+      # ✅ Use the official Hugo GitHub Action instead of manual install
+      - name: Set up Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
+
+      # 👉 Clone and modify Hugo blog
+      - name: Clone and Prepare Hugo Blog
+        run: |
+          git clone https://github.com/rohanbatrain/blog blog
+          sed -i 's/blog\.rohanbatra\.in/rohanbatra.in\/blog\//g' blog/hugo.yaml
+          mkdir -p public/blog
+          cd blog
+          hugo -d ../public/blog
+
+      - name: Build Flutter Web App
+        run: flutter build web --release  --base-href="/portfolio/"
+
+      - name: Create Public Directory
+        run: mkdir -p public/portfolio/
+      
+      - name: Prepare Public Directory with Flutter and Hugo
+        run: |
+          cp -r build/web/* public/portfolio/
+
+          
+      - name: Clone index.html into public/
+        run: |
+          curl -o public/index.html https://raw.githubusercontent.com/rohanbatrain/rohan_batra/refs/heads/landing/index.html
+
+      
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: public
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
       - name: Create tar.gz archive for Web build
         run: |
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Web-${{ needs.get-version.outputs.version }}.tar.gz" -C build/web .
+
+        
       - name: Upload Web Artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
+
+
+
 
 
   # Release Job:
