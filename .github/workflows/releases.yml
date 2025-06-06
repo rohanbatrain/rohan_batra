@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:   # allows manual trigger from GitHub UI
+
 
 jobs:
   # Job 1: Determine the Release Version
