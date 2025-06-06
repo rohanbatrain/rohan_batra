@@ -282,10 +282,10 @@ jobs:
       # 👉 Clone and modify Hugo blog
       - name: Clone and Prepare Hugo Blog
         run: |
-          git clone https://github.com/rohanbatrain/blog temp-blog
-          sed -i 's/blog\.rohanbatra\.in/rohanbatra.in/g' temp-blog/hugo.yml
+          git clone https://github.com/rohanbatrain/blog 
+          sed -i 's/blog\.rohanbatra\.in/rohanbatra.in/g' blog/hugo.yml
           mkdir -p web/blog
-          cd temp-blog
+          cd blog
           hugo -d ../web/blog
   
       - name: Build Flutter Web App
