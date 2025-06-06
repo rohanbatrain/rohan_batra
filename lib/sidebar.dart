@@ -29,7 +29,6 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
       vsync: this,
       duration: Duration(milliseconds: 300),
     );
-    // Removed _loadThemePreference as it's now handled in main.dart
     _loadSplashDuration();
   }
 
@@ -324,8 +323,8 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                         child: Container(
                           padding: EdgeInsets.all(20),
                           constraints: BoxConstraints(
-                            maxWidth: MediaQuery.of(context).size.width * 0.8,
-                            maxHeight: MediaQuery.of(context).size.height * 0.6,
+                            maxWidth: MediaQuery.of(context).size.width * 0.9, // Adjust width dynamically
+                            maxHeight: MediaQuery.of(context).size.height * 0.8, // Adjust height dynamically
                           ),
                           child: StatefulBuilder(
                             builder: (BuildContext context, StateSetter setModalState) {
