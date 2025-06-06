@@ -257,7 +257,7 @@ jobs:
 
   build-web:
     runs-on: ubuntu-latest
-    needs: get-version # Depends on 'get-version'
+    needs: get-version
     steps:
       - name: Cache Flutter Dependencies
         uses: actions/cache@v3
@@ -266,25 +266,46 @@ jobs:
           key: web-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             web-flutter-
+  
       - name: Checkout Code
         uses: actions/checkout@v4
+  
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
+  
       - name: Install Dependencies
         run: flutter pub get
+  
       - name: Enable Web for Flutter
         run: flutter config --enable-web
-      - name: Build Web
+  
+      # 👉 Clone and modify Hugo blog
+      - name: Clone and Prepare Hugo Blog
+        run: |
+          git clone https://github.com/rohanbatrain/blog temp-blog
+          sed -i 's/blog\.rohanbatra\.in/rohanbatra.in/g' temp-blog/hugo.yml
+          mkdir -p web/blog
+          cd temp-blog
+          hugo -d ../web/blog
+  
+      - name: Build Flutter Web App
         run: flutter build web --release
+  
+      # # 👉 Include blog in web output
+      # - name: Copy Blog into Flutter Web Build Output
+      #   run: cp -r web/blog build/web/blog
+  
       - name: Create tar.gz archive for Web build
         run: |
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Web-${{ needs.get-version.outputs.version }}.tar.gz" -C build/web .
+  
       - name: Upload Web Artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
+
 
 
   # Release Job:
