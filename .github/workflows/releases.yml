@@ -287,9 +287,7 @@ jobs:
 
       - name: Prepare Public Directory with Flutter and Hugo
         run: |
-          mkdir -p public/blog
           cp -r build/web/* public/
-          cp -r web/blog/* public/blog/
       
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
