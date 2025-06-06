@@ -57,6 +57,7 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  uses-material-design: true
   assets:
     - assets/icons/icon_navbar-light-bg.png
     - assets/icons/icon_navbar-dark-bg.png
@@ -261,17 +262,17 @@ flutter:
     - assets/images/banners/proxmox-auto-install-assistant-docker/2.png
     - assets/images/banners/karmstrot-builds/1.png
     - assets/images/banners/karmstrot-builds/2.png
-    - assets/images/banners/blog/2.png
     - assets/images/banners/blog/1.png
+    - assets/images/banners/blog/2.png
     - assets/animations/iNi4lrRvEq.json
     - assets/animations/IceAcvKhR4.json
     - assets/animations/5b6C8UQeUj.json
     - assets/animations/GGN8CoO0KB.json
     - assets/animations/pUBqZ5WbTy.json
     - assets/animations/gBuOxKdbdC.json
+    - assets/images/og-image.png
 # flutter_launcher_icons:
 #   android: "launcher_icon"
-#   ios: true
 #   image_path: "assets/logo.png"
 #   min_sdk_android: 21 # android min sdk min:16, default 21
 #   web:

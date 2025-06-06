@@ -7,17 +7,23 @@ class DownloadPopup extends StatelessWidget {
   Widget build(BuildContext context) {
     return AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      title: Text(
-        'Download Portfolio',
-        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+      title: Semantics(
+        label: 'Download Portfolio dialog title',
+        child: Text(
+          'Download Portfolio',
+          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+        ),
       ),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'Select the platform for which you want to download the portfolio:',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 16),
+          Semantics(
+            label: 'Instruction to select a platform for downloading the portfolio',
+            child: Text(
+              'Select the platform for which you want to download the portfolio:',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 16),
+            ),
           ),
           SizedBox(height: 20),
           Wrap(
@@ -134,11 +140,14 @@ class DownloadPopup extends StatelessWidget {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(
-            'Cancel',
-            style: TextStyle(color: Colors.red),
+        Semantics(
+          label: 'Cancel button to close the download dialog',
+          child: TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text(
+              'Cancel',
+              style: TextStyle(color: Colors.red),
+            ),
           ),
         ),
       ],
@@ -150,18 +159,21 @@ class DownloadPopup extends StatelessWidget {
       required IconData icon,
       required Color color,
       required VoidCallback onPressed}) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: color,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+    return Semantics(
+      label: 'Button to download $label',
+      child: ElevatedButton.icon(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: color,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+          padding: EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+        ),
+        icon: FaIcon(icon, color: Colors.white),
+        label: Text(
+          label,
+          style: TextStyle(color: Colors.white),
+        ),
+        onPressed: onPressed,
       ),
-      icon: FaIcon(icon, color: Colors.white),
-      label: Text(
-        label,
-        style: TextStyle(color: Colors.white),
-      ),
-      onPressed: onPressed,
     );
   }
 

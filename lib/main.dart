@@ -5,7 +5,6 @@ import 'dart:async';
 import 'home/index.dart';
 import 'package:flutter/services.dart'; // Import for rootBundle
 import 'dart:math'; // For random selection
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import FontAwesome
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
@@ -62,6 +61,7 @@ class PortfolioApp extends StatelessWidget {
       builder: (context, ThemeMode currentTheme, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
+          title: 'Rohan Batra Portfolio', // Add title for SEO
           theme: ThemeData.light().copyWith(
             appBarTheme: AppBarTheme(
               iconTheme: IconThemeData(), // Removed incorrect 'icon' parameter
@@ -88,7 +88,6 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderStateMixin {
   late Timer _timer;
   bool _assetsPrefetched = false; // Track if assets are prefetched
-  bool _lottieReady = false;
   late final AnimationController _lottieController;
   late String _selectedAnimation;
   late String _selectedQuote;
@@ -180,11 +179,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     });
   }
 
-  void _replayLottie() {
-    _lottieController.reset();
-    _lottieController.forward();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -226,31 +220,37 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      SizedBox(
-                        width: animationSize,
-                        height: animationSize,
-                        child: _selectedAnimation.startsWith('http')
-                            ? Lottie.network(
-                                _selectedAnimation,
-                                controller: _lottieController,
-                                onLoaded: (composition) {
-                                  _lottieController.duration = composition.duration;
-                                  _lottieController.repeat();
-                                },
-                                fit: BoxFit.cover,
-                              )
-                            : Lottie.asset(
-                                _selectedAnimation,
-                                controller: _lottieController,
-                                onLoaded: (composition) {
-                                  _lottieController.duration = composition.duration;
-                                  _lottieController.repeat();
-                                },
-                                fit: BoxFit.cover,
-                              ),
+                      Semantics(
+                        label: 'Loading animation', // Add alt text for animation
+                        child: SizedBox(
+                          width: animationSize,
+                          height: animationSize,
+                          child: _selectedAnimation.startsWith('http')
+                              ? Lottie.network(
+                                  _selectedAnimation,
+                                  controller: _lottieController,
+                                  onLoaded: (composition) {
+                                    _lottieController.duration = composition.duration;
+                                    _lottieController.repeat();
+                                  },
+                                  fit: BoxFit.cover,
+                                )
+                              : Lottie.asset(
+                                  _selectedAnimation,
+                                  controller: _lottieController,
+                                  onLoaded: (composition) {
+                                    _lottieController.duration = composition.duration;
+                                    _lottieController.repeat();
+                                  },
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
                       ),
                       SizedBox(height: verticalSpacing),
-                      AnimatedText(text: _selectedQuote, fontSize: quoteFontSize),
+                      Semantics(
+                        label: 'Quote: $_selectedQuote', // Add semantic label for quote
+                        child: AnimatedText(text: _selectedQuote, fontSize: quoteFontSize),
+                      ),
                       SizedBox(height: verticalSpacing),
                       Text(
                         'Enjoy the animation!',
