@@ -285,7 +285,7 @@ jobs:
           hugo -d ../public/blog
 
       - name: Build Flutter Web App
-        run: flutter build web --release  --base-href="/portfolio/"
+        run: flutter build web --release
 
       - name: Create Public Directory
         run: mkdir -p public/portfolio/
