@@ -25,7 +25,7 @@ class SecretStartupPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            Lottie.network(
+            Lottie.assets(
               'assets/animations/pUBqZ5WbTy.json',
               width: 180,
               height: 180,
