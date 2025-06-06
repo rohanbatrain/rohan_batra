@@ -35,19 +35,24 @@ class ProfessionalExperience extends StatelessWidget {
                     fontWeight: FontWeight.bold,
                     color: isDarkMode ? Colors.white : Colors.black,
                   ),
+                  textAlign: TextAlign.center,
                 ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2),
                 SizedBox(height: 15),
-                Text(
-                  'I have worked on various startups—some that have concluded and others that are still ongoing. '
-                  'These ventures led to numerous projects, many of which are open-source and publicly available. '
-                  'My experience reflects a hands-on journey through building, learning, and sharing across different domains.',
-                  style: TextStyle(
-                    fontSize: 18,
-                    height: 1.6,
-                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
-                  ),
-                  textAlign: TextAlign.center,
-                ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
+                Container(
+                  constraints: BoxConstraints(maxWidth: 600),
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text(
+                    'I have worked on various startups—some that have concluded and others that are still ongoing. '
+                    'These ventures led to numerous projects, many of which are open-source and publicly available. '
+                    'My experience reflects a hands-on journey through building, learning, and sharing across different domains.',
+                    style: TextStyle(
+                      fontSize: 18,
+                      height: 1.6,
+                      color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                    ),
+                    textAlign: TextAlign.center,
+                  ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
+                ),
                 SizedBox(height: 25),
                 ElevatedButton(
                   onPressed: () {
