@@ -8,7 +8,10 @@ on:
 jobs:
   # Job 1: Determine the Release Version
   # This job runs first to ensure a consistent version string is generated
-  # and used across all subsequent build and release jobs.
+  # and used across all subsequent build an
+Run git clone https://github.com/rohanbatrain/blog blog
+Cloning into 'blog'...
+/home/runner/work/_temp/e4bf9d97-5a5e-4fca-9edf-8b82251ade0a.sh: line 5: hugo: command not foundd release jobs.
   get-version:
     runs-on: ubuntu-latest
     outputs:
@@ -249,7 +252,7 @@ jobs:
         with:
           name: aab-artifact
           path: build/app/outputs/bundle/release/Rohan-Batra-*.aab
-
+  
   build-web:
     runs-on: ubuntu-latest
     needs: get-version
@@ -261,19 +264,26 @@ jobs:
           key: web-flutter-${{ hashFiles('**/pubspec.yaml') }}
           restore-keys: |
             web-flutter-
-  
+
       - name: Checkout Code
         uses: actions/checkout@v4
-  
+
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
-  
+
       - name: Install Dependencies
         run: flutter pub get
-  
+
       - name: Enable Web for Flutter
         run: flutter config --enable-web
-  
+
+      # ✅ Install Hugo (Latest Version)
+      - name: Install Hugo
+        run: |
+          wget https://github.com/gohugoio/hugo/releases/latest/download/hugo_extended_0.125.6_linux-amd64.tar.gz
+          tar -xzf hugo_extended_0.125.6_linux-amd64.tar.gz
+          sudo mv hugo /usr/local/bin/
+
       # 👉 Clone and modify Hugo blog
       - name: Clone and Prepare Hugo Blog
         run: |
@@ -282,24 +292,21 @@ jobs:
           mkdir -p web/blog
           cd blog
           hugo -d ../web/blog
-  
+
       - name: Build Flutter Web App
         run: flutter build web --release
-  
-      # # 👉 Include blog in web output
-      # - name: Copy Blog into Flutter Web Build Output
-      #   run: cp -r web/blog build/web/blog
-  
+
       - name: Create tar.gz archive for Web build
         run: |
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Web-${{ needs.get-version.outputs.version }}.tar.gz" -C build/web .
-  
+
       - name: Upload Web Artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
+
 
 
 
