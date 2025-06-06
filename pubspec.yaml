@@ -270,7 +270,7 @@ flutter:
     - assets/animations/GGN8CoO0KB.json
     - assets/animations/pUBqZ5WbTy.json
     - assets/animations/gBuOxKdbdC.json
-    - assets/images/og-image.png
+
 # flutter_launcher_icons:
 #   android: "launcher_icon"
 #   image_path: "assets/logo.png"
