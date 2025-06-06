@@ -293,6 +293,12 @@ jobs:
       - name: Prepare Public Directory with Flutter and Hugo
         run: |
           cp -r build/web/* public/portfolio/
+
+          
+      - name: Clone index.html into public/
+        run: |
+          curl -o public/index.html https://raw.githubusercontent.com/rohanbatrain/rohan_batra/refs/heads/landing/index.html
+
       
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
