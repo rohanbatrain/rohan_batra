@@ -282,7 +282,7 @@ jobs:
       # 👉 Clone and modify Hugo blog
       - name: Clone and Prepare Hugo Blog
         run: |
-          git clone https://github.com/rohanbatrain/blog 
+          git clone https://github.com/rohanbatrain/blog blog
           sed -i 's/blog\.rohanbatra\.in/rohanbatra.in/g' blog/hugo.yml
           mkdir -p web/blog
           cd blog
