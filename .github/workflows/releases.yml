@@ -280,19 +280,19 @@ jobs:
         run: |
           git clone https://github.com/rohanbatrain/blog blog
           sed -i 's/blog\.rohanbatra\.in/rohanbatra.in\/blog\//g' blog/hugo.yaml
-          mkdir -p web/blog
+          mkdir -p public/blog
           cd blog
-          hugo -d ../web/blog
+          hugo -d ../public/blog
 
       - name: Build Flutter Web App
-        run: flutter build web --release
+        run: flutter build web --release  --base-href="/portfolio/"
 
       - name: Create Public Directory
-        run: mkdir -p public
+        run: mkdir -p public/portfolio/
       
       - name: Prepare Public Directory with Flutter and Hugo
         run: |
-          cp -r build/web/* public/
+          cp -r build/web/* public/portfolio/
       
       - name: Deploy to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4
@@ -308,8 +308,7 @@ jobs:
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Web-${{ needs.get-version.outputs.version }}.tar.gz" -C build/web .
 
-          
-
+        
       - name: Upload Web Artifact
         uses: actions/upload-artifact@v4
         with:
