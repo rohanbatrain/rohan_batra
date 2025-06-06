@@ -266,12 +266,12 @@ jobs:
       - name: Enable Web for Flutter
         run: flutter config --enable-web
 
-      # ✅ Install Hugo (Latest Version)
-      - name: Install Hugo
-        run: |
-          wget https://github.com/gohugoio/hugo/releases/latest/download/hugo_extended_0.125.6_linux-amd64.tar.gz
-          tar -xzf hugo_extended_0.125.6_linux-amd64.tar.gz
-          sudo mv hugo /usr/local/bin/
+      # ✅ Use the official Hugo GitHub Action instead of manual install
+      - name: Set up Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: 'latest'
+          extended: true
 
       # 👉 Clone and modify Hugo blog
       - name: Clone and Prepare Hugo Blog
@@ -285,16 +285,34 @@ jobs:
       - name: Build Flutter Web App
         run: flutter build web --release
 
+      - name: Prepare Public Directory with Flutter and Hugo
+        run: |
+          mkdir -p public/blog
+          cp -r build/web/* public/
+          cp -r web/blog/* public/blog/
+      
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: public
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
       - name: Create tar.gz archive for Web build
         run: |
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Web-${{ needs.get-version.outputs.version }}.tar.gz" -C build/web .
+
+          
 
       - name: Upload Web Artifact
         uses: actions/upload-artifact@v4
         with:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
+
 
 
 
