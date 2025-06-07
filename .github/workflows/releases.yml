@@ -251,7 +251,7 @@ jobs:
         with:
           name: aab-artifact
           path: build/app/outputs/bundle/release/Rohan-Batra-*.aab
-
+  
   build-web:
     runs-on: ubuntu-latest
     needs: get-version
@@ -289,7 +289,6 @@ jobs:
         with:
           name: web-artifact
           path: release/Rohan-Batra-Web-*.tar.gz
-
 
 
 
