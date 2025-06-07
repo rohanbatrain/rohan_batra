@@ -268,53 +268,22 @@ jobs:
       - name: Enable Web for Flutter
         run: flutter config --enable-web
 
-      # ✅ Use the official Hugo GitHub Action instead of manual install
-      - name: Set up Hugo
-        uses: peaceiris/actions-hugo@v3
-        with:
-          hugo-version: 'latest'
-          extended: true
-
-      # 👉 Clone and modify Hugo blog
-      - name: Clone and Prepare Hugo Blog
-        run: |
-          git clone https://github.com/rohanbatrain/blog blog
-          sed -i 's/blog\.rohanbatra\.in/rohanbatra.in\/blog\//g' blog/hugo.yaml
-          mkdir -p public/blog
-          cd blog
-          hugo -d ../public/blog
-
       - name: Build Flutter Web App
         run: flutter build web --release
 
-      - name: Create Public Directory
-        run: mkdir -p public/portfolio/
-      
-      - name: Prepare Public Directory with Flutter and Hugo
-        run: |
-          cp -r build/web/* public/portfolio/
-
-          
-      - name: Clone index.html into public/
-        run: |
-          curl -o public/index.html https://raw.githubusercontent.com/rohanbatrain/rohan_batra/refs/heads/landing/index.html
-
-      
-      - name: Deploy to GitHub Pages
+      - name: Deploy Flutter Web App to 'portfolio' branch
         uses: JamesIves/github-pages-deploy-action@v4
         with:
-          branch: gh-pages
-          folder: public
+          branch: portfolio           # 👈 deploy to `portfolio` branch instead of gh-pages
+          folder: build/web           # 👈 publish only Flutter web build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 
       - name: Create tar.gz archive for Web build
         run: |
           mkdir -p release
           tar -czvf "release/Rohan-Batra-Web-${{ needs.get-version.outputs.version }}.tar.gz" -C build/web .
 
-        
       - name: Upload Web Artifact
         uses: actions/upload-artifact@v4
         with:
