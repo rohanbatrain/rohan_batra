@@ -36,6 +36,7 @@ final Map<String, List<String>> animationQuotes = {
     'Loading my portfolio, wagging our tails!',
     'My portfolio is on its way!'
   ],
+  // jumping animation
   'assets/animations/IceAcvKhR4.json': [
     "Get ready to jump for joy - my portfolio's almost here!",
     "Leaping into new adventures, just a moment!",
@@ -43,6 +44,7 @@ final Map<String, List<String>> animationQuotes = {
     'Loading my portfolio, get ready to leap!',
     'Excitement is building... my portfolio is loading!'
   ],
+  // ghost
   'assets/animations/iNi4lrRvEq.json': [
     "Boo! my portfolio is almost here!",
     "Don't be scared, just loading my portfolio...",
@@ -198,11 +200,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                 : screenSize.width < 1200
                     ? 24.0
                     : 28.0;
-            final enjoyFontSize = isMobile
-                ? screenSize.width * 0.03
-                : screenSize.width < 1200
-                    ? 14.0
-                    : 16.0;
             final verticalSpacing = isMobile
                 ? screenSize.height * 0.02
                 : screenSize.height * 0.03;
@@ -252,14 +249,6 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
                         child: AnimatedText(text: _selectedQuote, fontSize: quoteFontSize),
                       ),
                       SizedBox(height: verticalSpacing),
-                      Text(
-                        'Enjoy the animation!',
-                        style: TextStyle(
-                          fontSize: enjoyFontSize,
-                          fontStyle: FontStyle.italic,
-                          color: Theme.of(context).textTheme.bodySmall?.color,
-                        ),
-                      ),
                     ],
                   ),
                 ),
