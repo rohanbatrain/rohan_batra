@@ -1,304 +1,117 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rohan Batra - Welcome</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rohan Batra</title>
+  <meta name="description" content="Choose to visit Portfolio or Blog of Rohan Batra." />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
-
     :root {
-      --neutral-950: #0c0a09;
-      --slate-900: #0f172a;
-      --neutral-900: #171717;
-      --neutral-700: #404040;
-      --neutral-600: #525252;
-      --neutral-500: #737373;
-      --neutral-400: #a3a3a3;
-      --slate-700: #334155;
-      --slate-400: #94a3b8;
-      --slate-500: #64748b;
-      --white: #ffffff;
+      --bg-dark: #0f172a;
+      --fg-light: #ffffff;
+      --accent: #38bdf8;
+      --muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      height: 100%;
     }
 
     body {
-      font-family: 'Poppins', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      margin: 0;
-      background-color: var(--neutral-900); /* Fallback background */
-      color: var(--white);
+      font-family: 'Inter', sans-serif;
+      background: radial-gradient(ellipse at top, #0f172a, #020617);
+      color: var(--fg-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
     }
 
-    ::selection {
-      background-color: var(--neutral-600);
-      color: var(--white);
+    .container {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 1s ease-out 0.2s forwards;
     }
 
     @keyframes fadeInUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
       to {
         opacity: 1;
         transform: translateY(0);
       }
     }
 
-    .animate-fadeInUp {
-      animation: fadeInUp 0.8s ease-out forwards;
+    h1 {
+      font-size: 3rem;
+      font-weight: 800;
+      margin-bottom: 0.5rem;
     }
 
-    @keyframes gradientShift {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
+    p {
+      color: var(--muted);
+      font-size: 1.25rem;
+      margin-bottom: 2.5rem;
     }
 
-    @keyframes pulseEffect { /* Renamed from 'pulse' to avoid conflict if browser has a 'pulse' */
-      50% {
-        opacity: .5;
-      }
-    }
-
-    .app-container {
-      min-height: 100vh;
-      background-image: linear-gradient(to bottom right, var(--neutral-950), var(--slate-900), var(--neutral-900));
-      background-size: 200% 200%;
-      animation: gradientShift 15s ease infinite;
+    .links {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      gap: 2rem;
+      flex-wrap: wrap;
       justify-content: center;
-      padding: 1.5rem; /* p-6 */
-      overflow: hidden;
-      position: relative; /* For absolute positioned children like footer and decorative shapes */
     }
 
-    .decorative-shape {
-      position: absolute;
-      width: 18rem; /* w-72 */
-      height: 18rem; /* h-72 */
-      border-radius: 9999px; /* rounded-full */
-      filter: blur(48px); /* blur-3xl, approximation. Tailwind's 3xl is 64px, this is a common value for large blurs */
-      opacity: 0.5; /* opacity-50 */
-      animation: pulseEffect 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-    }
-
-    .shape-1 {
-      top: 0;
-      left: 0;
-      background-color: rgba(64, 64, 64, 0.2); /* bg-neutral-700/20 */
-    }
-
-    .shape-2 {
-      bottom: 0;
-      right: 0;
-      background-color: rgba(51, 65, 85, 0.2); /* bg-slate-700/20 */
-      animation-delay: 2s;
-    }
-
-    .main-content {
-      text-align: center;
-      z-index: 10;
-    }
-    
-    .main-content > * + * { /* space-y-10 / space-y-12 */
-        margin-top: 2.5rem; 
-    }
-
-    .heading-1 {
-      font-size: 3.75rem; /* text-6xl */
-      font-weight: 700; /* font-bold */
-      letter-spacing: -0.025em; /* tracking-tight */
-      margin-bottom: 0; /* Reset default */
-    }
-
-    .paragraph {
-      font-size: 1.5rem; /* text-2xl */
-      color: var(--slate-400); /* text-slate-400 */
-      margin-top: 2.5rem; /* Part of space-y, explicitly for clarity after h1 */
-    }
-
-    .links-container {
-      display: flex;
-      flex-direction: column; /* flex-col */
-      align-items: center;
-      justify-content: center;
-      gap: 1.5rem; /* gap-6 */
-      margin-top: 2.5rem; /* mt-10, part of space-y */
-    }
-
-    .animated-link {
-      position: relative;
-      display: inline-block;
-      padding: 1rem 2rem; /* px-8 py-4 */
-      font-weight: 600; /* font-semibold */
-      color: var(--white); /* text-white */
-      font-size: 1.125rem; /* text-lg */
+    .link-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 1.5rem 2.5rem;
+      border-radius: 1rem;
       text-decoration: none;
-      transition: all 0.3s ease-in-out;
-      overflow: hidden;
-      border-radius: 0.5rem; /* rounded-lg */
-      border: 2px solid var(--neutral-500); /* border-2 border-neutral-500 */
-      transform: translateY(0);
+      color: var(--fg-light);
+      font-weight: 600;
+      font-size: 1.125rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
-    .animated-link:hover {
-      border-color: var(--neutral-400); /* hover:border-neutral-400 */
-      box-shadow: 0 10px 20px rgba(163, 163, 163, 0.25), 0 6px 6px rgba(163, 163, 163, 0.20); /* hover:shadow-xl hover:shadow-neutral-400/30 - approximated */
-      transform: translateY(-0.25rem); /* hover:-translate-y-1 */
-    }
-    
-    .animated-link:focus {
-        outline: 2px solid transparent;
-        outline-offset: 2px;
-        box-shadow: 0 0 0 3px rgba(107, 114, 128, 0.5); /* custom-focus-ring (neutral-500 with opacity) */
+    .link-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+      border-color: var(--accent);
     }
 
-    .animated-link .bg-shine-1,
-    .animated-link .bg-shine-2,
-    .animated-link .glow-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none; /* So they don't interfere with link click */
+    footer {
+      margin-top: 3rem;
+      font-size: 0.875rem;
+      color: var(--muted);
     }
 
-    .animated-link .bg-shine-1 {
-      background-color: var(--neutral-600);
-      transition: transform 0.5s ease-out;
-      transform: translateX(-100%);
-    }
-    .animated-link:hover .bg-shine-1 {
-      transform: translateX(0);
-    }
-
-    .animated-link .bg-shine-2 {
-      background-color: var(--neutral-700);
-      opacity: 0.5;
-      transition: transform 0.5s ease-out 0.1s; /* delay-100 */
-      transform: translateX(100%);
-    }
-    .animated-link:hover .bg-shine-2 {
-      transform: translateX(0);
-    }
-    
-    .animated-link .text-content {
-      position: relative;
-      z-index: 10;
-      transition: color 0.2s;
-    }
-    /* .animated-link:hover .text-content { color: var(--white); } /* Already white, but good for explicitness if base changes */
-
-    .animated-link .glow-overlay {
-      border-radius: 0.5rem; /* rounded-lg */
-      opacity: 0;
-      transition: opacity 0.3s ease-in-out;
-      background-color: var(--white);
-      mix-blend-mode: overlay;
-    }
-    .animated-link:hover .glow-overlay {
-      opacity: 0.2;
-    }
-
-    .footer {
-      position: absolute;
-      bottom: 2rem; /* bottom-8 */
-      color: var(--slate-500); /* text-slate-500 */
-      font-size: 0.875rem; /* text-sm */
-      z-index: 10;
-    }
-
-    /* Responsive Adjustments */
-    @media (min-width: 640px) { /* sm breakpoint */
-      .links-container {
-        flex-direction: row; /* sm:flex-row */
+    @media (max-width: 600px) {
+      h1 { font-size: 2.25rem; }
+      .link-card {
+        width: 100%;
+        max-width: 280px;
       }
     }
-
-    @media (min-width: 768px) { /* md breakpoint */
-      .main-content > * + * { /* md:space-y-12 */
-         margin-top: 3rem;
-      }
-      .heading-1 {
-        font-size: 6rem; /* md:text-8xl */
-      }
-      .paragraph {
-        font-size: 2.25rem; /* md:text-4xl */
-        margin-top: 3rem; /* Part of space-y, explicitly for clarity after h1 */
-      }
-      .links-container {
-        gap: 2.5rem; /* md:gap-10 */
-        margin-top: 3rem; /* Part of space-y */
-      }
-      .animated-link {
-        padding: 1.25rem 2.5rem; /* md:px-10 md:py-5 */
-        font-size: 1.25rem; /* md:text-xl */
-      }
-    }
-
   </style>
-<script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@^19.1.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
-    "react/": "https://esm.sh/react@^19.1.0/"
-  }
-}
-</script>
 </head>
 <body>
-  <noscript>You need to enable JavaScript to run this app.</noscript>
-
-  <div class="app-container">
-    <div class="decorative-shape shape-1"></div>
-    <div class="decorative-shape shape-2"></div>
-
-    <main class="main-content">
-      <h1 class="heading-1 animate-fadeInUp" style="animation-delay: 0.1s;">Hey!</h1>
-      <p class="paragraph animate-fadeInUp" style="animation-delay: 0.4s;">What do you want to view?</p>
-
-      <div class="links-container animate-fadeInUp" style="animation-delay: 0.7s;">
-        <a href="https://rohanbatra.in/portfolio" class="animated-link" data-link-text="Portfolio" aria-label="View Portfolio">
-          <span class="bg-shine-1"></span>
-          <span class="bg-shine-2"></span>
-          <span class="text-content">Portfolio</span>
-          <span class="glow-overlay"></span>
-        </a>
-        <a href="https://rohanbatra.in/blog" class="animated-link" data-link-text="Blog" aria-label="View Blog">
-          <span class="bg-shine-1"></span>
-          <span class="bg-shine-2"></span>
-          <span class="text-content">Blog</span>
-          <span class="glow-overlay"></span>
-        </a>
-      </div>
-    </main>
-
-    <footer class="footer animate-fadeInUp" style="animation-delay: 1s;">
-      rohanbatra.in
+  <div class="container">
+    <h1>Hey there 👋</h1>
+    <p>Where would you like to go?</p>
+    <div class="links">
+      <a class="link-card" href="https://portfolio.rohanbatra.in">View Dev Portfolio</a>
+      <a class="link-card" href="https://rohanbatra.in/blog">Visit Blog</a>
+    </div>
+    <footer>
+      &copy; 2025 Rohan Batra — rohanbatra.in
     </footer>
   </div>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const links = document.querySelectorAll('.animated-link');
-      links.forEach(link => {
-        link.addEventListener('click', function(event) {
-          event.preventDefault();
-          // The href is already correctly set in the HTML, 
-          // but if we wanted to derive it like in React:
-          // const destinationText = this.getAttribute('data-link-text').toLowerCase();
-          // window.location.href = `https://rohanbatra.in/${destinationText}`;
-          window.location.href = this.href;
-        });
-      });
-    });
-  </script>
 </body>
 </html>
