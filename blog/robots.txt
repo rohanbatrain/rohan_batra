@@ -1,3 +1,3 @@
 User-agent: *
 Disallow:
-Sitemap: https://blog.rohanbatra.in/sitemap.xml
+Sitemap: https://rohanbatra.in/blog/sitemap.xml
