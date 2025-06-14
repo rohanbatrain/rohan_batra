@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/installation/proxmox_installation_tile.dart';
-import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/virtualization_containers/virtualization_containers_tile.dart';
-import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/virtualization_vms/virtualization_vms_tile.dart';
-import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/host_config/proxmox_host_config_tile.dart';
-import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/vms_deployment/proxmox_vms_deployment_tile.dart';
-import 'package:rohan_batra/skillwise-portfolio/skills/cloud_computing/Proxmox/containers_management/proxmox_containers_management_tile.dart';
+import 'package:rohanbatra/skillwise-portfolio/skills/cloud_computing/Proxmox/installation/proxmox_installation_tile.dart';
+import 'package:rohanbatra/skillwise-portfolio/skills/cloud_computing/Proxmox/virtualization_containers/virtualization_containers_tile.dart';
+import 'package:rohanbatra/skillwise-portfolio/skills/cloud_computing/Proxmox/virtualization_vms/virtualization_vms_tile.dart';
+import 'package:rohanbatra/skillwise-portfolio/skills/cloud_computing/Proxmox/host_config/proxmox_host_config_tile.dart';
+import 'package:rohanbatra/skillwise-portfolio/skills/cloud_computing/Proxmox/vms_deployment/proxmox_vms_deployment_tile.dart';
+import 'package:rohanbatra/skillwise-portfolio/skills/cloud_computing/Proxmox/containers_management/proxmox_containers_management_tile.dart';
 import '../Docker/docker_tile.dart';
 
 class ProxmoxScreen extends StatelessWidget {

@@ -22,13 +22,7 @@ class DonatePage extends StatelessWidget {
           },
         ),
         title: Text('Donate'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.share),
-            onPressed: () => _shareDonationDetails(context),
-            tooltip: 'Share',
-          ),
-        ],
+        // Removed the share icon from the actions
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -38,8 +32,8 @@ class DonatePage extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 // Lottie Animation for Donation
-                Lottie.network(
-                  'https://lottie.host/430b72e5-d109-45a3-8f67-a2602a4b4aac/GGN8CoO0KB.json', // Example donation animation URL
+                Lottie.asset(
+                  'assets/animations/GGN8CoO0KB.json',
                   height: 180,
                   repeat: true,
                   fit: BoxFit.contain,

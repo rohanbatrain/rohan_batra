@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:async'; // Import the dart:async package
-import 'package:font_awesome_flutter/font_awesome_flutter.dart'; // Import the FontAwesome package
+// Import the FontAwesome package
 import '../sidebar.dart';
 import 'professional_summary.dart'; // Import the AboutMe widget
 import 'professional_experience.dart'; // Import the ProfessionalExperience widget
@@ -47,6 +47,8 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     final ScrollController scrollController = ScrollController(); // Add a ScrollController
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 700;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -78,153 +80,228 @@ class _HomePageState extends State<HomePage> {
           children: [
             // Hero Section
             Container(
-              height: MediaQuery.of(context).size.height * 0.9, // Full-Screen Hero
+              height: isMobile ? null : MediaQuery.of(context).size.height * 0.9, // Full-Screen Hero
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 30, vertical: 50), // Adjusted padding
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 16 : 30,
+                vertical: isMobile ? 30 : 50,
+              ), // Adjusted padding
               decoration: BoxDecoration(
                 color: isDarkMode ? Colors.black : Colors.white,
               ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceAround, // Adjust spacing
-                children: [
-                  // Left Side: Text
-                  Expanded(
-                    flex: 6, // Increase space for text
-                    child: Padding(
-                      padding: EdgeInsets.only(
-                        left: MediaQuery.of(context).size.width > 1200 ? 50 : 20, // Add padding for large screens
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Hey, I am Rohan Batra',
-                            style: TextStyle(
-                              fontSize: MediaQuery.of(context).size.width > 1200
-                                  ? 65 // Large screens
-                                  : MediaQuery.of(context).size.width > 800
-                                      ? 55 // Medium screens
-                                      : 45, // Small screens
-                              fontWeight: FontWeight.bold,
-                              color: isDarkMode ? Colors.white : Colors.black,
+              child: (isMobile && MediaQuery.of(context).orientation == Orientation.portrait)
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 250,
+                          child: Lottie.asset(
+                            _getLottieAsset(),
+                            key: ValueKey(_currentLottieIndex),
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        SizedBox(height: 24),
+                        Text(
+                          'Hey, I am Rohan Batra',
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: isDarkMode ? Colors.white : Colors.black,
+                            letterSpacing: 1.2,
+                            height: 1.2,
+                          ),
+                          textAlign: TextAlign.center,
+                        ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2),
+                        SizedBox(height: 10),
+                        Text(
+                          'Developer | Writer | Researcher',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                            letterSpacing: 0.8,
+                            height: 1.3,
+                          ),
+                          textAlign: TextAlign.center,
+                        ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
+                        SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () {
+                            // Smooth scroll to the AboutMe section
+                            Scrollable.ensureVisible(
+                              aboutMeKey.currentContext!,
+                              duration: Duration(milliseconds: 500), // Smooth transition duration
+                              curve: Curves.easeInOut, // Smooth transition curve
+                            );
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: isDarkMode ? Colors.white : Colors.black,
+                            foregroundColor: isDarkMode ? Colors.black : Colors.white,
+                            padding: EdgeInsets.symmetric(horizontal: 28, vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                          ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2), // Add fade and slide animation
-                          SizedBox(height: 15), // Adjusted spacing
-                          Text(
-                            'Developer | Writer | Researcher',
-                            style: TextStyle(
-                              fontSize: MediaQuery.of(context).size.width > 1200
-                                  ? 32 // Large screens
-                                  : MediaQuery.of(context).size.width > 800
-                                      ? 28 // Medium screens
-                                      : 24, // Small screens
-                              fontWeight: FontWeight.w500,
-                              color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                            elevation: 2,
+                          ),
+                          child: Text(
+                            'Explore More',
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                          ),
+                        ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2),
+                      ],
+                    )
+                  : Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.spaceAround, // Adjust spacing
+                      children: [
+                        // Left Side: Text
+                        Expanded(
+                          flex: 6, // Increase space for text
+                          child: Padding(
+                            padding: EdgeInsets.only(
+                              left: screenWidth > 1200 ? 50 : 20, // Add padding for large screens
                             ),
-                          ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2), // Add fade and slide animation
-                          SizedBox(height: 30), // Adjusted spacing
-                          ElevatedButton(
-                            onPressed: () {
-                              // Smooth scroll to the AboutMe section
-                              Scrollable.ensureVisible(
-                                aboutMeKey.currentContext!,
-                                duration: Duration(milliseconds: 500), // Smooth transition duration
-                                curve: Curves.easeInOut, // Smooth transition curve
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Hey, I am Rohan Batra',
+                                  style: TextStyle(
+                                    fontSize: screenWidth > 1200
+                                        ? 65 // Large screens
+                                        : screenWidth > 800
+                                            ? 55 // Medium screens
+                                            : 45, // Small screens
+                                    fontWeight: FontWeight.bold,
+                                    color: isDarkMode ? Colors.white : Colors.black,
+                                  ),
+                                ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2), // Add fade and slide animation
+                                SizedBox(height: 15), // Adjusted spacing
+                                Text(
+                                  'Developer | Writer | Researcher',
+                                  style: TextStyle(
+                                    fontSize: screenWidth > 1200
+                                        ? 32 // Large screens
+                                        : screenWidth > 800
+                                            ? 28 // Medium screens
+                                            : 24, // Small screens
+                                    fontWeight: FontWeight.w500,
+                                    color: isDarkMode ? Colors.grey[400] : Colors.grey[700],
+                                  ),
+                                ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2), // Add fade and slide animation
+                                SizedBox(height: 30), // Adjusted spacing
+                                ElevatedButton(
+                                  onPressed: () {
+                                    // Smooth scroll to the AboutMe section
+                                    Scrollable.ensureVisible(
+                                      aboutMeKey.currentContext!,
+                                      duration: Duration(milliseconds: 500), // Smooth transition duration
+                                      curve: Curves.easeInOut, // Smooth transition curve
+                                    );
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isDarkMode ? Colors.white : Colors.black,
+                                    foregroundColor: isDarkMode ? Colors.black : Colors.white,
+                                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 14), // Adjusted padding
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10), // Slightly rounded corners
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Explore More',
+                                    style: TextStyle(fontSize: 18), // Increased button text size
+                                  ),
+                                ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2), // Add fade and slide animation
+                              ],
+                            ),
+                          ),
+                        ),
+                        
+                        // Right Side: Lottie Animation
+                        Expanded(
+                          flex: 4, // Reduce space for animation
+                          child: LayoutBuilder(
+                            builder: (context, constraints) {
+                              final maxHeight = constraints.maxHeight * 0.9; // Slightly zoom in
+                              return ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxHeight: maxHeight,
+                                  maxWidth: maxHeight, // Keep aspect ratio
+                                ),
+                                child: AnimatedSwitcher(
+                                  duration: Duration(seconds: 1), // Duration for transition
+                                  switchInCurve: Curves.easeIn, // Curve for entering animation
+                                  switchOutCurve: Curves.easeOut, // Curve for exiting animation
+                                  transitionBuilder: (Widget child, Animation<double> animation) {
+                                    return FadeTransition(
+                                      opacity: animation, // Apply fade transition
+                                      child: child,
+                                    );
+                                  },
+                                  child: Lottie.asset(
+                                    _getLottieAsset(), // Get the current Lottie animation
+                                    key: ValueKey(_currentLottieIndex), // Unique key for each animation
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
                               );
                             },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: isDarkMode ? Colors.white : Colors.black,
-                              foregroundColor: isDarkMode ? Colors.black : Colors.white,
-                              padding: EdgeInsets.symmetric(horizontal: 25, vertical: 14), // Adjusted padding
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10), // Slightly rounded corners
-                              ),
-                            ),
-                            child: Text(
-                              'Explore More',
-                              style: TextStyle(fontSize: 18), // Increased button text size
-                            ),
-                          ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2), // Add fade and slide animation
-                        ],
-                      ),
-                    ),
-                  ),
-                  
-                  // Right Side: Lottie Animation
-                  Expanded(
-                    flex: 4, // Reduce space for animation
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final maxHeight = constraints.maxHeight * 0.9; // Slightly zoom in
-                        return ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: maxHeight,
-                            maxWidth: maxHeight, // Keep aspect ratio
                           ),
-                          child: AnimatedSwitcher(
-                            duration: Duration(seconds: 1), // Duration for transition
-                            switchInCurve: Curves.easeIn, // Curve for entering animation
-                            switchOutCurve: Curves.easeOut, // Curve for exiting animation
-                            transitionBuilder: (Widget child, Animation<double> animation) {
-                              return FadeTransition(
-                                opacity: animation, // Apply fade transition
-                                child: child,
-                              );
-                            },
-                            child: Lottie.asset(
-                              _getLottieAsset(), // Get the current Lottie animation
-                              key: ValueKey(_currentLottieIndex), // Unique key for each animation
-                              fit: BoxFit.contain,
-                            ),
-                          ),
-                        );
-                      },
+                        ),
+                      ],
                     ),
-                  ),
-                ],
-              ),
             ),
 
             // Content Section (Scrollable)
             Padding(
               key: aboutMeKey, // Assign the GlobalKey to the AboutMe section
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30), // Add consistent padding
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly, // Distribute space evenly
+              padding: EdgeInsets.symmetric(
+                horizontal: isMobile ? 12 : 50,
+                vertical: isMobile ? 18 : 30,
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Left Side: Animation
-                  Expanded(
-                    flex: 5, // Adjust space for animation
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final maxHeight = constraints.maxHeight * 0.8; // Slightly zoom in
-                        return ConstrainedBox(
-                          constraints: BoxConstraints(
-                            maxHeight: maxHeight,
-                            maxWidth: maxHeight, // Maintain aspect ratio
-                          ),
-                          child: Lottie.asset(
-                            'assets/animations/professional.json', // Replace with your AboutMe animation
-                            fit: BoxFit.contain,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
 
-                  SizedBox(width: 60), // Add more spacing between animation and text
-
-                  // Right Side: Text
-                  Expanded(
-                    flex: 6, // Adjust space for text
-                    child: Padding(
-                      padding: EdgeInsets.only(left: 30), // Add padding for better alignment
-                      child: AboutMe(isDarkMode: isDarkMode), // Use the existing AboutMe widget
-                    ),
-                  ),
+                  SizedBox(height: 24),
+                  isMobile 
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          SizedBox(
+                            height: 250,
+                            child: Lottie.asset(
+                              'assets/animations/professional.json',
+                              fit: BoxFit.contain,
+                            ),
+                          ),
+                          SizedBox(height: 32),
+                          AboutMe(isDarkMode: isDarkMode),
+                        ],
+                      )
+                    : Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Expanded(
+                            flex: 5,
+                            child: SizedBox(
+                              height: 180,
+                              child: Lottie.asset(
+                                'assets/animations/professional.json',
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 60),
+                          Expanded(
+                            flex: 6,
+                            child: AboutMe(isDarkMode: isDarkMode),
+                          ),
+                        ],
+                      ),
                 ],
               ),
             ),
@@ -305,30 +382,14 @@ class _HomePageState extends State<HomePage> {
             // Download Section
             DownloadSection(isDarkMode: isDarkMode),
 
-
-
-          
-            
-
             // Footer Section
             Container(
-              padding: EdgeInsets.symmetric(horizontal: 50, vertical: 30),
+              width: double.infinity,
               color: isDarkMode ? Colors.black : Colors.white,
+              padding: EdgeInsets.symmetric(vertical: 30),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      IconButton(
-                        icon: FaIcon(FontAwesomeIcons.linkedin),
-                        color: isDarkMode ? Colors.white : Colors.black,
-                        onPressed: () {
-                          // Add LinkedIn link
-                        },
-                      ),
-                    ],
-                  ),
                   SizedBox(height: 20),
                   Text(
                     '© 2025 Rohan Batra. All rights reserved.',

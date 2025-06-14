@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rohan_batra/professional-experience/secret_startup_page.dart';
+import 'package:rohanbatra/professional-experience/secret_startup_page.dart';
 
 final List<Map<String, Map<String, String>>> companies = [
   {
@@ -95,6 +95,17 @@ final List<Map<String, Map<String, String>>> companies = [
 ];
 
 class ProfessionalExperienceIndexPage extends StatelessWidget {
+  final List<Map<String, Map<String, String>>> startups = companies;
+  final List<Map<String, String>> internships = [
+    {
+      'name': 'Coming Soon',
+      'role': 'Intern',
+      'employmentType': 'Internship',
+      'startDate': '',
+      'endDate': '',
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -118,37 +129,67 @@ class ProfessionalExperienceIndexPage extends StatelessWidget {
       ),
       body: Container(
         color: Theme.of(context).scaffoldBackgroundColor, // Use theme-based background color
-        child: Padding(
+        child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SizedBox(height: kToolbarHeight + 16),
+              SizedBox(height: kToolbarHeight + 8),
               Text(
                 'My Professional Journey',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
               ),
-              SizedBox(height: 16),
+              SizedBox(height: 8),
               Text(
-                'Here are some of the amazing companies I have collaborated with:',
+                'Here are some of the amazing startups and projects I have collaborated with:',
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
-              SizedBox(height: 24),
-              Expanded(
-                child: GridView.builder(
-                  gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
-                    maxCrossAxisExtent: 310, // Slightly increased max width per tile
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                  ),
-                  itemCount: companies.length,
-                  itemBuilder: (context, index) {
-                    final company = companies[index];
-                    return AnimatedTile(company: company);
-                  },
+              SizedBox(height: 20),
+              // Startups & Projects Heading
+              Padding(
+                padding: const EdgeInsets.only(top: 16.0, bottom: 6.0),
+                child: Text(
+                  'Startups & Projects',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
                 ),
+              ),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 310, // Slightly increased max width per tile
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: startups.length,
+                itemBuilder: (context, index) {
+                  final company = startups[index];
+                  return AnimatedTile(company: company);
+                },
+              ),
+              // Internships Heading
+              Padding(
+                padding: const EdgeInsets.only(top: 28.0, bottom: 6.0),
+                child: Text(
+                  'Internships',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ),
+              ),
+              GridView.builder(
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
+                gridDelegate: SliverGridDelegateWithMaxCrossAxisExtent(
+                  maxCrossAxisExtent: 310,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                ),
+                itemCount: internships.length,
+                itemBuilder: (context, index) {
+                  final internship = internships[index];
+                  return ComingSoonTile(internship: internship);
+                },
               ),
             ],
           ),
@@ -325,6 +366,50 @@ class _AnimatedTileState extends State<AnimatedTile> {
           ),
         );
       },
+    );
+  }
+}
+
+class ComingSoonTile extends StatelessWidget {
+  final Map<String, String> internship;
+  const ComingSoonTile({Key? key, required this.internship}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      elevation: 6,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                FontAwesomeIcons.hourglassHalf,
+                size: 48,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              SizedBox(height: 16),
+              Text(
+                internship['name'] ?? '',
+                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 8),
+              Text(
+                internship['employmentType'] ?? '',
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

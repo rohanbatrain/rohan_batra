@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart'; // Import SharedPre
 import 'dart:async';
 import 'home/index.dart';
 import 'package:flutter/services.dart'; // Import for rootBundle
+import 'dart:math'; // For random selection
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Ensure bindings are initialized
@@ -15,6 +16,45 @@ void main() async {
 
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
+// Map animations to their quotes
+final Map<String, List<String>> animationQuotes = {
+  'assets/animations/panda.json': [
+    'Stay curious, keep learning!',
+    'Pandas are proof that you can be cute and productive.',
+    'Embrace the journey, not just the destination.',
+    'Loading my portfolio... please wait!',
+    'My portfolio is almost ready!',
+    'Gathering my experience, one paw at a time.'
+  ],
+  // Add more animation-quote pairs as needed
+  'assets/animations/5b6C8UQeUj.json': [
+    'Fetching fun, just a moment!',
+    'Playing fetch with pixels, almost there!',
+    'Sit, stay, and enjoy the show... almost ready!',
+    'Our best friends are preparing my portfolio!',
+    'Unleashing creativity, one bark at a time!',
+    'Loading my portfolio, wagging our tails!',
+    'My portfolio is on its way!'
+  ],
+  // jumping animation
+  'assets/animations/IceAcvKhR4.json': [
+    "Get ready to jump for joy - my portfolio's almost here!",
+    "Leaping into new adventures, just a moment!",
+    "We're thrilled to show you what's next!",
+    'Loading my portfolio, get ready to leap!',
+    'Excitement is building... my portfolio is loading!'
+  ],
+  // ghost
+  'assets/animations/iNi4lrRvEq.json': [
+    "Boo! my portfolio is almost here!",
+    "Don't be scared, just loading my portfolio...",
+    "A ghostly 'boo' while we fetch my portfolio!",
+    "Spooking up my portfolio, please wait...",
+    "Peek-a-boo! Portfolio coming soon!",
+    "Even ghosts need to load portfolios!"
+  ],
+};
+
 class PortfolioApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -23,6 +63,7 @@ class PortfolioApp extends StatelessWidget {
       builder: (context, ThemeMode currentTheme, _) {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
+          title: 'Rohan Batra Portfolio', // Add title for SEO
           theme: ThemeData.light().copyWith(
             appBarTheme: AppBarTheme(
               iconTheme: IconThemeData(), // Removed incorrect 'icon' parameter
@@ -50,11 +91,31 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   late Timer _timer;
   bool _assetsPrefetched = false; // Track if assets are prefetched
   late final AnimationController _lottieController;
+  late String _selectedAnimation;
+  late String _selectedQuote;
+  int _splashDuration = 3; // Default duration
 
   @override
   void initState() {
     super.initState();
     _lottieController = AnimationController(vsync: this);
+    _selectRandomAnimationAndQuote();
+    _loadSplashDuration();
+  }
+
+  Future<void> _loadSplashDuration() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _splashDuration = prefs.getInt('splashDuration') ?? 3;
+    });
+  }
+
+  void _selectRandomAnimationAndQuote() {
+    final keys = animationQuotes.keys.toList();
+    final random = Random();
+    _selectedAnimation = keys[random.nextInt(keys.length)];
+    final quotes = animationQuotes[_selectedAnimation]!;
+    _selectedQuote = quotes[random.nextInt(quotes.length)];
   }
 
   @override
@@ -89,15 +150,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     // Prefetch Lottie animations
     final lottieAssets = [
-      'assets/animations/panda.json',
-      'assets/animations/developer.json',
-      'assets/animations/writer.json',
-      'assets/animations/research.json',
-      'assets/animations/professional.json',
-      'assets/animations/experience.json',
-      'assets/animations/portfolio.json',
-      'assets/animations/non-profit.json',
-      'assets/animations/download.json',
+      ...animationQuotes.keys.where((k) => k.startsWith('assets/animations/')),
       // Add more Lottie assets here
     ];
     for (var asset in lottieAssets) {
@@ -106,7 +159,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
   }
 
   void _startTimer() {
-    _timer = Timer(Duration(seconds: 3), () {
+    _timer = Timer(Duration(seconds: _splashDuration), () {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) => HomePage(),
@@ -128,46 +181,80 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
     });
   }
 
-  void _replayLottie() {
-    _lottieController.reset();
-    _lottieController.forward();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
-                width: 300,
-                height: 300,
-                child: Lottie.asset(
-                  'assets/animations/panda.json',
-                  controller: _lottieController,
-                  onLoaded: (composition) {
-                    _lottieController.duration = composition.duration;
-                    _lottieController.repeat();
-                  },
-                  fit: BoxFit.cover,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final screenSize = MediaQuery.of(context).size;
+            final isMobile = screenSize.width < 700;
+            final animationSize = isMobile
+                ? screenSize.width * 0.7
+                : screenSize.width < 1200
+                    ? 300.0
+                    : 400.0;
+            final quoteFontSize = isMobile
+                ? screenSize.width * 0.045
+                : screenSize.width < 1200
+                    ? 24.0
+                    : 28.0;
+            final verticalSpacing = isMobile
+                ? screenSize.height * 0.02
+                : screenSize.height * 0.03;
+            return SizedBox(
+              width: double.infinity,
+              height: double.infinity,
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(
+                    maxWidth: 500,
+                    minWidth: 200,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Semantics(
+                        label: 'Loading animation', // Add alt text for animation
+                        child: SizedBox(
+                          width: animationSize,
+                          height: animationSize,
+                          child: _selectedAnimation.startsWith('http')
+                              ? Lottie.network(
+                                  _selectedAnimation,
+                                  controller: _lottieController,
+                                  onLoaded: (composition) {
+                                    _lottieController.duration = composition.duration;
+                                    _lottieController.repeat();
+                                  },
+                                  fit: BoxFit.cover,
+                                )
+                              : Lottie.asset(
+                                  _selectedAnimation,
+                                  controller: _lottieController,
+                                  onLoaded: (composition) {
+                                    _lottieController.duration = composition.duration;
+                                    _lottieController.repeat();
+                                  },
+                                  fit: BoxFit.cover,
+                                ),
+                        ),
+                      ),
+                      SizedBox(height: verticalSpacing),
+                      Semantics(
+                        label: 'Quote: $_selectedQuote', // Add semantic label for quote
+                        child: AnimatedText(text: _selectedQuote, fontSize: quoteFontSize),
+                      ),
+                      SizedBox(height: verticalSpacing),
+                    ],
+                  ),
                 ),
               ),
-              SizedBox(height: 20),
-              AnimatedText(),
-              SizedBox(height: 20),
-              Text(
-                'Enjoy the animation!',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontStyle: FontStyle.italic,
-                  color: Theme.of(context).textTheme.bodySmall?.color,
-                ),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );
@@ -182,6 +269,9 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 }
 
 class AnimatedText extends StatefulWidget {
+  final String text;
+  final double fontSize;
+  AnimatedText({required this.text, this.fontSize = 24});
   @override
   _AnimatedTextState createState() => _AnimatedTextState();
 }
@@ -207,12 +297,13 @@ class _AnimatedTextState extends State<AnimatedText>
     return FadeTransition(
       opacity: _opacity,
       child: Text(
-        'Loading...',
+        widget.text,
         style: TextStyle(
-          fontSize: 24, // Increased font size
-          fontWeight: FontWeight.w600, // Slightly bolder weight
+          fontSize: widget.fontSize, // Responsive font size
+          fontWeight: FontWeight.w600,
           color: Theme.of(context).textTheme.bodyLarge?.color,
         ),
+        textAlign: TextAlign.center,
       ),
     );
   }

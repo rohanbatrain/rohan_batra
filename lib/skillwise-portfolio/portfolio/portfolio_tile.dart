@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rohan_batra/skillwise-portfolio/portfolio/main_portfolio_screen.dart';
+import 'package:rohanbatra/skillwise-portfolio/portfolio/main_portfolio_screen.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class PortfolioTile extends StatelessWidget {

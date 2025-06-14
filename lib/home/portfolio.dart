@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
-import 'package:rohan_batra/skillwise-portfolio/index.dart';
+import 'package:rohanbatra/skillwise-portfolio/index.dart';
 
 class Portfolio extends StatelessWidget {
   final bool isDarkMode;
@@ -10,12 +10,69 @@ class Portfolio extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 700;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 60, vertical: 30), // Increased padding
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center, // Center items vertically
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute space evenly
-        children: [
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 60,
+        vertical: isMobile ? 20 : 30,
+      ),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 250,
+                  child: Lottie.asset(
+                    'assets/animations/portfolio.json',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                SizedBox(height: 32),
+                Text(
+                  'Portfolio',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2),
+                SizedBox(height: 15),
+                Text(
+                  'I maintain a main portfolio showcasing my journey, along with a skill-based portfolio that highlights domain-specific work. '
+                  'Together, they reflect the diversity of my projects and passions. '
+                  "Explore my portfolio to see what I've built, what I'm building, and what drives my work.",
+                  style: TextStyle(
+                    fontSize: 18,
+                    height: 1.6,
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
+                SizedBox(height: 25),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => PortfolioPage(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDarkMode ? Colors.white : Colors.black,
+                    foregroundColor: isDarkMode ? Colors.black : Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text('View Portfolio'),
+                ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2),
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
           // Left Side: Text
           Expanded(
             flex: 6,

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:flutter_animate/flutter_animate.dart'; // Import the animate package
-import 'package:rohan_batra/non-profit-work/index.dart';
+import 'package:rohanbatra/non-profit-work/index.dart';
 
 class NonProfit extends StatelessWidget {
   final bool isDarkMode;
@@ -10,12 +10,69 @@ class NonProfit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 700;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 60, vertical: 30), // Increased padding
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center, // Center items vertically
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute space evenly
-        children: [
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 60,
+        vertical: isMobile ? 20 : 30,
+      ),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 250,
+                  child: Lottie.asset(
+                    'assets/animations/non-profit.json',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                SizedBox(height: 32),
+                Text(
+                  'Non-Profit Initiatives',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2),
+                SizedBox(height: 15),
+                Text(
+                  'I have contributed to various non-profit initiatives, from teaching cybersecurity to army family wives, '
+                  'to making open-source contributions that empower communities. Some of my efforts remain undocumented by choice, '
+                  "as I believe true non-profit work shouldn't always seek recognition or visibility.",
+                  style: TextStyle(
+                    fontSize: 18,
+                    height: 1.6,
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
+                SizedBox(height: 25),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => NonProfitWorkIndexPage(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDarkMode ? Colors.white : Colors.black,
+                    foregroundColor: isDarkMode ? Colors.black : Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text('Learn More'),
+                ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2),
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
           // Left Side: Lottie Animation
           Expanded(
             flex: 4,

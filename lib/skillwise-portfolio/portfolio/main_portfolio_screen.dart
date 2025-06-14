@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rohan_batra/non-profit-work/index.dart';
-import 'package:rohan_batra/professional-experience/index.dart';
+import 'package:rohanbatra/non-profit-work/index.dart';
+import 'package:rohanbatra/professional-experience/index.dart';
 
 class MainPortfolioScreen extends StatelessWidget {
   @override

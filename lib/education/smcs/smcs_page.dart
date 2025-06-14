@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:rohan_batra/education/smcs/extra_curricular/ecell/e_cell_card.dart';
-import 'package:rohan_batra/education/smcs/extra_curricular/orange/orange_education_card.dart';
-import 'package:rohan_batra/education/smcs/extra_curricular/pentasoft/pentasoft_card.dart';
-import 'package:rohan_batra/education/smcs/extra_curricular/sof/sof_card.dart';
-import 'package:rohan_batra/education/smcs/extra_curricular/teri/teri_card.dart';
-import 'package:rohan_batra/education/smcs/extra_curricular/unsw/unsw_card.dart';
-import 'package:rohan_batra/education/smcs/extra_curricular/sports/sports_card.dart';
+import 'package:rohanbatra/education/smcs/extra_curricular/ecell/e_cell_card.dart';
+import 'package:rohanbatra/education/smcs/extra_curricular/orange/orange_education_card.dart';
+import 'package:rohanbatra/education/smcs/extra_curricular/pentasoft/pentasoft_card.dart';
+import 'package:rohanbatra/education/smcs/extra_curricular/sof/sof_card.dart';
+import 'package:rohanbatra/education/smcs/extra_curricular/teri/teri_card.dart';
+import 'package:rohanbatra/education/smcs/extra_curricular/unsw/unsw_card.dart';
+import 'package:rohanbatra/education/smcs/extra_curricular/sports/sports_card.dart';
 
 class SMCSPage extends StatelessWidget {
   void _showImagePopup(BuildContext context, String imagePath) {

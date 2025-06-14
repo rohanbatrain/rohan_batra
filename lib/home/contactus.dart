@@ -10,14 +10,70 @@ class ContactUs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isMobile = MediaQuery.of(context).size.width < 700;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 60, vertical: 30), // Increased padding
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center, // Center items vertically
-        mainAxisAlignment: MainAxisAlignment.spaceBetween, // Distribute space evenly
-        children: [
-          // Left Side: Lottie Animation
-          Expanded(
+      padding: EdgeInsets.symmetric(
+        horizontal: isMobile ? 20 : 60,
+        vertical: isMobile ? 20 : 30,
+      ),
+      child: isMobile
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                SizedBox(
+                  height: 250,
+                  child: Lottie.asset(
+                    'assets/animations/contactus.json',
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                SizedBox(height: 32),
+                Text(
+                  'Contact Us',
+                  style: TextStyle(
+                    fontSize: 32,
+                    fontWeight: FontWeight.bold,
+                    color: isDarkMode ? Colors.white : Colors.black,
+                  ),
+                ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.2),
+                SizedBox(height: 15),
+                Text(
+                  'Have questions or want to get in touch? Feel free to reach out to me. '
+                  'I am always open to discussing new projects, creative ideas, or opportunities to be part of your vision.',
+                  style: TextStyle(
+                    fontSize: 18,
+                    height: 1.6,
+                    color: isDarkMode ? Colors.grey[300] : Colors.grey[800],
+                  ),
+                  textAlign: TextAlign.center,
+                ).animate().fadeIn(duration: 700.ms).slideY(begin: 0.2),
+                SizedBox(height: 25),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => ContactUsPage(),
+                      ),
+                    );
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: isDarkMode ? Colors.white : Colors.black,
+                    foregroundColor: isDarkMode ? Colors.black : Colors.white,
+                    padding: EdgeInsets.symmetric(horizontal: 25, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text('Get in Touch'),
+                ).animate().fadeIn(duration: 900.ms).slideY(begin: 0.2),
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Left Side: Lottie Animation
+                Expanded(
             flex: 4,
             child: LayoutBuilder(
               builder: (context, constraints) {
