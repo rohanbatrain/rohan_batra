@@ -3,7 +3,7 @@ name: Unified Release - Rohan Batra
 on:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:   # allows manual trigger from GitHub UI
 
 
@@ -346,33 +346,3 @@ jobs:
             --repo "$GITHUB_REPOSITORY"
         env:
           GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Use your custom secret for repo operations
-
-      - name: Check if Release Exists and Delete if it does (rohan_batra_releases)
-        run: |
-          # Check for existing release in the target repository
-          if gh release view "$VERSION" --repo "rohanbatrain/rohan_batra_releases" > /dev/null 2>&1; then
-            echo "Release '$VERSION' already exists in rohan_batra_releases. Deleting..."
-            gh release delete "$VERSION" --yes --repo "rohanbatrain/rohan_batra_releases"
-          else
-            echo "Release '$VERSION' does not exist in rohan_batra_releases. Proceeding with creation."
-          fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Important: Use a PAT with repo scope for other repos
-
-      - name: Create GitHub Release in rohan_batra_releases
-        run: |
-          FILES=$(find release -type f -print | tr '\n' ' ')
-
-          if [ -z "$FILES" ]; then
-            echo "Error: No release files found to create a GitHub release in rohan_batra_releases."
-            exit 1
-          fi
-
-          echo "Attempting to create GitHub release in rohan_batra_releases with files: $FILES"
-
-          gh release create "$VERSION" $FILES \
-            --title "Release $VERSION" \
-            --notes "Release $VERSION for branch $GITHUB_REF" \
-            --repo "rohanbatrain/rohan_batra_releases"
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_SECRET }} # Important: Use a PAT with repo scope for other repos
