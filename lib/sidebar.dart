@@ -369,7 +369,7 @@ class _SidebarWidgetState extends State<SidebarWidget> with SingleTickerProvider
                   child: Text('Blog'),
                 ),
                 onTap: () async {
-                  final url = Uri.parse('https://blog.rohanbatra.in');
+                  final url = Uri.parse('https://rohanbatra.in/blog/');
                   if (await canLaunchUrl(url)) {
                     await launchUrl(url, mode: LaunchMode.externalApplication);
                   }
