@@ -24,10 +24,15 @@
 
   <link rel="canonical" href="https://rohanbatra.in/" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <!-- Preload fonts for performance -->
+  <link rel="preload" href="/fonts/Inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/Inter-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="/fonts/Inter-ExtraBold.woff2" as="font" type="font/woff2" crossorigin>
+
+  <!-- Lazy-load font CSS -->
+  <link rel="preload" href="/fonts.css" as="style">
+  <link rel="stylesheet" href="/fonts.css" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="/fonts.css"></noscript>
 
   <style>
     :root {
@@ -58,32 +63,7 @@
       padding: 2rem;
     }
 
-    .container {
-      /* Removed initial opacity and transform, and the animation for immediate visibility */
-      /* opacity: 0; */
-      /* transform: translateY(20px); */
-      /* animation: fadeInUp 1s ease-out 0.2s forwards; */
-    }
-
-    /* Keeping the animation keyframes in case you want to reintroduce a different animation later */
-    @keyframes fadeInUp {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .invisible-h1 {
-      position: absolute;
-      width: 1px;
-      height: 1px;
-      padding: 0;
-      margin: -1px;
-      overflow: hidden;
-      clip: rect(0, 0, 0, 0);
-      white-space: nowrap;
-      border: 0;
-    }
+    .container {}
 
     h1 {
       font-size: 3rem;
@@ -121,6 +101,18 @@
       transform: translateY(-4px);
       box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
       border-color: var(--accent);
+    }
+
+    .invisible-h1 {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     footer {
