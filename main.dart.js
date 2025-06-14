@@ -100539,7 +100539,7 @@ $S:39}
 A.aEv.prototype={
 $0(){var s=0,r=A.V(t.H),q
 var $async$$0=A.R(function(a,b){if(a===1)return A.S(b,r)
-while(true)switch(s){case 0:q=A.fa("https://blog.rohanbatra.in",0,null)
+while(true)switch(s){case 0:q=A.fa("https://rohanbatra.in/blog/",0,null)
 s=4
 return A.a_(A.tL(q),$async$$0)
 case 4:s=b?2:3
