@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://portfolio.rohanbatra.in/sitemap.xml
