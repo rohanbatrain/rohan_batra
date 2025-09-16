@@ -147,7 +147,17 @@ LikeSchema.statics.toggleLike = async function (
   }
 };
 
+// Add type for LikeModel to include static methods
+export interface LikeModelType extends mongoose.Model<ILike> {
+  toggleLike: (
+    userId: string,
+    targetId: string,
+    targetType: 'post' | 'comment'
+  ) => Promise<{ action: string; like: ILike | null }>;
+}
+
 const LikeModel =
-  mongoose.models.Like || mongoose.model<ILike>('Like', LikeSchema);
+  (mongoose.models.Like as LikeModelType) ||
+  mongoose.model<ILike, LikeModelType>('Like', LikeSchema);
 
 export default LikeModel;
