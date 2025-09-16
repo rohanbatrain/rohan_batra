@@ -1,0 +1,694 @@
+openapi: 3.0.3
+info:
+  title: Modern Portfolio + Blog API
+  description: API for portfolio website with blog functionality, user authentication, and content management
+  version: 1.0.0
+  contact:
+    name: Portfolio API
+servers:
+  - url: https://localhost:3000/api
+    description: Development server
+  - url: https://portfolio.vercel.app/api
+    description: Production server
+
+paths:
+  # Blog Posts
+  /blog/posts:
+    get:
+      summary: Get published blog posts
+      description: Retrieve a paginated list of published blog posts with optional filtering
+      tags: [Blog]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: language
+          in: query
+          schema:
+            type: string
+            default: en
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of blog posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BlogPostSummary'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  /blog/posts/{slug}:
+    get:
+      summary: Get blog post by slug
+      description: Retrieve a single blog post with full content and metadata
+      tags: [Blog]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: language
+          in: query
+          schema:
+            type: string
+            default: en
+      responses:
+        200:
+          description: Blog post details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  # Comments
+  /blog/posts/{slug}/comments:
+    get:
+      summary: Get comments for a blog post
+      description: Retrieve paginated comments for a specific blog post
+      tags: [Comments]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+      responses:
+        200:
+          description: List of comments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      summary: Create a new comment
+      description: Add a comment to a blog post (requires authentication)
+      tags: [Comments]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                parentId:
+                  type: string
+                  format: objectid
+      responses:
+        201:
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        400:
+          $ref: '#/components/responses/BadRequest'
+
+  # Likes
+  /blog/posts/{slug}/likes:
+    get:
+      summary: Get like count for a blog post
+      description: Retrieve the total number of likes for a blog post
+      tags: [Likes]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Like statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                  userHasLiked:
+                    type: boolean
+                    description: Whether the current user has liked this post
+
+    post:
+      summary: Like a blog post
+      description: Add a like to a blog post (requires authentication)
+      tags: [Likes]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  enum: [like, love, laugh]
+                  default: like
+      responses:
+        201:
+          description: Like added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Like'
+        409:
+          description: User has already liked this post
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+    delete:
+      summary: Unlike a blog post
+      description: Remove a like from a blog post (requires authentication)
+      tags: [Likes]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        204:
+          description: Like removed successfully
+        404:
+          description: Like not found
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  # Portfolio Projects
+  /portfolio/projects:
+    get:
+      summary: Get portfolio projects
+      description: Retrieve a list of published portfolio projects
+      tags: [Portfolio]
+      parameters:
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: technology
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: List of projects
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+
+  /portfolio/projects/{slug}:
+    get:
+      summary: Get project by slug
+      description: Retrieve a single portfolio project with full details
+      tags: [Portfolio]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Project details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  # Admin endpoints
+  /admin/comments:
+    get:
+      summary: Get all comments for moderation
+      description: Retrieve comments with moderation status (admin only)
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, published, spam, deleted]
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+      responses:
+        200:
+          description: List of comments for moderation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CommentWithMetadata'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/comments/{id}/status:
+    patch:
+      summary: Update comment status
+      description: Moderate a comment by updating its status (admin only)
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: objectid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [published, spam, deleted]
+      responses:
+        200:
+          description: Comment status updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  # Lottie Assets
+  /admin/lottie:
+    get:
+      summary: Get Lottie assets
+      description: Retrieve list of uploaded Lottie animations (admin only)
+      tags: [Admin, Assets]
+      security:
+        - ClerkAuth: []
+      responses:
+        200:
+          description: List of Lottie assets
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assets:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LottieAsset'
+
+    post:
+      summary: Upload Lottie asset
+      description: Upload a new Lottie animation file (admin only)
+      tags: [Admin, Assets]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201:
+          description: Lottie asset uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LottieAsset'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+components:
+  securitySchemes:
+    ClerkAuth:
+      type: http
+      scheme: bearer
+      description: Clerk JWT token
+
+  schemas:
+    BlogPostSummary:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectid
+        title:
+          type: string
+        slug:
+          type: string
+        summary:
+          type: string
+        language:
+          type: string
+        categories:
+          type: array
+          items:
+            type: string
+        publishedAt:
+          type: string
+          format: date-time
+        readingTime:
+          type: integer
+        viewCount:
+          type: integer
+        author:
+          $ref: '#/components/schemas/UserPublic'
+
+    BlogPost:
+      allOf:
+        - $ref: '#/components/schemas/BlogPostSummary'
+        - type: object
+          properties:
+            content:
+              type: string
+              description: Rendered HTML content
+            metadata:
+              type: object
+              properties:
+                ogImage:
+                  type: string
+                twitterCard:
+                  type: string
+                canonicalUrl:
+                  type: string
+
+    Comment:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectid
+        content:
+          type: string
+        parentId:
+          type: string
+          format: objectid
+          nullable: true
+        status:
+          type: string
+          enum: [published, pending, spam, deleted]
+        language:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        author:
+          $ref: '#/components/schemas/UserPublic'
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+
+    CommentWithMetadata:
+      allOf:
+        - $ref: '#/components/schemas/Comment'
+        - type: object
+          properties:
+            postSlug:
+              type: string
+            metadata:
+              type: object
+              properties:
+                ipAddress:
+                  type: string
+                userAgent:
+                  type: string
+
+    Like:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectid
+        postSlug:
+          type: string
+        type:
+          type: string
+          enum: [like, love, laugh]
+        createdAt:
+          type: string
+          format: date-time
+        user:
+          $ref: '#/components/schemas/UserPublic'
+
+    Project:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectid
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        technologies:
+          type: array
+          items:
+            type: string
+        images:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+              alt:
+                type: string
+              caption:
+                type: string
+        links:
+          type: object
+          properties:
+            github:
+              type: string
+            demo:
+              type: string
+            website:
+              type: string
+        featured:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+
+    LottieAsset:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectid
+        filename:
+          type: string
+        originalName:
+          type: string
+        url:
+          type: string
+        size:
+          type: integer
+        dimensions:
+          type: object
+          properties:
+            width:
+              type: integer
+            height:
+              type: integer
+        metadata:
+          type: object
+          properties:
+            duration:
+              type: number
+            frameRate:
+              type: number
+            frames:
+              type: integer
+        tags:
+          type: array
+          items:
+            type: string
+        usageCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    UserPublic:
+      type: object
+      properties:
+        _id:
+          type: string
+          format: objectid
+        name:
+          type: string
+        avatar:
+          type: string
+        bio:
+          type: string
+
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        pages:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
