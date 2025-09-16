@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import connectToDatabase from '@/lib/mongodb';
 import UserModel from '@/models/User';
 import BlogPostModel from '@/models/BlogPost';
@@ -8,7 +8,7 @@ import LikeModel from '@/models/Like';
 import SiteSettingModel from '@/models/SiteSetting';
 
 // GET /api/admin/stats - Get admin dashboard statistics
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await connectToDatabase();
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       ProjectModel.countDocuments(),
       CommentModel.countDocuments(),
       LikeModel.countDocuments(),
-      SiteSettingModel.getStats(),
+      SiteSettingModel.countDocuments(),
     ]);
 
     // Recent activity (last 7 days)

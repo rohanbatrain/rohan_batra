@@ -1,8 +1,17 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { Comment } from '@/types/comment';
 
-export interface IComment extends Omit<Comment, '_id'>, Document {
+export interface IComment
+  extends Omit<
+      Comment,
+      '_id' | 'authorId' | 'postId' | 'parentId' | 'approvedBy'
+    >,
+    Document {
   _id: mongoose.Types.ObjectId;
+  authorId?: mongoose.Types.ObjectId;
+  postId: mongoose.Types.ObjectId;
+  parentId?: mongoose.Types.ObjectId;
+  approvedBy?: mongoose.Types.ObjectId;
 }
 
 const CommentSchema = new Schema<IComment>(

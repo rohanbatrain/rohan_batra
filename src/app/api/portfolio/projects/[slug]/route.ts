@@ -4,9 +4,9 @@ import ProjectModel from '@/models/Project';
 import { ProjectWithAuthor } from '@/types/project';
 
 interface RouteParams {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // GET /api/portfolio/projects/[slug] - Get a single portfolio project by slug
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     await connectToDatabase();
 
-    const { slug } = params;
+    const { slug } = await params;
 
     if (!slug) {
       return NextResponse.json(

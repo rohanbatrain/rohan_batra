@@ -1,103 +1,257 @@
-import Image from 'next/image';
+'use client';
+
+import { Suspense } from 'react';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, Code, Palette, Rocket } from 'lucide-react';
+import ProjectCard from '@/components/portfolio/ProjectCard';
+import PostSummary from '@/components/blog/PostSummary';
+
+// This would normally fetch from API or database
+const mockProjects = [
+  {
+    _id: '1',
+    title: 'E-Commerce Platform',
+    slug: 'ecommerce-platform',
+    description:
+      'A full-stack e-commerce solution built with Next.js, TypeScript, and Stripe integration.',
+    category: 'Web Development',
+    technologies: ['Next.js', 'TypeScript', 'Stripe', 'MongoDB'],
+    images: ['/placeholder-project.jpg'],
+    demoUrl: 'https://ecommerce-demo.vercel.app',
+    sourceUrl: 'https://github.com/example/ecommerce',
+    featured: true,
+    status: 'draft' as const,
+    tags: ['Mobile', 'React Native', 'API'],
+    viewCount: 50,
+    authorId: '1',
+    publishedAt: undefined,
+    createdAt: new Date('2024-01-05'),
+    updatedAt: new Date('2024-01-05'),
+  },
+  // Add more mock projects...
+];
+
+const mockBlogPosts = [
+  {
+    _id: '1',
+    title: 'Building Modern Web Applications with Next.js 14',
+    slug: 'building-modern-web-apps-nextjs-14',
+    excerpt:
+      'Learn how to leverage the latest features in Next.js 14 to build fast, modern web applications with React Server Components.',
+    content: '',
+    featuredImage: '/placeholder-blog.jpg',
+    images: [],
+    category: 'Web Development',
+    tags: ['Next.js', 'React', 'Web Development'],
+    status: 'published' as const,
+    featured: true,
+    readingTime: 8,
+    viewCount: 1250,
+    likeCount: 42,
+    commentCount: 15,
+    authorId: '1',
+    publishedAt: new Date(),
+    createdAt: new Date(),
+    updatedAt: new Date(),
+    author: {
+      id: '1',
+      firstName: 'Rohan',
+      lastName: 'Batra',
+      avatar: '/placeholder-avatar.jpg',
+    },
+  },
+  // Add more mock posts...
+];
 
 export default function Home() {
   return (
-    <div className='font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20'>
-      <main className='flex flex-col gap-[32px] row-start-2 items-center sm:items-start'>
-        <Image
-          className='dark:invert'
-          src='/next.svg'
-          alt='Next.js logo'
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className='font-mono list-inside list-decimal text-sm/6 text-center sm:text-left'>
-          <li className='mb-2 tracking-[-.01em]'>
-            Get started by editing{' '}
-            <code className='bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded'>
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className='tracking-[-.01em]'>
-            Save and see your changes instantly.
-          </li>
-        </ol>
+    <div className='min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800'>
+      {/* Hero Section */}
+      <section className='relative px-6 lg:px-8 py-24 sm:py-32'>
+        <div className='mx-auto max-w-4xl text-center'>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            className='text-4xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-6xl'
+          >
+            Full-Stack Developer &{' '}
+            <span className='text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600'>
+              Digital Creator
+            </span>
+          </motion.h1>
 
-        <div className='flex gap-4 items-center flex-col sm:flex-row'>
-          <a
-            className='rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto'
-            href='https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-            target='_blank'
-            rel='noopener noreferrer'
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className='mt-6 text-lg leading-8 text-gray-600 dark:text-gray-300'
           >
-            <Image
-              className='dark:invert'
-              src='/vercel.svg'
-              alt='Vercel logomark'
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className='rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]'
-            href='https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-            target='_blank'
-            rel='noopener noreferrer'
+            Building modern web experiences with cutting-edge technologies.
+            Passionate about clean code, user experience, and innovative
+            solutions.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className='mt-10 flex items-center justify-center gap-x-6'
           >
-            Read our docs
-          </a>
+            <Link
+              href='/portfolio'
+              className='rounded-md bg-blue-600 px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 transition-all duration-200'
+            >
+              View Portfolio
+            </Link>
+            <Link
+              href='/blog'
+              className='text-sm font-semibold leading-6 text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 transition-colors'
+            >
+              Read Blog <ArrowRight className='inline w-4 h-4 ml-1' />
+            </Link>
+          </motion.div>
         </div>
-      </main>
-      <footer className='row-start-3 flex gap-[24px] flex-wrap items-center justify-center'>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'
-        >
-          <Image
-            aria-hidden
-            src='/file.svg'
-            alt='File icon'
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'
-        >
-          <Image
-            aria-hidden
-            src='/window.svg'
-            alt='Window icon'
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className='flex items-center gap-2 hover:underline hover:underline-offset-4'
-          href='https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app'
-          target='_blank'
-          rel='noopener noreferrer'
-        >
-          <Image
-            aria-hidden
-            src='/globe.svg'
-            alt='Globe icon'
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      </section>
+
+      {/* Skills Section */}
+      <section className='py-16 px-6 lg:px-8'>
+        <div className='mx-auto max-w-6xl'>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+            className='text-center mb-12'
+          >
+            <h2 className='text-3xl font-bold text-gray-900 dark:text-white mb-4'>
+              What I Do
+            </h2>
+            <p className='text-gray-600 dark:text-gray-300 max-w-2xl mx-auto'>
+              Specializing in modern web development with a focus on
+              performance, accessibility, and user experience.
+            </p>
+          </motion.div>
+
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-8'>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              viewport={{ once: true }}
+              className='text-center p-6 rounded-xl bg-white dark:bg-gray-800 shadow-lg'
+            >
+              <Code className='w-12 h-12 mx-auto mb-4 text-blue-600' />
+              <h3 className='text-xl font-semibold text-gray-900 dark:text-white mb-2'>
+                Full-Stack Development
+              </h3>
+              <p className='text-gray-600 dark:text-gray-300'>
+                Building end-to-end web applications with modern frameworks and
+                technologies.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+              className='text-center p-6 rounded-xl bg-white dark:bg-gray-800 shadow-lg'
+            >
+              <Palette className='w-12 h-12 mx-auto mb-4 text-purple-600' />
+              <h3 className='text-xl font-semibold text-gray-900 dark:text-white mb-2'>
+                UI/UX Design
+              </h3>
+              <p className='text-gray-600 dark:text-gray-300'>
+                Creating beautiful, intuitive interfaces that users love to
+                interact with.
+              </p>
+            </motion.div>
+
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              viewport={{ once: true }}
+              className='text-center p-6 rounded-xl bg-white dark:bg-gray-800 shadow-lg'
+            >
+              <Rocket className='w-12 h-12 mx-auto mb-4 text-green-600' />
+              <h3 className='text-xl font-semibold text-gray-900 dark:text-white mb-2'>
+                Performance Optimization
+              </h3>
+              <p className='text-gray-600 dark:text-gray-300'>
+                Optimizing applications for speed, accessibility, and search
+                engine visibility.
+              </p>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* Featured Projects */}
+      <section className='py-16 px-6 lg:px-8 bg-white dark:bg-gray-800'>
+        <div className='mx-auto max-w-6xl'>
+          <div className='flex items-center justify-between mb-12'>
+            <div>
+              <h2 className='text-3xl font-bold text-gray-900 dark:text-white mb-4'>
+                Featured Projects
+              </h2>
+              <p className='text-gray-600 dark:text-gray-300'>
+                A selection of my recent work and personal projects.
+              </p>
+            </div>
+            <Link
+              href='/portfolio'
+              className='text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors'
+            >
+              View All Projects →
+            </Link>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
+            <Suspense fallback={<div>Loading projects...</div>}>
+              {mockProjects.slice(0, 3).map((project, index) => (
+                <ProjectCard
+                  key={project._id}
+                  project={project}
+                  index={index}
+                />
+              ))}
+            </Suspense>
+          </div>
+        </div>
+      </section>
+
+      {/* Latest Blog Posts */}
+      <section className='py-16 px-6 lg:px-8'>
+        <div className='mx-auto max-w-6xl'>
+          <div className='flex items-center justify-between mb-12'>
+            <div>
+              <h2 className='text-3xl font-bold text-gray-900 dark:text-white mb-4'>
+                Latest Articles
+              </h2>
+              <p className='text-gray-600 dark:text-gray-300'>
+                Thoughts on web development, design, and technology trends.
+              </p>
+            </div>
+            <Link
+              href='/blog'
+              className='text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors'
+            >
+              View All Posts →
+            </Link>
+          </div>
+
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
+            <Suspense fallback={<div>Loading posts...</div>}>
+              {mockBlogPosts.slice(0, 3).map((post, index) => (
+                <PostSummary key={post._id} post={post} index={index} />
+              ))}
+            </Suspense>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,8 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { BlogPost } from '@/types/blog-post';
 
-export interface IBlogPost extends Omit<BlogPost, '_id'>, Document {
+export interface IBlogPost
+  extends Omit<BlogPost, '_id' | 'authorId'>,
+    Document {
   _id: mongoose.Types.ObjectId;
+  authorId: mongoose.Types.ObjectId;
 }
 
 const BlogPostSchema = new Schema<IBlogPost>(

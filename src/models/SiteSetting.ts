@@ -1,8 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { SiteSetting } from '@/types/site-setting';
 
-export interface ISiteSetting extends Omit<SiteSetting, '_id'>, Document {
+export interface ISiteSetting
+  extends Omit<SiteSetting, '_id' | 'updatedBy'>,
+    Document {
   _id: mongoose.Types.ObjectId;
+  updatedBy?: mongoose.Types.ObjectId;
 }
 
 const SiteSettingSchema = new Schema<ISiteSetting>(

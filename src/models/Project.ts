@@ -1,8 +1,9 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { Project } from '@/types/project';
 
-export interface IProject extends Omit<Project, '_id'>, Document {
+export interface IProject extends Omit<Project, '_id' | 'authorId'>, Document {
   _id: mongoose.Types.ObjectId;
+  authorId: mongoose.Types.ObjectId;
 }
 
 const ProjectSchema = new Schema<IProject>(

@@ -1,8 +1,11 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { LottieAsset } from '@/types/lottie-asset';
 
-export interface ILottieAsset extends Omit<LottieAsset, '_id'>, Document {
+export interface ILottieAsset
+  extends Omit<LottieAsset, '_id' | 'uploadedBy'>,
+    Document {
   _id: mongoose.Types.ObjectId;
+  uploadedBy: mongoose.Types.ObjectId;
 }
 
 const LottieAssetSchema = new Schema<ILottieAsset>(

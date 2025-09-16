@@ -1,114 +1,36 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { currentUser } from '@clerk/nextjs/server';
+import { getProjectsWithPagination } from '@/lib/portfolio-service';
 import connectToDatabase from '@/lib/mongodb';
 import ProjectModel from '@/models/Project';
 import UserModel from '@/models/User';
-import { currentUser } from '@clerk/nextjs/server';
 import { ProjectWithAuthor } from '@/types/project';
 
 // GET /api/portfolio/projects - Get all portfolio projects with pagination and filtering
 export async function GET(request: NextRequest) {
   try {
-    await connectToDatabase();
-
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');
-    const category = searchParams.get('category');
-    const technology = searchParams.get('technology');
+    const category = searchParams.get('category') || undefined;
+    const technology = searchParams.get('technology') || undefined;
     const featured = searchParams.get('featured');
     const status = searchParams.get('status') || 'published';
-    const search = searchParams.get('search');
+    const search = searchParams.get('search') || undefined;
 
-    // Build query
-    const query: Record<string, unknown> = {};
-
-    // Status filter
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-
-    // Category filter
-    if (category) {
-      query.category = category;
-    }
-
-    // Technology filter
-    if (technology) {
-      query.technologies = { $in: [technology] };
-    }
-
-    // Featured filter
-    if (featured !== null && featured !== undefined) {
-      query.featured = featured === 'true';
-    }
-
-    // Search filter
-    if (search) {
-      query.$text = { $search: search };
-    }
-
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-
-    // Get total count for pagination
-    const total = await ProjectModel.countDocuments(query);
-
-    // Get projects with author population
-    const projects = await ProjectModel.find(query)
-      .populate('author', 'name email avatar role')
-      .sort({ featured: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    // Transform to include author info
-    const projectsWithAuthor: ProjectWithAuthor[] = projects.map(project => ({
-      _id: project._id.toString(),
-      title: project.title,
-      slug: project.slug,
-      description: project.description,
-      longDescription: project.longDescription,
-      featuredImage: project.images?.[0] || '', // Use first image as featured
-      images: project.images,
-      category: project.category,
-      technologies: project.technologies,
-      status: project.status,
-      featured: project.featured,
-      liveUrl: project.liveUrl,
-      githubUrl: project.sourceUrl, // Map sourceUrl to githubUrl
-      startDate: project.startDate,
-      endDate: project.endDate,
-      tags: project.tags,
-      viewCount: project.viewCount,
-      likeCount: 0, // Not implemented yet
-      authorId: project.author._id.toString(),
-      createdAt: project.createdAt,
-      updatedAt: project.updatedAt,
-      author: {
-        id: project.author._id.toString(),
-        firstName: project.author.name.split(' ')[0] || '',
-        lastName: project.author.name.split(' ').slice(1).join(' ') || '',
-        avatar: project.author.avatar,
-      },
-    }));
-
-    // Calculate pagination info
-    const totalPages = Math.ceil(total / limit);
-    const hasNext = page < totalPages;
-    const hasPrev = page > 1;
+    const result = await getProjectsWithPagination({
+      page,
+      limit,
+      category,
+      technology,
+      featured: featured ? featured === 'true' : undefined,
+      status,
+      search,
+    });
 
     return NextResponse.json({
       success: true,
-      data: {
-        projects: projectsWithAuthor,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages,
-          hasNext,
-          hasPrev,
-        },
-      },
+      data: result,
     });
   } catch (error) {
     console.error('Error fetching portfolio projects:', error);

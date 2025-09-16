@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
+import { getBlogPostsWithPagination } from '@/lib/blog-service';
 import connectToDatabase from '@/lib/mongodb';
 import BlogPostModel from '@/models/BlogPost';
 import UserModel from '@/models/User';
@@ -8,107 +9,28 @@ import { BlogPostWithAuthor } from '@/types/blog-post';
 // GET /api/blog/posts - Get all blog posts with pagination and filtering
 export async function GET(request: NextRequest) {
   try {
-    await connectToDatabase();
-
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const category = searchParams.get('category');
-    const tag = searchParams.get('tag');
-    const author = searchParams.get('author');
+    const category = searchParams.get('category') || undefined;
+    const tag = searchParams.get('tag') || undefined;
+    const author = searchParams.get('author') || undefined;
     const status = searchParams.get('status') || 'published';
-    const search = searchParams.get('search');
+    const search = searchParams.get('search') || undefined;
 
-    // Build query
-    const query: Record<string, unknown> = {};
-
-    // Status filter
-    if (status && status !== 'all') {
-      query.status = status;
-    }
-
-    // Category filter
-    if (category) {
-      query.category = category;
-    }
-
-    // Tag filter
-    if (tag) {
-      query.tags = { $in: [tag] };
-    }
-
-    // Author filter
-    if (author) {
-      query.author = author;
-    }
-
-    // Search filter
-    if (search) {
-      query.$text = { $search: search };
-    }
-
-    // Calculate pagination
-    const skip = (page - 1) * limit;
-
-    // Get total count for pagination
-    const total = await BlogPostModel.countDocuments(query);
-
-    // Get posts with author population
-    const posts = await BlogPostModel.find(query)
-      .populate('author', 'name email avatar role')
-      .sort({ publishedAt: -1, createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
-
-    // Transform to include author info
-    const postsWithAuthor: BlogPostWithAuthor[] = posts.map(post => ({
-      _id: post._id.toString(),
-      title: post.title,
-      slug: post.slug,
-      excerpt: post.excerpt,
-      content: post.content,
-      featuredImage: post.featuredImage,
-      images: post.images || [],
-      category: post.category,
-      tags: post.tags,
-      status: post.status,
-      featured: post.featured,
-      seoTitle: post.seoTitle,
-      seoDescription: post.seoDescription,
-      readingTime: post.readingTime,
-      viewCount: post.viewCount,
-      likeCount: post.likeCount,
-      commentCount: post.commentCount,
-      authorId: post.author._id.toString(),
-      publishedAt: post.publishedAt,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-      author: {
-        id: post.author._id.toString(),
-        firstName: post.author.name.split(' ')[0] || '',
-        lastName: post.author.name.split(' ').slice(1).join(' ') || '',
-        avatar: post.author.avatar,
-      },
-    }));
-
-    // Calculate pagination info
-    const totalPages = Math.ceil(total / limit);
-    const hasNext = page < totalPages;
-    const hasPrev = page > 1;
+    const result = await getBlogPostsWithPagination({
+      page,
+      limit,
+      category,
+      tag,
+      author,
+      status,
+      search,
+    });
 
     return NextResponse.json({
       success: true,
-      data: {
-        posts: postsWithAuthor,
-        pagination: {
-          page,
-          limit,
-          total,
-          totalPages,
-          hasNext,
-          hasPrev,
-        },
-      },
+      data: result,
     });
   } catch (error) {
     console.error('Error fetching blog posts:', error);

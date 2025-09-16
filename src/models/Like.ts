@@ -1,8 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
 import { Like } from '@/types/like';
 
-export interface ILike extends Omit<Like, '_id'>, Document {
+export interface ILike
+  extends Omit<Like, '_id' | 'userId' | 'targetId'>,
+    Document {
   _id: mongoose.Types.ObjectId;
+  userId: mongoose.Types.ObjectId;
+  targetId: mongoose.Types.ObjectId;
 }
 
 const LikeSchema = new Schema<ILike>(

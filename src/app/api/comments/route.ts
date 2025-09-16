@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/mongodb';
 import CommentModel from '@/models/Comment';
-import UserModel from '@/models/User';
 import BlogPostModel from '@/models/BlogPost';
 import ProjectModel from '@/models/Project';
 import { CommentWithAuthor } from '@/types/comment';
