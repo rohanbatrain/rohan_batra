@@ -7,8 +7,8 @@ fetch('http://localhost:3000/api/blog/posts', {
     excerpt: 'This is my first blog post!',
     content: '# Hello World\n\nThis is my first blog post content.',
     category: 'General',
-    status: 'published'
-  })
+    status: 'published',
+  }),
 })
-.then(res => res.json())
-.then(data => console.log(data));
+  .then(res => res.json())
+  .then(data => console.log(data));

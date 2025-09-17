@@ -20,13 +20,13 @@ const nextConfig: NextConfig = {
         tls: false,
       };
     }
-    
+
     // Prevent memory leaks in development
     config.watchOptions = {
       poll: 1000,
       aggregateTimeout: 300,
     };
-    
+
     return config;
   },
 };

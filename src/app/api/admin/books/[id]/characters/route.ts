@@ -9,16 +9,22 @@ import { z } from 'zod';
 const CharacterSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
   description: z.string().optional(),
-  role: z.enum(['protagonist', 'antagonist', 'supporting', 'minor']).default('supporting'),
+  role: z
+    .enum(['protagonist', 'antagonist', 'supporting', 'minor'])
+    .default('supporting'),
   appearance: z.string().optional(),
   personality: z.string().optional(),
   background: z.string().optional(),
   motivations: z.string().optional(),
-  relationships: z.array(z.object({
-    characterId: z.string(),
-    relationshipType: z.string(),
-    description: z.string().optional(),
-  })).optional(),
+  relationships: z
+    .array(
+      z.object({
+        characterId: z.string(),
+        relationshipType: z.string(),
+        description: z.string().optional(),
+      })
+    )
+    .optional(),
   characterArc: z.string().optional(),
   notes: z.string().optional(),
   profileImage: z.string().url().optional(),

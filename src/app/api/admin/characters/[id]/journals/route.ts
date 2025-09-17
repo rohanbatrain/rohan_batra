@@ -9,7 +9,9 @@ import { z } from 'zod';
 const JournalSchema = z.object({
   title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
   content: z.string().optional(),
-  entryType: z.enum(['backstory', 'development', 'notes', 'relationship']).default('notes'),
+  entryType: z
+    .enum(['backstory', 'development', 'notes', 'relationship'])
+    .default('notes'),
   isPrivate: z.boolean().default(true),
   tags: z.array(z.string()).optional(),
   relatedCharacterIds: z.array(z.string()).optional(),
@@ -53,7 +55,10 @@ export async function GET(
     const character = await CharacterModel.findOne(characterFilter);
 
     if (!character) {
-      return NextResponse.json({ error: 'Character not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Character not found' },
+        { status: 404 }
+      );
     }
 
     // Get query parameters for filtering
@@ -140,7 +145,10 @@ export async function POST(
     const character = await CharacterModel.findOne(characterFilter);
 
     if (!character) {
-      return NextResponse.json({ error: 'Character not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Character not found' },
+        { status: 404 }
+      );
     }
 
     // Create new journal entry

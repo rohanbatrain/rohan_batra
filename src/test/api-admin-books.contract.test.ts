@@ -164,8 +164,12 @@ describe('GET /api/admin/books', () => {
       ]).toContain(status);
       expect(statData).toHaveProperty('count');
       expect(statData).toHaveProperty('totalWords');
-      expect(typeof (statData as { count: number; totalWords: number }).count).toBe('number');
-      expect(typeof (statData as { count: number; totalWords: number }).totalWords).toBe('number');
+      expect(
+        typeof (statData as { count: number; totalWords: number }).count
+      ).toBe('number');
+      expect(
+        typeof (statData as { count: number; totalWords: number }).totalWords
+      ).toBe('number');
     });
   });
 
@@ -189,11 +193,11 @@ describe('GET /api/admin/books', () => {
     // This test assumes editor role filtering is working
     // In a real test, we would mock authentication with editor role
     const response = await fetch('http://localhost:3000/api/admin/books');
-    
+
     expect(response.status).toBe(200);
-    
+
     const data = await response.json();
-    
+
     // For editor role, all books should belong to the same author
     if (data.books.length > 1) {
       const firstAuthorId = data.books[0].authorId;

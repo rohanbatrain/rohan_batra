@@ -53,7 +53,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     isAPIAdminRoute(req) ||
     isEditorRoute(req) ||
     isAdminOnlyRoute(req);
-  
+
   if (!needsAuth) {
     return NextResponse.next();
   }

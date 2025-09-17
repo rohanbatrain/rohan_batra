@@ -2,7 +2,8 @@
 const addPortfolioProject = async () => {
   const projectData = {
     title: 'E-Commerce Platform',
-    description: 'A full-stack e-commerce platform built with Next.js and MongoDB',
+    description:
+      'A full-stack e-commerce platform built with Next.js and MongoDB',
     longDescription: `
 ## Project Overview
 
@@ -34,7 +35,7 @@ The project successfully handles thousands of concurrent users and processes hun
     images: [
       '/images/projects/ecommerce-homepage.jpg',
       '/images/projects/ecommerce-product.jpg',
-      '/images/projects/ecommerce-admin.jpg'
+      '/images/projects/ecommerce-admin.jpg',
     ],
     category: 'Web Application', // Required
     technologies: [
@@ -43,7 +44,7 @@ The project successfully handles thousands of concurrent users and processes hun
       'MongoDB',
       'Stripe',
       'Tailwind CSS',
-      'Clerk'
+      'Clerk',
     ],
     status: 'published', // Options: 'draft', 'published', 'archived'
     featured: true, // Set to true to feature on homepage
@@ -53,7 +54,7 @@ The project successfully handles thousands of concurrent users and processes hun
     startDate: '2024-01-15',
     endDate: '2024-06-30',
     client: 'ABC Retail Corp',
-    tags: ['ecommerce', 'fullstack', 'nextjs', 'mongodb']
+    tags: ['ecommerce', 'fullstack', 'nextjs', 'mongodb'],
   };
 
   try {
@@ -66,7 +67,7 @@ The project successfully handles thousands of concurrent users and processes hun
     });
 
     const result = await response.json();
-    
+
     if (result.success) {
       console.log('Portfolio project created:', result.data);
     } else {

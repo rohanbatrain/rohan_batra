@@ -31,8 +31,7 @@ export default function ClientSignUp() {
                 'w-full h-12 bg-white dark:bg-[#21262d] border-2 border-gray-200 dark:border-[#30363d] text-gray-700 dark:text-[#f0f6fc] hover:bg-gray-50 dark:hover:bg-[#30363d] hover:border-blue-300 dark:hover:border-[#58a6ff] rounded-xl font-semibold transition-all duration-200 shadow-sm hover:shadow-md',
               socialButtonsBlockButtonText:
                 'font-semibold text-base dark:text-[#f0f6fc]',
-              socialButtonsBlockButtonIcon:
-                'text-gray-700 dark:text-white',
+              socialButtonsBlockButtonIcon: 'text-gray-700 dark:text-white',
               // Form fields
               formFieldInput:
                 'w-full h-12 bg-gray-50 dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:border-blue-400 transition-all duration-200 text-base font-medium placeholder:text-gray-400 dark:placeholder:text-gray-500',
@@ -126,12 +125,12 @@ export default function ClientSignUp() {
       <div className='absolute inset-0'>
         {/* Primary gradient overlay */}
         <div className='absolute inset-0 bg-gradient-to-br from-blue-50/50 via-indigo-50/30 to-purple-50/50 dark:from-gray-900/50 dark:via-gray-800/30 dark:to-gray-900/50' />
-        
+
         {/* Floating orbs */}
         <div className='absolute top-0 left-1/4 w-72 h-72 bg-blue-400/10 dark:bg-blue-400/5 rounded-full blur-3xl animate-pulse' />
         <div className='absolute top-1/3 right-1/4 w-96 h-96 bg-purple-400/10 dark:bg-purple-400/5 rounded-full blur-3xl animate-pulse delay-1000' />
         <div className='absolute bottom-1/4 left-1/3 w-80 h-80 bg-indigo-400/10 dark:bg-indigo-400/5 rounded-full blur-3xl animate-pulse delay-2000' />
-        
+
         {/* Grid pattern */}
         <div className='absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.05)_1px,transparent_0)] bg-[length:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.03)_1px,transparent_0)]' />
       </div>
@@ -146,12 +145,12 @@ export default function ClientSignUp() {
                 RB
               </span>
             </div>
-            
+
             {/* Title */}
             <h1 className='text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent mb-3'>
               Create your account
             </h1>
-            
+
             {/* Subtitle */}
             <p className='text-lg text-gray-600 dark:text-gray-300 font-medium'>
               Join to access exclusive content and features

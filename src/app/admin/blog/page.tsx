@@ -92,7 +92,10 @@ export default function BlogManagementPage() {
       // Refresh the list
       fetchPosts();
     } catch (err) {
-      alert('Failed to delete blog post: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      alert(
+        'Failed to delete blog post: ' +
+          (err instanceof Error ? err.message : 'Unknown error')
+      );
     }
   };
 
@@ -113,7 +116,10 @@ export default function BlogManagementPage() {
       // Refresh the list
       fetchPosts();
     } catch (err) {
-      alert('Failed to update blog post: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      alert(
+        'Failed to update blog post: ' +
+          (err instanceof Error ? err.message : 'Unknown error')
+      );
     }
   };
 
@@ -157,19 +163,21 @@ export default function BlogManagementPage() {
             <input
               type='text'
               value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              onChange={e => setFilters({ ...filters, search: e.target.value })}
               placeholder='Search posts...'
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
             />
           </div>
-          
+
           <div>
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Status
             </label>
             <select
               value={filters.published}
-              onChange={(e) => setFilters({ ...filters, published: e.target.value })}
+              onChange={e =>
+                setFilters({ ...filters, published: e.target.value })
+              }
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
             >
               <option value=''>All Posts</option>
@@ -185,7 +193,9 @@ export default function BlogManagementPage() {
             <input
               type='text'
               value={filters.category}
-              onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+              onChange={e =>
+                setFilters({ ...filters, category: e.target.value })
+              }
               placeholder='Filter by category...'
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
             />
@@ -205,13 +215,18 @@ export default function BlogManagementPage() {
           <div className='p-6'>
             <div className='animate-pulse space-y-4'>
               {[1, 2, 3].map(i => (
-                <div key={i} className='h-16 bg-gray-200 dark:bg-gray-700 rounded'></div>
+                <div
+                  key={i}
+                  className='h-16 bg-gray-200 dark:bg-gray-700 rounded'
+                ></div>
               ))}
             </div>
           </div>
         ) : posts.length === 0 ? (
           <div className='p-6 text-center'>
-            <p className='text-gray-500 dark:text-gray-400'>No blog posts found</p>
+            <p className='text-gray-500 dark:text-gray-400'>
+              No blog posts found
+            </p>
           </div>
         ) : (
           <div className='overflow-x-auto'>
@@ -236,8 +251,11 @@ export default function BlogManagementPage() {
                 </tr>
               </thead>
               <tbody className='bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700'>
-                {posts.map((post) => (
-                  <tr key={post._id} className='hover:bg-gray-50 dark:hover:bg-gray-700'>
+                {posts.map(post => (
+                  <tr
+                    key={post._id}
+                    className='hover:bg-gray-50 dark:hover:bg-gray-700'
+                  >
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div>
                         <div className='text-sm font-medium text-gray-900 dark:text-white'>
@@ -269,7 +287,9 @@ export default function BlogManagementPage() {
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2'>
                       <button
-                        onClick={() => handleStatusToggle(post._id, post.published)}
+                        onClick={() =>
+                          handleStatusToggle(post._id, post.published)
+                        }
                         className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300'
                       >
                         {post.published ? 'Unpublish' : 'Publish'}
@@ -295,18 +315,23 @@ export default function BlogManagementPage() {
         {pagination.totalPages > 1 && (
           <div className='px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between'>
             <div className='text-sm text-gray-700 dark:text-gray-300'>
-              Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+              Showing page {pagination.page} of {pagination.totalPages} (
+              {pagination.total} total)
             </div>
             <div className='flex space-x-2'>
               <button
-                onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                onClick={() =>
+                  setPagination({ ...pagination, page: pagination.page - 1 })
+                }
                 disabled={!pagination.hasPrevPage}
                 className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
               >
                 Previous
               </button>
               <button
-                onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                onClick={() =>
+                  setPagination({ ...pagination, page: pagination.page + 1 })
+                }
                 disabled={!pagination.hasNextPage}
                 className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
               >

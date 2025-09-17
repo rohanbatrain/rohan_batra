@@ -71,8 +71,18 @@ export default function AdminDashboardPage() {
         title: `Blog post "${post.title}" created`,
         date: post.createdAt,
         icon: (
-          <svg className='h-4 w-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' />
+          <svg
+            className='h-4 w-4'
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253'
+            />
           </svg>
         ),
       })),
@@ -81,8 +91,18 @@ export default function AdminDashboardPage() {
         title: `New comment by ${comment.authorName}`,
         date: comment.createdAt,
         icon: (
-          <svg className='h-4 w-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z' />
+          <svg
+            className='h-4 w-4'
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z'
+            />
           </svg>
         ),
       })),
@@ -91,8 +111,18 @@ export default function AdminDashboardPage() {
         title: `Book "${book.title}" updated (${book.wordCount} words)`,
         date: book.createdAt,
         icon: (
-          <svg className='h-4 w-4' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-            <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z' />
+          <svg
+            className='h-4 w-4'
+            fill='none'
+            stroke='currentColor'
+            viewBox='0 0 24 24'
+          >
+            <path
+              strokeLinecap='round'
+              strokeLinejoin='round'
+              strokeWidth={2}
+              d='M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z'
+            />
           </svg>
         ),
       })),
@@ -127,7 +157,10 @@ export default function AdminDashboardPage() {
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
           {[1, 2, 3, 4].map(i => (
-            <div key={i} className='bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 animate-pulse'>
+            <div
+              key={i}
+              className='bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 animate-pulse'
+            >
               <div className='h-20'></div>
             </div>
           ))}
@@ -145,7 +178,9 @@ export default function AdminDashboardPage() {
           </h1>
         </div>
         <div className='bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4'>
-          <p className='text-red-600 dark:text-red-400'>Error loading dashboard: {error}</p>
+          <p className='text-red-600 dark:text-red-400'>
+            Error loading dashboard: {error}
+          </p>
         </div>
       </div>
     );
@@ -369,10 +404,11 @@ export default function AdminDashboardPage() {
           </h2>
         </div>
         <div className='p-6'>
-          {stats && (stats.activity.recentPosts.length > 0 || stats.activity.recentComments.length > 0 || stats.activity.recentBooks.length > 0) ? (
-            <div className='space-y-1'>
-              {renderActivityFeed()}
-            </div>
+          {stats &&
+          (stats.activity.recentPosts.length > 0 ||
+            stats.activity.recentComments.length > 0 ||
+            stats.activity.recentBooks.length > 0) ? (
+            <div className='space-y-1'>{renderActivityFeed()}</div>
           ) : (
             <p className='text-gray-500 dark:text-gray-400 text-center py-8'>
               No recent activity

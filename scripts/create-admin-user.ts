@@ -13,7 +13,7 @@ import User from '@/models/User';
 async function createAdminUser() {
   try {
     await connectToDatabase();
-    
+
     // Replace with your actual Clerk user ID and details
     const adminUser = {
       clerkId: 'YOUR_CLERK_USER_ID', // Get this from Clerk dashboard after signing up
@@ -23,9 +23,9 @@ async function createAdminUser() {
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    
+
     const existingUser = await User.findOne({ clerkId: adminUser.clerkId });
-    
+
     if (existingUser) {
       // Update existing user role
       existingUser.role = 'admin';
@@ -37,7 +37,7 @@ async function createAdminUser() {
       await newUser.save();
       console.log('✅ Created new admin user');
     }
-    
+
     console.log('Admin user setup complete');
   } catch (error) {
     console.error('Error setting up admin user:', error);

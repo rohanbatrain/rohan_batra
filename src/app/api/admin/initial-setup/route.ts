@@ -9,7 +9,7 @@ import User from '@/models/User';
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
     // Check if any admin already exists
     await connectToDatabase();
     const existingAdmin = await User.findOne({ role: 'admin' });
-    
+
     if (existingAdmin) {
       return NextResponse.json(
         { error: 'Admin already exists. This endpoint is disabled.' },
@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
 
     // Only allow if user email matches environment variable
     const INITIAL_ADMIN_EMAIL = process.env.INITIAL_ADMIN_EMAIL;
-    
+
     if (!INITIAL_ADMIN_EMAIL) {
       return NextResponse.json(
         { error: 'Initial admin setup not configured' },
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { email } = await request.json();
-    
+
     if (email !== INITIAL_ADMIN_EMAIL) {
       return NextResponse.json(
         { error: 'Unauthorized: Not designated admin email' },
@@ -56,9 +56,10 @@ export async function POST(request: NextRequest) {
 
     await adminUser.save();
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Initial admin created successfully. This endpoint is now disabled.'
+    return NextResponse.json({
+      success: true,
+      message:
+        'Initial admin created successfully. This endpoint is now disabled.',
     });
   } catch (error) {
     console.error('Error in initial admin setup:', error);

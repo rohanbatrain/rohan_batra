@@ -18,7 +18,8 @@ async function connectToDatabase() {
 const sampleBlogPost = {
   title: 'Understanding React Server Components',
   slug: 'understanding-react-server-components',
-  excerpt: 'Learn how React Server Components work and why they matter for modern web development.',
+  excerpt:
+    'Learn how React Server Components work and why they matter for modern web development.',
   content: `
 # Understanding React Server Components
 
@@ -47,7 +48,8 @@ This new architecture enables better performance and developer experience.
   status: 'published',
   featured: true,
   seoTitle: 'React Server Components Guide',
-  seoDescription: 'Complete guide to React Server Components and their benefits',
+  seoDescription:
+    'Complete guide to React Server Components and their benefits',
   readingTime: 8,
   viewCount: 0,
   likeCount: 0,
@@ -55,14 +57,15 @@ This new architecture enables better performance and developer experience.
   authorId: 'YOUR_USER_OBJECT_ID', // Replace with actual user ID
   publishedAt: new Date(),
   createdAt: new Date(),
-  updatedAt: new Date()
+  updatedAt: new Date(),
 };
 
 // Sample portfolio project data
 const sampleProject = {
   title: 'AI-Powered Task Manager',
   slug: 'ai-powered-task-manager',
-  description: 'Smart task management app with AI-driven prioritization and scheduling',
+  description:
+    'Smart task management app with AI-driven prioritization and scheduling',
   longDescription: `
 ## AI-Powered Task Manager
 
@@ -88,7 +91,7 @@ A revolutionary task management application that uses artificial intelligence to
   images: [
     '/images/projects/task-manager-home.jpg',
     '/images/projects/task-manager-ai.jpg',
-    '/images/projects/task-manager-analytics.jpg'
+    '/images/projects/task-manager-analytics.jpg',
   ],
   category: 'Mobile Application',
   technologies: ['React Native', 'Node.js', 'MongoDB', 'TensorFlow.js', 'AWS'],
@@ -104,7 +107,7 @@ A revolutionary task management application that uses artificial intelligence to
   viewCount: 0,
   authorId: 'YOUR_USER_OBJECT_ID', // Replace with actual user ID
   createdAt: new Date(),
-  updatedAt: new Date()
+  updatedAt: new Date(),
 };
 
 async function insertSampleContent() {

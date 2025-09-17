@@ -94,11 +94,17 @@ export default function PortfolioManagementPage() {
 
       fetchProjects();
     } catch (err) {
-      alert('Failed to delete project: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      alert(
+        'Failed to delete project: ' +
+          (err instanceof Error ? err.message : 'Unknown error')
+      );
     }
   };
 
-  const handleFeaturedToggle = async (projectId: string, currentStatus: boolean) => {
+  const handleFeaturedToggle = async (
+    projectId: string,
+    currentStatus: boolean
+  ) => {
     try {
       const response = await fetch(`/api/admin/portfolio/${projectId}`, {
         method: 'PUT',
@@ -114,7 +120,10 @@ export default function PortfolioManagementPage() {
 
       fetchProjects();
     } catch (err) {
-      alert('Failed to update project: ' + (err instanceof Error ? err.message : 'Unknown error'));
+      alert(
+        'Failed to update project: ' +
+          (err instanceof Error ? err.message : 'Unknown error')
+      );
     }
   };
 
@@ -158,19 +167,21 @@ export default function PortfolioManagementPage() {
             <input
               type='text'
               value={filters.search}
-              onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+              onChange={e => setFilters({ ...filters, search: e.target.value })}
               placeholder='Search projects...'
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
             />
           </div>
-          
+
           <div>
             <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
               Featured
             </label>
             <select
               value={filters.featured}
-              onChange={(e) => setFilters({ ...filters, featured: e.target.value })}
+              onChange={e =>
+                setFilters({ ...filters, featured: e.target.value })
+              }
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
             >
               <option value=''>All Projects</option>
@@ -185,7 +196,7 @@ export default function PortfolioManagementPage() {
             </label>
             <select
               value={filters.status}
-              onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+              onChange={e => setFilters({ ...filters, status: e.target.value })}
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
             >
               <option value=''>All Statuses</option>
@@ -202,7 +213,9 @@ export default function PortfolioManagementPage() {
             <input
               type='text'
               value={filters.technology}
-              onChange={(e) => setFilters({ ...filters, technology: e.target.value })}
+              onChange={e =>
+                setFilters({ ...filters, technology: e.target.value })
+              }
               placeholder='Filter by technology...'
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
             />
@@ -222,17 +235,22 @@ export default function PortfolioManagementPage() {
           <div className='p-6'>
             <div className='animate-pulse space-y-4'>
               {[1, 2, 3].map(i => (
-                <div key={i} className='h-16 bg-gray-200 dark:bg-gray-700 rounded'></div>
+                <div
+                  key={i}
+                  className='h-16 bg-gray-200 dark:bg-gray-700 rounded'
+                ></div>
               ))}
             </div>
           </div>
         ) : projects.length === 0 ? (
           <div className='p-6 text-center'>
-            <p className='text-gray-500 dark:text-gray-400'>No projects found</p>
+            <p className='text-gray-500 dark:text-gray-400'>
+              No projects found
+            </p>
           </div>
         ) : (
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6'>
-            {projects.map((project) => (
+            {projects.map(project => (
               <div
                 key={project._id}
                 className='bg-gray-50 dark:bg-gray-700 rounded-lg p-4 border border-gray-200 dark:border-gray-600'
@@ -259,8 +277,8 @@ export default function PortfolioManagementPage() {
                       project.status === 'completed'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
                         : project.status === 'in-progress'
-                        ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-                        : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200'
+                          ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200'
                     }`}
                   >
                     {project.status}
@@ -291,7 +309,9 @@ export default function PortfolioManagementPage() {
 
                 <div className='flex space-x-2'>
                   <button
-                    onClick={() => handleFeaturedToggle(project._id, project.featured)}
+                    onClick={() =>
+                      handleFeaturedToggle(project._id, project.featured)
+                    }
                     className='text-xs text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300'
                   >
                     {project.featured ? 'Unfeature' : 'Feature'}
@@ -315,18 +335,23 @@ export default function PortfolioManagementPage() {
         {pagination.totalPages > 1 && (
           <div className='px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between'>
             <div className='text-sm text-gray-700 dark:text-gray-300'>
-              Showing page {pagination.page} of {pagination.totalPages} ({pagination.total} total)
+              Showing page {pagination.page} of {pagination.totalPages} (
+              {pagination.total} total)
             </div>
             <div className='flex space-x-2'>
               <button
-                onClick={() => setPagination({ ...pagination, page: pagination.page - 1 })}
+                onClick={() =>
+                  setPagination({ ...pagination, page: pagination.page - 1 })
+                }
                 disabled={!pagination.hasPrevPage}
                 className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
               >
                 Previous
               </button>
               <button
-                onClick={() => setPagination({ ...pagination, page: pagination.page + 1 })}
+                onClick={() =>
+                  setPagination({ ...pagination, page: pagination.page + 1 })
+                }
                 disabled={!pagination.hasNextPage}
                 className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
               >

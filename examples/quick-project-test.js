@@ -7,8 +7,8 @@ fetch('http://localhost:3000/api/portfolio/projects', {
     description: 'This is my first portfolio project!',
     category: 'Web Development',
     technologies: ['JavaScript', 'HTML', 'CSS'],
-    status: 'published'
-  })
+    status: 'published',
+  }),
 })
-.then(res => res.json())
-.then(data => console.log(data));
+  .then(res => res.json())
+  .then(data => console.log(data));

@@ -6,12 +6,12 @@ const createEditorUser = async () => {
     email: 'editor@example.com',
     name: 'Blog Editor',
     role: 'editor', // or 'admin'
-    avatar: '/images/avatar-default.jpg'
+    avatar: '/images/avatar-default.jpg',
   };
 
   // This would be done through your user management system
   // For now, you can manually insert into MongoDB:
-  
+
   /*
   db.users.insertOne({
     email: "editor@example.com",

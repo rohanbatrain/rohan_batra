@@ -6,7 +6,9 @@ describe('GET /api/admin/books/[bookId]/chapters', () => {
   it('should return chapters for a specific book', async () => {
     // Note: In a real test, we would use a valid book ID
     const bookId = 'test-book-id';
-    const response = await fetch(`http://localhost:3000/api/admin/books/${bookId}/chapters`);
+    const response = await fetch(
+      `http://localhost:3000/api/admin/books/${bookId}/chapters`
+    );
 
     expect(response.status).toBe(200);
 
@@ -19,7 +21,9 @@ describe('GET /api/admin/books/[bookId]/chapters', () => {
 
   it('should include comprehensive chapter data', async () => {
     const bookId = 'test-book-id';
-    const response = await fetch(`http://localhost:3000/api/admin/books/${bookId}/chapters`);
+    const response = await fetch(
+      `http://localhost:3000/api/admin/books/${bookId}/chapters`
+    );
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -58,7 +62,9 @@ describe('GET /api/admin/books/[bookId]/chapters', () => {
 
   it('should return chapters ordered by chapter number', async () => {
     const bookId = 'test-book-id';
-    const response = await fetch(`http://localhost:3000/api/admin/books/${bookId}/chapters`);
+    const response = await fetch(
+      `http://localhost:3000/api/admin/books/${bookId}/chapters`
+    );
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -96,7 +102,9 @@ describe('GET /api/admin/books/[bookId]/chapters', () => {
 
   it('should return 404 for non-existent book', async () => {
     const bookId = 'non-existent-book-id';
-    const response = await fetch(`http://localhost:3000/api/admin/books/${bookId}/chapters`);
+    const response = await fetch(
+      `http://localhost:3000/api/admin/books/${bookId}/chapters`
+    );
 
     // Should return 404 for non-existent book
     expect([404, 200]).toContain(response.status);

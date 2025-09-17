@@ -1,8 +1,9 @@
 // Example: How to add a blog post via API
 const addBlogPost = async () => {
   const postData = {
-    title: "My First Blog Post",
-    excerpt: "This is a short description of my blog post that will appear in previews.",
+    title: 'My First Blog Post',
+    excerpt:
+      'This is a short description of my blog post that will appear in previews.',
     content: `
 # Welcome to My Blog
 
@@ -21,17 +22,18 @@ console.log("Hello, World!");
 
 This post demonstrates the blogging capabilities of the platform.
     `,
-    featuredImage: "/images/blog/my-first-post.jpg",
+    featuredImage: '/images/blog/my-first-post.jpg',
     images: [
-      "/images/blog/my-first-post.jpg",
-      "/images/blog/my-first-post-detail.jpg"
+      '/images/blog/my-first-post.jpg',
+      '/images/blog/my-first-post-detail.jpg',
     ],
-    category: "Technology", // Required
-    tags: ["javascript", "web-development", "tutorial"],
-    status: "published", // Options: 'draft', 'published', 'archived'
+    category: 'Technology', // Required
+    tags: ['javascript', 'web-development', 'tutorial'],
+    status: 'published', // Options: 'draft', 'published', 'archived'
     featured: false, // Set to true to feature on homepage
-    seoTitle: "My First Blog Post - Complete Guide",
-    seoDescription: "Learn how to create your first blog post with our comprehensive guide."
+    seoTitle: 'My First Blog Post - Complete Guide',
+    seoDescription:
+      'Learn how to create your first blog post with our comprehensive guide.',
   };
 
   try {
@@ -40,11 +42,11 @@ This post demonstrates the blogging capabilities of the platform.
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(postData)
+      body: JSON.stringify(postData),
     });
 
     const result = await response.json();
-    
+
     if (result.success) {
       console.log('Blog post created:', result.data);
     } else {

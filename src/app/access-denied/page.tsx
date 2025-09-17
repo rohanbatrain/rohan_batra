@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 function AccessDeniedContent() {
   const searchParams = useSearchParams();
   const returnUrl = searchParams.get('return_url');
-  
+
   // Determine the type of access denial based on the return URL
   const isAdminOnly =
     returnUrl?.includes('/admin/users') ||

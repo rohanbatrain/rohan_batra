@@ -13,11 +13,15 @@ const CharacterUpdateSchema = z.object({
   personality: z.string().optional(),
   background: z.string().optional(),
   motivations: z.string().optional(),
-  relationships: z.array(z.object({
-    characterId: z.string(),
-    relationshipType: z.string(),
-    description: z.string().optional(),
-  })).optional(),
+  relationships: z
+    .array(
+      z.object({
+        characterId: z.string(),
+        relationshipType: z.string(),
+        description: z.string().optional(),
+      })
+    )
+    .optional(),
   characterArc: z.string().optional(),
   notes: z.string().optional(),
   profileImage: z.string().url().optional(),
@@ -62,7 +66,10 @@ export async function GET(
     const character = await CharacterModel.findOne(filter).lean();
 
     if (!character) {
-      return NextResponse.json({ error: 'Character not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Character not found' },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(character);
@@ -114,7 +121,10 @@ export async function PUT(
     const existingCharacter = await CharacterModel.findOne(filter);
 
     if (!existingCharacter) {
-      return NextResponse.json({ error: 'Character not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Character not found' },
+        { status: 404 }
+      );
     }
 
     // Check if name changed and conflicts with existing characters
@@ -201,7 +211,10 @@ export async function DELETE(
     const existingCharacter = await CharacterModel.findOne(filter);
 
     if (!existingCharacter) {
-      return NextResponse.json({ error: 'Character not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: 'Character not found' },
+        { status: 404 }
+      );
     }
 
     // Delete the character

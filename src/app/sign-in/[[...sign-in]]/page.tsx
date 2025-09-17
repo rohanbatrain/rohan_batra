@@ -16,7 +16,7 @@ async function SignInContent({
   const params = await searchParams;
   // Get the redirect URL from search params, default to home page
   const redirectUrl = params.redirect_url || '/';
-  
+
   return (
     <div className='min-h-screen relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900'>
       {/* Dev-only: hide Clerk's dev footer stripe to reduce visual noise */}
@@ -49,12 +49,12 @@ async function SignInContent({
       <div className='absolute inset-0'>
         {/* Primary gradient overlay */}
         <div className='absolute inset-0 bg-gradient-to-br from-blue-50/50 via-indigo-50/30 to-purple-50/50 dark:from-gray-900/50 dark:via-gray-800/30 dark:to-gray-900/50' />
-        
+
         {/* Floating orbs */}
         <div className='absolute top-0 left-1/4 w-72 h-72 bg-blue-400/10 dark:bg-blue-400/5 rounded-full blur-3xl animate-pulse' />
         <div className='absolute top-1/3 right-1/4 w-96 h-96 bg-purple-400/10 dark:bg-purple-400/5 rounded-full blur-3xl animate-pulse delay-1000' />
         <div className='absolute bottom-1/4 left-1/3 w-80 h-80 bg-indigo-400/10 dark:bg-indigo-400/5 rounded-full blur-3xl animate-pulse delay-2000' />
-        
+
         {/* Grid pattern */}
         <div className='absolute inset-0 bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.05)_1px,transparent_0)] bg-[length:24px_24px] dark:bg-[radial-gradient(circle_at_1px_1px,rgba(99,102,241,0.03)_1px,transparent_0)]' />
       </div>
@@ -69,12 +69,12 @@ async function SignInContent({
                 RB
               </span>
             </div>
-            
+
             {/* Title */}
             <h1 className='text-4xl font-bold bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 dark:from-white dark:via-gray-100 dark:to-white bg-clip-text text-transparent mb-3'>
               Welcome back
             </h1>
-            
+
             {/* Subtitle */}
             <p className='text-lg text-gray-600 dark:text-gray-300 font-medium'>
               Sign in to your account to continue
@@ -85,7 +85,7 @@ async function SignInContent({
           <div className='relative'>
             {/* Card glow effect */}
             <div className='absolute -inset-1 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-3xl blur-sm opacity-20 dark:opacity-10' />
-            
+
             {/* Main card */}
             <div className='relative bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl border border-white/50 dark:border-gray-700/50 shadow-2xl'>
               <div className='p-8 space-y-6'>
@@ -159,11 +159,11 @@ async function SignInContent({
                         'text-gray-900 dark:text-white font-bold text-2xl mb-2',
                       formHeaderSubtitle:
                         'text-gray-600 dark:text-gray-400 font-medium',
-                        
+
                       // Loading states
                       spinner: 'border-blue-600 dark:border-blue-400',
                       spinnerIcon: 'text-blue-600 dark:text-blue-400',
-                      
+
                       // Additional text elements
                       modalCloseButton:
                         'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200',
