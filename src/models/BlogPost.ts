@@ -34,6 +34,15 @@ const BlogPostSchema = new Schema<IBlogPost>(
       type: String,
       required: true,
     },
+    markdown: {
+      type: String,
+      trim: true,
+    },
+    contentType: {
+      type: String,
+      enum: ['html', 'rich-text', 'markdown'],
+      default: 'rich-text',
+    },
     featuredImage: {
       type: String,
       trim: true,
@@ -120,7 +129,6 @@ const BlogPostSchema = new Schema<IBlogPost>(
 );
 
 // Indexes for performance
-BlogPostSchema.index({ slug: 1 });
 BlogPostSchema.index({ status: 1 });
 BlogPostSchema.index({ featured: 1 });
 BlogPostSchema.index({ category: 1 });

@@ -1,49 +1,8 @@
 import { MetadataRoute } from 'next';
-import { BlogPost } from '@/types/blog-post';
+import { getBlogPostsWithPagination } from '@/lib/blog-service';
+import { getProjectsWithPagination } from '@/lib/portfolio-service';
+import { BlogPostWithAuthor } from '@/types/blog-post';
 import { Project } from '@/types/project';
-
-// This would normally fetch from your CMS/database
-async function getBlogPosts() {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/blog/posts`,
-      {
-        cache: 'no-store',
-      }
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-    return data.posts || [];
-  } catch (error) {
-    console.error('Error fetching blog posts for sitemap:', error);
-    return [];
-  }
-}
-
-async function getProjects() {
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_SITE_URL}/api/portfolio/projects`,
-      {
-        cache: 'no-store',
-      }
-    );
-
-    if (!response.ok) {
-      return [];
-    }
-
-    const data = await response.json();
-    return data.projects || [];
-  } catch (error) {
-    console.error('Error fetching projects for sitemap:', error);
-    return [];
-  }
-}
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rohanbatra.dev';
@@ -70,25 +29,39 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  // Dynamic blog post pages
-  const [blogPosts, projects] = await Promise.all([
-    getBlogPosts(),
-    getProjects(),
-  ]);
+  try {
+    // Get data directly from database services (no HTTP calls)
+    const [blogPostsData, projectsData] = await Promise.all([
+      getBlogPostsWithPagination({
+        page: 1,
+        limit: 100,
+        status: 'published',
+      }),
+      getProjectsWithPagination({
+        page: 1,
+        limit: 100,
+        status: 'published',
+      }),
+    ]);
 
-  const blogPages = blogPosts.map((post: BlogPost) => ({
-    url: `${baseUrl}/blog/${post.slug}`,
-    lastModified: new Date(post.updatedAt || post.publishedAt),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
+    const blogPages = blogPostsData.posts.map((post: BlogPostWithAuthor) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: new Date(post.updatedAt || post.publishedAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }));
 
-  const projectPages = projects.map((project: Project) => ({
-    url: `${baseUrl}/portfolio/${project.slug}`,
-    lastModified: new Date(project.updatedAt || project.createdAt),
-    changeFrequency: 'monthly' as const,
-    priority: 0.6,
-  }));
+    const projectPages = projectsData.projects.map((project: Project) => ({
+      url: `${baseUrl}/portfolio/${project.slug}`,
+      lastModified: new Date(project.updatedAt || project.createdAt),
+      changeFrequency: 'monthly' as const,
+      priority: 0.6,
+    }));
 
-  return [...staticPages, ...blogPages, ...projectPages];
+    return [...staticPages, ...blogPages, ...projectPages];
+  } catch (error) {
+    console.error('Error generating sitemap:', error);
+    // Return static pages only if there's an error
+    return staticPages;
+  }
 }

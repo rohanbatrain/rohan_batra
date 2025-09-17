@@ -119,7 +119,6 @@ const ProjectSchema = new Schema<IProject>(
 );
 
 // Indexes for performance
-ProjectSchema.index({ slug: 1 });
 ProjectSchema.index({ status: 1 });
 ProjectSchema.index({ featured: 1 });
 ProjectSchema.index({ category: 1 });

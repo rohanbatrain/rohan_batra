@@ -4,6 +4,8 @@ export interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
+  markdown?: string;
+  contentType: 'html' | 'rich-text' | 'markdown';
   featuredImage?: string;
   images: string[];
   category: string;

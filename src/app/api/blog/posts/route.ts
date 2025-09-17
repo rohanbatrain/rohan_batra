@@ -172,6 +172,7 @@ export async function POST(request: NextRequest) {
       slug: savedPost.slug,
       excerpt: savedPost.excerpt,
       content: savedPost.content,
+      contentType: savedPost.contentType || 'html',
       featuredImage: savedPost.featuredImage,
       images: savedPost.images,
       category: savedPost.category,

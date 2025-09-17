@@ -40,6 +40,7 @@ const mockBlogPosts = [
     excerpt:
       'Learn how to leverage the latest features in Next.js 14 to build fast, modern web applications with React Server Components.',
     content: '',
+    contentType: 'html' as const,
     featuredImage: '/placeholder-blog.jpg',
     images: [],
     category: 'Web Development',

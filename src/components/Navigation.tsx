@@ -4,7 +4,18 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sun, Moon, Home, User, Code, FileText } from 'lucide-react';
+import {
+  Menu,
+  X,
+  Sun,
+  Moon,
+  Home,
+  User,
+  Code,
+  FileText,
+  LogIn,
+} from 'lucide-react';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
 interface NavigationProps {
   isDarkMode?: boolean;
@@ -127,13 +138,44 @@ export function Navigation({
               })}
             </motion.div>
 
-            {/* Theme Toggle & Mobile Menu Button */}
+            {/* Auth, Theme Toggle & Mobile Menu Button */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.6, delay: 0.3 }}
               className='flex items-center space-x-4'
             >
+              {/* Auth Controls (Desktop) */}
+              <div className='hidden md:flex items-center'>
+                <SignedOut>
+                  <SignInButton mode='modal' forceRedirectUrl='/admin'>
+                    <button className='inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-semibold shadow-sm hover:from-blue-700 hover:to-purple-700 transition-colors'>
+                      <LogIn className='h-4 w-4' />
+                      <span>Sign in</span>
+                    </button>
+                  </SignInButton>
+                </SignedOut>
+                <SignedIn>
+                  <div className='ml-2'>
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          userButtonBox:
+                            'ring-1 ring-gray-200 dark:ring-gray-700 rounded-full',
+                          userButtonPopoverCard:
+                            'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl overflow-hidden',
+                          userButtonPopoverActionButton:
+                            'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200',
+                          userButtonPopoverFooter: 'hidden',
+                          userButtonPopover:
+                            '[data-test-id="dev-mode"]:hidden [data-cl-component="Footer"]:hidden',
+                        },
+                      }}
+                    />
+                  </div>
+                </SignedIn>
+              </div>
+
               {/* Theme Toggle */}
               {toggleDarkMode && (
                 <button
@@ -213,6 +255,38 @@ export function Navigation({
                     </motion.div>
                   );
                 })}
+
+                {/* Mobile Auth Controls */}
+                <div className='pt-4 border-t border-gray-200 dark:border-gray-700'>
+                  <SignedOut>
+                    <SignInButton mode='modal' forceRedirectUrl='/admin'>
+                      <button className='w-full inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold shadow-sm hover:from-blue-700 hover:to-purple-700 transition-colors'>
+                        <LogIn className='h-5 w-5' />
+                        <span>Sign in</span>
+                      </button>
+                    </SignInButton>
+                  </SignedOut>
+                  <SignedIn>
+                    <div className='flex items-center justify-between px-2'>
+                      <span className='text-sm text-gray-600 dark:text-gray-400'>
+                        Account
+                      </span>
+                      <UserButton
+                        appearance={{
+                          elements: {
+                            userButtonPopoverCard:
+                              'bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 shadow-xl rounded-2xl overflow-hidden',
+                            userButtonPopoverActionButton:
+                              'hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-800 dark:text-gray-200',
+                            userButtonPopoverFooter: 'hidden',
+                            userButtonPopover:
+                              '[data-test-id="dev-mode"]:hidden [data-cl-component="Footer"]:hidden',
+                          },
+                        }}
+                      />
+                    </div>
+                  </SignedIn>
+                </div>
 
                 {/* Mobile Theme Toggle */}
                 {toggleDarkMode && (

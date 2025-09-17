@@ -1,74 +1,245 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/mongodb';
-import UserModel from '@/models/User';
-import BlogPostModel from '@/models/BlogPost';
-import ProjectModel from '@/models/Project';
-import CommentModel from '@/models/Comment';
-import LikeModel from '@/models/Like';
-import SiteSettingModel from '@/models/SiteSetting';
+import BlogPost from '@/models/BlogPost';
+import Project from '@/models/Project';
+import Comment from '@/models/Comment';
+import Like from '@/models/Like';
+import User from '@/models/User';
+import Book from '@/models/Book';
+import Chapter from '@/models/Chapter';
+import Character from '@/models/Character';
 
-// GET /api/admin/stats - Get admin dashboard statistics
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    // Verify authentication and admin role
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
     await connectToDatabase();
 
-    // Aggregate statistics
+    // Check if user has admin role
+    const user = await User.findOne({ clerkId: userId });
+    if (!user || user.role !== 'admin') {
+      return NextResponse.json(
+        { error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    // Parse query parameters for date filtering
+    const { searchParams } = new URL(request.url);
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+
+    let dateFilter = {};
+    if (startDate && endDate) {
+      dateFilter = {
+        createdAt: {
+          $gte: new Date(startDate),
+          $lte: new Date(endDate),
+        },
+      };
+    }
+
+    // Gather comprehensive statistics
     const [
-      userCount,
-      postCount,
-      projectCount,
-      commentCount,
-      likeCount,
-      siteSettings,
+      totalPosts,
+      totalProjects,
+      totalComments,
+      totalLikes,
+      totalUsers,
+      totalBooks,
+      totalChapters,
+      totalCharacters,
+      publishedPosts,
+      draftPosts,
+      recentPosts,
+      recentComments,
+      recentBooks,
+      topCategories,
+      systemMetrics,
     ] = await Promise.all([
-      UserModel.countDocuments(),
-      BlogPostModel.countDocuments(),
-      ProjectModel.countDocuments(),
-      CommentModel.countDocuments(),
-      LikeModel.countDocuments(),
-      SiteSettingModel.countDocuments(),
+      // Basic counts
+      BlogPost.countDocuments(dateFilter),
+      Project.countDocuments(dateFilter),
+      Comment.countDocuments(dateFilter),
+      Like.countDocuments(dateFilter),
+      User.countDocuments(dateFilter),
+      Book.countDocuments(dateFilter),
+      Chapter.countDocuments(dateFilter),
+      Character.countDocuments(dateFilter),
+
+      // Post status breakdown
+      BlogPost.countDocuments({ ...dateFilter, published: true }),
+      BlogPost.countDocuments({ ...dateFilter, published: false }),
+
+      // Recent activity (last 7 days)
+      BlogPost.find({
+        ...dateFilter,
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+      })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('title slug createdAt'),
+
+      Comment.find({
+        ...dateFilter,
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+      })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('content postId authorName createdAt'),
+
+      // Recent books
+      Book.find({
+        ...dateFilter,
+        createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },
+      })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .select('title currentWordCount status createdAt'),
+
+      // Category breakdown
+      BlogPost.aggregate([
+        { $match: dateFilter },
+        { $unwind: '$categories' },
+        { $group: { _id: '$categories', count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+
+      // System health metrics
+      Promise.resolve({
+        uptime: process.uptime(),
+        memoryUsage: process.memoryUsage(),
+        nodeVersion: process.version,
+        timestamp: new Date().toISOString(),
+      }),
     ]);
 
-    // Recent activity (last 7 days)
-    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const recentPosts = await BlogPostModel.find({
-      createdAt: { $gte: since },
-    }).countDocuments();
-    const recentProjects = await ProjectModel.find({
-      createdAt: { $gte: since },
-    }).countDocuments();
-    const recentComments = await CommentModel.find({
-      createdAt: { $gte: since },
-    }).countDocuments();
-    const recentLikes = await LikeModel.find({
-      createdAt: { $gte: since },
-    }).countDocuments();
+    // Calculate growth metrics (comparing with previous period)
+    const periodLength =
+      startDate && endDate
+        ? new Date(endDate).getTime() - new Date(startDate).getTime()
+        : 30 * 24 * 60 * 60 * 1000; // Default to 30 days
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        users: userCount,
-        posts: postCount,
-        projects: projectCount,
-        comments: commentCount,
-        likes: likeCount,
-        siteSettings,
-        recent: {
-          posts: recentPosts,
-          projects: recentProjects,
-          comments: recentComments,
-          likes: recentLikes,
+    const previousPeriodStart = new Date(Date.now() - 2 * periodLength);
+    const previousPeriodEnd = new Date(Date.now() - periodLength);
+
+    const [previousPosts, previousComments] = await Promise.all([
+      BlogPost.countDocuments({
+        createdAt: { $gte: previousPeriodStart, $lte: previousPeriodEnd },
+      }),
+      Comment.countDocuments({
+        createdAt: { $gte: previousPeriodStart, $lte: previousPeriodEnd },
+      }),
+    ]);
+
+    const stats = {
+      overview: {
+        totalPosts,
+        totalProjects,
+        totalComments,
+        totalLikes,
+        totalUsers,
+        totalBooks,
+        totalChapters,
+        totalCharacters,
+        publishedPosts,
+        draftPosts,
+      },
+      posts: {
+        total: totalPosts,
+        published: publishedPosts,
+        drafts: draftPosts,
+        publishedPercentage:
+          totalPosts > 0 ? Math.round((publishedPosts / totalPosts) * 100) : 0,
+        averageLength: 0, // Will be calculated separately if needed
+        growth:
+          previousPosts > 0
+            ? Math.round(((totalPosts - previousPosts) / previousPosts) * 100)
+            : 0,
+      },
+      books: {
+        total: totalBooks,
+        chapters: totalChapters,
+        characters: totalCharacters,
+        recentActivity: recentBooks.map(book => ({
+          id: book._id,
+          title: book.title,
+          wordCount: book.currentWordCount,
+          status: book.status,
+          createdAt: book.createdAt,
+        })),
+      },
+      activity: {
+        recentPosts: recentPosts.map(post => ({
+          id: post._id,
+          title: post.title,
+          slug: post.slug,
+          createdAt: post.createdAt,
+        })),
+        recentComments: recentComments.map(comment => ({
+          id: comment._id,
+          content: comment.content.substring(0, 100),
+          postId: comment.postId,
+          authorName: comment.authorName,
+          createdAt: comment.createdAt,
+        })),
+        recentBooks: recentBooks.map(book => ({
+          id: book._id,
+          title: book.title,
+          wordCount: book.currentWordCount,
+          status: book.status,
+          createdAt: book.createdAt,
+        })),
+        commentsGrowth:
+          previousComments > 0
+            ? Math.round(
+                ((totalComments - previousComments) / previousComments) * 100
+              )
+            : 0,
+      },
+      categories: topCategories.map(cat => ({
+        name: cat._id,
+        count: cat.count,
+        percentage:
+          totalPosts > 0 ? Math.round((cat.count / totalPosts) * 100) : 0,
+      })),
+      system: {
+        health: 'good',
+        uptime: Math.round(systemMetrics.uptime),
+        memoryUsage: {
+          rss: Math.round(systemMetrics.memoryUsage.rss / 1024 / 1024), // MB
+          heapUsed: Math.round(
+            systemMetrics.memoryUsage.heapUsed / 1024 / 1024
+          ), // MB
+          heapTotal: Math.round(
+            systemMetrics.memoryUsage.heapTotal / 1024 / 1024
+          ), // MB
         },
+        nodeVersion: systemMetrics.nodeVersion,
+        timestamp: systemMetrics.timestamp,
+        databaseStatus: 'connected',
       },
-    });
+      dateRange: {
+        startDate: startDate || null,
+        endDate: endDate || null,
+        generated: new Date().toISOString(),
+      },
+    };
+
+    return NextResponse.json(stats);
   } catch (error) {
-    console.error('Error fetching admin stats:', error);
+    console.error('Admin stats error:', error);
     return NextResponse.json(
-      {
-        success: false,
-        error: 'Failed to fetch admin stats',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      },
+      { error: 'Failed to fetch admin statistics' },
       { status: 500 }
     );
   }

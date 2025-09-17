@@ -74,7 +74,6 @@ const SiteSettingSchema = new Schema<ISiteSetting>(
 );
 
 // Indexes for performance
-SiteSettingSchema.index({ key: 1 }, { unique: true });
 SiteSettingSchema.index({ category: 1 });
 SiteSettingSchema.index({ isPublic: 1 });
 SiteSettingSchema.index({ isSystem: 1 });

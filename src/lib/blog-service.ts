@@ -9,6 +9,7 @@ const mockBlogPost: BlogPostWithAuthor = {
   slug: 'building-modern-web-apps-nextjs-14',
   excerpt:
     'Learn how to leverage the latest features in Next.js 14 to build fast, modern web applications with React Server Components.',
+  contentType: 'html',
   content: `# Building Modern Web Applications with Next.js 14
 
 Next.js 14 represents a significant leap forward in the React ecosystem, introducing powerful features that enable developers to build faster, more efficient web applications. In this comprehensive guide, we'll explore the key features and best practices for leveraging Next.js 14 in your projects.
@@ -136,6 +137,7 @@ export async function getBlogPostBySlug(
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
+      contentType: post.contentType || 'html',
       featuredImage: post.featuredImage,
       images: post.images,
       category: post.category,
@@ -190,6 +192,7 @@ export async function getPublishedBlogPosts(
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
+      contentType: post.contentType || 'html',
       featuredImage: post.featuredImage,
       images: post.images,
       category: post.category,
@@ -302,6 +305,7 @@ export async function getBlogPostsWithPagination(params: {
       slug: post.slug,
       excerpt: post.excerpt,
       content: post.content,
+      contentType: post.contentType || 'html',
       featuredImage: post.featuredImage,
       images: post.images || [],
       category: post.category,

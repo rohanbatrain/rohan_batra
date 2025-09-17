@@ -1,0 +1,1726 @@
+openapi: 3.0.3
+info:
+  title: Admin Dashboard API
+  version: 1.0.0
+  description: |
+    API contracts for the admin dashboard content management system.
+    Extends existing blog and portfolio APIs with admin-specific operations.
+  contact:
+    name: Rohan Batra
+    email: contact@rohanbatra.com
+
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+  - url: https://rohanbatra.com/api
+    description: Production server
+
+security:
+  - ClerkAuth: []
+
+paths:
+  # Dashboard Overview and Analytics
+  /admin/stats:
+    get:
+      summary: Get dashboard statistics and overview data
+      tags: [Admin Dashboard]
+      security:
+        - ClerkAuth: []
+      responses:
+        '200':
+          description: Dashboard statistics retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardStats'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/activity:
+    get:
+      summary: Get recent system activity
+      tags: [Admin Dashboard]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 10
+            maximum: 50
+          description: Number of recent items to return per category
+      responses:
+        '200':
+          description: Recent activity retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecentActivity'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Blog Post Management (Admin Extensions)
+  /admin/blog/posts:
+    get:
+      summary: Get blog posts with admin-specific data
+      tags: [Admin Blog Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+          description: Filter by post status
+        - name: author
+          in: query
+          schema:
+            type: string
+          description: Filter by author ID
+        - name: category
+          in: query
+          schema:
+            type: string
+          description: Filter by category
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Search in title and content
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, publishedAt, viewCount, likeCount]
+            default: updatedAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Blog posts retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  posts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminBlogPost'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  filters:
+                    $ref: '#/components/schemas/BlogPostFilters'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      summary: Create a new blog post
+      tags: [Admin Blog Management]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBlogPostRequest'
+      responses:
+        '201':
+          description: Blog post created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBlogPost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/blog/posts/{slug}:
+    get:
+      summary: Get a specific blog post for editing
+      tags: [Admin Blog Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Blog post retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBlogPost'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    put:
+      summary: Update a blog post
+      tags: [Admin Blog Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBlogPostRequest'
+      responses:
+        '200':
+          description: Blog post updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminBlogPost'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+    delete:
+      summary: Delete a blog post
+      tags: [Admin Blog Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Blog post deleted successfully
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/blog/posts/bulk:
+    patch:
+      summary: Bulk update blog posts
+      tags: [Admin Blog Management]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BulkUpdateRequest'
+      responses:
+        '200':
+          description: Bulk update completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        slug:
+                          type: string
+                        error:
+                          type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # Portfolio Project Management (Admin Extensions)
+  /admin/portfolio/projects:
+    get:
+      summary: Get portfolio projects with admin-specific data
+      tags: [Admin Portfolio Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: technology
+          in: query
+          schema:
+            type: string
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, startDate, endDate, viewCount]
+            default: updatedAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Portfolio projects retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminProject'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  filters:
+                    $ref: '#/components/schemas/ProjectFilters'
+
+    post:
+      summary: Create a new portfolio project
+      tags: [Admin Portfolio Management]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProjectRequest'
+      responses:
+        '201':
+          description: Project created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProject'
+
+  /admin/portfolio/projects/{slug}:
+    get:
+      summary: Get a specific project for editing
+      tags: [Admin Portfolio Management]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Project retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProject'
+
+    put:
+      summary: Update a portfolio project
+      tags: [Admin Portfolio Management]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        '200':
+          description: Project updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminProject'
+
+    delete:
+      summary: Delete a portfolio project
+      tags: [Admin Portfolio Management]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Project deleted successfully
+
+  # Comment Management and Moderation
+  /admin/comments:
+    get:
+      summary: Get comments for moderation
+      tags: [Admin Comment Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, published, spam, deleted]
+        - name: postSlug
+          in: query
+          schema:
+            type: string
+        - name: userId
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, updatedAt]
+            default: createdAt
+        - name: sortOrder
+          in: query
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: desc
+      responses:
+        '200':
+          description: Comments retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminComment'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /admin/comments/{commentId}:
+    put:
+      summary: Update comment status or content
+      tags: [Admin Comment Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCommentRequest'
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminComment'
+
+    delete:
+      summary: Delete a comment
+      tags: [Admin Comment Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Comment deleted successfully
+
+  /admin/comments/bulk:
+    patch:
+      summary: Bulk moderate comments
+      tags: [Admin Comment Management]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                commentIds:
+                  type: array
+                  items:
+                    type: string
+                action:
+                  type: string
+                  enum: [approve, spam, delete]
+              required: [commentIds, action]
+      responses:
+        '200':
+          description: Bulk moderation completed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  updated:
+                    type: integer
+                  errors:
+                    type: array
+                    items:
+                      type: object
+
+  # User Management (Admin Only)
+  /admin/users:
+    get:
+      summary: Get user list with admin data
+      tags: [Admin User Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: role
+          in: query
+          schema:
+            type: string
+            enum: [user, editor, admin]
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, updatedAt, name, email]
+            default: createdAt
+      responses:
+        '200':
+          description: Users retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminUser'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /admin/users/{userId}:
+    get:
+      summary: Get specific user details
+      tags: [Admin User Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: User details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserDetail'
+
+    put:
+      summary: Update user role or status
+      tags: [Admin User Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserRequest'
+      responses:
+        '200':
+          description: User updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+
+  # Lottie Asset Management
+  /admin/assets:
+    get:
+      summary: Get Lottie assets with management data
+      tags: [Admin Asset Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: tags
+          in: query
+          schema:
+            type: string
+        - name: uploadedBy
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: sortBy
+          in: query
+          schema:
+            type: string
+            enum: [createdAt, filename, size, usageCount]
+            default: createdAt
+      responses:
+        '200':
+          description: Assets retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assets:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminLottieAsset'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+    post:
+      summary: Upload new Lottie asset
+      tags: [Admin Asset Management]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                tags:
+                  type: array
+                  items:
+                    type: string
+                description:
+                  type: string
+              required: [file]
+      responses:
+        '201':
+          description: Asset uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLottieAsset'
+
+  /admin/assets/{assetId}:
+    put:
+      summary: Update asset metadata
+      tags: [Admin Asset Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAssetRequest'
+      responses:
+        '200':
+          description: Asset updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminLottieAsset'
+
+    delete:
+      summary: Delete an asset
+      tags: [Admin Asset Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: assetId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Asset deleted successfully
+
+  # Site Settings Management (Admin Only)
+  /admin/settings:
+    get:
+      summary: Get all site settings organized by category
+      tags: [Admin Settings Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: isPublic
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: Settings retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  settings:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/AdminSiteSetting'
+                  categories:
+                    type: array
+                    items:
+                      type: string
+
+    post:
+      summary: Create a new site setting
+      tags: [Admin Settings Management]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSettingRequest'
+      responses:
+        '201':
+          description: Setting created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSiteSetting'
+
+  /admin/settings/{key}:
+    put:
+      summary: Update a site setting
+      tags: [Admin Settings Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSettingRequest'
+      responses:
+        '200':
+          description: Setting updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminSiteSetting'
+
+    delete:
+      summary: Delete a site setting
+      tags: [Admin Settings Management]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: key
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Setting deleted successfully
+
+components:
+  securitySchemes:
+    ClerkAuth:
+      type: http
+      scheme: bearer
+      description: Clerk JWT token in Authorization header
+
+  schemas:
+    # Dashboard and Analytics Schemas
+    DashboardStats:
+      type: object
+      properties:
+        totalBlogPosts:
+          type: integer
+        totalProjects:
+          type: integer
+        totalComments:
+          type: integer
+        totalUsers:
+          type: integer
+        totalAssets:
+          type: integer
+        pendingComments:
+          type: integer
+        publishedPosts:
+          type: integer
+        featuredProjects:
+          type: integer
+        storageUsed:
+          type: integer
+          description: Total storage used in bytes
+        topPerformingPosts:
+          type: array
+          items:
+            type: object
+            properties:
+              slug:
+                type: string
+              title:
+                type: string
+              viewCount:
+                type: integer
+              likeCount:
+                type: integer
+
+    RecentActivity:
+      type: object
+      properties:
+        recentComments:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminComment'
+        recentUsers:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUser'
+        recentPosts:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminBlogPost'
+        recentProjects:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminProject'
+
+    # Blog Post Admin Schemas
+    AdminBlogPost:
+      allOf:
+        - $ref: '#/components/schemas/BlogPost'
+        - type: object
+          properties:
+            analytics:
+              type: object
+              properties:
+                viewCount:
+                  type: integer
+                likeCount:
+                  type: integer
+                commentCount:
+                  type: integer
+                lastViewed:
+                  type: string
+                  format: date-time
+            author:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                email:
+                  type: string
+            moderation:
+              type: object
+              properties:
+                flaggedComments:
+                  type: integer
+                pendingComments:
+                  type: integer
+
+    BlogPost:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        excerpt:
+          type: string
+        content:
+          type: string
+        featuredImage:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+        featured:
+          type: boolean
+        seoTitle:
+          type: string
+        seoDescription:
+          type: string
+        readingTime:
+          type: integer
+        authorId:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateBlogPostRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        excerpt:
+          type: string
+          maxLength: 500
+        content:
+          type: string
+        featuredImage:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+          minLength: 1
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, published]
+          default: draft
+        featured:
+          type: boolean
+          default: false
+        seoTitle:
+          type: string
+          maxLength: 60
+        seoDescription:
+          type: string
+          maxLength: 160
+        publishedAt:
+          type: string
+          format: date-time
+      required: [title, content, category]
+
+    UpdateBlogPostRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        excerpt:
+          type: string
+          maxLength: 500
+        content:
+          type: string
+        featuredImage:
+          type: string
+        images:
+          type: array
+          items:
+            type: string
+        category:
+          type: string
+          minLength: 1
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+        featured:
+          type: boolean
+        seoTitle:
+          type: string
+          maxLength: 60
+        seoDescription:
+          type: string
+          maxLength: 160
+        publishedAt:
+          type: string
+          format: date-time
+
+    BlogPostFilters:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        authors:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              name:
+                type: string
+
+    # Project Admin Schemas
+    AdminProject:
+      allOf:
+        - $ref: '#/components/schemas/Project'
+        - type: object
+          properties:
+            analytics:
+              type: object
+              properties:
+                viewCount:
+                  type: integer
+                lastViewed:
+                  type: string
+                  format: date-time
+            author:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+
+    Project:
+      type: object
+      properties:
+        _id:
+          type: string
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        longDescription:
+          type: string
+        category:
+          type: string
+        technologies:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, published, archived]
+        featured:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+        demoUrl:
+          type: string
+        sourceUrl:
+          type: string
+        liveUrl:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        client:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        authorId:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateProjectRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+        longDescription:
+          type: string
+        category:
+          type: string
+          minLength: 1
+        technologies:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        status:
+          type: string
+          enum: [draft, published]
+          default: draft
+        featured:
+          type: boolean
+          default: false
+        images:
+          type: array
+          items:
+            type: string
+        demoUrl:
+          type: string
+        sourceUrl:
+          type: string
+        liveUrl:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        client:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+      required: [title, description, category, technologies]
+
+    UpdateProjectRequest:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 1
+          maxLength: 500
+        longDescription:
+          type: string
+        category:
+          type: string
+          minLength: 1
+        technologies:
+          type: array
+          items:
+            type: string
+          minItems: 1
+        status:
+          type: string
+          enum: [draft, published, archived]
+        featured:
+          type: boolean
+        images:
+          type: array
+          items:
+            type: string
+        demoUrl:
+          type: string
+        sourceUrl:
+          type: string
+        liveUrl:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        client:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    ProjectFilters:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            type: string
+        technologies:
+          type: array
+          items:
+            type: string
+
+    # Comment Admin Schemas
+    AdminComment:
+      allOf:
+        - $ref: '#/components/schemas/Comment'
+        - type: object
+          properties:
+            post:
+              type: object
+              properties:
+                slug:
+                  type: string
+                title:
+                  type: string
+            user:
+              type: object
+              properties:
+                id:
+                  type: string
+                name:
+                  type: string
+                email:
+                  type: string
+                avatar:
+                  type: string
+            moderation:
+              type: object
+              properties:
+                flagCount:
+                  type: integer
+                moderatedBy:
+                  type: string
+                moderatedAt:
+                  type: string
+                  format: date-time
+                moderationReason:
+                  type: string
+
+    Comment:
+      type: object
+      properties:
+        _id:
+          type: string
+        postSlug:
+          type: string
+        userId:
+          type: string
+        content:
+          type: string
+        parentId:
+          type: string
+        status:
+          type: string
+          enum: [pending, published, spam, deleted]
+        language:
+          type: string
+        metadata:
+          type: object
+          properties:
+            ipAddress:
+              type: string
+            userAgent:
+              type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UpdateCommentRequest:
+      type: object
+      properties:
+        content:
+          type: string
+        status:
+          type: string
+          enum: [pending, published, spam, deleted]
+        moderationReason:
+          type: string
+
+    # User Admin Schemas
+    AdminUser:
+      type: object
+      properties:
+        _id:
+          type: string
+        clerkId:
+          type: string
+        email:
+          type: string
+        name:
+          type: string
+        role:
+          type: string
+          enum: [user, editor, admin]
+        avatar:
+          type: string
+        bio:
+          type: string
+        preferences:
+          type: object
+        activity:
+          type: object
+          properties:
+            commentCount:
+              type: integer
+            likeCount:
+              type: integer
+            lastActive:
+              type: string
+              format: date-time
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    AdminUserDetail:
+      allOf:
+        - $ref: '#/components/schemas/AdminUser'
+        - type: object
+          properties:
+            recentComments:
+              type: array
+              items:
+                $ref: '#/components/schemas/Comment'
+            recentLikes:
+              type: array
+              items:
+                type: object
+                properties:
+                  postSlug:
+                    type: string
+                  postTitle:
+                    type: string
+                  type:
+                    type: string
+                  createdAt:
+                    type: string
+                    format: date-time
+
+    UpdateUserRequest:
+      type: object
+      properties:
+        role:
+          type: string
+          enum: [user, editor, admin]
+        status:
+          type: string
+          enum: [active, suspended, banned]
+
+    # Asset Admin Schemas
+    AdminLottieAsset:
+      type: object
+      properties:
+        _id:
+          type: string
+        filename:
+          type: string
+        originalName:
+          type: string
+        url:
+          type: string
+        size:
+          type: integer
+        dimensions:
+          type: object
+          properties:
+            width:
+              type: integer
+            height:
+              type: integer
+        metadata:
+          type: object
+          properties:
+            duration:
+              type: number
+            frameRate:
+              type: number
+            frames:
+              type: integer
+        uploadedBy:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        usageCount:
+          type: integer
+        usedIn:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [blog_post, project]
+              id:
+                type: string
+              title:
+                type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    UpdateAssetRequest:
+      type: object
+      properties:
+        tags:
+          type: array
+          items:
+            type: string
+        description:
+          type: string
+
+    # Site Settings Admin Schemas
+    AdminSiteSetting:
+      type: object
+      properties:
+        _id:
+          type: string
+        key:
+          type: string
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: object
+            - type: array
+        type:
+          type: string
+          enum: [string, number, boolean, object, array]
+        category:
+          type: string
+        description:
+          type: string
+        isPublic:
+          type: boolean
+        validation:
+          type: object
+          properties:
+            required:
+              type: boolean
+            minLength:
+              type: integer
+            maxLength:
+              type: integer
+            pattern:
+              type: string
+            options:
+              type: array
+              items:
+                type: string
+        updatedBy:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateSettingRequest:
+      type: object
+      properties:
+        key:
+          type: string
+          pattern: ^[a-z0-9-]+$
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: object
+            - type: array
+        type:
+          type: string
+          enum: [string, number, boolean, object, array]
+        category:
+          type: string
+        description:
+          type: string
+        isPublic:
+          type: boolean
+          default: false
+        validation:
+          type: object
+      required: [key, value, type, category]
+
+    UpdateSettingRequest:
+      type: object
+      properties:
+        value:
+          oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: object
+            - type: array
+        description:
+          type: string
+        isPublic:
+          type: boolean
+        validation:
+          type: object
+      required: [value]
+
+    # Utility Schemas
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+        hasNext:
+          type: boolean
+        hasPrev:
+          type: boolean
+
+    BulkUpdateRequest:
+      type: object
+      properties:
+        slugs:
+          type: array
+          items:
+            type: string
+        updates:
+          type: object
+          properties:
+            status:
+              type: string
+            featured:
+              type: boolean
+            category:
+              type: string
+            tags:
+              type: array
+              items:
+                type: string
+      required: [slugs, updates]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+
+  responses:
+    BadRequest:
+      description: Bad request - validation error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Unauthorized:
+      description: Unauthorized - authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    Forbidden:
+      description: Forbidden - insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+tags:
+  - name: Admin Dashboard
+    description: Dashboard overview and analytics
+  - name: Admin Blog Management
+    description: Blog post creation, editing, and management
+  - name: Admin Portfolio Management
+    description: Portfolio project creation, editing, and management
+  - name: Admin Comment Management
+    description: Comment moderation and management
+  - name: Admin User Management
+    description: User management and role assignment (admin only)
+  - name: Admin Asset Management
+    description: Lottie asset upload and management
+  - name: Admin Settings Management
+    description: Site settings configuration (admin only)
