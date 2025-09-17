@@ -1,9 +1,10 @@
+import 'dotenv/config';
 // SECURE Admin Setup Script
 // Only run this in development with direct database access
 // Never expose this as a public API endpoint
 
-import connectToDatabase from '@/lib/mongodb';
-import User from '@/models/User';
+import connectToDatabase from '../src/lib/mongodb';
+import User from '../src/models/User';
 
 /**
  * Create admin user in database
@@ -16,9 +17,10 @@ async function createAdminUser() {
 
     // Replace with your actual Clerk user ID and details
     const adminUser = {
-      clerkId: 'YOUR_CLERK_USER_ID', // Get this from Clerk dashboard after signing up
-      email: 'your-email@example.com',
-      name: 'Admin User',
+      clerkId: 'user_31zWrVvro7cBm9rE0Jn6LzoNYsI',
+      email: 'github@rohanbatra.in',
+      firstName: 'Rohan',
+      lastName: 'Batra',
       role: 'admin',
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -27,8 +29,10 @@ async function createAdminUser() {
     const existingUser = await User.findOne({ clerkId: adminUser.clerkId });
 
     if (existingUser) {
-      // Update existing user role
+      // Update existing user role and ensure required names are present
       existingUser.role = 'admin';
+      if (!existingUser.firstName) existingUser.firstName = adminUser.firstName;
+      if (!existingUser.lastName) existingUser.lastName = adminUser.lastName;
       await existingUser.save();
       console.log('✅ Updated existing user to admin');
     } else {
@@ -44,7 +48,7 @@ async function createAdminUser() {
   }
 }
 
-// Uncomment to run (only in development!)
-// createAdminUser();
+// Execute when run as a script
+createAdminUser();
 
 export { createAdminUser };

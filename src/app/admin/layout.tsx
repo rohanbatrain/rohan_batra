@@ -33,6 +33,12 @@ export default async function AdminLayout({
     redirect('/');
   }
 
+  // Extract only serializable user data for client components
+  const userData = {
+    firstName: user.firstName,
+    lastName: user.lastName,
+  };
+
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-gray-900'>
       <div className='flex'>
@@ -42,7 +48,7 @@ export default async function AdminLayout({
         {/* Main Content */}
         <div className='flex-1 flex flex-col min-h-screen'>
           {/* Header */}
-          <AdminHeader user={user} userRole={userRole} />
+          <AdminHeader user={userData} userRole={userRole} />
 
           {/* Page Content */}
           <main className='flex-1 p-6'>

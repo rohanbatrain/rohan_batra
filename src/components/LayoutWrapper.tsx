@@ -1,6 +1,7 @@
 'use client';
 
 import { ReactNode } from 'react';
+import { usePathname } from 'next/navigation';
 import Navigation from './Navigation';
 import Footer from './Footer';
 import { useTheme } from '@/lib/theme-provider';
@@ -11,12 +12,20 @@ interface LayoutWrapperProps {
 
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
   const { isDarkMode, toggleDarkMode } = useTheme();
+  const pathname = usePathname();
+  
+  // Hide header and footer on admin routes
+  const isAdminRoute = pathname?.startsWith('/admin');
 
   return (
     <div className='min-h-screen flex flex-col'>
-      <Navigation isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
-      <main className='flex-1 pt-16'>{children}</main>
-      <Footer />
+      {!isAdminRoute && (
+        <Navigation isDarkMode={isDarkMode} toggleDarkMode={toggleDarkMode} />
+      )}
+      <main className={`flex-1 ${!isAdminRoute ? 'pt-16' : ''}`}>
+        {children}
+      </main>
+      {!isAdminRoute && <Footer />}
     </div>
   );
 }

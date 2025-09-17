@@ -6,24 +6,30 @@ interface Project {
   _id: string;
   title: string;
   description: string;
+  shortDescription?: string;
   technologies: string[];
   featured: boolean;
-  status: string;
+  status: 'draft' | 'published' | 'archived';
   createdAt: string;
   updatedAt: string;
-  githubUrl?: string;
-  liveUrl?: string;
+  links?: {
+    live?: string;
+    github?: string;
+    demo?: string;
+    documentation?: string;
+  };
 }
 
 interface ProjectsResponse {
+  success: boolean;
   projects: Project[];
   pagination: {
-    page: number;
-    limit: number;
-    total: number;
+    currentPage: number;
     totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
     hasNextPage: boolean;
-    hasPrevPage: boolean;
+    hasPreviousPage: boolean;
   };
 }
 
@@ -32,12 +38,12 @@ export default function PortfolioManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
+    currentPage: 1,
     totalPages: 0,
+    totalItems: 0,
+    itemsPerPage: 10,
     hasNextPage: false,
-    hasPrevPage: false,
+    hasPreviousPage: false,
   });
 
   const [filters, setFilters] = useState({
@@ -49,14 +55,14 @@ export default function PortfolioManagementPage() {
 
   useEffect(() => {
     fetchProjects();
-  }, [pagination.page, filters]);
+  }, [pagination.currentPage, filters]);
 
   const fetchProjects = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
+        page: pagination.currentPage.toString(),
+        limit: pagination.itemsPerPage.toString(),
         ...(filters.search && { search: filters.search }),
         ...(filters.featured && { featured: filters.featured }),
         ...(filters.status && { status: filters.status }),
@@ -227,7 +233,7 @@ export default function PortfolioManagementPage() {
       <div className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden'>
         <div className='p-6 border-b border-gray-200 dark:border-gray-700'>
           <h2 className='text-lg font-semibold text-gray-900 dark:text-white'>
-            Projects ({pagination.total})
+            Projects ({pagination.totalItems})
           </h2>
         </div>
 
@@ -274,14 +280,15 @@ export default function PortfolioManagementPage() {
                 <div className='mb-3'>
                   <span
                     className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                      project.status === 'completed'
+                      project.status === 'published'
                         ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                        : project.status === 'in-progress'
+                        : project.status === 'draft'
                           ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
                           : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200'
                     }`}
                   >
-                    {project.status}
+                    {project.status.charAt(0).toUpperCase() +
+                      project.status.slice(1)}
                   </span>
                 </div>
 
@@ -335,22 +342,28 @@ export default function PortfolioManagementPage() {
         {pagination.totalPages > 1 && (
           <div className='px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between'>
             <div className='text-sm text-gray-700 dark:text-gray-300'>
-              Showing page {pagination.page} of {pagination.totalPages} (
-              {pagination.total} total)
+              Showing page {pagination.currentPage} of {pagination.totalPages} (
+              {pagination.totalItems} total)
             </div>
             <div className='flex space-x-2'>
               <button
                 onClick={() =>
-                  setPagination({ ...pagination, page: pagination.page - 1 })
+                  setPagination({
+                    ...pagination,
+                    currentPage: pagination.currentPage - 1,
+                  })
                 }
-                disabled={!pagination.hasPrevPage}
+                disabled={!pagination.hasPreviousPage}
                 className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
               >
                 Previous
               </button>
               <button
                 onClick={() =>
-                  setPagination({ ...pagination, page: pagination.page + 1 })
+                  setPagination({
+                    ...pagination,
+                    currentPage: pagination.currentPage + 1,
+                  })
                 }
                 disabled={!pagination.hasNextPage}
                 className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'

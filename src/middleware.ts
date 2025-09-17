@@ -60,7 +60,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // Protect admin routes - require authentication
   const authResult = await auth();
-  const { userId, sessionClaims } = authResult;
+  const { userId } = authResult;
 
   if (!userId) {
     // Redirect to sign-in for unauthenticated users trying to access admin
@@ -69,9 +69,31 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
     return NextResponse.redirect(signInUrl);
   }
 
-  // Get user role from session claims or metadata
-  const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-  const userRole = metadata?.role || 'user';
+  // Get user role from database via internal API call
+  let userRole = 'user';
+  
+  try {
+    // Use internal API to check user role (works in Edge Runtime)
+    const baseUrl = req.nextUrl.origin;
+    const response = await fetch(
+      `${baseUrl}/api/internal/user-role?userId=${userId}`,
+      {
+        headers: { 'x-internal-request': 'true' },
+      }
+    );
+    
+    if (response.ok) {
+      const data = await response.json();
+      userRole = data.role || 'user';
+    }
+  } catch (error) {
+    console.error('[MIDDLEWARE] Error fetching user role:', error);
+    // Default to 'user' role on error
+  }
+
+  console.log(
+    `[MIDDLEWARE] Path: ${req.nextUrl.pathname}, UserID: ${userId}, Role: ${userRole}`
+  );
 
   // Check admin-only routes
   if (isAdminOnlyRoute(req)) {

@@ -12,7 +12,10 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "admin:set-role": "DOTENV_CONFIG_PATH=.env.local tsx scripts/set-user-role.ts",
+    "admin:create-db-admin": "DOTENV_CONFIG_PATH=.env.local tsx scripts/create-admin-user.ts",
+    "admin:migrate-demo": "DOTENV_CONFIG_PATH=.env.local tsx scripts/migrate-demo-content-simple.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.32.0",
@@ -50,12 +53,14 @@
     "@types/react-dom": "^19",
     "@vitejs/plugin-react": "^5.0.2",
     "@vitest/ui": "^3.2.4",
+    "dotenv": "^17.2.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "jsdom": "^27.0.0",
     "tailwindcss": "^4",
+    "tsx": "^4.20.5",
     "typescript": "^5",
     "vitest": "^3.2.4"
   }

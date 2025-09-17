@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local admin scripts (ignore personal variants)
+/scripts/create-admin-user.ts
+/scripts/set-user-role.ts

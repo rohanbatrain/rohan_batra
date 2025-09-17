@@ -1,4 +1,5 @@
-import { clerkClient } from '@clerk/nextjs/server';
+import 'dotenv/config';
+import { clerkClient as getClerkClient } from '@clerk/nextjs/server';
 
 /**
  * Script to set user role in Clerk
@@ -7,24 +8,22 @@ import { clerkClient } from '@clerk/nextjs/server';
 
 async function setUserRole(userEmail: string, role: 'admin' | 'editor') {
   try {
+    const client = await getClerkClient();
     // Find user by email
-    const users = await clerkClient.users.getUserList({
+    const users = await client.users.getUserList({
       emailAddress: [userEmail],
+      limit: 1,
     });
 
-    if (users.length === 0) {
+    if (!users.data || users.data.length === 0) {
       console.error(`User with email ${userEmail} not found`);
       return;
     }
 
-    const user = users[0];
+    const user = users.data[0];
 
     // Update user metadata
-    await clerkClient.users.updateUserMetadata(user.id, {
-      publicMetadata: {
-        role: role,
-      },
-    });
+    await client.users.updateUser(user.id, { publicMetadata: { role } });
 
     console.log(`✅ Successfully set role "${role}" for user ${userEmail}`);
     console.log(`User ID: ${user.id}`);
@@ -33,7 +32,8 @@ async function setUserRole(userEmail: string, role: 'admin' | 'editor') {
   }
 }
 
-// Example usage:
-// setUserRole('your-email@example.com', 'admin');
+// Execute when run as a script
+// Note: requires CLERK_SECRET_KEY in env
+setUserRole('github@rohanbatra.in', 'admin');
 
 export { setUserRole };

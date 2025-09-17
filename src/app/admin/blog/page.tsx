@@ -7,22 +7,34 @@ interface BlogPost {
   title: string;
   slug: string;
   excerpt?: string;
-  published: boolean;
+  status: 'draft' | 'published' | 'archived';
   createdAt: string;
   updatedAt: string;
   categories: string[];
-  readingTime: number;
+  tags: string[];
+  analytics: {
+    readTime: number;
+    views: number;
+    likes: number;
+    comments: number;
+  };
+  author?: {
+    _id: string;
+    name: string;
+    email: string;
+  };
 }
 
 interface BlogPostsResponse {
+  success: boolean;
   posts: BlogPost[];
   pagination: {
-    page: number;
-    limit: number;
-    total: number;
+    currentPage: number;
     totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
     hasNextPage: boolean;
-    hasPrevPage: boolean;
+    hasPreviousPage: boolean;
   };
 }
 
@@ -31,12 +43,12 @@ export default function BlogManagementPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState({
-    page: 1,
-    limit: 10,
-    total: 0,
+    currentPage: 1,
     totalPages: 0,
+    totalItems: 0,
+    itemsPerPage: 10,
     hasNextPage: false,
-    hasPrevPage: false,
+    hasPreviousPage: false,
   });
 
   const [filters, setFilters] = useState({
@@ -47,16 +59,18 @@ export default function BlogManagementPage() {
 
   useEffect(() => {
     fetchPosts();
-  }, [pagination.page, filters]);
+  }, [pagination.currentPage, filters]);
 
   const fetchPosts = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
-        page: pagination.page.toString(),
-        limit: pagination.limit.toString(),
+        page: pagination.currentPage.toString(),
+        limit: pagination.itemsPerPage.toString(),
         ...(filters.search && { search: filters.search }),
-        ...(filters.published && { published: filters.published }),
+        ...(filters.published && {
+          status: filters.published === 'true' ? 'published' : 'draft',
+        }),
         ...(filters.category && { category: filters.category }),
       });
 
@@ -99,14 +113,15 @@ export default function BlogManagementPage() {
     }
   };
 
-  const handleStatusToggle = async (postId: string, currentStatus: boolean) => {
+  const handleStatusToggle = async (postId: string, currentStatus: string) => {
     try {
+      const newStatus = currentStatus === 'published' ? 'draft' : 'published';
       const response = await fetch(`/api/admin/blog-posts/${postId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ published: !currentStatus }),
+        body: JSON.stringify({ status: newStatus }),
       });
 
       if (!response.ok) {
@@ -207,7 +222,7 @@ export default function BlogManagementPage() {
       <div className='bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden'>
         <div className='p-6 border-b border-gray-200 dark:border-gray-700'>
           <h2 className='text-lg font-semibold text-gray-900 dark:text-white'>
-            Blog Posts ({pagination.total})
+            Blog Posts ({pagination.totalItems})
           </h2>
         </div>
 
@@ -269,12 +284,15 @@ export default function BlogManagementPage() {
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <span
                         className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                          post.published
+                          post.status === 'published'
                             ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                            : post.status === 'draft'
+                              ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
+                              : 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
                         }`}
                       >
-                        {post.published ? 'Published' : 'Draft'}
+                        {post.status.charAt(0).toUpperCase() +
+                          post.status.slice(1)}
                       </span>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
@@ -288,11 +306,11 @@ export default function BlogManagementPage() {
                     <td className='px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2'>
                       <button
                         onClick={() =>
-                          handleStatusToggle(post._id, post.published)
+                          handleStatusToggle(post._id, post.status)
                         }
                         className='text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300'
                       >
-                        {post.published ? 'Unpublish' : 'Publish'}
+                        {post.status === 'published' ? 'Unpublish' : 'Publish'}
                       </button>
                       <button className='text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'>
                         Edit
@@ -315,22 +333,28 @@ export default function BlogManagementPage() {
         {pagination.totalPages > 1 && (
           <div className='px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between'>
             <div className='text-sm text-gray-700 dark:text-gray-300'>
-              Showing page {pagination.page} of {pagination.totalPages} (
-              {pagination.total} total)
+              Showing page {pagination.currentPage} of {pagination.totalPages} (
+              {pagination.totalItems} total)
             </div>
             <div className='flex space-x-2'>
               <button
                 onClick={() =>
-                  setPagination({ ...pagination, page: pagination.page - 1 })
+                  setPagination({
+                    ...pagination,
+                    currentPage: pagination.currentPage - 1,
+                  })
                 }
-                disabled={!pagination.hasPrevPage}
+                disabled={!pagination.hasPreviousPage}
                 className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
               >
                 Previous
               </button>
               <button
                 onClick={() =>
-                  setPagination({ ...pagination, page: pagination.page + 1 })
+                  setPagination({
+                    ...pagination,
+                    currentPage: pagination.currentPage + 1,
+                  })
                 }
                 disabled={!pagination.hasNextPage}
                 className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'

@@ -1,0 +1,690 @@
+openapi: 3.0.3
+info:
+  title: Unified Admin & Content Platform API
+  version: 2.0.0
+  description: |
+    A comprehensive API for managing all site content, users, settings, and assets.
+    This version introduces a unified asset pipeline, Redis caching, and a full admin dashboard.
+    Requires authentication and role-based permissions (Admin, Editor).
+  contact:
+    name: API Support
+    url: https://example.com/support
+servers:
+  - url: https://example.com/api
+    description: Production API
+  - url: http://localhost:3000/api
+    description: Development server
+
+security:
+  - ClerkAuth: []
+
+paths:
+  # --- Asset Management ---
+  /admin/assets:
+    get:
+      summary: List assets
+      description: Retrieve a paginated list of all managed assets (images, Lottie files, etc.).
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/SortBy'
+        - $ref: '#/components/parameters/SortOrder'
+        - in: query
+          name: assetType
+          schema:
+            type: string
+            enum: [image, lottie, video, file]
+        - in: query
+          name: tag
+          schema:
+            type: string
+      responses:
+        '200':
+          description: A list of assets.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Asset'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+    post:
+      summary: Upload a new asset
+      description: Upload a file to the asset provider (e.g., Cloudinary) and create an Asset document.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                title:
+                  type: string
+                altText:
+                  type: string
+      responses:
+        '201':
+          description: Asset created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/assets/{id}:
+    get:
+      summary: Get asset by ID
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200':
+          description: The requested asset.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    put:
+      summary: Update asset metadata
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AssetInput'
+      responses:
+        '200':
+          description: Asset updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Asset'
+    delete:
+      summary: Delete an asset
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '204':
+          description: Asset deleted.
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --- User Management ---
+  /admin/users:
+    get:
+      summary: List users
+      description: Retrieve a list of all users with filtering by role. (Admin only)
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - in: query
+          name: role
+          schema:
+            type: string
+            enum: [admin, editor, user]
+      responses:
+        '200':
+          description: A list of users.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/users/{id}/role:
+    put:
+      summary: Update a user's role
+      description: Assign a new role to a user. (Admin only)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [admin, editor, user]
+              required: [role]
+      responses:
+        '200':
+          description: User role updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --- Comment Moderation ---
+  /admin/comments:
+    get:
+      summary: List comments for moderation
+      description: Retrieve comments with filtering by moderation status. (Admin/Editor)
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Limit'
+        - in: query
+          name: moderationStatus
+          schema:
+            type: string
+            enum: [pending, approved, spam, rejected]
+            default: pending
+      responses:
+        '200':
+          description: A list of comments.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+                  meta:
+                    $ref: '#/components/schemas/PaginationMeta'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/comments/{id}/status:
+    put:
+      summary: Update a comment's status
+      description: Approve, reject, or mark a comment as spam. (Admin/Editor)
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [approved, spam, rejected]
+              required: [status]
+      responses:
+        '200':
+          description: Comment status updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # --- Site Settings ---
+  /admin/settings:
+    get:
+      summary: Get all site settings
+      description: Retrieve all key-value site settings. (Admin only)
+      responses:
+        '200':
+          description: A list of all site settings.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SiteSetting'
+    put:
+      summary: Bulk update site settings
+      description: Update multiple site settings at once. (Admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  key:
+                    type: string
+                  value:
+                    type: object
+                    additionalProperties: true
+                required: [key, value]
+      responses:
+        '200':
+          description: Settings updated successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SiteSetting'
+
+  # --- Analytics ---
+  /admin/analytics/summary:
+    get:
+      summary: Get analytics summary
+      description: Retrieve a summary of site analytics, served from a Redis cache. (Admin/Editor)
+      responses:
+        '200':
+          description: Analytics summary data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsData'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+
+  # --- AI Content Assistance ---
+  /admin/ai/generate-draft:
+    post:
+      summary: Generate a blog post draft
+      description: Uses AI to generate a draft from a title. (Admin/Editor)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+              required: [title]
+      responses:
+        '200':
+          description: AI-generated draft content.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  content:
+                    type: string
+        '400':
+          $ref: '#/components/responses/BadRequest'
+
+  # --- Data Seeding ---
+  /admin/content/seed:
+    post:
+      summary: Seed sample content
+      description: Idempotently create sample content. (Development only)
+      responses:
+        '201':
+          description: Content seeded successfully.
+
+  # --- Refactored Blog & Project Endpoints ---
+  # (Paths like /admin/blog-posts and /admin/projects remain, but their schemas are updated)
+  /admin/blog-posts:
+    post:
+      summary: Create blog post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPostInput' # Now uses assetId
+      responses:
+        '201':
+          description: Blog post created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+
+  /admin/blog-posts/{id}:
+    put:
+      summary: Update blog post
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlogPostInput' # Now uses assetId
+      responses:
+        '200':
+          description: Blog post updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPost'
+
+components:
+  securitySchemes:
+    ClerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk JWT token with 'admin' or 'editor' role claim.
+
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema:
+        type: string
+        pattern: '^[a-f\d]{24}$'
+      description: The MongoDB ObjectId of the resource.
+    Page:
+      in: query
+      name: page
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+    Limit:
+      in: query
+      name: limit
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    SortBy:
+      in: query
+      name: sortBy
+      schema:
+        type: string
+        default: createdAt
+    SortOrder:
+      in: query
+      name: sortOrder
+      schema:
+        type: string
+        enum: [asc, desc]
+        default: desc
+
+  schemas:
+    # --- New & Formalized Schemas ---
+    Asset:
+      type: object
+      properties:
+        _id:
+          type: string
+          pattern: '^[a-f\d]{24}$'
+        assetType:
+          type: string
+          enum: [image, lottie, video, file]
+        provider:
+          type: string
+        providerAssetId:
+          type: string
+        url:
+          type: string
+          format: uri
+        title:
+          type: string
+        altText:
+          type: string
+        metadata:
+          type: object
+      required: [_id, assetType, provider, providerAssetId, url, title]
+
+    AssetInput:
+      type: object
+      properties:
+        title:
+          type: string
+        altText:
+          type: string
+        caption:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+
+    User:
+      type: object
+      properties:
+        _id:
+          type: string
+          pattern: '^[a-f\d]{24}$'
+        clerkUserId:
+          type: string
+        email:
+          type: string
+          format: email
+        username:
+          type: string
+        role:
+          type: string
+          enum: [admin, editor, user]
+        lastLoginAt:
+          type: string
+          format: date-time
+      required: [_id, clerkUserId, email, username, role]
+
+    Comment:
+      type: object
+      properties:
+        _id:
+          type: string
+          pattern: '^[a-f\d]{24}$'
+        content:
+          type: string
+        author:
+          $ref: '#/components/schemas/User'
+        parentType:
+          type: string
+        parentId:
+          type: string
+        moderationStatus:
+          type: string
+          enum: [pending, approved, spam, rejected]
+      required: [_id, content, author, parentId, moderationStatus]
+
+    SiteSetting:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: object
+          additionalProperties: true
+        description:
+          type: string
+        isPublic:
+          type: boolean
+      required: [key, value, description, isPublic]
+
+    AnalyticsData:
+      type: object
+      properties:
+        totalViews:
+          type: integer
+        topPosts:
+          type: array
+          items:
+            type: object
+            properties:
+              slug:
+                type: string
+              views:
+                type: integer
+
+    # --- Refactored Input Schemas ---
+    BlogPostInput:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        content:
+          type: string
+        coverImageId:
+          type: string
+          pattern: '^[a-f\d]{24}$'
+        lottieAnimationId:
+          type: string
+          pattern: '^[a-f\d]{24}$'
+        tags:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [draft, scheduled, published]
+      required: [title, slug, content, status]
+
+    ProjectInput:
+      type: object
+      properties:
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        primaryImageId:
+          type: string
+          pattern: '^[a-f\d]{24}$'
+        gallery:
+          type: array
+          items:
+            type: object
+            properties:
+              assetId:
+                type: string
+                pattern: '^[a-f\d]{24}$'
+              order:
+                type: integer
+            required: [assetId, order]
+      required: [title, slug, description]
+
+    # --- Refactored Output Schemas ---
+    BlogPost:
+      allOf:
+        - $ref: '#/components/schemas/BlogPostInput'
+        - type: object
+          properties:
+            _id:
+              type: string
+              pattern: '^[a-f\d]{24}$'
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    Project:
+      allOf:
+        - $ref: '#/components/schemas/ProjectInput'
+        - type: object
+          properties:
+            _id:
+              type: string
+              pattern: '^[a-f\d]{24}$'
+            createdAt:
+              type: string
+              format: date-time
+            updatedAt:
+              type: string
+              format: date-time
+
+    # --- Utility Schemas ---
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+        total:
+          type: integer
+        totalPages:
+          type: integer
+      required: [page, limit, total, totalPages]
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+      required: [error, message]
+
+  responses:
+    BadRequest:
+      description: Bad request - invalid input.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized - authentication required.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden - insufficient permissions.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Resource not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Conflict:
+      description: Conflict - resource already exists.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalError:
+      description: Internal server error.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'

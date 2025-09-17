@@ -2,10 +2,12 @@
 
 import { UserButton } from '@clerk/nextjs';
 import { Bell, Search } from 'lucide-react';
-import type { User } from '@clerk/nextjs/server';
 
 interface AdminHeaderProps {
-  user: User;
+  user: {
+    firstName: string | null;
+    lastName: string | null;
+  };
   userRole: string;
 }
 

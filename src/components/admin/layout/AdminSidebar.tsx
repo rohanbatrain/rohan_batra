@@ -86,14 +86,14 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
   );
 
   return (
-    <div className='w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen'>
+    <div className='w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen flex flex-col'>
       <div className='p-6'>
         <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
           Admin Panel
         </h1>
       </div>
 
-      <nav className='mt-6'>
+      <nav className='mt-6 flex-1'>
         <ul className='space-y-1 px-4'>
           {availableNavItems.map(item => {
             const Icon = item.icon;
@@ -122,12 +122,20 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       </nav>
 
       {/* Role indicator */}
-      <div className='absolute bottom-4 left-4 right-4'>
-        <div className='bg-gray-100 dark:bg-gray-700 rounded-lg p-3'>
-          <div className='flex items-center text-sm text-gray-600 dark:text-gray-400'>
-            <Users2 className='h-4 w-4 mr-2' />
-            Role:{' '}
-            <span className='ml-1 font-medium capitalize'>{userRole}</span>
+      <div className='p-4 border-t border-gray-200 dark:border-gray-700'>
+        <div className='bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg p-3 border border-blue-100 dark:border-blue-800'>
+          <div className='flex items-center'>
+            <div className='flex-shrink-0'>
+              <Users2 className='h-5 w-5 text-blue-600 dark:text-blue-400' />
+            </div>
+            <div className='ml-3'>
+              <p className='text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide'>
+                Current Role
+              </p>
+              <p className='text-sm font-semibold text-blue-900 dark:text-blue-200 capitalize'>
+                {userRole}
+              </p>
+            </div>
           </div>
         </div>
       </div>
