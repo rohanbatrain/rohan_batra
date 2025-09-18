@@ -28,6 +28,16 @@ export default function BlogPageClient({
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedTag, setSelectedTag] = useState('All');
 
+  // Provide default values to prevent undefined errors
+  const pagination = initialPagination || {
+    page: 1,
+    limit: 12,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  };
+
   // Get unique categories from posts
   const categories = useMemo(() => {
     const cats = posts.map(post => post.category);
@@ -216,7 +226,7 @@ export default function BlogPageClient({
       </motion.div>
 
       {/* Pagination (if needed) */}
-      {initialPagination.totalPages > 1 && (
+      {pagination.totalPages > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -226,7 +236,7 @@ export default function BlogPageClient({
           <div className='flex gap-2'>
             {/* Add pagination controls here */}
             <span className='text-sm text-gray-500 dark:text-gray-400'>
-              Page {initialPagination.page} of {initialPagination.totalPages}
+              Page {pagination.page} of {pagination.totalPages}
             </span>
           </div>
         </motion.div>

@@ -702,7 +702,7 @@ export default function AnalyticsPage() {
                         </Badge>
                       </div>
                       <p className='text-sm'>
-                        {comment.content.substring(0, 100)}...
+                        {comment.content ? comment.content.substring(0, 100) + '...' : 'No content'}
                       </p>
                     </div>
                   ))}

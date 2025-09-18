@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface BlogPost {
   _id: string;
@@ -10,7 +11,7 @@ interface BlogPost {
   status: 'draft' | 'published' | 'archived';
   createdAt: string;
   updatedAt: string;
-  categories: string[];
+  category?: string;
   tags: string[];
   analytics: {
     readTime: number;
@@ -39,6 +40,7 @@ interface BlogPostsResponse {
 }
 
 export default function BlogManagementPage() {
+  const router = useRouter();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -163,7 +165,10 @@ export default function BlogManagementPage() {
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
           Blog Management
         </h1>
-        <button className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium'>
+        <button 
+          onClick={() => router.push('/admin/blog/create')}
+          className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium'
+        >
           Create New Post
         </button>
       </div>
@@ -297,7 +302,7 @@ export default function BlogManagementPage() {
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap'>
                       <div className='text-sm text-gray-900 dark:text-white'>
-                        {post.categories.join(', ') || 'No categories'}
+                        {post.category || 'No category'}
                       </div>
                     </td>
                     <td className='px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400'>
@@ -312,7 +317,10 @@ export default function BlogManagementPage() {
                       >
                         {post.status === 'published' ? 'Unpublish' : 'Publish'}
                       </button>
-                      <button className='text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'>
+                      <button 
+                        onClick={() => router.push(`/admin/blog/edit/${post._id}`)}
+                        className='text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'
+                      >
                         Edit
                       </button>
                       <button

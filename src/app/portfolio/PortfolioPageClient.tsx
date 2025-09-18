@@ -31,6 +31,16 @@ export default function PortfolioPageClient({
     'newest'
   );
 
+  // Provide default values to prevent undefined errors
+  const pagination = initialPagination || {
+    page: 1,
+    limit: 12,
+    total: 0,
+    totalPages: 0,
+    hasNext: false,
+    hasPrev: false,
+  };
+
   // Get unique categories from projects
   const categories = useMemo(() => {
     const cats = projects.map(project => project.category);
@@ -295,7 +305,7 @@ export default function PortfolioPageClient({
       </motion.div>
 
       {/* Pagination (if needed) */}
-      {initialPagination.totalPages > 1 && (
+      {pagination.totalPages > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -305,7 +315,7 @@ export default function PortfolioPageClient({
           <div className='flex gap-2'>
             {/* Add pagination controls here */}
             <span className='text-sm text-gray-500 dark:text-gray-400'>
-              Page {initialPagination.page} of {initialPagination.totalPages}
+              Page {pagination.page} of {pagination.totalPages}
             </span>
           </div>
         </motion.div>

@@ -7,35 +7,21 @@ import { z } from 'zod';
 
 const ProjectCreateSchema = z.object({
   title: z.string().min(1).max(200),
-  description: z.string().min(1),
-  shortDescription: z.string().max(500).optional(),
+  description: z.string().min(1).max(500),
+  longDescription: z.string().optional(),
   slug: z.string().min(1).max(100).optional(),
   technologies: z.array(z.string()).default([]),
-  categories: z.array(z.string()).default([]),
+  category: z.string().min(1), // Make required as model expects it
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   featured: z.boolean().default(false),
-  images: z
-    .array(
-      z.object({
-        url: z.string().url(),
-        alt: z.string().optional(),
-        caption: z.string().optional(),
-      })
-    )
-    .default([]),
+  featuredImage: z.string().optional(),
+  priority: z.number().min(1).max(10).default(1),
   links: z
     .object({
-      live: z.string().url().optional(),
-      github: z.string().url().optional(),
-      demo: z.string().url().optional(),
-      documentation: z.string().url().optional(),
-    })
-    .optional(),
-  seo: z
-    .object({
-      title: z.string().max(60).optional(),
-      description: z.string().max(160).optional(),
-      keywords: z.array(z.string()).optional(),
+      live: z.string().optional(),
+      github: z.string().optional(),
+      demo: z.string().optional(),
+      documentation: z.string().optional(),
     })
     .optional(),
   publishedAt: z.string().datetime().optional(),
@@ -305,8 +291,8 @@ export async function POST(request: NextRequest) {
     // Handle single project creation
     const validatedData = ProjectCreateSchema.parse(body);
 
-    // Generate slug if not provided
-    if (!validatedData.slug) {
+    // Generate slug if not provided or empty
+    if (!validatedData.slug || validatedData.slug.trim() === '') {
       validatedData.slug = validatedData.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -319,33 +305,30 @@ export async function POST(request: NextRequest) {
       validatedData.slug = `${validatedData.slug}-${Date.now()}`;
     }
 
-    const newProject = new Project({
-      ...validatedData,
-      analytics: {
-        views: 0,
-        likes: 0,
-        shares: 0,
-        clickthroughs: {
-          live: 0,
-          github: 0,
-          demo: 0,
-          documentation: 0,
-        },
-      },
-      audit: {
-        createdBy: user._id,
-        createdAt: new Date(),
-        log: [
-          {
-            action: 'created',
-            userId: user._id,
-            userName: user.name,
-            timestamp: new Date(),
-            metadata: { status: validatedData.status },
-          },
-        ],
-      },
-    });
+    // Create the project with proper field mapping
+    const projectData = {
+      title: validatedData.title,
+      slug: validatedData.slug,
+      description: validatedData.description,
+      longDescription: validatedData.longDescription || '',
+      category: validatedData.category,
+      technologies: validatedData.technologies,
+      status: validatedData.status,
+      featured: validatedData.featured || false,
+      featuredImage: validatedData.featuredImage || '',
+      priority: validatedData.priority || 1,
+      authorId: user._id,
+      publishedAt: validatedData.status === 'published' ? new Date() : null,
+      completedAt: validatedData.completedAt ? new Date(validatedData.completedAt) : null,
+      viewCount: 0,
+      // Handle links properly
+      liveUrl: validatedData.links?.live || '',
+      sourceUrl: validatedData.links?.github || '',
+      demoUrl: validatedData.links?.demo || '',
+      documentationUrl: validatedData.links?.documentation || '',
+    };
+
+    const newProject = new Project(projectData);
 
     await newProject.save();
 
@@ -374,6 +357,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Project validation error:', error.issues);
       return NextResponse.json(
         {
           success: false,

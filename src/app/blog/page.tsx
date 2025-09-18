@@ -17,10 +17,22 @@ async function getBlogPosts(): Promise<{
     hasPrev: boolean;
   };
 }> {
-  return getBlogPostsWithPagination({
-    status: 'published',
-    limit: 12,
-  });
+  const page = 1;
+  const limit = 12;
+  
+  const result = await getBlogPostsWithPagination(page, limit);
+  
+  return {
+    posts: result.posts,
+    pagination: {
+      page: result.currentPage,
+      limit: limit,
+      total: result.totalPosts,
+      totalPages: result.totalPages,
+      hasNext: result.currentPage < result.totalPages,
+      hasPrev: result.currentPage > 1,
+    },
+  };
 }
 
 function LoadingSkeleton() {

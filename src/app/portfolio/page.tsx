@@ -17,10 +17,22 @@ async function getProjects(): Promise<{
     hasPrev: boolean;
   };
 }> {
-  return getProjectsWithPagination({
-    status: 'published',
-    limit: 12,
-  });
+  const page = 1;
+  const limit = 12;
+  
+  const result = await getProjectsWithPagination(page, limit);
+  
+  return {
+    projects: result.projects,
+    pagination: {
+      page: result.currentPage,
+      limit: limit,
+      total: result.totalProjects,
+      totalPages: result.totalPages,
+      hasNext: result.currentPage < result.totalPages,
+      hasPrev: result.currentPage > 1,
+    },
+  };
 }
 
 function LoadingSkeleton() {

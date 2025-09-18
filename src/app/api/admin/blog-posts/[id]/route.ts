@@ -10,7 +10,7 @@ const BlogPostUpdateSchema = z.object({
   content: z.string().min(1).optional(),
   excerpt: z.string().max(500).optional(),
   slug: z.string().min(1).max(100).optional(),
-  categories: z.array(z.string()).optional(),
+  category: z.string().optional(),
   tags: z.array(z.string()).optional(),
   status: z.enum(['draft', 'published', 'archived']).optional(),
   featuredImage: z.string().url().optional(),
@@ -63,7 +63,7 @@ export async function GET(
         excerpt: post.excerpt,
         slug: post.slug,
         status: post.status,
-        categories: post.categories,
+        category: post.category,
         tags: post.tags,
         featuredImage: post.featuredImage,
         author: post.authorId
@@ -225,7 +225,7 @@ export async function PUT(
         excerpt: updatedPost.excerpt,
         slug: updatedPost.slug,
         status: updatedPost.status,
-        categories: updatedPost.categories,
+        category: updatedPost.category,
         tags: updatedPost.tags,
         featuredImage: updatedPost.featuredImage,
         author: updatedPost.authorId

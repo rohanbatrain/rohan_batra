@@ -6,7 +6,6 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Eye, Heart, MessageCircle } from 'lucide-react';
 import { formatDate } from '@/lib/date-utils';
-import { UserAvatar } from '@/components/ui/ClerkAvatar';
 
 interface PostSummaryProps {
   post: BlogPostWithAuthor;
@@ -119,15 +118,16 @@ export function PostSummary({ post, index = 0 }: PostSummaryProps) {
         {/* Author */}
         {post.author && (
           <div className='flex items-center mt-4 pt-4 border-t border-gray-200 dark:border-gray-700'>
-            <UserAvatar
-              user={{
-                firstName: post.author.firstName,
-                lastName: post.author.lastName,
-                avatar: post.author.avatar,
-              }}
-              size='sm'
-              className='mr-3'
-            />
+            {post.author.avatar && (
+              <div className='relative w-8 h-8 rounded-full overflow-hidden mr-3'>
+                <Image
+                  src={post.author.avatar}
+                  alt={`${post.author.firstName} ${post.author.lastName}`}
+                  fill
+                  className='object-cover'
+                />
+              </div>
+            )}
             <div>
               <p className='text-sm font-medium text-gray-900 dark:text-white'>
                 {post.author.firstName} {post.author.lastName}

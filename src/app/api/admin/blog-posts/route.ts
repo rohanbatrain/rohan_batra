@@ -9,20 +9,15 @@ import { z } from 'zod';
 const BlogPostCreateSchema = z.object({
   title: z.string().min(1).max(200),
   content: z.string().min(1),
-  excerpt: z.string().max(500).optional(),
+  excerpt: z.string().min(1).max(300), // Make required as model expects it
   slug: z.string().min(1).max(100),
-  authorId: z.string().min(1),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
-  featuredImage: z.string().url().optional(),
+  featuredImage: z.string().optional(), // Allow empty string or URL
   tags: z.array(z.string()).default([]),
-  categories: z.array(z.string()).default([]),
-  seo: z
-    .object({
-      metaTitle: z.string().max(60).optional(),
-      metaDescription: z.string().max(160).optional(),
-      keywords: z.array(z.string()).optional(),
-    })
-    .optional(),
+  category: z.string().min(1), // Make required as model expects it
+  featured: z.boolean().optional().default(false),
+  seoTitle: z.string().max(60).optional(),
+  seoDescription: z.string().max(160).optional(),
   publishedAt: z.string().datetime().optional(),
 });
 
@@ -76,7 +71,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (category) {
-      filter.categories = { $in: [category] };
+      filter.category = category;
     }
 
     if (author) {
@@ -127,8 +122,7 @@ export async function GET(request: NextRequest) {
             { $sort: { count: -1 } },
           ],
           categoryBreakdown: [
-            { $unwind: '$categories' },
-            { $group: { _id: '$categories', count: { $sum: 1 } } },
+            { $group: { _id: '$category', count: { $sum: 1 } } },
             { $sort: { count: -1 } },
             { $limit: 10 },
           ],
@@ -323,8 +317,8 @@ export async function POST(request: NextRequest) {
     // Handle single post creation
     const validatedData = BlogPostCreateSchema.parse(body);
 
-    // Generate slug if not provided
-    if (!validatedData.slug) {
+    // Generate slug if not provided or empty
+    if (!validatedData.slug || validatedData.slug.trim() === '') {
       validatedData.slug = validatedData.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
@@ -337,36 +331,25 @@ export async function POST(request: NextRequest) {
       validatedData.slug = `${validatedData.slug}-${Date.now()}`;
     }
 
-    // Create the blog post
+    // Create the blog post with proper field mapping
     const postData = {
-      ...validatedData,
+      title: validatedData.title,
+      slug: validatedData.slug,
+      excerpt: validatedData.excerpt,
+      content: validatedData.content,
+      category: validatedData.category,
+      tags: validatedData.tags,
+      status: validatedData.status,
+      featured: validatedData.featured || false,
+      featuredImageUrl: validatedData.featuredImage || '',
+      seoTitle: validatedData.seoTitle || '',
+      seoDescription: validatedData.seoDescription || '',
       authorId: user._id,
-      analytics: {
-        views: 0,
-        likes: 0,
-        comments: 0,
-        shares: 0,
-        readTime: Math.ceil(validatedData.content.split(' ').length / 200), // Approximate reading time
-        socialShares: {
-          facebook: 0,
-          twitter: 0,
-          linkedin: 0,
-          total: 0,
-        },
-      },
-      audit: {
-        createdBy: user._id,
-        createdAt: new Date(),
-        log: [
-          {
-            action: 'created',
-            userId: user._id,
-            userName: user.name,
-            timestamp: new Date(),
-            metadata: { status: validatedData.status },
-          },
-        ],
-      },
+      readingTime: Math.ceil(validatedData.content.split(' ').length / 200),
+      publishedAt: validatedData.status === 'published' ? new Date() : null,
+      viewCount: 0,
+      likeCount: 0,
+      commentCount: 0,
     };
 
     const newPost = new BlogPost(postData);
@@ -413,6 +396,7 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     if (error instanceof z.ZodError) {
+      console.error('Blog post validation error:', error.issues);
       return NextResponse.json(
         {
           success: false,

@@ -108,8 +108,7 @@ export async function GET(request: NextRequest) {
       // Category breakdown
       BlogPost.aggregate([
         { $match: dateFilter },
-        { $unwind: '$categories' },
-        { $group: { _id: '$categories', count: { $sum: 1 } } },
+        { $group: { _id: '$category', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 },
       ]),

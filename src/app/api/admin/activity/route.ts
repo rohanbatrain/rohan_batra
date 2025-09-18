@@ -136,7 +136,7 @@ export async function GET(request: NextRequest) {
               slug: post.slug,
             },
             metadata: {
-              categories: post.categories,
+              category: post.category,
               status: post.status,
               views: post.analytics?.views || 0,
             },

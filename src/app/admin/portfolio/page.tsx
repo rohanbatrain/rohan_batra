@@ -1,15 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 
 interface Project {
   _id: string;
   title: string;
-  description: string;
+  description?: string;
   shortDescription?: string;
-  technologies: string[];
+  technologies?: string[];
   featured: boolean;
-  status: 'draft' | 'published' | 'archived';
+  status?: 'draft' | 'published' | 'archived';
   createdAt: string;
   updatedAt: string;
   links?: {
@@ -47,11 +48,10 @@ export default function PortfolioManagementPage() {
   });
 
   const [filters, setFilters] = useState({
-    search: '',
-    featured: '',
     status: '',
-    technology: '',
+    search: '',
   });
+  const router = useRouter();
 
   useEffect(() => {
     fetchProjects();
@@ -158,7 +158,10 @@ export default function PortfolioManagementPage() {
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
           Portfolio Management
         </h1>
-        <button className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium'>
+        <button 
+          onClick={() => router.push('/admin/portfolio/create')}
+          className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium'
+        >
           Create New Project
         </button>
       </div>
@@ -267,7 +270,7 @@ export default function PortfolioManagementPage() {
                       {project.title}
                     </h3>
                     <p className='text-sm text-gray-600 dark:text-gray-400 mb-2'>
-                      {project.description.substring(0, 100)}...
+                      {project.description ? project.description.substring(0, 100) + '...' : 'No description available'}
                     </p>
                   </div>
                   {project.featured && (
@@ -287,14 +290,13 @@ export default function PortfolioManagementPage() {
                           : 'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200'
                     }`}
                   >
-                    {project.status.charAt(0).toUpperCase() +
-                      project.status.slice(1)}
+                    {project.status ? project.status.charAt(0).toUpperCase() + project.status.slice(1) : 'Unknown'}
                   </span>
                 </div>
 
                 <div className='mb-3'>
                   <div className='flex flex-wrap gap-1'>
-                    {project.technologies.slice(0, 3).map((tech, index) => (
+                    {project.technologies && project.technologies.slice(0, 3).map((tech, index) => (
                       <span
                         key={index}
                         className='inline-flex px-2 py-1 text-xs bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 rounded'
@@ -302,7 +304,7 @@ export default function PortfolioManagementPage() {
                         {tech}
                       </span>
                     ))}
-                    {project.technologies.length > 3 && (
+                    {project.technologies && project.technologies.length > 3 && (
                       <span className='text-xs text-gray-500 dark:text-gray-400'>
                         +{project.technologies.length - 3} more
                       </span>
@@ -323,7 +325,10 @@ export default function PortfolioManagementPage() {
                   >
                     {project.featured ? 'Unfeature' : 'Feature'}
                   </button>
-                  <button className='text-xs text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'>
+                  <button 
+                    onClick={() => router.push(`/admin/portfolio/edit/${project._id}`)}
+                    className='text-xs text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'
+                  >
                     Edit
                   </button>
                   <button
