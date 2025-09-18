@@ -71,7 +71,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
 
   // Get user role from database via internal API call
   let userRole = 'user';
-  
+
   try {
     // Use internal API to check user role (works in Edge Runtime)
     const baseUrl = req.nextUrl.origin;
@@ -81,7 +81,7 @@ export default clerkMiddleware(async (auth, req: NextRequest) => {
         headers: { 'x-internal-request': 'true' },
       }
     );
-    
+
     if (response.ok) {
       const data = await response.json();
       userRole = data.role || 'user';

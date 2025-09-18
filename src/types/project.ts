@@ -9,6 +9,12 @@ export interface Project {
   status: 'draft' | 'published' | 'archived';
   featured: boolean;
   images: string[];
+  gallery: Array<{
+    asset: string;
+    caption?: string;
+    order: number;
+  }>;
+  featuredImage?: string;
   demoUrl?: string;
   sourceUrl?: string;
   liveUrl?: string;

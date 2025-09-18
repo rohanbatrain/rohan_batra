@@ -44,13 +44,32 @@ const BlogPostSchema = new Schema<IBlogPost>(
       default: 'rich-text',
     },
     featuredImage: {
+      type: Schema.Types.ObjectId,
+      ref: 'Asset',
+    },
+    featuredImageUrl: {
       type: String,
       trim: true,
     },
     images: [
       {
-        type: String,
-        trim: true,
+        type: Schema.Types.ObjectId,
+        ref: 'Asset',
+      },
+    ],
+    attachedAssets: [
+      {
+        asset: {
+          type: Schema.Types.ObjectId,
+          ref: 'Asset',
+        },
+        usage: {
+          type: String,
+          enum: ['featured', 'content', 'gallery', 'attachment'],
+          default: 'content',
+        },
+        caption: String,
+        altText: String,
       },
     ],
     category: {

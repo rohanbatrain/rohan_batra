@@ -45,6 +45,27 @@ const UserSchema = new Schema<IUser>(
       type: String,
       trim: true,
     },
+    avatarConfig: {
+      style: {
+        type: String,
+        enum: ['adventurer', 'avataaars', 'big-ears', 'bottts', 'fun-emoji', 'identicon', 'lorelei', 'micah', 'miniavs', 'open-peeps', 'personas', 'pixel-art'],
+        default: 'adventurer',
+      },
+      seed: {
+        type: String,
+        default: 'default-seed',
+      },
+      backgroundColor: {
+        type: String,
+        default: 'b6e3f4',
+      },
+      radius: {
+        type: Number,
+        default: 50,
+        min: 0,
+        max: 50,
+      },
+    },
     bio: {
       type: String,
       maxlength: 500,
@@ -71,6 +92,40 @@ const UserSchema = new Schema<IUser>(
     },
     lastLoginAt: {
       type: Date,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+      index: true,
+    },
+    preferences: {
+      notifications: {
+        email: { type: Boolean, default: true },
+        browser: { type: Boolean, default: true },
+        mobile: { type: Boolean, default: false },
+      },
+      theme: {
+        type: String,
+        enum: ['light', 'dark', 'auto'],
+        default: 'auto',
+      },
+      language: {
+        type: String,
+        default: 'en',
+      },
+    },
+    adminNotes: {
+      type: String,
+      maxlength: 1000,
+    },
+    lastActiveAt: {
+      type: Date,
+      default: Date.now,
+    },
+    loginCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {

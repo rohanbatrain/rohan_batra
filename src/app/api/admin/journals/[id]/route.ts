@@ -19,7 +19,7 @@ const JournalUpdateSchema = z.object({
 // GET /api/admin/journals/[id] - Get a specific journal entry
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -41,7 +41,7 @@ export async function GET(
 
     await connectToDatabase();
 
-    const { id } = params;
+    const { id } = await params;
 
     // Build filter - editors can only access their own journals
     const filter: Record<string, unknown> = { _id: id };
@@ -68,7 +68,7 @@ export async function GET(
 // PUT /api/admin/journals/[id] - Update a specific journal entry
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -88,7 +88,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const validatedData = JournalUpdateSchema.parse(body);
 
@@ -141,7 +141,7 @@ export async function PUT(
 // DELETE /api/admin/journals/[id] - Delete a specific journal entry
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -161,7 +161,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     await connectToDatabase();
 

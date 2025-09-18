@@ -185,6 +185,7 @@ export async function POST(request: NextRequest) {
       viewCount: savedPost.viewCount,
       likeCount: savedPost.likeCount,
       commentCount: savedPost.commentCount,
+      attachedAssets: savedPost.attachedAssets || [],
       authorId: savedPost.author._id.toString(),
       publishedAt: savedPost.publishedAt,
       createdAt: savedPost.createdAt,

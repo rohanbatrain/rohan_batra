@@ -22,7 +22,7 @@ const JournalSchema = z.object({
 // GET /api/admin/characters/[id]/journals - Get all journals for a character
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -44,7 +44,7 @@ export async function GET(
 
     await connectToDatabase();
 
-    const { id: characterId } = params;
+    const { id: characterId } = await params;
 
     // Verify character exists and user has access
     const characterFilter: Record<string, unknown> = { _id: characterId };
@@ -110,7 +110,7 @@ export async function GET(
 // POST /api/admin/characters/[id]/journals - Create a new journal entry
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -130,7 +130,7 @@ export async function POST(
       );
     }
 
-    const { id: characterId } = params;
+    const { id: characterId } = await params;
     const body = await request.json();
     const validatedData = JournalSchema.parse(body);
 

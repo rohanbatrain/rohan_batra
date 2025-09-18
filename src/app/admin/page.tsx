@@ -216,7 +216,7 @@ export default function AdminDashboardPage() {
             Content Management
           </h2>
         </div>
-        
+
         <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
           <div className='bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700'>
             <div className='flex items-center'>
@@ -354,7 +354,7 @@ export default function AdminDashboardPage() {
             Writing & Characters
           </h2>
         </div>
-        
+
         <div className='grid grid-cols-1 md:grid-cols-1 gap-6'>
           <div className='bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700'>
             <div className='flex items-center'>
@@ -408,7 +408,7 @@ export default function AdminDashboardPage() {
             Community & Engagement
           </h2>
         </div>
-        
+
         <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
           <div className='bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700'>
             <div className='flex items-center'>

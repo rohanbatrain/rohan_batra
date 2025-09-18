@@ -21,7 +21,7 @@ const BookUpdateSchema = z.object({
 // GET /api/admin/books/[id] - Get a specific book
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -43,7 +43,7 @@ export async function GET(
 
     await connectToDatabase();
 
-    const { id } = params;
+    const { id } = await params;
 
     // Build filter - editors can only access their own books
     const filter: Record<string, unknown> = { _id: id };
@@ -67,10 +67,10 @@ export async function GET(
   }
 }
 
-// PUT /api/admin/books/[id] - Update a specific book
+// PUT /api/admin/books/[id] - Update a book
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -90,7 +90,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const validatedData = BookUpdateSchema.parse(body);
 
@@ -102,24 +102,20 @@ export async function PUT(
       filter.authorId = userId;
     }
 
-    // Check if book exists and user has permission
-    const existingBook = await BookModel.findOne(filter);
-
-    if (!existingBook) {
-      return NextResponse.json({ error: 'Book not found' }, { status: 404 });
-    }
-
-    // Update the book
-    const updatedBook = await BookModel.findOneAndUpdate(
+    const book = await BookModel.findOneAndUpdate(
       filter,
       {
         ...validatedData,
         updatedAt: new Date(),
       },
-      { new: true, lean: true }
-    );
+      { new: true, runValidators: true }
+    ).lean();
 
-    return NextResponse.json(updatedBook);
+    if (!book) {
+      return NextResponse.json({ error: 'Book not found' }, { status: 404 });
+    }
+
+    return NextResponse.json(book);
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -136,10 +132,10 @@ export async function PUT(
   }
 }
 
-// DELETE /api/admin/books/[id] - Delete a specific book
+// DELETE /api/admin/books/[id] - Delete a book
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -148,36 +144,26 @@ export async function DELETE(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for editor/admin role
+    // Check for admin role (only admins can delete books)
     const metadata = sessionClaims?.metadata as { role?: string } | undefined;
     const userRole = metadata?.role || 'user';
 
-    if (!['editor', 'admin'].includes(userRole)) {
+    if (userRole !== 'admin') {
       return NextResponse.json(
         { error: 'Insufficient permissions' },
         { status: 403 }
       );
     }
 
-    const { id } = params;
-
     await connectToDatabase();
 
-    // Build filter - editors can only delete their own books
-    const filter: Record<string, unknown> = { _id: id };
-    if (userRole === 'editor') {
-      filter.authorId = userId;
-    }
+    const { id } = await params;
 
-    // Check if book exists and user has permission
-    const existingBook = await BookModel.findOne(filter);
+    const deletedBook = await BookModel.findByIdAndDelete(id);
 
-    if (!existingBook) {
+    if (!deletedBook) {
       return NextResponse.json({ error: 'Book not found' }, { status: 404 });
     }
-
-    // Delete the book
-    await BookModel.findOneAndDelete(filter);
 
     return NextResponse.json({ message: 'Book deleted successfully' });
   } catch (error) {

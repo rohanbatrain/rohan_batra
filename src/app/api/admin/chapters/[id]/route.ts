@@ -20,7 +20,7 @@ const ChapterUpdateSchema = z.object({
 // GET /api/admin/chapters/[id] - Get a specific chapter
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -42,7 +42,7 @@ export async function GET(
 
     await connectToDatabase();
 
-    const { id } = params;
+    const { id } = await params;
 
     // Build filter - editors can only access their own chapters
     const filter: Record<string, unknown> = { _id: id };
@@ -69,7 +69,7 @@ export async function GET(
 // PUT /api/admin/chapters/[id] - Update a specific chapter
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -89,7 +89,7 @@ export async function PUT(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const validatedData = ChapterUpdateSchema.parse(body);
 
@@ -170,7 +170,7 @@ export async function PUT(
 // DELETE /api/admin/chapters/[id] - Delete a specific chapter
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -190,7 +190,7 @@ export async function DELETE(
       );
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     await connectToDatabase();
 

@@ -181,8 +181,6 @@ const DEMO_PROJECTS = [
       live: 'https://ai-tasks.app',
       github: 'https://github.com/example/ai-task-manager',
     },
-  },
-];
     seo: {
       title: 'AI Task Management Platform - Smart Productivity Solution',
       description: 'Revolutionary task management platform powered by AI for intelligent prioritization and automated scheduling.',

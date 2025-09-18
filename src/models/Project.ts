@@ -55,10 +55,27 @@ const ProjectSchema = new Schema<IProject>(
     },
     images: [
       {
-        type: String,
-        trim: true,
+        type: Schema.Types.ObjectId,
+        ref: 'Asset',
       },
     ],
+    gallery: [
+      {
+        asset: {
+          type: Schema.Types.ObjectId,
+          ref: 'Asset',
+        },
+        caption: String,
+        order: {
+          type: Number,
+          default: 0,
+        },
+      },
+    ],
+    featuredImage: {
+      type: Schema.Types.ObjectId,
+      ref: 'Asset',
+    },
     demoUrl: {
       type: String,
       trim: true,

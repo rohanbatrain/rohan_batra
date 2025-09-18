@@ -7,7 +7,14 @@ export interface BlogPost {
   markdown?: string;
   contentType: 'html' | 'rich-text' | 'markdown';
   featuredImage?: string;
+  featuredImageUrl?: string;
   images: string[];
+  attachedAssets: Array<{
+    asset: string;
+    usage: 'featured' | 'content' | 'gallery' | 'attachment';
+    caption?: string;
+    altText?: string;
+  }>;
   category: string;
   tags: string[];
   status: 'draft' | 'published' | 'archived';

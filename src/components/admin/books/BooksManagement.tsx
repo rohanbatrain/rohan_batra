@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '@clerk/nextjs';
 
 interface Book {
   _id: string;
@@ -34,7 +35,9 @@ interface BooksManagementProps {
   userRole: string;
 }
 
-export default function BooksManagement({ userRole }: BooksManagementProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function BooksManagement(_: BooksManagementProps) {
+  const { isLoaded, isSignedIn } = useAuth();
   const [booksData, setBooksData] = useState<BooksData | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -51,14 +54,23 @@ export default function BooksManagement({ userRole }: BooksManagementProps) {
     targetWordCount: '',
   });
 
-  const fetchBooks = async () => {
+  const fetchBooks = useCallback(async () => {
+    // Don't fetch if authentication isn't loaded or user isn't signed in
+    if (!isLoaded || !isSignedIn) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (statusFilter) params.append('status', statusFilter);
 
-      const response = await fetch(`/api/admin/books?${params}`);
+      const response = await fetch(`/api/admin/books?${params}`, {
+        credentials: 'include', // Include cookies for Clerk session
+      });
+
       if (!response.ok) {
         throw new Error('Failed to fetch books');
       }
@@ -70,11 +82,11 @@ export default function BooksManagement({ userRole }: BooksManagementProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [isLoaded, isSignedIn, searchTerm, statusFilter]);
 
   useEffect(() => {
     fetchBooks();
-  }, [searchTerm, statusFilter]);
+  }, [fetchBooks]);
 
   const handleCreateBook = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,6 +166,14 @@ export default function BooksManagement({ userRole }: BooksManagementProps) {
     if (!target || target === 0) return 0;
     return Math.min((current / target) * 100, 100);
   };
+
+  if (!isLoaded) {
+    return <div className='text-center py-8'>Loading...</div>;
+  }
+
+  if (!isSignedIn) {
+    return <div className='text-center py-8'>Please sign in to continue.</div>;
+  }
 
   if (loading) {
     return <div className='text-center py-8'>Loading books...</div>;

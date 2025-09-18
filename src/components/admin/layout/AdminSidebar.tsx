@@ -12,6 +12,8 @@ import {
   Settings,
   BookOpen,
   Users2,
+  BarChart3,
+  Database,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,6 +34,12 @@ const navItems: NavItem[] = [
     href: '/admin',
     icon: LayoutDashboard,
     roles: ['editor', 'admin'],
+  },
+  {
+    name: 'Analytics',
+    href: '/admin/analytics',
+    icon: BarChart3,
+    roles: ['admin'],
   },
   {
     name: 'Blog Posts',
@@ -67,6 +75,12 @@ const navItems: NavItem[] = [
     name: 'Users',
     href: '/admin/users',
     icon: Users,
+    roles: ['admin'],
+  },
+  {
+    name: 'Cache',
+    href: '/admin/cache',
+    icon: Database,
     roles: ['admin'],
   },
   {

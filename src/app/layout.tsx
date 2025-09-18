@@ -4,6 +4,7 @@ import './globals.css';
 import { ClerkProvider } from '@clerk/nextjs';
 import { ThemeProvider } from '@/lib/theme-provider';
 import { LayoutWrapper } from '../components/LayoutWrapper';
+import { Toaster } from '@/components/ui/toaster';
 import {
   generateMetadata as generateSEOMetadata,
   generateWebsiteStructuredData,
@@ -58,6 +59,7 @@ export default function RootLayout({
         <ClerkProvider>
           <ThemeProvider>
             <LayoutWrapper>{children}</LayoutWrapper>
+            <Toaster />
           </ThemeProvider>
         </ClerkProvider>
       </body>

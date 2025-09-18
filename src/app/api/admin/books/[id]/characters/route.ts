@@ -36,7 +36,7 @@ const CharacterSchema = z.object({
 // GET /api/admin/books/[id]/characters - Get all characters for a book
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -58,7 +58,7 @@ export async function GET(
 
     await connectToDatabase();
 
-    const { id: bookId } = params;
+    const { id: bookId } = await params;
 
     // Verify book exists and user has access
     const bookFilter: Record<string, unknown> = { _id: bookId };
@@ -90,7 +90,7 @@ export async function GET(
 // POST /api/admin/books/[id]/characters - Create a new character
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, sessionClaims } = await auth();
@@ -110,7 +110,7 @@ export async function POST(
       );
     }
 
-    const { id: bookId } = params;
+    const { id: bookId } = await params;
     const body = await request.json();
     const validatedData = CharacterSchema.parse(body);
 

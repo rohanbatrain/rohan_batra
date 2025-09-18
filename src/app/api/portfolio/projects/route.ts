@@ -173,6 +173,8 @@ export async function POST(request: NextRequest) {
       description: savedProject.description,
       longDescription: savedProject.longDescription,
       images: savedProject.images,
+      gallery: savedProject.gallery || [],
+      featuredImage: savedProject.featuredImage,
       category: savedProject.category,
       technologies: savedProject.technologies,
       status: savedProject.status,

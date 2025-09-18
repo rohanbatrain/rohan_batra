@@ -13,7 +13,7 @@ interface LayoutWrapperProps {
 export function LayoutWrapper({ children }: LayoutWrapperProps) {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const pathname = usePathname();
-  
+
   // Hide header and footer on admin routes
   const isAdminRoute = pathname?.startsWith('/admin');
 
