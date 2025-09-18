@@ -6,12 +6,6 @@ export interface User {
   lastName: string;
   username?: string;
   avatar?: string;
-  avatarConfig?: {
-    style: 'adventurer' | 'avataaars' | 'big-ears' | 'bottts' | 'fun-emoji' | 'identicon' | 'lorelei' | 'micah' | 'miniavs' | 'open-peeps' | 'personas' | 'pixel-art';
-    seed: string;
-    backgroundColor: string;
-    radius: number;
-  };
   bio?: string;
   website?: string;
   location?: string;
@@ -43,12 +37,6 @@ export interface UserProfile {
   lastName: string;
   username?: string;
   avatar?: string;
-  avatarConfig?: {
-    style: 'adventurer' | 'avataaars' | 'big-ears' | 'bottts' | 'fun-emoji' | 'identicon' | 'lorelei' | 'micah' | 'miniavs' | 'open-peeps' | 'personas' | 'pixel-art';
-    seed: string;
-    backgroundColor: string;
-    radius: number;
-  };
   bio?: string;
   website?: string;
   location?: string;

@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  getBlogPostBySlug,
-  incrementBlogPostViewCount,
-} from '@/lib/blog-service';
+import { getBlogPostBySlug } from '@/lib/blog-service';
 
 interface RouteParams {
   params: Promise<{
@@ -37,11 +34,6 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
         { status: 404 }
       );
     }
-
-    // Increment view count asynchronously (don't await to avoid blocking response)
-    incrementBlogPostViewCount(slug).catch(error => {
-      console.error('Failed to increment view count:', error);
-    });
 
     return NextResponse.json({
       success: true,
