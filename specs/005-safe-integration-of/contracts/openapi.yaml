@@ -1,0 +1,121 @@
+openapi: 3.0.3
+info:
+  title: Safe Integration of Advanced Features API
+  version: 0.1.0
+servers:
+  - url: https://example.com
+paths:
+  /api/admin/blog-posts:
+    post:
+      summary: Create a blog post (backward-compatible with enhanced fields)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/BlogPostBase'
+                - $ref: '#/components/schemas/BlogPostEnhanced'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlogPostResponse'
+        '400':
+          description: Validation error
+  /api/admin/projects:
+    post:
+      summary: Create a project (backward-compatible with enhanced fields)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/ProjectBase'
+                - $ref: '#/components/schemas/ProjectEnhanced'
+      responses:
+        '201':
+          description: Created
+  /api/health/enhanced:
+    get:
+      summary: Get enhanced system health and feature status
+      responses:
+        '200':
+          description: Health check OK
+components:
+  schemas:
+    BlogPostBase:
+      type: object
+      required: [title, content, excerpt, category]
+      properties:
+        title: { type: string }
+        slug: { type: string }
+        excerpt: { type: string }
+        content: { type: string }
+        category: { type: string }
+        tags: { type: array, items: { type: string } }
+        status: { type: string, enum: [draft, published, archived] }
+        featured: { type: boolean }
+        featuredImage: { type: string }
+        seoTitle: { type: string }
+        seoDescription: { type: string }
+    BlogPostEnhanced:
+      allOf:
+        - $ref: '#/components/schemas/BlogPostBase'
+        - type: object
+          properties:
+            attachedAssets:
+              type: array
+              items:
+                type: object
+                properties:
+                  asset: { type: string, pattern: '^[a-f\\d]{24}$' }
+                  usage: { type: string, enum: [featured, content, gallery, attachment] }
+                  caption: { type: string }
+                  altText: { type: string }
+            seoMetadata:
+              type: object
+              properties:
+                keywords: { type: array, items: { type: string } }
+                ogImage: { type: string, format: uri }
+                twitterCard: { type: string }
+                structuredData: { type: object }
+    BlogPostResponse:
+      type: object
+      properties:
+        success: { type: boolean }
+        post:
+          type: object
+          properties:
+            id: { type: string }
+            title: { type: string }
+            slug: { type: string }
+            status: { type: string }
+            category: { type: string }
+            tags: { type: array, items: { type: string } }
+            author: { type: object }
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+            attachedAssets: { type: array, items: { type: object } }
+            seoMetadata: { type: object }
+    ProjectBase:
+      type: object
+      required: [title, description, category]
+      properties:
+        title: { type: string }
+        description: { type: string }
+        category: { type: string }
+        technologies: { type: array, items: { type: string } }
+        links: { type: object }
+    ProjectEnhanced:
+      allOf:
+        - $ref: '#/components/schemas/ProjectBase'
+        - type: object
+          properties:
+            categories: { type: array, items: { type: string } }
+            galleryAssets: { type: array, items: { type: object } }
+            timeline: { type: object }
+            clientInfo: { type: object }
