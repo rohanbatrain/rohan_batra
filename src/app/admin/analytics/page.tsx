@@ -621,9 +621,9 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='space-y-3'>
-                  {data.trends.popular.slice(0, 5).map(item => (
+                  {data.trends.popular.slice(0, 5).map((item, idx) => (
                     <div
-                      key={item._id}
+                      key={item._id || item.id || `${item.title}-${idx}`}
                       className='flex items-center justify-between'
                     >
                       <div className='flex-1 min-w-0'>
@@ -652,9 +652,9 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='space-y-3'>
-                  {data.recentActivity.blogPosts.map(post => (
+                  {data.recentActivity.blogPosts.map((post, idx) => (
                     <div
-                      key={post._id}
+                      key={post._id || post.id || `${post.title}-${idx}`}
                       className='flex items-center justify-between'
                     >
                       <div>
@@ -683,8 +683,11 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='space-y-3'>
-                  {data.recentActivity.comments.map(comment => (
-                    <div key={comment._id} className='space-y-1'>
+                  {data.recentActivity.comments.map((comment, idx) => (
+                    <div
+                      key={comment._id || comment.id || `${comment.createdAt}-${idx}`}
+                      className='space-y-1'
+                    >
                       <div className='flex items-center justify-between'>
                         <p className='text-xs text-gray-500'>
                           {typeof comment.author === 'string'
@@ -717,9 +720,9 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='space-y-3'>
-                  {data.recentActivity.users.map(user => (
+                  {data.recentActivity.users.map((user, idx) => (
                     <div
-                      key={user._id}
+                      key={user._id || user.id || user.email || `${user.name}-${idx}`}
                       className='flex items-center justify-between'
                     >
                       <div>
@@ -740,9 +743,9 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className='space-y-3'>
-                  {data.recentActivity.projects.map(project => (
+                  {data.recentActivity.projects.map((project, idx) => (
                     <div
-                      key={project._id}
+                      key={project._id || project.id || `${project.title}-${idx}`}
                       className='flex items-center justify-between'
                     >
                       <div>

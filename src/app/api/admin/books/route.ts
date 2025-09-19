@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/mongodb';
 import BookModel from '@/models/Book';
 import { z } from 'zod';
+import User from '@/models/User';
 
 // Validation schema for book creation/update
 const BookSchema = z.object({
@@ -22,15 +23,15 @@ const BookSchema = z.object({
 // GET /api/admin/books - List all books with filtering and pagination
 export async function GET(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
+    await connectToDatabase();
+    const currentUser = await User.findOne({ clerkId: userId });
+    const userRole = currentUser?.role || 'user';
 
     if (!['editor', 'admin'].includes(userRole)) {
       return NextResponse.json(
@@ -38,8 +39,6 @@ export async function GET(request: NextRequest) {
         { status: 403 }
       );
     }
-
-    await connectToDatabase();
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
@@ -70,8 +69,8 @@ export async function GET(request: NextRequest) {
     }
 
     // If user is editor, only show their books
-    if (userRole === 'editor') {
-      filter.authorId = userId;
+    if (userRole === 'editor' && currentUser?._id) {
+      filter.authorId = currentUser._id;
     }
 
     const skip = (page - 1) * limit;
@@ -88,7 +87,9 @@ export async function GET(request: NextRequest) {
 
     // Calculate stats
     const stats = await BookModel.aggregate([
-      ...(userRole === 'editor' ? [{ $match: { authorId: userId } }] : []),
+      ...(userRole === 'editor' && currentUser?._id
+        ? [{ $match: { authorId: currentUser._id } }]
+        : []),
       {
         $group: {
           _id: '$status',
@@ -136,15 +137,15 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/books - Create a new book
 export async function POST(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
+    await connectToDatabase();
+    const currentUser = await User.findOne({ clerkId: userId });
+    const userRole = currentUser?.role || 'user';
 
     if (!['editor', 'admin'].includes(userRole)) {
       return NextResponse.json(
@@ -156,12 +157,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = BookSchema.parse(body);
 
-    await connectToDatabase();
-
     // Create new book
     const book = new BookModel({
       ...validatedData,
-      authorId: userId,
+      authorId: currentUser?._id,
       currentWordCount: 0,
       createdAt: new Date(),
       updatedAt: new Date(),

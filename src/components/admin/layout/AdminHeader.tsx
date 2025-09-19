@@ -1,6 +1,6 @@
 'use client';
 
-import { UserButton } from '@clerk/nextjs';
+import { UserButton, useAuth } from '@clerk/nextjs';
 import { Bell, Search } from 'lucide-react';
 
 interface AdminHeaderProps {
@@ -12,6 +12,7 @@ interface AdminHeaderProps {
 }
 
 export default function AdminHeader({ user, userRole }: AdminHeaderProps) {
+  const { isLoaded } = useAuth();
   return (
     <header className='bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
       <div className='px-6 py-4'>
@@ -48,13 +49,20 @@ export default function AdminHeader({ user, userRole }: AdminHeaderProps) {
                   {userRole}
                 </div>
               </div>
-              <UserButton
-                appearance={{
-                  elements: {
-                    avatarBox: 'h-8 w-8',
-                  },
-                }}
-              />
+              {isLoaded ? (
+                <UserButton
+                  appearance={{
+                    elements: {
+                      avatarBox: 'h-8 w-8',
+                    },
+                  }}
+                />
+              ) : (
+                <div
+                  aria-hidden
+                  className='h-8 w-8 rounded-full bg-gray-200 dark:bg-gray-700'
+                />
+              )}
             </div>
           </div>
         </div>

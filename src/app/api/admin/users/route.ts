@@ -99,7 +99,7 @@ export async function GET(request: NextRequest) {
       .sort(sort)
       .skip(skip)
       .limit(limit)
-      .select('-clerkId -__v');
+      .select('-__v');
 
     const totalUsers = await User.countDocuments(filter);
     const totalPages = Math.ceil(totalUsers / limit);
@@ -142,23 +142,29 @@ export async function GET(request: NextRequest) {
     const response = {
       success: true,
       users: users.map(u => ({
+        id: String(u._id),
         _id: u._id,
-        name: u.name,
+        clerkId: u.clerkId,
         email: u.email,
+        firstName: u.firstName,
+        lastName: u.lastName,
+        username: u.username,
         role: u.role,
+        isActive: u.isActive,
         status: u.status,
-        profile: u.profile,
-        preferences: u.preferences,
         createdAt: u.createdAt,
         updatedAt: u.updatedAt,
         lastLoginAt: u.lastLoginAt,
         loginCount: u.loginCount,
         emailVerified: u.emailVerified,
+        // Keep profile/preferences if present
+        profile: u.profile,
+        preferences: u.preferences,
         activity: includeActivity
           ? {
-              postsCount: 0, // Would be calculated from BlogPost collection
-              commentsCount: 0, // Would be calculated from Comment collection
-              likesCount: 0, // Would be calculated from Like collection
+              postsCount: 0,
+              commentsCount: 0,
+              likesCount: 0,
             }
           : undefined,
       })),
@@ -187,7 +193,7 @@ export async function GET(request: NextRequest) {
       },
       metadata: {
         generatedAt: new Date().toISOString(),
-        requestedBy: user.name,
+        requestedBy: user.email,
       },
     };
 

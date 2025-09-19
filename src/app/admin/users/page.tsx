@@ -148,6 +148,50 @@ export default function UsersManagementPage() {
     }
   };
 
+  const deleteUser = async (userId: string) => {
+    if (
+      !confirm(
+        'Permanently delete this user? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+    try {
+      const response = await fetch(
+        `/api/admin/users/${userId}?permanent=true`,
+        {
+          method: 'DELETE',
+          credentials: 'include',
+        }
+      );
+
+      if (!response.ok) {
+        let message = 'Failed to delete user';
+        try {
+          const err = await response.json();
+          message = err?.error || err?.message || message;
+        } catch {}
+        if (response.status === 401) message = 'Please sign in to continue';
+        if (response.status === 403) message = 'You do not have access';
+        throw new Error(message);
+      }
+
+      const result = await response.json();
+      toast({
+        title: 'Deleted',
+        description:
+          result?.message || result?.data?.message || 'User deleted successfully',
+      });
+      fetchUsers();
+    } catch (e) {
+      toast({
+        title: 'Error',
+        description: e instanceof Error ? e.message : 'Failed to delete user',
+        variant: 'destructive',
+      });
+    }
+  };
+
   const getRoleBadge = (role: string) => {
     const colors = {
       admin: 'bg-red-100 text-red-800',
@@ -322,6 +366,14 @@ export default function UsersManagementPage() {
                       onClick={() => toggleUserStatus(user.id, user.isActive)}
                     >
                       {user.isActive ? 'Deactivate' : 'Activate'}
+                    </Button>
+
+                    <Button
+                      variant='destructive'
+                      size='sm'
+                      onClick={() => deleteUser(user.id)}
+                    >
+                      Delete
                     </Button>
                   </div>
                 </div>

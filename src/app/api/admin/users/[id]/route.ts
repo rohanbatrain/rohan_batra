@@ -8,6 +8,7 @@ const UserUpdateSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   email: z.string().email().optional(),
   role: z.enum(['admin', 'editor', 'user']).optional(),
+  isActive: z.boolean().optional(),
   status: z.enum(['active', 'inactive', 'suspended']).optional(),
   profile: z
     .object({
@@ -190,6 +191,7 @@ export async function PUT(
         name: updatedUser.name,
         email: updatedUser.email,
         role: updatedUser.role,
+        isActive: updatedUser.isActive,
         status: updatedUser.status,
         profile: updatedUser.profile,
         preferences: updatedUser.preferences,
@@ -318,6 +320,7 @@ export async function PATCH(
           name: updatedUser.name,
           email: updatedUser.email,
           role: updatedUser.role,
+          isActive: updatedUser.isActive,
           status: updatedUser.status,
           profile: updatedUser.profile,
           preferences: updatedUser.preferences,

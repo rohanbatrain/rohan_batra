@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/mongodb';
 import BookModel from '@/models/Book';
 import { z } from 'zod';
+import User from '@/models/User';
 
 // Validation schema for book update
 const BookUpdateSchema = z.object({
@@ -24,15 +25,15 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
+    await connectToDatabase();
+    const currentUser = await User.findOne({ clerkId: userId });
+    const userRole = currentUser?.role || 'user';
 
     if (!['editor', 'admin'].includes(userRole)) {
       return NextResponse.json(
@@ -41,14 +42,12 @@ export async function GET(
       );
     }
 
-    await connectToDatabase();
-
     const { id } = await params;
 
     // Build filter - editors can only access their own books
     const filter: Record<string, unknown> = { _id: id };
-    if (userRole === 'editor') {
-      filter.authorId = userId;
+    if (userRole === 'editor' && currentUser?._id) {
+      filter.authorId = currentUser._id;
     }
 
     const book = await BookModel.findOne(filter).lean();
@@ -73,15 +72,15 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
+    await connectToDatabase();
+    const currentUser = await User.findOne({ clerkId: userId });
+    const userRole = currentUser?.role || 'user';
 
     if (!['editor', 'admin'].includes(userRole)) {
       return NextResponse.json(
@@ -94,12 +93,10 @@ export async function PUT(
     const body = await request.json();
     const validatedData = BookUpdateSchema.parse(body);
 
-    await connectToDatabase();
-
     // Build filter - editors can only update their own books
     const filter: Record<string, unknown> = { _id: id };
-    if (userRole === 'editor') {
-      filter.authorId = userId;
+    if (userRole === 'editor' && currentUser?._id) {
+      filter.authorId = currentUser._id;
     }
 
     const book = await BookModel.findOneAndUpdate(
@@ -138,15 +135,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for admin role (only admins can delete books)
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
+  await connectToDatabase();
+  const currentUser = await User.findOne({ clerkId: userId });
+  const userRole = currentUser?.role || 'user';
 
     if (userRole !== 'admin') {
       return NextResponse.json(
@@ -154,8 +151,6 @@ export async function DELETE(
         { status: 403 }
       );
     }
-
-    await connectToDatabase();
 
     const { id } = await params;
 
