@@ -50,6 +50,8 @@ export default function PortfolioManagementPage() {
   const [filters, setFilters] = useState({
     status: '',
     search: '',
+    featured: '',
+    technology: '',
   });
   const router = useRouter();
 
@@ -84,24 +86,24 @@ export default function PortfolioManagementPage() {
     }
   };
 
-  const handleDelete = async (projectId: string) => {
-    if (!confirm('Are you sure you want to delete this project?')) {
+  const handleMoveToTrash = async (projectId: string) => {
+    if (!confirm('Move this project to trash? You can permanently delete it later from Trash.')) {
       return;
     }
 
     try {
-      const response = await fetch(`/api/admin/portfolio/${projectId}`, {
+      const response = await fetch(`/api/admin/portfolio/${projectId}?trash=true`, {
         method: 'DELETE',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete project');
+        throw new Error('Failed to move project to trash');
       }
 
       fetchProjects();
     } catch (err) {
       alert(
-        'Failed to delete project: ' +
+        'Failed to move project to trash: ' +
           (err instanceof Error ? err.message : 'Unknown error')
       );
     }
@@ -332,10 +334,10 @@ export default function PortfolioManagementPage() {
                     Edit
                   </button>
                   <button
-                    onClick={() => handleDelete(project._id)}
+                    onClick={() => handleMoveToTrash(project._id)}
                     className='text-xs text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300'
                   >
-                    Delete
+                    Move to Trash
                   </button>
                 </div>
               </div>

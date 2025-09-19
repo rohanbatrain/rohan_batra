@@ -11,6 +11,7 @@ import { blogPostCircuitBreaker } from '@/lib/circuit-breaker';
 const BlogPostCreateSchema = z.object({
   title: z.string().min(1).max(200),
   content: z.string().min(1),
+  markdown: z.string().optional(),
   excerpt: z.string().min(1).max(300),
   slug: z.string().min(1).max(100),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
@@ -420,6 +421,8 @@ export async function POST(request: NextRequest) {
       slug: filteredData.slug,
       excerpt: filteredData.excerpt,
       content: filteredData.content,
+      markdown: filteredData.markdown || undefined,
+      contentType: filteredData.markdown ? 'markdown' : 'html',
       category: filteredData.category,
       tags: filteredData.tags,
       status: filteredData.status,

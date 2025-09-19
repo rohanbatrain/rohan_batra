@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import Image from 'next/image';
+import { resolveAssetUrl } from '@/lib/assets';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -16,12 +17,24 @@ import {
   User,
 } from 'lucide-react';
 import { BlogPostWithAuthor } from '@/types/blog-post';
+import RichEditor from '@/components/admin/RichEditor';
 
 interface BlogPostClientProps {
   post: BlogPostWithAuthor;
 }
 
 export default function BlogPostClient({ post }: BlogPostClientProps) {
+  const isJsonContent = useMemo(() => {
+    if (!post?.content) return false;
+    const trimmed = post.content.trim();
+    if (!(trimmed.startsWith('{') || trimmed.startsWith('['))) return false;
+    try {
+      JSON.parse(trimmed);
+      return true;
+    } catch {
+      return false;
+    }
+  }, [post?.content]);
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post.likeCount || 0);
 
@@ -179,7 +192,7 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
           >
             <div className='relative aspect-video rounded-xl overflow-hidden'>
               <Image
-                src={post.featuredImage}
+                src={resolveAssetUrl(post.featuredImage) as string}
                 alt={post.title}
                 fill
                 className='object-cover'
@@ -190,15 +203,26 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
         )}
 
         {/* Content */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className='prose prose-lg dark:prose-invert max-w-none'
-          dangerouslySetInnerHTML={{
-            __html: post.content.replace(/\n/g, '<br>'),
-          }}
-        />
+        {isJsonContent ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className='prose prose-lg dark:prose-invert max-w-none'
+          >
+            <RichEditor content={post.content} editable={false} />
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className='prose prose-lg dark:prose-invert max-w-none'
+            dangerouslySetInnerHTML={{
+              __html: post.content.replace(/\n/g, '<br>'),
+            }}
+          />
+        )}
 
         {/* Author Bio */}
         <motion.div

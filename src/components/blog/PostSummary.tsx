@@ -2,6 +2,7 @@
 
 import { BlogPostWithAuthor } from '@/types/blog-post';
 import Image from 'next/image';
+import { resolveAssetUrl } from '@/lib/assets';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Calendar, Clock, Eye, Heart, MessageCircle } from 'lucide-react';
@@ -28,7 +29,7 @@ export function PostSummary({ post, index = 0 }: PostSummaryProps) {
       {post.featuredImage && (
         <div className='relative h-48 overflow-hidden'>
           <Image
-            src={post.featuredImage}
+            src={resolveAssetUrl(post.featuredImage) as string}
             alt={post.title}
             fill
             className='object-cover transition-transform duration-300 group-hover:scale-105'
@@ -121,7 +122,7 @@ export function PostSummary({ post, index = 0 }: PostSummaryProps) {
             {post.author.avatar && (
               <div className='relative w-8 h-8 rounded-full overflow-hidden mr-3'>
                 <Image
-                  src={post.author.avatar}
+                  src={resolveAssetUrl(post.author.avatar) as string}
                   alt={`${post.author.firstName} ${post.author.lastName}`}
                   fill
                   className='object-cover'

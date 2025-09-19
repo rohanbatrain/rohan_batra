@@ -58,6 +58,22 @@ export default function BlogManagementPage() {
     published: '',
     category: '',
   });
+  const [useRich, setUseRich] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/settings?category=features', { credentials: 'include' });
+        if (!res.ok) return;
+        const body = await res.json();
+        const arr = (body?.settings ?? body?.data?.settings ?? []) as Array<{ key: string; value: any }>;
+        const match = arr.find(s => s.key === 'features.richeditor');
+        if (!cancelled) setUseRich(Boolean(match?.value));
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     fetchPosts();
@@ -166,7 +182,7 @@ export default function BlogManagementPage() {
           Blog Management
         </h1>
         <button 
-          onClick={() => router.push('/admin/blog/create')}
+          onClick={() => router.push(useRich ? '/admin/unstable/blog/new' : '/admin/blog/create')}
           className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium'
         >
           Create New Post

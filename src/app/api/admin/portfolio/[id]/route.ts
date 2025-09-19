@@ -301,8 +301,9 @@ export async function DELETE(
       );
     }
 
-    const url = new URL(request.url);
-    const permanent = url.searchParams.get('permanent') === 'true';
+  const url = new URL(request.url);
+  const permanent = url.searchParams.get('permanent') === 'true';
+  const toTrash = url.searchParams.get('trash') === 'true';
 
     const project = await Project.findById(id);
 
@@ -334,7 +335,7 @@ export async function DELETE(
         userId: user._id,
         userName: user.name,
         timestamp: currentTime,
-        metadata: { reason: 'Admin deletion' },
+        metadata: { reason: toTrash ? 'Move to trash' : 'Admin deletion' },
       };
 
       const deletedProject = await Project.findByIdAndUpdate(
@@ -352,7 +353,7 @@ export async function DELETE(
 
       return NextResponse.json({
         success: true,
-        message: 'Project soft deleted',
+        message: toTrash ? 'Moved to trash' : 'Project soft deleted',
         project: {
           _id: deletedProject._id,
           title: deletedProject.title,

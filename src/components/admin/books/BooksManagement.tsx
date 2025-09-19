@@ -141,10 +141,10 @@ export default function BooksManagement(_: BooksManagementProps) {
   };
 
   const handleDeleteBook = async (bookId: string) => {
-    if (!confirm('Are you sure you want to delete this book?')) return;
+    if (!confirm('Move this book to trash? You can permanently delete it later from Trash.')) return;
 
     try {
-      const response = await fetch(`/api/admin/books/${bookId}`, {
+      const response = await fetch(`/api/admin/books/${bookId}?trash=true`, {
         method: 'DELETE',
         credentials: 'include',
       });
@@ -160,11 +160,11 @@ export default function BooksManagement(_: BooksManagementProps) {
         throw new Error(message);
       }
 
-      alert('Book deleted successfully');
+      alert('Book moved to trash');
       fetchBooks();
     } catch (error) {
-      console.error('Error deleting book:', error);
-      alert('Failed to delete book');
+      console.error('Error trashing book:', error);
+      alert('Failed to move book to trash');
     }
   };
 

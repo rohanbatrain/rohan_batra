@@ -171,7 +171,7 @@ export async function GET(request: NextRequest) {
     const includeAnalytics =
       url.searchParams.get('includeAnalytics') === 'true';
 
-    const filter: Record<string, unknown> = {};
+  const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
 
     if (status) {
       filter.status = status;
@@ -216,6 +216,7 @@ export async function GET(request: NextRequest) {
     const totalPages = Math.ceil(totalProjects / limit);
 
     const summary = await Project.aggregate([
+      { $match: { deletedAt: { $exists: false } } },
       {
         $facet: {
           statusBreakdown: [

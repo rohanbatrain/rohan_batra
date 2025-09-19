@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import RemoteLinkPicker, { AssetLinkItem } from '@/components/ui/RemoteLinkPicker';
 
 export default function CreateProjectPage() {
   const router = useRouter();
@@ -24,6 +25,7 @@ export default function CreateProjectPage() {
       documentation: '',
     },
   });
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const generateSlug = (title: string) => {
     return title
@@ -75,6 +77,16 @@ export default function CreateProjectPage() {
 
   return (
     <div className='space-y-6'>
+      <RemoteLinkPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(link: AssetLinkItem) => {
+          setFormData(prev => ({ ...prev, featuredImage: link.url }));
+          setPickerOpen(false);
+        }}
+        type='image'
+        title='Select Featured Image'
+      />
       <div className='flex items-center justify-between'>
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
           Create New Project
@@ -235,6 +247,16 @@ export default function CreateProjectPage() {
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               placeholder='https://example.com/image.jpg'
             />
+            <div className='mt-2 flex items-center gap-2'>
+              <button type='button' className='text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                onClick={() => setPickerOpen(true)}>
+                Pick from Remote Links
+              </button>
+              {formData.featuredImage && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={formData.featuredImage} alt='Preview' className='h-14 w-14 rounded object-cover border' />
+              )}
+            </div>
           </div>
 
           {/* Links */}

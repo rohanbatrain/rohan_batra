@@ -6,6 +6,7 @@ export interface ILottieAsset
     Document {
   _id: mongoose.Types.ObjectId;
   uploadedBy: mongoose.Types.ObjectId;
+  inlineData?: unknown;
 }
 
 const LottieAssetSchema = new Schema<ILottieAsset>(
@@ -65,6 +66,10 @@ const LottieAssetSchema = new Schema<ILottieAsset>(
     autoplay: {
       type: Boolean,
       default: false,
+    },
+    inlineData: {
+      type: Schema.Types.Mixed,
+      required: false,
     },
     tags: [
       {

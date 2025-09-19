@@ -1,185 +1,80 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/mongodb';
-import CharacterModel from '@/models/Character';
-import CharacterJournalModel from '@/models/CharacterJournal';
+import User from '@/models/User';
+import Character from '@/models/Character';
+import CharacterJournal from '@/models/CharacterJournal';
 import { z } from 'zod';
 
-// Validation schema for journal creation/update
-const JournalSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  content: z.string().optional(),
-  entryType: z
-    .enum(['backstory', 'development', 'notes', 'relationship'])
-    .default('notes'),
-  isPrivate: z.boolean().default(true),
-  tags: z.array(z.string()).optional(),
-  relatedCharacterIds: z.array(z.string()).optional(),
-  mood: z.string().optional(),
-  summary: z.string().optional(),
-});
-
-// GET /api/admin/characters/[id]/journals - Get all journals for a character
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
-
-    if (!['editor', 'admin'].includes(userRole)) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
     await connectToDatabase();
+    const me = await User.findOne({ clerkId: userId });
+    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    const { id } = await params;
+    const url = new URL(request.url);
+    const page = parseInt(url.searchParams.get('page') || '1');
+    const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
+    const status = url.searchParams.get('status');
 
-    const { id: characterId } = await params;
-
-    // Verify character exists and user has access
-    const characterFilter: Record<string, unknown> = { _id: characterId };
-    if (userRole === 'editor') {
-      characterFilter.authorId = userId;
-    }
-
-    const character = await CharacterModel.findOne(characterFilter);
-
-    if (!character) {
-      return NextResponse.json(
-        { error: 'Character not found' },
-        { status: 404 }
-      );
-    }
-
-    // Get query parameters for filtering
-    const { searchParams } = new URL(request.url);
-    const entryType = searchParams.get('entryType');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-
-    // Build filter for journals
-    const journalFilter: Record<string, unknown> = { characterId };
-    if (entryType) {
-      journalFilter.entryType = entryType;
-    }
-
+    const filter: Record<string, unknown> = { characterId: id, deletedAt: { $exists: false } };
+    if (status) filter.status = status;
     const skip = (page - 1) * limit;
 
-    // Get journals with pagination
-    const [journals, total] = await Promise.all([
-      CharacterJournalModel.find(journalFilter)
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .lean(),
-      CharacterJournalModel.countDocuments(journalFilter),
+    const [items, total] = await Promise.all([
+      CharacterJournal.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      CharacterJournal.countDocuments(filter),
     ]);
 
-    const totalPages = Math.ceil(total / limit);
-
-    return NextResponse.json({
-      journals,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages,
-        hasNextPage: page < totalPages,
-        hasPrevPage: page > 1,
-      },
-    });
-  } catch (error) {
-    console.error('Error fetching journals:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, journals: items, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+  } catch (e) {
+    return NextResponse.json({ success: false, error: 'Failed to list journals' }, { status: 500 });
   }
 }
 
-// POST /api/admin/characters/[id]/journals - Create a new journal entry
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+const CreateSchema = z.object({
+  title: z.string().min(1),
+  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  content: z.string().min(1),
+  status: z.enum(['draft', 'published', 'archived']).optional(),
+  entryDate: z.string().datetime().optional(),
+  mood: z.string().optional(),
+  location: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  isPrivate: z.boolean().optional(),
+});
+
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { userId, sessionClaims } = await auth();
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
-
-    if (!['editor', 'admin'].includes(userRole)) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
-    const { id: characterId } = await params;
-    const body = await request.json();
-    const validatedData = JournalSchema.parse(body);
-
+    const { userId } = await auth();
+    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
     await connectToDatabase();
-
-    // Verify character exists and user has access
-    const characterFilter: Record<string, unknown> = { _id: characterId };
-    if (userRole === 'editor') {
-      characterFilter.authorId = userId;
-    }
-
-    const character = await CharacterModel.findOne(characterFilter);
-
-    if (!character) {
-      return NextResponse.json(
-        { error: 'Character not found' },
-        { status: 404 }
-      );
-    }
-
-    // Create new journal entry
-    const journal = new CharacterJournalModel({
-      ...validatedData,
-      characterId,
-      authorId: userId,
+    const me = await User.findOne({ clerkId: userId });
+    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    const { id } = await params;
+    const character = await Character.findById(id);
+    if (!character) return NextResponse.json({ success: false, error: 'Character not found' }, { status: 404 });
+    const body = await request.json();
+    const data = CreateSchema.parse(body);
+    const journal = await CharacterJournal.create({
+      characterId: character._id,
       bookId: character.bookId,
-      slug: validatedData.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/(^-|-$)/g, ''),
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      title: data.title,
+      slug: data.slug,
+      content: data.content,
+      status: data.status || 'draft',
+      entryDate: data.entryDate ? new Date(data.entryDate) : undefined,
+      mood: data.mood,
+      location: data.location,
+      tags: data.tags || [],
+      isPrivate: data.isPrivate ?? false,
+      publishedAt: data.status === 'published' ? new Date() : undefined,
     });
-
-    const savedJournal = await journal.save();
-
-    return NextResponse.json(savedJournal, { status: 201 });
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      return NextResponse.json(
-        { error: 'Validation error', details: error.issues },
-        { status: 400 }
-      );
-    }
-
-    console.error('Error creating journal:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, journal });
+  } catch (e) {
+    if (e instanceof z.ZodError) return NextResponse.json({ success: false, error: 'Validation failed', details: e.issues }, { status: 400 });
+    return NextResponse.json({ success: false, error: 'Failed to create journal' }, { status: 500 });
   }
 }

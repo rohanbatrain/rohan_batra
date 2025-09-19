@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') === 'asc' ? 1 : -1;
 
     // Build filter query
-    const filter: Record<string, unknown> = {};
+  const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
 
     if (status) {
       filter.status = status;
@@ -87,6 +87,7 @@ export async function GET(request: NextRequest) {
 
     // Calculate stats
     const stats = await BookModel.aggregate([
+      { $match: { deletedAt: { $exists: false } } },
       ...(userRole === 'editor' && currentUser?._id
         ? [{ $match: { authorId: currentUser._id } }]
         : []),

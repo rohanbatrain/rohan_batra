@@ -19,6 +19,8 @@ export interface IBook extends Document {
   publishedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
+  deletedAt?: Date;
+  deletedBy?: mongoose.Types.ObjectId;
 }
 
 const BookSchema = new Schema<IBook>(
@@ -96,6 +98,8 @@ const BookSchema = new Schema<IBook>(
     publishedAt: {
       type: Date,
     },
+    deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   {
     timestamps: true,

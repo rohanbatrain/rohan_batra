@@ -4,15 +4,20 @@ export interface ICharacterJournal extends Document {
   _id: mongoose.Types.ObjectId;
   characterId: mongoose.Types.ObjectId;
   bookId: mongoose.Types.ObjectId;
+  slug: string;
   title: string;
   content: string; // Rich HTML content from Novel editor
   entryDate?: Date; // In-story date (optional)
   mood?: string;
   location?: string;
   tags: string[];
-  isPrivate: boolean; // Character's private thoughts vs shared
+  status: 'draft' | 'published' | 'archived';
+  publishedAt?: Date;
+  isPrivate: boolean; // Character's private thoughts vs shared (kept for backward compat)
   referencedChapters: mongoose.Types.ObjectId[];
   relatedCharacters: mongoose.Types.ObjectId[];
+  deletedAt?: Date;
+  deletedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +39,14 @@ const CharacterJournalSchema = new Schema<ICharacterJournal>(
       required: true,
       trim: true,
       maxlength: 200,
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
     },
     content: {
       type: String,
@@ -59,10 +72,9 @@ const CharacterJournalSchema = new Schema<ICharacterJournal>(
         lowercase: true,
       },
     ],
-    isPrivate: {
-      type: Boolean,
-      default: false,
-    },
+    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
+    publishedAt: { type: Date },
+    isPrivate: { type: Boolean, default: false },
     referencedChapters: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -75,6 +87,8 @@ const CharacterJournalSchema = new Schema<ICharacterJournal>(
         ref: 'Character',
       },
     ],
+    deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   {
     timestamps: true,
@@ -97,6 +111,8 @@ CharacterJournalSchema.index({ bookId: 1 });
 CharacterJournalSchema.index({ characterId: 1, createdAt: -1 });
 CharacterJournalSchema.index({ entryDate: -1 });
 CharacterJournalSchema.index({ isPrivate: 1 });
+CharacterJournalSchema.index({ status: 1, publishedAt: -1 });
+CharacterJournalSchema.index({ slug: 1 });
 
 // Instance methods
 CharacterJournalSchema.methods.isPublic = function (): boolean {

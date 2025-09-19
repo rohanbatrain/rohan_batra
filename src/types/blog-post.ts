@@ -72,6 +72,8 @@ export interface BlogPost {
   commentCount: number;
   authorId: string;
   publishedAt?: Date;
+  deletedAt?: Date | null;
+  deletedBy?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

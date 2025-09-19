@@ -1,11 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import RemoteLinkPicker, { AssetLinkItem } from '@/components/ui/RemoteLinkPicker';
 
 export default function CreateBlogPostPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [richEnabled, setRichEnabled] = useState<boolean>(false);
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -19,6 +22,7 @@ export default function CreateBlogPostPage() {
     seoTitle: '',
     seoDescription: '',
   });
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   const generateSlug = (title: string) => {
     return title
@@ -65,8 +69,49 @@ export default function CreateBlogPostPage() {
     }
   };
 
+  // Load features flags from settings (server-backed)
+  // We use the existing settings API to check `features.richEditor`
+  // and show a CTA to open the Novel editor flow when available.
+  React.useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/admin/settings?category=features', { credentials: 'include' });
+        if (!res.ok) return;
+  const body = await res.json();
+  const arr = (body?.settings ?? body?.data?.settings ?? []) as Array<{ key: string; value: any }>;
+  const match = arr.find(s => s.key === 'features.richeditor');
+        if (!cancelled) setRichEnabled(Boolean(match?.value));
+      } catch {
+        // ignore
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <div className='space-y-6'>
+      <RemoteLinkPicker
+        open={pickerOpen}
+        onClose={() => setPickerOpen(false)}
+        onSelect={(link: AssetLinkItem) => {
+          setFormData(prev => ({ ...prev, featuredImage: link.url }));
+          setPickerOpen(false);
+        }}
+        type='image'
+        title='Select Featured Image'
+      />
+      {richEnabled && (
+        <div className='p-4 border border-blue-200 rounded-lg bg-blue-50 text-blue-800 flex items-center justify-between'>
+          <div>
+            <p className='font-medium'>Novel editor is available</p>
+            <p className='text-sm opacity-80'>Switch to the enhanced writing experience to create your post.</p>
+          </div>
+          <Link href='/admin/unstable/blog/new' className='px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700'>
+            Use Novel Editor
+          </Link>
+        </div>
+      )}
       <div className='flex items-center justify-between'>
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
           Create New Blog Post
@@ -212,6 +257,16 @@ export default function CreateBlogPostPage() {
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               placeholder='https://example.com/image.jpg'
             />
+            <div className='mt-2 flex items-center gap-2'>
+              <button type='button' className='text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                onClick={() => setPickerOpen(true)}>
+                Pick from Remote Links
+              </button>
+              {formData.featuredImage && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={formData.featuredImage} alt='Preview' className='h-14 w-14 rounded object-cover border' />
+              )}
+            </div>
           </div>
 
           {/* SEO Fields */}

@@ -222,6 +222,13 @@ const BlogPostSchema = new Schema<IBlogPost>(
     publishedAt: {
       type: Date,
     },
+    deletedAt: {
+      type: Date,
+    },
+    deletedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
   },
   {
     timestamps: true,
@@ -248,6 +255,7 @@ BlogPostSchema.index({ publishedAt: -1 });
 BlogPostSchema.index({ createdAt: -1 });
 BlogPostSchema.index({ viewCount: -1 });
 BlogPostSchema.index({ likeCount: -1 });
+BlogPostSchema.index({ deletedAt: 1 });
 
 // Compound indexes for common queries
 BlogPostSchema.index({ status: 1, publishedAt: -1 });

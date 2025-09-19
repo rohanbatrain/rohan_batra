@@ -17,7 +17,8 @@ export interface IAsset extends Document {
   filename: string;
   originalFilename: string;
   url: string;
-  cloudinaryId: string;
+  cloudinaryId?: string;
+  driveFileId?: string;
   type: 'image' | 'video' | 'document' | 'lottie' | 'other';
   mimeType: string;
   size: number;
@@ -34,6 +35,7 @@ export interface IAsset extends Document {
   usageCount: number;
   lastUsed?: Date;
   metadata: Record<string, unknown>;
+  storageBackend: 'cloudinary' | 'google_drive';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -56,8 +58,20 @@ const AssetSchema = new Schema<IAsset>(
     },
     cloudinaryId: {
       type: String,
-      required: true,
+      required: function (this: any) {
+        return this.storageBackend === 'cloudinary';
+      },
       unique: true,
+      sparse: true,
+      index: true,
+    },
+    driveFileId: {
+      type: String,
+      required: function (this: any) {
+        return this.storageBackend === 'google_drive';
+      },
+      unique: true,
+      sparse: true,
       index: true,
     },
     type: {
@@ -134,6 +148,13 @@ const AssetSchema = new Schema<IAsset>(
       type: Schema.Types.Mixed,
       default: {},
     },
+    storageBackend: {
+      type: String,
+      enum: ['cloudinary', 'google_drive'],
+      required: true,
+      default: 'cloudinary',
+      index: true,
+    },
   },
   {
     timestamps: true,
@@ -150,6 +171,7 @@ AssetSchema.index({ folder: 1, createdAt: -1 });
 AssetSchema.index({ tags: 1, createdAt: -1 });
 AssetSchema.index({ isPublic: 1, createdAt: -1 });
 AssetSchema.index({ usageCount: -1 });
+AssetSchema.index({ storageBackend: 1, createdAt: -1 });
 
 // Text search index
 AssetSchema.index({
@@ -334,6 +356,7 @@ AssetSchema.methods = {
       usageCount: this.usageCount,
       isActive: this.isActive,
       uploadedBy: this.uploadedBy,
+      storageBackend: this.storageBackend,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
     };

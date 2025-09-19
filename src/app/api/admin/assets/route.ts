@@ -1,29 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import connectToDatabase from '@/lib/mongodb';
-import LottieAsset from '@/models/LottieAsset';
+import Asset from '@/models/Asset';
 import { blogPostCircuitBreaker } from '@/lib/circuit-breaker';
 import { featureFlags } from '@/lib/feature-flags';
+import User from '@/models/User';
 
 // GET /api/admin/assets - List all assets with pagination and filtering
 export async function GET(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check if user is admin
-    const userRole = sessionClaims?.metadata?.role;
-    if (userRole !== 'admin' && userRole !== 'editor') {
+    const me = await User.findOne({ clerkId: userId });
+    if (!me || (me.role !== 'admin' && me.role !== 'editor')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-    const category = searchParams.get('category');
+  const type = searchParams.get('type');
+  const category = searchParams.get('category');
     const search = searchParams.get('search');
     const isActive = searchParams.get('isActive');
 
@@ -31,21 +33,27 @@ export async function GET(request: NextRequest) {
 
     // Build query
     const query: any = {};
-    if (category) query.category = category;
+    if (type) query.type = type;
+    if (category) query.category = category; // note: Asset doesn't define category, kept for forward-compat
     if (isActive !== null) query.isActive = isActive === 'true';
     if (search) {
-      query.$text = { $search: search };
+      query.$or = [
+        { filename: { $regex: search, $options: 'i' } },
+        { originalFilename: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { tags: { $in: [new RegExp(search, 'i')] } },
+      ];
     }
 
     // Execute query with circuit breaker protection
     const result = await blogPostCircuitBreaker.execute(async () => {
       const [assets, total] = await Promise.all([
-        LottieAsset.find(query)
-          .populate('uploadedBy', 'id firstName lastName email')
+        Asset.find(query)
+          .populate('uploadedBy', 'name email')
           .sort({ createdAt: -1 })
           .skip((page - 1) * limit)
           .limit(limit),
-        LottieAsset.countDocuments(query)
+        Asset.countDocuments(query)
       ]);
 
       return { assets, total };
@@ -77,28 +85,29 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/admin/assets - Create new asset
+// POST /api/admin/assets - Create new asset (kept for future use)
 export async function POST(request: NextRequest) {
   try {
-    const { userId, sessionClaims } = await auth();
+  const { userId } = await auth();
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Check if user is admin or editor
-    const userRole = sessionClaims?.metadata?.role;
-    if (userRole !== 'admin' && userRole !== 'editor') {
+    const me = await User.findOne({ clerkId: userId });
+    if (!me || (me.role !== 'admin' && me.role !== 'editor')) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
     // Check if asset integration feature is enabled
     const featureFlagContext = {
       userId: userId,
-      userEmail: undefined, // Not available from Clerk session claims
-      userRole: userRole,
+      userEmail: undefined,
+      userRole: me.role,
       environment: process.env.NODE_ENV as 'development' | 'test' | 'production',
-    };    const hasAssetIntegration = featureFlags.isAdvancedFeatureEnabled('assetIntegration', featureFlagContext);
+    };
+    const hasAssetIntegration = featureFlags.isAdvancedFeatureEnabled('assetIntegration', featureFlagContext);
     if (!hasAssetIntegration.enabled) {
       return NextResponse.json(
         { error: 'Asset integration feature not available' },
@@ -106,62 +115,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
-    const {
-      name,
-      description,
-      fileName,
-      filePath,
-      fileSize,
-      mimeType,
-      width,
-      height,
-      frameRate,
-      duration,
-      loop = true,
-      autoplay = false,
-      tags = [],
-      category = 'other',
-    } = body;
-
-    // Validate required fields
-    if (!name || !fileName || !filePath || !fileSize || !mimeType) {
-      return NextResponse.json(
-        { error: 'Missing required fields: name, fileName, filePath, fileSize, mimeType' },
-        { status: 400 }
-      );
-    }
-
-    await connectToDatabase();
-
-    // Create new asset with circuit breaker protection
-    const asset = await blogPostCircuitBreaker.execute(async () => {
-      return await LottieAsset.create({
-        name,
-        description,
-        fileName,
-        filePath,
-        fileSize,
-        mimeType,
-        width,
-        height,
-        frameRate,
-        duration,
-        loop,
-        autoplay,
-        tags,
-        category,
-        uploadedBy: userId,
-      });
-    });
-
-    // Populate the uploadedBy field for response
-    await asset.populate('uploadedBy', 'id firstName lastName email');
-
-    return NextResponse.json({
-      success: true,
-      data: asset,
-    }, { status: 201 });
+    // This JSON-based create endpoint is not used (file uploads go to /uploads).
+    return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
 
   } catch (error) {
     console.error('Error creating asset:', error);

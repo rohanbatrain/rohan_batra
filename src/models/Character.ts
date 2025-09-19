@@ -2,7 +2,9 @@ import mongoose, { Schema, Document } from 'mongoose';
 
 export interface ICharacter extends Document {
   _id: mongoose.Types.ObjectId;
-  bookId: mongoose.Types.ObjectId;
+  bookId?: mongoose.Types.ObjectId;
+  slug: string;
+  visibility: 'private' | 'public';
   name: string;
   fullName?: string;
   age?: number;
@@ -20,8 +22,12 @@ export interface ICharacter extends Document {
   role: 'protagonist' | 'antagonist' | 'supporting' | 'minor';
   significance: 'major' | 'minor' | 'background';
   avatar?: string;
+  avatarAssetId?: mongoose.Types.ObjectId;
+  featured?: boolean;
   tags: string[];
   notes?: string;
+  deletedAt?: Date;
+  deletedBy?: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,7 +37,21 @@ const CharacterSchema = new Schema<ICharacter>(
     bookId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Book',
+      required: false,
+    },
+    slug: {
+      type: String,
       required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+    },
+    visibility: {
+      type: String,
+      enum: ['private', 'public'],
+      default: 'private',
+      index: true,
     },
     name: {
       type: String,
@@ -104,6 +124,14 @@ const CharacterSchema = new Schema<ICharacter>(
       type: String,
       trim: true,
     },
+    avatarAssetId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Asset',
+    },
+    featured: {
+      type: Boolean,
+      default: false,
+    },
     tags: [
       {
         type: String,
@@ -115,6 +143,8 @@ const CharacterSchema = new Schema<ICharacter>(
       type: String,
       trim: true,
     },
+    deletedAt: { type: Date },
+    deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   },
   {
     timestamps: true,
@@ -133,9 +163,11 @@ const CharacterSchema = new Schema<ICharacter>(
 
 // Indexes for performance
 CharacterSchema.index({ bookId: 1 });
+CharacterSchema.index({ slug: 1 });
 CharacterSchema.index({ bookId: 1, role: 1 });
 CharacterSchema.index({ bookId: 1, significance: 1 });
 CharacterSchema.index({ name: 1 });
+CharacterSchema.index({ visibility: 1 });
 
 // Instance methods
 CharacterSchema.methods.isMainCharacter = function (): boolean {
@@ -161,5 +193,16 @@ CharacterSchema.statics.findMainCharacters = function (bookId: string) {
 const CharacterModel =
   mongoose.models.Character ||
   mongoose.model<ICharacter>('Character', CharacterSchema);
+
+// Pre-save: auto-generate slug from name if missing
+CharacterSchema.pre<ICharacter>('save', function (next) {
+  if (!this.slug && this.name) {
+    this.slug = this.name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+  next();
+});
 
 export default CharacterModel;

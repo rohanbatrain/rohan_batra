@@ -39,6 +39,7 @@ const SiteSettingSchema = new Schema<ISiteSetting>(
         'email',
         'security',
         'performance',
+        'features',
       ],
       default: 'general',
     },

@@ -2,6 +2,7 @@
 
 import { Project } from '@/types/project';
 import Image from 'next/image';
+import { resolveAssetUrl } from '@/lib/assets';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Github, ExternalLink, Calendar } from 'lucide-react';
@@ -27,7 +28,7 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
       {project.images && project.images.length > 0 && (
         <div className='relative h-48 overflow-hidden'>
           <Image
-            src={project.images[0]}
+            src={resolveAssetUrl(project.images[0]) as string}
             alt={project.title}
             fill
             className='object-cover transition-transform duration-300 group-hover:scale-105'

@@ -12,6 +12,8 @@ export interface IComment
   postId: mongoose.Types.ObjectId;
   parentId?: mongoose.Types.ObjectId;
   approvedBy?: mongoose.Types.ObjectId;
+  deletedAt?: Date;
+  deletedBy?: mongoose.Types.ObjectId;
 }
 
 const CommentSchema = new Schema<IComment>(
@@ -94,6 +96,13 @@ const CommentSchema = new Schema<IComment>(
       type: Date,
     },
     approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    deletedAt: {
+      type: Date,
+    },
+    deletedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
     },

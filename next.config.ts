@@ -3,7 +3,14 @@ import type { NextConfig } from 'next';
 const nextConfig: NextConfig = {
   // Optimize images and prevent memory issues
   images: {
-    domains: ['localhost'],
+    domains: [
+      'localhost',
+      // Cloudinary
+      'res.cloudinary.com',
+      // Google Drive file serving
+      'drive.google.com',
+      'lh3.googleusercontent.com',
+    ],
     formats: ['image/webp', 'image/avif'],
     minimumCacheTTL: 60,
     dangerouslyAllowSVG: true,

@@ -4,6 +4,8 @@ import { Project } from '@/types/project';
 export interface IProject extends Omit<Project, '_id' | 'authorId'>, Document {
   _id: mongoose.Types.ObjectId;
   authorId: mongoose.Types.ObjectId;
+  deletedAt?: Date;
+  deletedBy?: mongoose.Types.ObjectId;
 }
 
 const ProjectSchema = new Schema<IProject>(
@@ -271,6 +273,8 @@ const ProjectSchema = new Schema<IProject>(
       ref: 'User',
       required: true,
     },
+    deletedAt: { type: Date },
+    deletedBy: { type: Schema.Types.ObjectId, ref: 'User' },
   },
   {
     timestamps: true,

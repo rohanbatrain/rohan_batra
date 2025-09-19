@@ -1,6 +1,14 @@
 'use client';
 
-import { EditorRoot, EditorContent, type JSONContent } from 'novel';
+import {
+  EditorRoot,
+  EditorContent,
+  StarterKit,
+  Placeholder,
+  EditorBubble,
+  EditorBubbleItem,
+  type JSONContent,
+} from 'novel';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -19,9 +27,22 @@ export default function RichEditor({
   className,
   editable = true,
 }: RichEditorProps) {
-  const [editorContent] = useState<JSONContent | undefined>(
-    content ? JSON.parse(content) : undefined
-  );
+  const [editorContent] = useState<JSONContent | undefined>(() => {
+    try {
+      return content ? (JSON.parse(content) as JSONContent) : undefined;
+    } catch {
+      return undefined;
+    }
+  });
+
+  const defaultDoc: JSONContent = {
+    type: 'doc',
+    content: [{ type: 'paragraph' }],
+  } as any;
+  const extensions = [
+    StarterKit.configure({}),
+    Placeholder.configure({ placeholder: 'Write your post…' }),
+  ];
 
   return (
     <div
@@ -36,14 +57,53 @@ export default function RichEditor({
       <EditorRoot>
         <EditorContent
           className='prose prose-slate dark:prose-invert max-w-none min-h-[350px] w-full px-6 py-4'
-          initialContent={editorContent}
+          initialContent={
+            editorContent ?? defaultDoc
+          }
+          extensions={extensions}
           editable={editable}
           immediatelyRender={false}
-          onUpdate={({ editor }: { editor: { getHTML: () => string } }) => {
-            const html = editor.getHTML();
-            onChange?.(html);
+          onUpdate={(ctx: any) => {
+            try {
+              const html = ctx?.editor?.getHTML?.() ?? '';
+              onChange?.(html);
+            } catch {
+              // no-op
+            }
           }}
         />
+        <EditorBubble tippyOptions={{ duration: 150 }}>
+          <div className='flex items-center gap-1 rounded-md bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-2 py-1 shadow-sm'>
+            <EditorBubbleItem onSelect={editor => editor.chain().focus().toggleBold().run()}>
+              <button className='px-2 py-1 text-sm font-semibold'>B</button>
+            </EditorBubbleItem>
+            <EditorBubbleItem onSelect={editor => editor.chain().focus().toggleItalic().run()}>
+              <button className='px-2 py-1 text-sm italic'>I</button>
+            </EditorBubbleItem>
+            <span className='mx-1 h-4 w-px bg-slate-200 dark:bg-slate-700' />
+            <EditorBubbleItem onSelect={editor => editor.chain().focus().toggleHeading({ level: 1 }).run()}>
+              <button className='px-2 py-1 text-sm'>H1</button>
+            </EditorBubbleItem>
+            <EditorBubbleItem onSelect={editor => editor.chain().focus().toggleHeading({ level: 2 }).run()}>
+              <button className='px-2 py-1 text-sm'>H2</button>
+            </EditorBubbleItem>
+            <span className='mx-1 h-4 w-px bg-slate-200 dark:bg-slate-700' />
+            <EditorBubbleItem onSelect={editor => editor.chain().focus().toggleBulletList().run()}>
+              <button className='px-2 py-1 text-sm'>• List</button>
+            </EditorBubbleItem>
+            <EditorBubbleItem onSelect={editor => editor.chain().focus().toggleOrderedList().run()}>
+              <button className='px-2 py-1 text-sm'>1. List</button>
+            </EditorBubbleItem>
+            <span className='mx-1 h-4 w-px bg-slate-200 dark:bg-slate-700' />
+            <EditorBubbleItem onSelect={editor => {
+              const url = window.prompt('Enter URL');
+              if (!url) return;
+              editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
+            }}>
+              <button className='px-2 py-1 text-sm underline'>Link</button>
+            </EditorBubbleItem>
+          </div>
+        </EditorBubble>
       </EditorRoot>
     </div>
   );

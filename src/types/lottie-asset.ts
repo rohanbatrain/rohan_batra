@@ -12,6 +12,7 @@ export interface LottieAsset {
   duration?: number;
   loop?: boolean;
   autoplay?: boolean;
+  inlineData?: unknown;
   tags: string[];
   category: string;
   isActive: boolean;

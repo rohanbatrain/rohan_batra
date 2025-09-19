@@ -3,6 +3,9 @@ import { getBlogPostsWithPagination } from '@/lib/blog-service';
 import { getProjectsWithPagination } from '@/lib/portfolio-service';
 import { BlogPostWithAuthor } from '@/types/blog-post';
 import { Project } from '@/types/project';
+import connectToDatabase from '@/lib/mongodb';
+import Character from '@/models/Character';
+import CharacterJournal from '@/models/CharacterJournal';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://rohanbatra.dev';
@@ -27,21 +30,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: 'monthly' as const,
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/characters`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    },
   ];
 
   try {
     // Get data directly from database services (no HTTP calls)
+    await connectToDatabase();
     const [blogPostsData, projectsData] = await Promise.all([
-      getBlogPostsWithPagination({
-        page: 1,
-        limit: 100,
-        status: 'published',
-      }),
-      getProjectsWithPagination({
-        page: 1,
-        limit: 100,
-        status: 'published',
-      }),
+      getBlogPostsWithPagination(1, 100),
+      getProjectsWithPagination(1, 100),
     ]);
 
     const blogPages = blogPostsData.posts.map((post: BlogPostWithAuthor) => ({
@@ -58,7 +60,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.6,
     }));
 
-    return [...staticPages, ...blogPages, ...projectPages];
+    // Characters (public only) and their public journals
+    const characters = await Character.find({ visibility: 'public', deletedAt: { $exists: false } })
+      .select('slug updatedAt createdAt')
+      .lean();
+    const characterPages = characters.map((c: any) => ({
+      url: `${baseUrl}/characters/${c.slug}`,
+      lastModified: new Date(c.updatedAt || c.createdAt),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    }));
+
+    const characterIds = characters.map((c: any) => c._id);
+    const journals = await CharacterJournal.find({
+      characterId: { $in: characterIds },
+      status: 'published',
+      isPrivate: false,
+      deletedAt: { $exists: false },
+    })
+      .select('slug characterId publishedAt updatedAt')
+      .lean();
+
+    // Map characterId -> slug for building URLs
+    const byId = new Map(characters.map((c: any) => [String(c._id), c.slug]));
+    const journalPages = journals
+      .map((j: any) => {
+        const charSlug = byId.get(String(j.characterId));
+        if (!charSlug) return null;
+        return {
+          url: `${baseUrl}/characters/${charSlug}/journals/${j.slug}`,
+          lastModified: new Date(j.updatedAt || j.publishedAt || new Date()),
+          changeFrequency: 'weekly' as const,
+          priority: 0.5,
+        };
+      })
+      .filter(Boolean) as MetadataRoute.Sitemap;
+
+    return [...staticPages, ...blogPages, ...projectPages, ...characterPages, ...journalPages];
   } catch (error) {
     console.error('Error generating sitemap:', error);
     // Return static pages only if there's an error

@@ -154,13 +154,35 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const deletedBook = await BookModel.findByIdAndDelete(id);
+    const url = new URL(request.url);
+    const permanent = url.searchParams.get('permanent') === 'true';
+    const toTrash = url.searchParams.get('trash') === 'true';
 
-    if (!deletedBook) {
+    const book = await BookModel.findById(id);
+
+    if (!book) {
       return NextResponse.json({ error: 'Book not found' }, { status: 404 });
     }
 
-    return NextResponse.json({ message: 'Book deleted successfully' });
+    if (permanent && book.deletedAt) {
+      await BookModel.findByIdAndDelete(id);
+      return NextResponse.json({ message: 'Book permanently deleted' });
+    }
+
+    // Soft delete path (default or explicit trash=true)
+    const currentTime = new Date();
+    await BookModel.findByIdAndUpdate(
+      id,
+      {
+        $set: {
+          deletedAt: currentTime,
+          deletedBy: currentUser?._id,
+        },
+      },
+      { new: true }
+    );
+
+    return NextResponse.json({ message: toTrash ? 'Book moved to trash' : 'Book soft deleted' });
   } catch (error) {
     console.error('Error deleting book:', error);
     return NextResponse.json(

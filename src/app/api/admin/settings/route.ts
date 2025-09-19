@@ -8,7 +8,8 @@ import { z } from 'zod';
 const SettingUpdateSchema = z.object({
   key: z.string().min(1),
   value: z.any(),
-  type: z.enum(['string', 'number', 'boolean', 'array', 'object']),
+  // Accept legacy 'array'|'object' but normalize to 'json' when persisting
+  type: z.enum(['string', 'number', 'boolean', 'json', 'array', 'object']),
   category: z.string().optional(),
   description: z.string().optional(),
   isPublic: z.boolean().optional(),
@@ -184,6 +185,10 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
+    // Helper to normalize type
+    const normalizeType = (t: 'string' | 'number' | 'boolean' | 'json' | 'array' | 'object') =>
+      t === 'array' || t === 'object' ? 'json' : t;
+
     // Handle bulk settings update
     if (body.settings) {
       const bulkData = BulkSettingsSchema.parse(body);
@@ -211,7 +216,7 @@ export async function POST(request: NextRequest) {
               {
                 $set: {
                   value: settingData.value,
-                  type: settingData.type,
+                  type: normalizeType(settingData.type as any),
                   category: settingData.category || existing.category,
                   description: settingData.description || existing.description,
                   isPublic: settingData.isPublic ?? existing.isPublic,
@@ -232,7 +237,7 @@ export async function POST(request: NextRequest) {
             const newSetting = new SiteSetting({
               key: settingData.key,
               value: settingData.value,
-              type: settingData.type,
+              type: normalizeType(settingData.type as any),
               category: settingData.category || 'general',
               description: settingData.description,
               isPublic: settingData.isPublic ?? false,
@@ -265,7 +270,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle single setting creation/update
-    const validatedData = SettingUpdateSchema.parse(body);
+  const validatedData = SettingUpdateSchema.parse(body);
     const existing = await SiteSetting.findOne({ key: validatedData.key });
     const currentTime = new Date();
 
@@ -285,7 +290,7 @@ export async function POST(request: NextRequest) {
         {
           $set: {
             value: validatedData.value,
-            type: validatedData.type,
+            type: normalizeType(validatedData.type as any),
             category: validatedData.category || existing.category,
             description: validatedData.description || existing.description,
             isPublic: validatedData.isPublic ?? existing.isPublic,
@@ -317,7 +322,7 @@ export async function POST(request: NextRequest) {
       const newSetting = new SiteSetting({
         key: validatedData.key,
         value: validatedData.value,
-        type: validatedData.type,
+        type: normalizeType(validatedData.type as any),
         category: validatedData.category || 'general',
         description: validatedData.description,
         isPublic: validatedData.isPublic ?? false,
