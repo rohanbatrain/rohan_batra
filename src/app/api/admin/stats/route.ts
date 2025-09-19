@@ -9,6 +9,7 @@ import User from '@/models/User';
 import Book from '@/models/Book';
 import Chapter from '@/models/Chapter';
 import Character from '@/models/Character';
+import LottieAsset from '@/models/LottieAsset';
 
 export async function GET(request: NextRequest) {
   try {
@@ -36,6 +37,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
+    const timeframe = searchParams.get('timeframe') || '30d';
+    const includeDetails = searchParams.get('includeDetails') === 'true';
+    const category = searchParams.get('category');
 
     let dateFilter = {};
     if (startDate && endDate) {
@@ -44,6 +48,34 @@ export async function GET(request: NextRequest) {
           $gte: new Date(startDate),
           $lte: new Date(endDate),
         },
+      };
+    } else {
+      // Calculate date range based on timeframe if no explicit dates provided
+      const now = new Date();
+      let startDateCalc: Date;
+
+      switch (timeframe) {
+        case '24h':
+          startDateCalc = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+          break;
+        case '7d':
+          startDateCalc = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          break;
+        case '30d':
+          startDateCalc = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+          break;
+        case '90d':
+          startDateCalc = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+          break;
+        case '1y':
+          startDateCalc = new Date(now.getTime() - 365 * 24 * 60 * 60 * 1000);
+          break;
+        default:
+          startDateCalc = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      }
+
+      dateFilter = {
+        createdAt: { $gte: startDateCalc },
       };
     }
 
@@ -57,6 +89,7 @@ export async function GET(request: NextRequest) {
       totalBooks,
       totalChapters,
       totalCharacters,
+      totalLottieAssets,
       publishedPosts,
       draftPosts,
       recentPosts,
@@ -64,6 +97,7 @@ export async function GET(request: NextRequest) {
       recentBooks,
       topCategories,
       systemMetrics,
+      lottieAssetStats,
     ] = await Promise.all([
       // Basic counts
       BlogPost.countDocuments(dateFilter),
@@ -74,6 +108,7 @@ export async function GET(request: NextRequest) {
       Book.countDocuments(dateFilter),
       Chapter.countDocuments(dateFilter),
       Character.countDocuments(dateFilter),
+      LottieAsset.countDocuments(dateFilter),
 
       // Post status breakdown
       BlogPost.countDocuments({ ...dateFilter, published: true }),
@@ -120,6 +155,26 @@ export async function GET(request: NextRequest) {
         nodeVersion: process.version,
         timestamp: new Date().toISOString(),
       }),
+
+      // Lottie asset statistics
+      LottieAsset.aggregate([
+        {
+          $facet: {
+            total: [{ $count: 'count' }],
+            recent: [
+              { $match: { createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } },
+              { $count: 'count' },
+            ],
+            totalSize: [
+              { $group: { _id: null, totalSize: { $sum: '$fileSize' } } },
+            ],
+            byCategory: [
+              { $group: { _id: '$metadata.category', count: { $sum: 1 } } },
+              { $sort: { count: -1 } },
+            ],
+          },
+        },
+      ]),
     ]);
 
     // Calculate growth metrics (comparing with previous period)
@@ -150,6 +205,7 @@ export async function GET(request: NextRequest) {
         totalBooks,
         totalChapters,
         totalCharacters,
+        totalLottieAssets,
         publishedPosts,
         draftPosts,
       },
@@ -211,6 +267,18 @@ export async function GET(request: NextRequest) {
         percentage:
           totalPosts > 0 ? Math.round((cat.count / totalPosts) * 100) : 0,
       })),
+      media: {
+        lottieAssets: {
+          total: totalLottieAssets,
+          recent: lottieAssetStats[0]?.recent[0]?.count || 0,
+          totalSize: lottieAssetStats[0]?.totalSize[0]?.totalSize || 0,
+          averageSize:
+            totalLottieAssets > 0 && lottieAssetStats[0]?.totalSize[0]?.totalSize
+              ? Math.round(lottieAssetStats[0].totalSize[0].totalSize / totalLottieAssets)
+              : 0,
+          byCategory: lottieAssetStats[0]?.byCategory || [],
+        },
+      },
       system: {
         health: 'good',
         uptime: Math.round(systemMetrics.uptime),

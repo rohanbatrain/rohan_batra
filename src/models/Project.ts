@@ -38,6 +38,13 @@ const ProjectSchema = new Schema<IProject>(
       trim: true,
       maxlength: 50,
     },
+    categories: [
+      {
+        type: String,
+        trim: true,
+        maxlength: 50,
+      },
+    ],
     technologies: [
       {
         type: String,
@@ -56,14 +63,14 @@ const ProjectSchema = new Schema<IProject>(
     images: [
       {
         type: Schema.Types.ObjectId,
-        ref: 'Asset',
+        ref: 'LottieAsset',
       },
     ],
     gallery: [
       {
         asset: {
           type: Schema.Types.ObjectId,
-          ref: 'Asset',
+          ref: 'LottieAsset',
         },
         caption: String,
         order: {
@@ -72,9 +79,31 @@ const ProjectSchema = new Schema<IProject>(
         },
       },
     ],
+    galleryAssets: [
+      {
+        asset: {
+          type: Schema.Types.ObjectId,
+          ref: 'LottieAsset',
+        },
+        type: {
+          type: String,
+          enum: ['image', 'video', 'lottie'],
+          default: 'image',
+        },
+        caption: String,
+        order: {
+          type: Number,
+          default: 0,
+        },
+        metadata: {
+          type: Schema.Types.Mixed,
+          default: {},
+        },
+      },
+    ],
     featuredImage: {
       type: Schema.Types.ObjectId,
-      ref: 'Asset',
+      ref: 'LottieAsset',
     },
     demoUrl: {
       type: String,
@@ -91,16 +120,59 @@ const ProjectSchema = new Schema<IProject>(
       trim: true,
       match: /^https?:\/\/.+/,
     },
+    links: {
+      github: String,
+      demo: String,
+      live: String,
+      documentation: String,
+      other: [
+        {
+          label: String,
+          url: String,
+        },
+      ],
+    },
     startDate: {
       type: Date,
     },
     endDate: {
       type: Date,
     },
+    timeline: {
+      startDate: Date,
+      endDate: Date,
+      milestones: [
+        {
+          title: {
+            type: String,
+            required: true,
+          },
+          date: {
+            type: Date,
+            required: true,
+          },
+          description: String,
+        },
+      ],
+      estimatedDuration: Number,
+      actualDuration: Number,
+    },
     client: {
       type: String,
       trim: true,
       maxlength: 100,
+    },
+    collaboration: {
+      teamSize: Number,
+      role: String,
+      responsibilities: [String],
+      collaborators: [
+        {
+          name: String,
+          role: String,
+          contact: String,
+        },
+      ],
     },
     tags: [
       {
@@ -109,6 +181,86 @@ const ProjectSchema = new Schema<IProject>(
         lowercase: true,
       },
     ],
+    difficulty: {
+      type: String,
+      enum: ['beginner', 'intermediate', 'advanced', 'expert'],
+    },
+    complexity: {
+      technical: {
+        type: Number,
+        min: 1,
+        max: 10,
+      },
+      design: {
+        type: Number,
+        min: 1,
+        max: 10,
+      },
+      overall: {
+        type: Number,
+        min: 1,
+        max: 10,
+      },
+    },
+    analytics: {
+      viewHistory: [
+        {
+          date: {
+            type: Date,
+            default: Date.now,
+          },
+          count: {
+            type: Number,
+            default: 1,
+          },
+        },
+      ],
+      clickMetrics: {
+        demoClicks: {
+          type: Number,
+          default: 0,
+        },
+        sourceClicks: {
+          type: Number,
+          default: 0,
+        },
+        liveClicks: {
+          type: Number,
+          default: 0,
+        },
+      },
+      referrers: [
+        {
+          source: String,
+          count: {
+            type: Number,
+            default: 1,
+          },
+        },
+      ],
+    },
+    seoMetadata: {
+      keywords: [String],
+      canonicalUrl: String,
+      openGraph: {
+        title: String,
+        description: String,
+        image: String,
+        type: {
+          type: String,
+          default: 'website',
+        },
+      },
+      twitter: {
+        card: {
+          type: String,
+          default: 'summary_large_image',
+        },
+        title: String,
+        description: String,
+        image: String,
+      },
+    },
     viewCount: {
       type: Number,
       default: 0,

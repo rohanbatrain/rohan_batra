@@ -14,6 +14,8 @@ export interface BlogPost {
     usage: 'featured' | 'content' | 'gallery' | 'attachment';
     caption?: string;
     altText?: string;
+    position?: number;
+    metadata?: Record<string, any>;
   }>;
   category: string;
   tags: string[];
@@ -21,6 +23,49 @@ export interface BlogPost {
   featured: boolean;
   seoTitle?: string;
   seoDescription?: string;
+  seoMetadata?: {
+    keywords?: string[];
+    canonicalUrl?: string;
+    openGraph?: {
+      title?: string;
+      description?: string;
+      image?: string;
+      type?: string;
+    };
+    twitter?: {
+      card?: string;
+      title?: string;
+      description?: string;
+      image?: string;
+    };
+    structuredData?: Record<string, any>;
+  };
+  validation?: {
+    contentQuality?: {
+      score?: number;
+      issues?: string[];
+      suggestions?: string[];
+    };
+    seoScore?: number;
+    readabilityScore?: number;
+    lastChecked?: Date;
+  };
+  analytics?: {
+    viewHistory?: Array<{
+      date: Date;
+      count: number;
+    }>;
+    engagementMetrics?: {
+      averageTimeOnPage?: number;
+      bounceRate?: number;
+      shareCount?: number;
+      clickThroughRate?: number;
+    };
+    referrers?: Array<{
+      source: string;
+      count: number;
+    }>;
+  };
   readingTime?: number;
   viewCount: number;
   likeCount: number;

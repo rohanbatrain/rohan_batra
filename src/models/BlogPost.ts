@@ -61,7 +61,7 @@ const BlogPostSchema = new Schema<IBlogPost>(
       {
         asset: {
           type: Schema.Types.ObjectId,
-          ref: 'Asset',
+          ref: 'LottieAsset',
         },
         usage: {
           type: String,
@@ -70,8 +70,99 @@ const BlogPostSchema = new Schema<IBlogPost>(
         },
         caption: String,
         altText: String,
+        position: {
+          type: Number,
+          default: 0,
+        },
+        metadata: {
+          type: Schema.Types.Mixed,
+          default: {},
+        },
       },
     ],
+    seoMetadata: {
+      keywords: [String],
+      canonicalUrl: String,
+      openGraph: {
+        title: String,
+        description: String,
+        image: String,
+        type: {
+          type: String,
+          default: 'article',
+        },
+      },
+      twitter: {
+        card: {
+          type: String,
+          default: 'summary_large_image',
+        },
+        title: String,
+        description: String,
+        image: String,
+      },
+      structuredData: {
+        type: Schema.Types.Mixed,
+        default: {},
+      },
+    },
+    validation: {
+      contentQuality: {
+        score: {
+          type: Number,
+          min: 0,
+          max: 100,
+          default: 0,
+        },
+        issues: [String],
+        suggestions: [String],
+      },
+      seoScore: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0,
+      },
+      readabilityScore: {
+        type: Number,
+        min: 0,
+        max: 100,
+        default: 0,
+      },
+      lastChecked: Date,
+    },
+    analytics: {
+      viewHistory: [
+        {
+          date: {
+            type: Date,
+            default: Date.now,
+          },
+          count: {
+            type: Number,
+            default: 1,
+          },
+        },
+      ],
+      engagementMetrics: {
+        averageTimeOnPage: Number,
+        bounceRate: Number,
+        shareCount: {
+          type: Number,
+          default: 0,
+        },
+        clickThroughRate: Number,
+      },
+      referrers: [
+        {
+          source: String,
+          count: {
+            type: Number,
+            default: 1,
+          },
+        },
+      ],
+    },
     category: {
       type: String,
       required: true,

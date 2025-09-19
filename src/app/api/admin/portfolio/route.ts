@@ -4,14 +4,18 @@ import connectToDatabase from '@/lib/mongodb';
 import Project from '@/models/Project';
 import User from '@/models/User';
 import { z } from 'zod';
+import { featureFlags, FeatureFlagContext } from '@/lib/feature-flags';
+import { projectCircuitBreaker } from '@/lib/circuit-breaker';
 
+// Enhanced validation schema with conditional fields
 const ProjectCreateSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().min(1).max(500),
   longDescription: z.string().optional(),
   slug: z.string().min(1).max(100).optional(),
   technologies: z.array(z.string()).default([]),
-  category: z.string().min(1), // Make required as model expects it
+  category: z.string().min(1),
+  categories: z.array(z.string()).optional(), // Enhanced: multi-category support
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   featured: z.boolean().default(false),
   featuredImage: z.string().optional(),
@@ -22,11 +26,101 @@ const ProjectCreateSchema = z.object({
       github: z.string().optional(),
       demo: z.string().optional(),
       documentation: z.string().optional(),
+      other: z.array(z.object({
+        label: z.string(),
+        url: z.string(),
+      })).optional(),
     })
     .optional(),
+  // Enhanced fields
+  galleryAssets: z.array(z.object({
+    asset: z.string(),
+    type: z.enum(['image', 'video', 'lottie']).default('image'),
+    caption: z.string().optional(),
+    order: z.number().optional(),
+    metadata: z.record(z.any()).optional(),
+  })).optional(),
+  timeline: z.object({
+    startDate: z.string().datetime().optional(),
+    endDate: z.string().datetime().optional(),
+    milestones: z.array(z.object({
+      title: z.string(),
+      date: z.string().datetime(),
+      description: z.string().optional(),
+    })).optional(),
+    estimatedDuration: z.number().optional(),
+    actualDuration: z.number().optional(),
+  }).optional(),
+  collaboration: z.object({
+    teamSize: z.number().optional(),
+    role: z.string().optional(),
+    responsibilities: z.array(z.string()).optional(),
+    collaborators: z.array(z.object({
+      name: z.string(),
+      role: z.string(),
+      contact: z.string().optional(),
+    })).optional(),
+  }).optional(),
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
+  complexity: z.object({
+    technical: z.number().min(1).max(10),
+    design: z.number().min(1).max(10),
+    overall: z.number().min(1).max(10),
+  }).optional(),
+  seoMetadata: z.object({
+    keywords: z.array(z.string()).optional(),
+    canonicalUrl: z.string().url().optional(),
+    openGraph: z.object({
+      title: z.string().optional(),
+      description: z.string().optional(),
+      image: z.string().optional(),
+      type: z.string().optional(),
+    }).optional(),
+    twitter: z.object({
+      card: z.string().optional(),
+      title: z.string().optional(),
+      description: z.string().optional(),
+      image: z.string().optional(),
+    }).optional(),
+  }).optional(),
   publishedAt: z.string().datetime().optional(),
   completedAt: z.string().datetime().optional(),
 });
+
+// Helper function to create feature flag context from user
+function createFeatureFlagContext(user: any): FeatureFlagContext {
+  return {
+    userId: user._id?.toString(),
+    userEmail: user.email,
+    userRole: user.role,
+    environment: process.env.NODE_ENV,
+    timestamp: new Date(),
+  };
+}
+
+// Helper function to filter enhanced fields based on feature flags
+function filterEnhancedFields(data: any, context: FeatureFlagContext) {
+  const filtered = { ...data };
+
+  // Remove enhanced fields if features are disabled
+  if (!featureFlags.isAdvancedFeatureEnabled('multiCategories', context).enabled) {
+    delete filtered.categories;
+  }
+
+  if (!featureFlags.isAdvancedFeatureEnabled('assetIntegration', context).enabled) {
+    delete filtered.galleryAssets;
+  }
+
+  if (!featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context).enabled) {
+    delete filtered.timeline;
+    delete filtered.collaboration;
+    delete filtered.difficulty;
+    delete filtered.complexity;
+    delete filtered.seoMetadata;
+  }
+
+  return filtered;
+}
 
 const BulkActionSchema = z.object({
   action: z.enum([

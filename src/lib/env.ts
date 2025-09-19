@@ -55,6 +55,15 @@ interface EnvConfig {
     whitelist: string[];
   };
 
+  // Circuit Breaker Configuration
+  circuitBreaker: {
+    enabled: boolean;
+    failureThreshold: number;
+    resetTimeout: number;
+    monitoringPeriod: number;
+    halfOpenMaxCalls: number;
+  };
+
   // Cache
   cacheTtl: number;
   enableIsr: boolean;
@@ -69,10 +78,14 @@ interface EnvConfig {
 
 function getEnvVar(key: string, defaultValue?: string): string {
   const value = process.env[key];
-  if (!value && !defaultValue) {
+  if (!value && defaultValue === undefined) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
   return value || defaultValue!;
+}
+
+function getOptionalEnvVar(key: string, defaultValue: string = ''): string {
+  return process.env[key] || defaultValue;
 }
 
 function getBooleanEnvVar(key: string, defaultValue: boolean = false): boolean {
@@ -148,7 +161,16 @@ export const env: EnvConfig = {
   // Rollout Configuration
   rollout: {
     percentage: getNumberEnvVar('ROLLOUT_PERCENTAGE', 0),
-    whitelist: getEnvVar('FEATURE_WHITELIST', '').split(',').filter(Boolean),
+    whitelist: getOptionalEnvVar('ROLLOUT_ADMIN_USERS', '').split(',').filter(Boolean),
+  },
+
+  // Circuit Breaker Configuration
+  circuitBreaker: {
+    enabled: getBooleanEnvVar('CIRCUIT_BREAKER_ENABLED', false),
+    failureThreshold: getNumberEnvVar('CIRCUIT_BREAKER_FAILURE_THRESHOLD', 5),
+    resetTimeout: getNumberEnvVar('CIRCUIT_BREAKER_RESET_TIMEOUT', 60000),
+    monitoringPeriod: getNumberEnvVar('CIRCUIT_BREAKER_MONITORING_PERIOD', 300000),
+    halfOpenMaxCalls: getNumberEnvVar('CIRCUIT_BREAKER_HALF_OPEN_MAX_CALLS', 3),
   },
 
   // Cache

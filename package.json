@@ -15,7 +15,9 @@
     "test:coverage": "vitest run --coverage",
     "admin:set-role": "DOTENV_CONFIG_PATH=.env.local tsx scripts/set-user-role.ts",
     "admin:create-db-admin": "DOTENV_CONFIG_PATH=.env.local tsx scripts/create-admin-user.ts",
-    "admin:migrate-demo": "DOTENV_CONFIG_PATH=.env.local tsx scripts/migrate-demo-content-simple.ts"
+    "admin:migrate-demo": "DOTENV_CONFIG_PATH=.env.local tsx scripts/migrate-demo-content-simple.ts",
+    "backup:safety": "./scripts/create-safety-backup.sh",
+    "deploy:safe": "./scripts/safe-deploy.sh"
   },
   "dependencies": {
     "@clerk/nextjs": "^6.32.0",
