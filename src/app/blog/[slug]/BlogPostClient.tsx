@@ -17,13 +17,117 @@ import {
   User,
 } from 'lucide-react';
 import { BlogPostWithAuthor } from '@/types/blog-post';
-import RichEditor from '@/components/admin/RichEditor';
+// Note: Novel rich editor removed. JSON content will be rendered safely.
 
 interface BlogPostClientProps {
   post: BlogPostWithAuthor;
 }
 
 export default function BlogPostClient({ post }: BlogPostClientProps) {
+  const renderJsonContentToHtml = (jsonStr: string): string => {
+    try {
+      const doc = JSON.parse(jsonStr);
+      const chunks: string[] = [];
+
+      const escapeHtml = (s: string) =>
+        String(s)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;')
+          .replace(/'/g, '&#39;');
+      const escapeAttr = (s: string) =>
+        String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+      const renderText = (node: any): string => {
+        if (!node) return '';
+        if (node.type === 'text') {
+          let text = escapeHtml(node.text || '');
+          if (node.marks) {
+            for (const mark of node.marks) {
+              if (mark.type === 'bold') text = `<strong>${text}</strong>`;
+              if (mark.type === 'italic') text = `<em>${text}</em>`;
+              if (mark.type === 'code') text = `<code>${text}</code>`;
+              if (mark.type === 'strike') text = `<s>${text}</s>`;
+              if (mark.type === 'underline') text = `<u>${text}</u>`;
+              if (mark.type === 'link' && mark.attrs?.href) {
+                const href = escapeAttr(String(mark.attrs.href));
+                const rel = href.startsWith('/') ? '' : ' rel="nofollow noopener"';
+                text = `<a href="${href}"${rel}>${text}</a>`;
+              }
+            }
+          }
+          return text;
+        }
+        if (Array.isArray(node.content)) {
+          return node.content.map(renderText).join('');
+        }
+        return '';
+      };
+
+      const renderNode = (node: any) => {
+        if (!node) return;
+        switch (node.type) {
+          case 'paragraph':
+            chunks.push(`<p>${renderText(node)}</p>`);
+            break;
+          case 'heading': {
+            const level = Math.min(Math.max(Number(node.attrs?.level || 1), 1), 6);
+            chunks.push(`<h${level}>${renderText(node)}</h${level}>`);
+            break;
+          }
+          case 'bulletList':
+          case 'bullet_list': {
+            const items = (node.content || []).map((li: any) => `<li>${renderText(li)}</li>`).join('');
+            chunks.push(`<ul>${items}</ul>`);
+            break;
+          }
+          case 'orderedList':
+          case 'ordered_list': {
+            const start = Number(node.attrs?.start || 1);
+            const items = (node.content || []).map((li: any) => `<li>${renderText(li)}</li>`).join('');
+            chunks.push(`<ol start="${start}">${items}</ol>`);
+            break;
+          }
+          case 'listItem':
+          case 'list_item':
+            chunks.push(`<li>${renderText(node)}</li>`);
+            break;
+          case 'blockquote':
+            chunks.push(`<blockquote>${renderText(node)}</blockquote>`);
+            break;
+          case 'codeBlock':
+          case 'code_block': {
+            const language = node.attrs?.language ? ` class="language-${node.attrs.language}"` : '';
+            // Escape HTML in code
+            const code = escapeHtml(renderText(node));
+            chunks.push(`<pre><code${language}>${code}</code></pre>`);
+            break;
+          }
+          case 'hardBreak':
+          case 'hard_break':
+            chunks.push('<br />');
+            break;
+          case 'image': {
+            const src = node.attrs?.src;
+            const alt = node.attrs?.alt || '';
+            if (src) chunks.push(`<img src="${escapeAttr(src)}" alt="${escapeHtml(alt)}" />`);
+            break;
+          }
+          default: {
+            if (Array.isArray(node.content)) node.content.forEach(renderNode);
+          }
+        }
+      };
+
+      if (doc?.type === 'doc' && Array.isArray(doc.content)) {
+        doc.content.forEach(renderNode);
+      }
+      return chunks.join('');
+    } catch {
+      return '';
+    }
+  };
   const isJsonContent = useMemo(() => {
     if (!post?.content) return false;
     const trimmed = post.content.trim();
@@ -209,9 +313,8 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             className='prose prose-lg dark:prose-invert max-w-none'
-          >
-            <RichEditor content={post.content} editable={false} />
-          </motion.div>
+            dangerouslySetInnerHTML={{ __html: renderJsonContentToHtml(post.content) }}
+          />
         ) : (
           <motion.div
             initial={{ opacity: 0, y: 20 }}

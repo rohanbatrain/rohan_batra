@@ -9,6 +9,7 @@ import Book from '@/models/Book';
 import Comment from '@/models/Comment';
 import Character from '@/models/Character';
 import CharacterJournal from '@/models/CharacterJournal';
+import AuditLog from '@/models/AuditLog';
 
 export async function GET(request: NextRequest) {
   try {
@@ -55,11 +56,31 @@ export async function POST(request: NextRequest) {
 
     if (action === 'restore') {
       const doc = await model.findByIdAndUpdate(id, { $unset: { deletedAt: 1, deletedBy: 1 }, status: type === 'user' ? 'active' : undefined }, { new: true });
+      try {
+        await AuditLog.create({
+          action: 'trash.restore',
+          entityType: type,
+          entityId: id,
+          userId: me._id,
+          userEmail: me.email,
+          meta: { route: 'trash', model: model.modelName },
+        });
+      } catch {}
       return NextResponse.json({ success: true, message: 'Restored', doc: { _id: doc?._id } });
     }
 
     if (action === 'delete') {
       await model.findByIdAndDelete(id);
+      try {
+        await AuditLog.create({
+          action: 'trash.delete',
+          entityType: type,
+          entityId: id,
+          userId: me._id,
+          userEmail: me.email,
+          meta: { route: 'trash', model: model.modelName },
+        });
+      } catch {}
       return NextResponse.json({ success: true, message: 'Permanently deleted' });
     }
 

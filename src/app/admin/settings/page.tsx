@@ -280,28 +280,6 @@ export default function SettingsPage() {
 				<Card>
 					<CardContent className='p-6 flex items-start justify-between'>
 						<div>
-							<h3 className='font-medium'>Rich Blog Editor</h3>
-							<p className='text-sm text-gray-600'>Use Novel editor for blog posts.</p>
-						</div>
-						<Switch
-							checked={Boolean(data.grouped['features']?.find(s => s.key === 'features.richeditor')?.value)}
-							onChange={async e => {
-								const enabled = e.currentTarget.checked;
-								await fetch('/api/admin/settings', {
-									method: 'POST',
-									headers: { 'Content-Type': 'application/json' },
-									credentials: 'include',
-									body: JSON.stringify({ key: 'features.richeditor', value: enabled, type: 'boolean', category: 'features', description: 'Enable Novel rich editor for blog authoring', isPublic: false }),
-								});
-								fetchSettings();
-							}}
-						/>
-					</CardContent>
-				</Card>
-
-				<Card>
-					<CardContent className='p-6 flex items-start justify-between'>
-						<div>
 							<h3 className='font-medium'>Google Drive Storage</h3>
 							<p className='text-sm text-gray-600'>Store uploads in Drive (fallback to Cloudinary).</p>
 							{storageStatus && (

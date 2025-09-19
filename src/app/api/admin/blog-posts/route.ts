@@ -367,6 +367,19 @@ export async function POST(request: NextRequest) {
         }
       );
 
+      // Global audit trail entry
+      try {
+        const AuditLog = (await import('@/models/AuditLog')).default;
+        await AuditLog.create({
+          action: `blog.${bulkData.action}`,
+          entityType: 'BlogPost',
+          entityId: bulkData.postIds.join(','),
+          userId: user._id.toString(),
+          userEmail: user.email,
+          meta: { bulk: true, count: result.modifiedCount },
+        });
+      } catch {}
+
       return NextResponse.json({
         success: true,
         action: bulkData.action,
@@ -447,8 +460,8 @@ export async function POST(request: NextRequest) {
       postData.seoMetadata = filteredData.seoMetadata;
     }
 
-    const newPost = new BlogPost(postData);
-    await newPost.save();
+  const newPost = new BlogPost(postData);
+  await newPost.save();
 
     // Populate author for response
     await newPost.populate('authorId', 'name email');
@@ -485,6 +498,19 @@ export async function POST(request: NextRequest) {
     if (featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context).enabled && newPost.seoMetadata) {
       responsePost.seoMetadata = newPost.seoMetadata;
     }
+
+    // Global audit trail entry
+    try {
+      const AuditLog = (await import('@/models/AuditLog')).default;
+      await AuditLog.create({
+        action: 'blog.create',
+        entityType: 'BlogPost',
+        entityId: newPost._id.toString(),
+        userId: user._id.toString(),
+        userEmail: user.email,
+        meta: { slug: newPost.slug, title: newPost.title },
+      });
+    } catch {}
 
     return NextResponse.json(
       {

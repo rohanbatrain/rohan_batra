@@ -42,7 +42,6 @@ interface EnvConfig {
   advancedFeatures: {
     assetIntegration: boolean;
     enhancedValidation: boolean;
-    richEditor: boolean;
     advancedAnalytics: boolean;
     multiCategories: boolean;
     urlValidation: boolean;
@@ -151,7 +150,6 @@ export const env: EnvConfig = {
   advancedFeatures: {
     assetIntegration: getBooleanEnvVar('FEATURE_ASSET_INTEGRATION', false),
     enhancedValidation: getBooleanEnvVar('FEATURE_ENHANCED_VALIDATION', false),
-    richEditor: getBooleanEnvVar('FEATURE_RICH_EDITOR', false),
     advancedAnalytics: getBooleanEnvVar('FEATURE_ADVANCED_ANALYTICS', false),
     multiCategories: getBooleanEnvVar('FEATURE_MULTI_CATEGORIES', false),
     urlValidation: getBooleanEnvVar('FEATURE_URL_VALIDATION', false),

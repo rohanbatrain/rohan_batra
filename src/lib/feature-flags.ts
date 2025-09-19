@@ -1,4 +1,5 @@
 import { progressiveRollout } from './progressive-rollout';
+import env from './env';
 
 export interface FeatureFlagContext {
   userId?: string;
@@ -34,14 +35,14 @@ export class FeatureFlagService {
       return {
         enabled: false,
         source: 'environment',
-        reason: `Feature ${feature} is disabled in environment configuration`,
+  reason: `Feature ${String(feature)} is disabled in environment configuration`,
       };
     }
 
     return {
       enabled: true,
       source: 'environment',
-      reason: `Feature ${feature} is enabled in environment configuration`,
+  reason: `Feature ${String(feature)} is enabled in environment configuration`,
     };
   }
 
@@ -49,7 +50,7 @@ export class FeatureFlagService {
    * Check if an advanced feature is enabled with progressive rollout
    */
   isAdvancedFeatureEnabled(
-    feature: keyof typeof env.advancedFeatures,
+  feature: keyof typeof env.advancedFeatures,
     context?: FeatureFlagContext
   ): FeatureFlagResult {
     const baseEnabled = env.advancedFeatures[feature];
@@ -59,7 +60,7 @@ export class FeatureFlagService {
       return {
         enabled: false,
         source: 'environment',
-        reason: `Advanced feature ${feature} is disabled in environment configuration`,
+  reason: `Advanced feature ${String(feature)} is disabled in environment configuration`,
       };
     }
 
@@ -245,9 +246,6 @@ export function hasEnhancedValidation(context?: FeatureFlagContext): boolean {
   return isAdvancedFeatureEnabled('enhancedValidation', context);
 }
 
-export function hasRichEditor(context?: FeatureFlagContext): boolean {
-  return isAdvancedFeatureEnabled('richEditor', context);
-}
 
 export function hasAdvancedAnalytics(context?: FeatureFlagContext): boolean {
   return isAdvancedFeatureEnabled('advancedAnalytics', context);

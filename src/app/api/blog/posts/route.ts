@@ -18,15 +18,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status') || 'published';
     const search = searchParams.get('search') || undefined;
 
-    const result = await getBlogPostsWithPagination({
-      page,
-      limit,
-      category,
-      tag,
-      author,
-      status,
-      search,
-    });
+    const result = await getBlogPostsWithPagination(page, limit, category || undefined);
 
     return NextResponse.json({
       success: true,

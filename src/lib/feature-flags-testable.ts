@@ -38,7 +38,6 @@ interface EnvConfig {
   advancedFeatures: {
     assetIntegration: boolean;
     enhancedValidation: boolean;
-    richEditor: boolean;
     analyticsTracking: boolean;
     aiSuggestions: boolean;
     realTimeCollaboration: boolean;
@@ -86,7 +85,6 @@ export class FeatureFlagService {
           advancedFeatures: {
             assetIntegration: false,
             enhancedValidation: false,
-            richEditor: false,
             analyticsTracking: false,
             aiSuggestions: false,
             realTimeCollaboration: false,

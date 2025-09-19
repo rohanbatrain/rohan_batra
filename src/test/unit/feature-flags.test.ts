@@ -15,7 +15,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: false,
         enhancedValidation: false,
-        richEditor: false,
+        
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -58,7 +58,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: true, // Enabled
         enhancedValidation: false,
-        richEditor: false,
+        
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -95,7 +95,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: true, // Enabled
         enhancedValidation: false,
-        richEditor: false,
+        
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -132,7 +132,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: false,
         enhancedValidation: false,
-        richEditor: false,
+        
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -161,7 +161,7 @@ describe('Feature Flag Service', () => {
     // Should include advanced features with 'advanced.' prefix
     expect(flags).toHaveProperty('advanced.assetIntegration');
     expect(flags).toHaveProperty('advanced.enhancedValidation');
-    expect(flags).toHaveProperty('advanced.richEditor');
+  // 'richEditor' advanced feature removed from codebase
     
     // All results should have enabled and source properties
     Object.values(flags).forEach((flag) => {
@@ -185,7 +185,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: false,
         enhancedValidation: false,
-        richEditor: false,
+        
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,

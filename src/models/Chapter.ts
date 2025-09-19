@@ -4,7 +4,7 @@ export interface IChapter extends Document {
   _id: mongoose.Types.ObjectId;
   bookId: mongoose.Types.ObjectId;
   title: string;
-  content: string; // Rich HTML content from Novel editor
+  content: string; // Rich HTML content
   markdown?: string; // Optional: store original markdown if pasted
   orderIndex: number;
   wordCount: number;

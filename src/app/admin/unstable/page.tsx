@@ -4,7 +4,7 @@ export default function UnstableHome() {
       <h1 className="text-3xl font-bold">Unstable Experiments</h1>
       <p className="text-gray-600">Experimental tools. Toggle via Settings → Features.</p>
       <ul className="list-disc pl-6">
-        <li><a className="text-blue-600 hover:underline" href="/admin/unstable/blog/new">Novel Editor: Create Blog Post</a></li>
+        <li className="text-gray-500">No experiments available right now.</li>
       </ul>
     </div>
   );

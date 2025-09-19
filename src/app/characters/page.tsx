@@ -7,8 +7,9 @@ export const metadata: Metadata = {
   description: 'Explore public character profiles and their journals',
 };
 
-export default async function CharactersIndex({ searchParams }: { searchParams?: Record<string, string | string[] | undefined> }) {
-  const q = (searchParams?.q as string) || '';
+export default async function CharactersIndex({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
+  const sp = (await searchParams) || {};
+  const q = (sp.q as string) || '';
   await connectToDatabase();
   const filter: any = { visibility: 'public', deletedAt: { $exists: false } };
   if (q) {

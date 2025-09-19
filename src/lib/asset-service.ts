@@ -196,11 +196,13 @@ export class AssetService {
       //   throw new Error('Asset is in use and cannot be deleted');
       // }
 
-      // Delete from Cloudinary
-      await deleteFromCloudinary(
-        asset.cloudinaryId,
-        asset.type as 'image' | 'video' | 'raw'
-      );
+      // Delete from Cloudinary if an id exists
+      if (asset.cloudinaryId) {
+        await deleteFromCloudinary(
+          asset.cloudinaryId as string,
+          asset.type as 'image' | 'video' | 'raw'
+        );
+      }
 
       // Delete from database
       await Asset.findByIdAndDelete(id);

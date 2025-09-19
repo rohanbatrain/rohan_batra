@@ -8,7 +8,6 @@ import RemoteLinkPicker, { AssetLinkItem } from '@/components/ui/RemoteLinkPicke
 export default function CreateBlogPostPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [richEnabled, setRichEnabled] = useState<boolean>(false);
   const [formData, setFormData] = useState({
     title: '',
     slug: '',
@@ -69,25 +68,6 @@ export default function CreateBlogPostPage() {
     }
   };
 
-  // Load features flags from settings (server-backed)
-  // We use the existing settings API to check `features.richEditor`
-  // and show a CTA to open the Novel editor flow when available.
-  React.useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch('/api/admin/settings?category=features', { credentials: 'include' });
-        if (!res.ok) return;
-  const body = await res.json();
-  const arr = (body?.settings ?? body?.data?.settings ?? []) as Array<{ key: string; value: any }>;
-  const match = arr.find(s => s.key === 'features.richeditor');
-        if (!cancelled) setRichEnabled(Boolean(match?.value));
-      } catch {
-        // ignore
-      }
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
   return (
     <div className='space-y-6'>
@@ -101,17 +81,6 @@ export default function CreateBlogPostPage() {
         type='image'
         title='Select Featured Image'
       />
-      {richEnabled && (
-        <div className='p-4 border border-blue-200 rounded-lg bg-blue-50 text-blue-800 flex items-center justify-between'>
-          <div>
-            <p className='font-medium'>Novel editor is available</p>
-            <p className='text-sm opacity-80'>Switch to the enhanced writing experience to create your post.</p>
-          </div>
-          <Link href='/admin/unstable/blog/new' className='px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700'>
-            Use Novel Editor
-          </Link>
-        </div>
-      )}
       <div className='flex items-center justify-between'>
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
           Create New Blog Post

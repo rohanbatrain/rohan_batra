@@ -29,7 +29,7 @@ const AvatarConfigSchema = z.object({
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId: adminId } = await auth();
@@ -46,7 +46,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { id: targetUserId } = params;
+  const { id: targetUserId } = await context.params;
     const body = await request.json();
 
     // Validate the avatar configuration
@@ -104,7 +104,7 @@ export async function PUT(
 
 export async function DELETE(
   _request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId: adminId } = await auth();
@@ -121,7 +121,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-    const { id: targetUserId } = params;
+  const { id: targetUserId } = await context.params;
 
     // Reset to default avatar configuration
     const defaultConfig = {

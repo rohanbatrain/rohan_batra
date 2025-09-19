@@ -184,6 +184,24 @@ export async function PUT(
       );
     }
 
+    // Audit log for updates and role changes
+    try {
+      const AuditLog = (await import('@/models/AuditLog')).default;
+      await AuditLog.create({
+        action: 'user.update',
+        entityType: 'User',
+        entityId: id,
+        userId: user._id.toString(),
+        userEmail: user.email,
+        meta: {
+          fieldsModified: Object.keys(validatedData),
+          roleChanged: validatedData.role && validatedData.role !== existingUser.role,
+          previousRole: existingUser.role,
+          newRole: updatedUser.role,
+        },
+      });
+    } catch {}
+
     return NextResponse.json({
       success: true,
       user: {
@@ -311,6 +329,24 @@ export async function PATCH(
         { status: 500 }
       );
     }
+
+    // Audit log for updates and role changes
+    try {
+      const AuditLog = (await import('@/models/AuditLog')).default;
+      await AuditLog.create({
+        action: 'user.update',
+        entityType: 'User',
+        entityId: id,
+        userId: user._id.toString(),
+        userEmail: user.email,
+        meta: {
+          fieldsModified: Object.keys(validatedData),
+          roleChanged: validatedData.role && validatedData.role !== existingUser.role,
+          previousRole: existingUser.role,
+          newRole: updatedUser.role,
+        },
+      });
+    } catch {}
 
     return NextResponse.json({
       success: true,

@@ -15,6 +15,7 @@ import {
   BarChart3,
   Database,
   Trash2,
+  History,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React from 'react';
@@ -83,6 +84,12 @@ const navItems: NavItem[] = [
     name: 'Trash',
     href: '/admin/trash',
     icon: Trash2,
+    roles: ['admin'],
+  },
+  {
+    name: 'Audit Logs',
+    href: '/admin/audit',
+    icon: History,
     roles: ['admin'],
   },
   {

@@ -10,13 +10,18 @@ const CreateSchema = z.object({
   fullName: z.string().optional(),
   slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
   visibility: z.enum(['private', 'public']).optional(),
-  role: z.enum(['protagonist', 'antagonist', 'supporting', 'minor']),
+  role: z.enum(['protagonist', 'antagonist', 'supporting', 'minor']).default('supporting'),
   significance: z.enum(['major', 'minor', 'background']).optional(),
-  description: z.string().min(1),
-  personality: z.string().min(1),
-  background: z.string().min(1),
+  description: z.string().optional().default('<p></p>'),
+  personality: z.string().optional().default('<p></p>'),
+  background: z.string().optional().default('<p></p>'),
+  physicalDescription: z.string().optional(),
+  goals: z.string().optional(),
+  conflicts: z.string().optional(),
   age: z.number().optional(),
   tags: z.array(z.string()).optional(),
+  featured: z.boolean().optional(),
+  avatar: z.string().url().optional(),
   bookId: z.string().optional(),
 });
 
@@ -40,11 +45,24 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
     const [items, total] = await Promise.all([
-      Character.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Character.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
       Character.countDocuments(filter),
     ]);
 
-    return NextResponse.json({ success: true, characters: items, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    const characters = items.map((c: any) => ({
+      id: c._id?.toString(),
+      name: c.name,
+      fullName: c.fullName,
+      slug: c.slug,
+      visibility: c.visibility,
+      role: c.role,
+      significance: c.significance,
+      age: c.age,
+      tags: c.tags,
+      createdAt: c.createdAt,
+    }));
+
+    return NextResponse.json({ success: true, characters, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
   } catch (e) {
     return NextResponse.json({ success: false, error: 'Failed to list characters' }, { status: 500 });
   }
@@ -70,11 +88,28 @@ export async function POST(request: NextRequest) {
       description: data.description,
       personality: data.personality,
       background: data.background,
+      physicalDescription: data.physicalDescription,
+      goals: data.goals,
+      conflicts: data.conflicts,
       age: data.age,
       tags: data.tags || [],
+      featured: data.featured,
+      avatar: data.avatar,
       bookId: data.bookId,
     });
-    return NextResponse.json({ success: true, character: doc });
+    // Audit log create
+    try {
+      const AuditLog = (await import('@/models/AuditLog')).default;
+      await AuditLog.create({
+        action: 'character.create',
+        entityType: 'Character',
+        entityId: doc._id.toString(),
+        userId: me._id.toString(),
+        userEmail: me.email,
+        meta: { name: doc.name, slug: doc.slug },
+      });
+    } catch {}
+    return NextResponse.json({ success: true, character: doc.toJSON?.() ?? doc });
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json({ success: false, error: 'Validation failed', details: e.issues }, { status: 400 });
     return NextResponse.json({ success: false, error: 'Failed to create character' }, { status: 500 });

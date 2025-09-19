@@ -8,7 +8,7 @@ export interface ICharacter extends Document {
   name: string;
   fullName?: string;
   age?: number;
-  description: string; // Rich HTML content from Novel editor
+  description: string; // Rich HTML content
   physicalDescription?: string;
   personality: string;
   background: string;
@@ -104,6 +104,27 @@ const CharacterSchema = new Schema<ICharacter>(
           required: true,
           trim: true,
         },
+          strength: {
+            type: Number, // 1-10 scale
+            min: 0,
+            max: 10,
+            default: 5,
+          },
+          direction: {
+            type: String, // one-way or mutual
+            enum: ['one-way', 'mutual'],
+            default: 'mutual',
+          },
+          inverseType: {
+            type: String,
+            trim: true,
+          },
+          startedAt: {
+            type: Date,
+          },
+          endedAt: {
+            type: Date,
+          },
         description: {
           type: String,
           trim: true,
@@ -168,6 +189,7 @@ CharacterSchema.index({ bookId: 1, role: 1 });
 CharacterSchema.index({ bookId: 1, significance: 1 });
 CharacterSchema.index({ name: 1 });
 CharacterSchema.index({ visibility: 1 });
+CharacterSchema.index({ 'relationships.characterId': 1, 'relationships.relationshipType': 1 });
 
 // Instance methods
 CharacterSchema.methods.isMainCharacter = function (): boolean {
@@ -194,8 +216,8 @@ const CharacterModel =
   mongoose.models.Character ||
   mongoose.model<ICharacter>('Character', CharacterSchema);
 
-// Pre-save: auto-generate slug from name if missing
-CharacterSchema.pre<ICharacter>('save', function (next) {
+// Ensure slug exists before validation so required constraint passes
+CharacterSchema.pre<ICharacter>('validate', function (next) {
   if (!this.slug && this.name) {
     this.slug = this.name
       .toLowerCase()

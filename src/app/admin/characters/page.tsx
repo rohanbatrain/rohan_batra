@@ -68,7 +68,9 @@ export default function AdminCharactersPage() {
       <div className='flex items-center justify-between'>
         <h1 className='text-2xl font-semibold'>Characters</h1>
         <div className='space-x-2'>
-          <Button onClick={createQuick}>New Character</Button>
+          <Link href='/admin/characters/new'>
+            <Button>New Character</Button>
+          </Link>
         </div>
       </div>
 

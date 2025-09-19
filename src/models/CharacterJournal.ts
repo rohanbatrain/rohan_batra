@@ -6,7 +6,7 @@ export interface ICharacterJournal extends Document {
   bookId: mongoose.Types.ObjectId;
   slug: string;
   title: string;
-  content: string; // Rich HTML content from Novel editor
+  content: string; // Rich HTML content
   entryDate?: Date; // In-story date (optional)
   mood?: string;
   location?: string;

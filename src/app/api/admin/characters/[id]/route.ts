@@ -28,9 +28,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const me = await User.findOne({ clerkId: userId });
     if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
     const { id } = await params;
-    const doc = await Character.findById(id);
+  const doc = await Character.findById(id);
     if (!doc) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
-    return NextResponse.json({ success: true, character: doc });
+  return NextResponse.json({ success: true, character: doc.toJSON?.() ?? doc });
   } catch (e) {
     return NextResponse.json({ success: false, error: 'Failed to fetch character' }, { status: 500 });
   }
@@ -46,9 +46,22 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const body = await request.json();
     const data = UpdateSchema.parse(body);
+    const before = await Character.findById(id).lean();
     const updated = await Character.findByIdAndUpdate(id, { $set: { ...data } }, { new: true, runValidators: true });
     if (!updated) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
-    return NextResponse.json({ success: true, character: updated });
+    // Audit log update
+    try {
+      const AuditLog = (await import('@/models/AuditLog')).default;
+      await AuditLog.create({
+        action: 'character.update',
+        entityType: 'Character',
+        entityId: updated._id.toString(),
+        userId: me._id.toString(),
+        userEmail: me.email,
+        meta: { before, after: updated.toObject?.() ?? updated },
+      });
+    } catch {}
+    return NextResponse.json({ success: true, character: updated.toJSON?.() ?? updated });
   } catch (e) {
     if (e instanceof z.ZodError) return NextResponse.json({ success: false, error: 'Validation failed', details: e.issues }, { status: 400 });
     return NextResponse.json({ success: false, error: 'Failed to update character' }, { status: 500 });
@@ -70,10 +83,32 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (!doc) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     if (permanent && doc.deletedAt) {
       await Character.findByIdAndDelete(id);
+      try {
+        const AuditLog = (await import('@/models/AuditLog')).default;
+        await AuditLog.create({
+          action: 'character.delete',
+          entityType: 'Character',
+          entityId: id,
+          userId: me._id.toString(),
+          userEmail: me.email,
+          meta: { permanent: true },
+        });
+      } catch {}
       return NextResponse.json({ success: true, message: 'Character permanently deleted' });
     }
     const currentTime = new Date();
     await Character.findByIdAndUpdate(id, { $set: { deletedAt: currentTime, deletedBy: me._id } });
+    try {
+      const AuditLog = (await import('@/models/AuditLog')).default;
+      await AuditLog.create({
+        action: 'character.trash',
+        entityType: 'Character',
+        entityId: id,
+        userId: me._id.toString(),
+        userEmail: me.email,
+        meta: { permanent: false, toTrash },
+      });
+    } catch {}
     return NextResponse.json({ success: true, message: toTrash ? 'Moved to trash' : 'Character soft deleted' });
   } catch (e) {
     return NextResponse.json({ success: false, error: 'Failed to delete character' }, { status: 500 });

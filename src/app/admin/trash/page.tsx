@@ -170,9 +170,9 @@ export default function TrashPage() {
                 {String(t).charAt(0).toUpperCase() + String(t).slice(1)}
               </h2>
               <div className="divide-y border rounded bg-white dark:bg-gray-800">
-                {items.map((it: any) => (
+                {items.map((it: any, i: number) => (
                   <div
-                    key={it._id}
+                    key={`${t}-${it?._id ?? it?.id ?? i}`}
                     className="flex items-center justify-between p-3 gap-3"
                   >
                     <label className="flex items-center gap-2">

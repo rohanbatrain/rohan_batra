@@ -180,7 +180,7 @@ describe('Safety Mechanisms Integration', () => {
       // Feature flags should be reported
       expect(healthData.features).toHaveProperty('assetIntegration');
       expect(healthData.features).toHaveProperty('enhancedValidation');
-      expect(healthData.features).toHaveProperty('richEditor');
+  // 'richEditor' feature removed from codebase
       
       // System health indicators
       expect(healthData).toHaveProperty('database');

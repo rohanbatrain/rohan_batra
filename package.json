@@ -41,7 +41,6 @@
     "lucide-react": "^0.544.0",
     "mongoose": "^8.18.1",
     "next": "15.5.3",
-    "novel": "^1.0.2",
     "openai": "^5.20.3",
     "prettier": "^3.6.2",
     "react": "19.1.0",
