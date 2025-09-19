@@ -18,6 +18,8 @@ export interface LottieAsset {
   uploadedBy: string; // User ID
   createdAt?: Date;
   updatedAt?: Date;
+  deletedAt?: Date | null;
+  deletedBy?: string | null; // User ID
 }
 
 export interface LottieAssetWithUploader

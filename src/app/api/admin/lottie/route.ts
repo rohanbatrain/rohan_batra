@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     const includeAnimationData =
       url.searchParams.get('includeAnimationData') === 'true';
 
-    const filter: Record<string, unknown> = {};
+  const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
 
     if (category) {
       filter.category = category;
@@ -143,30 +143,25 @@ export async function GET(request: NextRequest) {
 
     const response = {
       success: true,
-      assets: assets.map(asset => ({
-        _id: asset._id,
-        name: asset.name,
-        description: asset.description,
-        tags: asset.tags,
-        category: asset.category,
-        fileUrl: asset.fileUrl,
-        thumbnailUrl: asset.thumbnailUrl,
-        duration: asset.duration,
-        frameRate: asset.frameRate,
-        dimensions: asset.dimensions,
-        fileSize: asset.fileSize,
-        isPublic: asset.isPublic,
-        featured: asset.featured,
-        createdAt: asset.createdAt,
-        updatedAt: asset.updatedAt,
-        usage: includeAnalytics
-          ? asset.usage
-          : {
-              totalUsages: asset.usage?.totalUsages || 0,
-              lastUsed: asset.usage?.lastUsed,
-            },
-        animationData: includeAnimationData ? asset.animationData : undefined,
-        metadata: asset.metadata,
+      assets: assets.map(a => ({
+        id: a._id.toString(),
+        _id: a._id.toString(),
+        name: a.name,
+        description: a.description,
+        fileName: a.fileName,
+        fileSize: a.fileSize,
+        mimeType: a.mimeType,
+        url: a.getFileUrl ? a.getFileUrl() : undefined,
+        metadata: {
+          width: a.width,
+          height: a.height,
+          duration: a.duration,
+          frameRate: a.frameRate,
+        },
+        usageCount: a.usage?.totalUsages || 0,
+        createdAt: a.createdAt,
+        updatedAt: a.updatedAt,
+        deletedAt: (a as any).deletedAt,
       })),
       pagination: {
         currentPage: page,

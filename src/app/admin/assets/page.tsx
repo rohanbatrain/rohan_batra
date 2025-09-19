@@ -43,6 +43,7 @@ export default function AssetsManagementPage() {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
   const { isLoaded, isSignedIn } = useAuth();
+  const [importUrl, setImportUrl] = useState('');
 
   const fetchAssets = useCallback(async () => {
     if (!isLoaded || !isSignedIn) return;
@@ -118,6 +119,49 @@ export default function AssetsManagementPage() {
       toast({
         title: 'Error',
         description: e instanceof Error ? e.message : 'Failed to delete asset',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const moveToTrash = async (assetId: string) => {
+    if (!confirm('Move this asset to trash? You can permanently delete later.')) return;
+    try {
+      const response = await fetch(`/api/admin/lottie/${assetId}?trash=true`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || 'Failed to move to trash');
+      toast({ title: 'Trashed', description: data.message || 'Moved to trash' });
+      fetchAssets();
+    } catch (e) {
+      toast({
+        title: 'Error',
+        description: e instanceof Error ? e.message : 'Failed to move to trash',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const importFromUrl = async () => {
+    if (!importUrl) return;
+    try {
+      const response = await fetch('/api/admin/lottie/import', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ url: importUrl }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data?.error || 'Import failed');
+      toast({ title: 'Imported', description: data.message || 'Lottie imported' });
+      setImportUrl('');
+      fetchAssets();
+    } catch (e) {
+      toast({
+        title: 'Import error',
+        description: e instanceof Error ? e.message : 'Failed to import from URL',
         variant: 'destructive',
       });
     }
@@ -240,6 +284,18 @@ export default function AssetsManagementPage() {
             onChange={handleFileUpload}
             className='hidden'
           />
+          <div className='flex items-center gap-2'>
+            <Input
+              placeholder='Paste GitHub raw URL (https://raw.githubusercontent.com/...)'
+              value={importUrl}
+              onChange={e => setImportUrl(e.target.value)}
+              className='w-96'
+            />
+            <Button onClick={importFromUrl} disabled={!importUrl}>
+              <Upload className='h-4 w-4 mr-2' />
+              Import from URL
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -354,6 +410,10 @@ export default function AssetsManagementPage() {
                   >
                     <Trash2 className='h-4 w-4 mr-1' />
                     Delete
+                  </Button>
+                  <Button size='sm' variant='outline' onClick={() => moveToTrash(asset.id)}>
+                    <Trash2 className='h-4 w-4 mr-1' />
+                    Move to Trash
                   </Button>
                 </div>
               </CardContent>

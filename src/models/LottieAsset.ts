@@ -88,6 +88,16 @@ const LottieAssetSchema = new Schema<ILottieAsset>(
       ref: 'User',
       required: true,
     },
+    // Soft delete support
+    deletedAt: {
+      type: Date,
+      required: false,
+    },
+    deletedBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: false,
+    },
   },
   {
     timestamps: true,
