@@ -47,18 +47,28 @@ export default function UsersManagementPage() {
       if (roleFilter !== 'all') params.append('role', roleFilter);
       if (searchTerm) params.append('search', searchTerm);
 
-      const response = await fetch(`/api/admin/users?${params}`);
+      const response = await fetch(`/api/admin/users?${params}`, {
+        credentials: 'include',
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch users');
+        let message = 'Failed to fetch users';
+        try {
+          const err = await response.json();
+          message = err?.error || message;
+        } catch {}
+        if (response.status === 401) message = 'Please sign in to continue';
+        if (response.status === 403) message = 'You do not have access';
+        throw new Error(message);
       }
 
       const result = await response.json();
-      setUsers(result.data.users || []);
-    } catch {
+      const usersArray = (result?.data?.users ?? result?.users ?? []) as User[];
+      setUsers(Array.isArray(usersArray) ? usersArray : []);
+    } catch (e) {
       toast({
         title: 'Error',
-        description: 'Failed to fetch users',
+        description: e instanceof Error ? e.message : 'Failed to fetch users',
         variant: 'destructive',
       });
     } finally {
@@ -79,10 +89,18 @@ export default function UsersManagementPage() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ role: newRole }),
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to update user role');
+        let message = 'Failed to update user role';
+        try {
+          const err = await response.json();
+          message = err?.error || message;
+        } catch {}
+        if (response.status === 401) message = 'Please sign in to continue';
+        if (response.status === 403) message = 'You do not have access';
+        throw new Error(message);
       }
 
       const result = await response.json();
@@ -92,10 +110,10 @@ export default function UsersManagementPage() {
       });
 
       fetchUsers();
-    } catch {
+    } catch (e) {
       toast({
         title: 'Error',
-        description: 'Failed to update user role',
+        description: e instanceof Error ? e.message : 'Failed to update user role',
         variant: 'destructive',
       });
     }
@@ -107,6 +125,7 @@ export default function UsersManagementPage() {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ isActive: !currentStatus }),
+        credentials: 'include',
       });
 
       if (!response.ok) {

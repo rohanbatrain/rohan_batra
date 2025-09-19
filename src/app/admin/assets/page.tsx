@@ -52,18 +52,28 @@ export default function AssetsManagementPage() {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
 
-      const response = await fetch(`/api/admin/lottie?${params}`);
+      const response = await fetch(`/api/admin/lottie?${params}`, {
+        credentials: 'include',
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to fetch assets');
+        let message = 'Failed to fetch assets';
+        try {
+          const err = await response.json();
+          message = err?.error || message;
+        } catch {}
+        if (response.status === 401) message = 'Please sign in to continue';
+        if (response.status === 403) message = 'You do not have access';
+        throw new Error(message);
       }
 
       const result = await response.json();
-      setAssets(result.data.assets || []);
-    } catch {
+      const assetsArray = (result?.data?.assets ?? result?.assets ?? []) as LottieAsset[];
+      setAssets(Array.isArray(assetsArray) ? assetsArray : []);
+    } catch (e) {
       toast({
         title: 'Error',
-        description: 'Failed to fetch assets',
+        description: e instanceof Error ? e.message : 'Failed to fetch assets',
         variant: 'destructive',
       });
     } finally {
@@ -83,10 +93,18 @@ export default function AssetsManagementPage() {
     try {
       const response = await fetch(`/api/admin/lottie/${assetId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to delete asset');
+        let message = 'Failed to delete asset';
+        try {
+          const err = await response.json();
+          message = err?.error || message;
+        } catch {}
+        if (response.status === 401) message = 'Please sign in to continue';
+        if (response.status === 403) message = 'You do not have access';
+        throw new Error(message);
       }
 
       const result = await response.json();
@@ -96,10 +114,10 @@ export default function AssetsManagementPage() {
       });
 
       fetchAssets();
-    } catch {
+    } catch (e) {
       toast({
         title: 'Error',
-        description: 'Failed to delete asset',
+        description: e instanceof Error ? e.message : 'Failed to delete asset',
         variant: 'destructive',
       });
     }
@@ -131,10 +149,18 @@ export default function AssetsManagementPage() {
       const response = await fetch('/api/admin/lottie', {
         method: 'POST',
         body: formData,
+        credentials: 'include',
       });
 
       if (!response.ok) {
-        throw new Error('Failed to upload asset');
+        let message = 'Failed to upload asset';
+        try {
+          const err = await response.json();
+          message = err?.error || message;
+        } catch {}
+        if (response.status === 401) message = 'Please sign in to continue';
+        if (response.status === 403) message = 'You do not have access';
+        throw new Error(message);
       }
 
       const result = await response.json();

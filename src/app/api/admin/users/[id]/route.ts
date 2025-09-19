@@ -232,6 +232,128 @@ export async function PUT(
   }
 }
 
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+    const { userId } = await auth();
+
+    if (!userId) {
+      return NextResponse.json(
+        { success: false, error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    await connectToDatabase();
+    const user = await User.findOne({ clerkId: userId });
+
+    if (!user || !['admin', 'editor'].includes(user.role)) {
+      return NextResponse.json(
+        { success: false, error: 'Admin access required' },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    
+    // For PATCH, we only validate the fields that are provided
+    const validatedData = UserUpdateSchema.partial().parse(body);
+
+    const existingUser = await User.findById(id);
+    if (!existingUser) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    // Check email conflicts if email is being updated
+    if (validatedData.email && validatedData.email !== existingUser.email) {
+      const conflictingUser = await User.findOne({
+        email: validatedData.email,
+        _id: { $ne: id },
+      });
+
+      if (conflictingUser) {
+        return NextResponse.json(
+          { success: false, error: 'Email already exists' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Role change validation
+    if (validatedData.role && validatedData.role !== existingUser.role) {
+      if (user.role !== 'admin') {
+        return NextResponse.json(
+          { success: false, error: 'Only admins can change user roles' },
+          { status: 403 }
+        );
+      }
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      {
+        $set: { ...validatedData, updatedAt: new Date() },
+      },
+      { new: true, runValidators: true }
+    ).select('-clerkId -__v');
+
+    if (!updatedUser) {
+      return NextResponse.json(
+        { success: false, error: 'Failed to update user' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        user: {
+          _id: updatedUser._id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          status: updatedUser.status,
+          profile: updatedUser.profile,
+          preferences: updatedUser.preferences,
+          createdAt: updatedUser.createdAt,
+          updatedAt: updatedUser.updatedAt,
+          lastLoginAt: updatedUser.lastLoginAt,
+          emailVerified: updatedUser.emailVerified,
+        },
+        message: 'User updated successfully',
+      },
+    });
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'Validation failed',
+          details: error.issues,
+        },
+        { status: 400 }
+      );
+    }
+
+    console.error('Admin user PATCH error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to update user',
+        details:
+          process.env.NODE_ENV === 'development' ? String(error) : undefined,
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

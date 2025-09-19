@@ -53,17 +53,26 @@ export default function CachePage() {
 
   const fetchCacheInfo = useCallback(async () => {
     try {
-      const response = await fetch('/api/admin/cache/info');
+      const response = await fetch('/api/admin/cache/info', {
+        credentials: 'include',
+      });
       if (!response.ok) {
-        throw new Error('Failed to fetch cache info');
+        let message = 'Failed to fetch cache info';
+        try {
+          const err = await response.json();
+          message = err?.error || message;
+        } catch {}
+        if (response.status === 401) message = 'Please sign in to continue';
+        if (response.status === 403) message = 'You do not have access';
+        throw new Error(message);
       }
 
       const result = await response.json();
       setInfo(result.data);
-    } catch {
+    } catch (e) {
       toast({
         title: 'Error',
-        description: 'Failed to fetch cache information',
+        description: e instanceof Error ? e.message : 'Failed to fetch cache information',
         variant: 'destructive',
       });
     }
@@ -71,17 +80,26 @@ export default function CachePage() {
 
   const fetchKeys = useCallback(async () => {
     try {
-      const response = await fetch(`/api/admin/cache/keys?pattern=${pattern}`);
+      const response = await fetch(`/api/admin/cache/keys?pattern=${pattern}`, {
+        credentials: 'include',
+      });
       if (!response.ok) {
-        throw new Error('Failed to fetch cache keys');
+        let message = 'Failed to fetch cache keys';
+        try {
+          const err = await response.json();
+          message = err?.error || message;
+        } catch {}
+        if (response.status === 401) message = 'Please sign in to continue';
+        if (response.status === 403) message = 'You do not have access';
+        throw new Error(message);
       }
 
       const result = await response.json();
       setKeys(result.data.keys || []);
-    } catch {
+    } catch (e) {
       toast({
         title: 'Error',
-        description: 'Failed to fetch cache keys',
+        description: e instanceof Error ? e.message : 'Failed to fetch cache keys',
         variant: 'destructive',
       });
     } finally {
