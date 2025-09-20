@@ -18,6 +18,7 @@ const CreateSchema = z.object({
   physicalDescription: z.string().optional(),
   goals: z.string().optional(),
   conflicts: z.string().optional(),
+  birthdate: z.string().datetime().optional(),
   age: z.number().optional(),
   tags: z.array(z.string()).optional(),
   featured: z.boolean().optional(),
@@ -78,6 +79,19 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const data = CreateSchema.parse(body);
+    let birthdate: Date | undefined;
+    if (data.birthdate) {
+      const bd = new Date(data.birthdate);
+      if (!isNaN(bd.getTime())) birthdate = bd;
+    }
+    const computeAgeFromDate = (date?: Date) => {
+      if (!date) return undefined;
+      const today = new Date();
+      let age = today.getFullYear() - date.getFullYear();
+      const m = today.getMonth() - date.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < date.getDate())) age--;
+      return age < 0 ? 0 : age;
+    };
     const doc = await Character.create({
       name: data.name,
       fullName: data.fullName,
@@ -91,7 +105,8 @@ export async function POST(request: NextRequest) {
       physicalDescription: data.physicalDescription,
       goals: data.goals,
       conflicts: data.conflicts,
-      age: data.age,
+      birthdate,
+      age: birthdate ? computeAgeFromDate(birthdate) : data.age,
       tags: data.tags || [],
       featured: data.featured,
       avatar: data.avatar,

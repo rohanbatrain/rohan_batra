@@ -7,6 +7,7 @@ export interface ICharacter extends Document {
   visibility: 'private' | 'public';
   name: string;
   fullName?: string;
+  birthdate?: Date | null;
   age?: number;
   description: string; // Rich HTML content
   physicalDescription?: string;
@@ -63,6 +64,9 @@ const CharacterSchema = new Schema<ICharacter>(
       type: String,
       trim: true,
       maxlength: 200,
+    },
+    birthdate: {
+      type: Date,
     },
     age: {
       type: Number,
@@ -216,6 +220,18 @@ const CharacterModel =
   mongoose.models.Character ||
   mongoose.model<ICharacter>('Character', CharacterSchema);
 
+// Helpers
+function computeAgeFromDate(date: Date | undefined | null): number | undefined {
+  if (!date) return undefined;
+  const today = new Date();
+  let age = today.getFullYear() - date.getFullYear();
+  const m = today.getMonth() - date.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < date.getDate())) {
+    age--;
+  }
+  return age < 0 ? 0 : age;
+}
+
 // Ensure slug exists before validation so required constraint passes
 CharacterSchema.pre<ICharacter>('validate', function (next) {
   if (!this.slug && this.name) {
@@ -223,6 +239,27 @@ CharacterSchema.pre<ICharacter>('validate', function (next) {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
+  }
+  if (this.birthdate) {
+    const computed = computeAgeFromDate(this.birthdate);
+    if (typeof computed === 'number') this.age = computed;
+  }
+  next();
+});
+
+// Keep age in sync when using findOneAndUpdate
+CharacterSchema.pre('findOneAndUpdate', function (next) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const update: any = this.getUpdate() || {};
+  const $set = update.$set ?? update;
+  if ($set && $set.birthdate) {
+    const bd = new Date($set.birthdate);
+    if (!isNaN(bd.getTime())) {
+      const computed = computeAgeFromDate(bd);
+      if (typeof computed === 'number') {
+        if (update.$set) update.$set.age = computed; else update.age = computed;
+      }
+    }
   }
   next();
 });

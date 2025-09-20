@@ -15,6 +15,7 @@ const UpdateSchema = z.object({
   description: z.string().optional(),
   personality: z.string().optional(),
   background: z.string().optional(),
+  birthdate: z.string().datetime().nullable().optional(),
   age: z.number().optional(),
   tags: z.array(z.string()).optional(),
   bookId: z.string().nullable().optional(),
@@ -47,7 +48,25 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json();
     const data = UpdateSchema.parse(body);
     const before = await Character.findById(id).lean();
-    const updated = await Character.findByIdAndUpdate(id, { $set: { ...data } }, { new: true, runValidators: true });
+    const set: Record<string, unknown> = { ...data };
+    if (data.birthdate !== undefined) {
+      if (data.birthdate === null) {
+        set.birthdate = undefined;
+      } else {
+        const bd = new Date(data.birthdate);
+        if (!isNaN(bd.getTime())) {
+          set.birthdate = bd;
+          // age will be computed by schema pre hook as well, but set here too
+          const today = new Date();
+          let age = today.getFullYear() - bd.getFullYear();
+          const m = today.getMonth() - bd.getMonth();
+          if (m < 0 || (m === 0 && today.getDate() < bd.getDate())) age--;
+          if (age < 0) age = 0;
+          set.age = age;
+        }
+      }
+    }
+    const updated = await Character.findByIdAndUpdate(id, { $set: set }, { new: true, runValidators: true });
     if (!updated) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     // Audit log update
     try {
