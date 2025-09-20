@@ -14,9 +14,11 @@ type Props = {
   required?: boolean;
   name?: string;
   id?: string;
+  min?: string;
+  max?: string;
 };
 
-export function DatePickerInput({ value, onChange, placeholder = "yyyy-mm-dd", className, disabled, required, name, id }: Props) {
+export function DatePickerInput({ value, onChange, placeholder = "yyyy-mm-dd", className, disabled, required, name, id, min, max }: Props) {
   return (
     <div className={cn("relative", className)}>
       <Input
@@ -28,6 +30,8 @@ export function DatePickerInput({ value, onChange, placeholder = "yyyy-mm-dd", c
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled}
         required={required}
+        min={min}
+        max={max}
         className="pr-20"
       />
       {value ? (

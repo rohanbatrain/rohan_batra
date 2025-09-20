@@ -51,7 +51,23 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const set: Record<string, unknown> = { ...data };
     if (data.birthdate !== undefined) {
       if (data.birthdate === null) {
-        set.birthdate = undefined;
+        // Explicitly unset
+        const unset: Record<string, 1> = { birthdate: 1, age: 1 };
+        const updated = await Character.findByIdAndUpdate(id, { $unset: unset }, { new: true, runValidators: true });
+        if (!updated) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+        // Audit log update for unset
+        try {
+          const AuditLog = (await import('@/models/AuditLog')).default;
+          await AuditLog.create({
+            action: 'character.update',
+            entityType: 'Character',
+            entityId: updated._id.toString(),
+            userId: me._id.toString(),
+            userEmail: me.email,
+            meta: { before, after: updated.toObject?.() ?? updated },
+          });
+        } catch {}
+        return NextResponse.json({ success: true, character: updated.toJSON?.() ?? updated });
       } else {
         const bd = new Date(data.birthdate);
         if (!isNaN(bd.getTime())) {
@@ -66,7 +82,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
         }
       }
     }
-    const updated = await Character.findByIdAndUpdate(id, { $set: set }, { new: true, runValidators: true });
+  const updated = await Character.findByIdAndUpdate(id, { $set: set }, { new: true, runValidators: true });
     if (!updated) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
     // Audit log update
     try {

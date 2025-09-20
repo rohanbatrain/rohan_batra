@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Settings, Save, Plus, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { IANATimezones } from '@/lib/timezones';
 
 interface SiteSettingVm {
 	_id: string;
@@ -21,6 +22,14 @@ interface SiteSettingVm {
 	category: string;
 	isPublic: boolean;
 	updatedAt: string;
+  validation?: {
+    required?: boolean;
+    min?: number;
+    max?: number;
+    pattern?: string;
+    options?: Array<string | number | { label: string; value: any }>;
+    ui?: 'toggle' | 'select';
+  };
 }
 
 interface SettingsDataVm {
@@ -89,43 +98,7 @@ export default function SettingsPage() {
 		setEditingSettings(prev => ({ ...prev, [settingId]: value }));
 	};
 
-	const saveSettings = async () => {
-		try {
-			setSaving(true);
-			const entries = Object.entries(editingSettings);
-			if (entries.length === 0) {
-				toast({ title: 'No Changes', description: 'No settings have been modified' });
-				return;
-			}
-			if (!data) throw new Error('No settings to update');
-			const byId: Record<string, SiteSettingVm> = {};
-			for (const s of data.settings) byId[s._id] = s;
-			const bulk = entries
-				.map(([id, value]) => {
-					const s = byId[id];
-					if (!s) return null;
-					return { key: s.key, value, type: s.type, category: s.category, description: s.description, isPublic: s.isPublic };
-				})
-				.filter(Boolean);
-			if (bulk.length === 0) {
-				toast({ title: 'No Changes', description: 'Nothing to update' });
-				return;
-			}
-			const response = await fetch('/api/admin/settings', { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ settings: bulk }) });
-			if (!response.ok) {
-				const err = await response.json().catch(() => null);
-				throw new Error(err?.error || 'Failed to save settings');
-			}
-			const result = await response.json();
-			toast({ title: result?.success ? 'Saved' : 'Partial Success', description: result?.message || 'Settings updated' });
-			setEditingSettings({});
-			fetchSettings();
-		} catch (error) {
-			toast({ title: 'Error', description: error instanceof Error ? error.message : 'Failed to save settings', variant: 'destructive' });
-		} finally {
-			setSaving(false);
-		}
-	};
+	// Bulk save removed in simplified UI — each control saves immediately
 
 	const createSetting = async () => {
 		try {
@@ -183,30 +156,70 @@ export default function SettingsPage() {
 
 	const renderSettingValue = (setting: SiteSettingVm) => {
 		const currentValue = editingSettings[setting._id] !== undefined ? editingSettings[setting._id] : setting.value;
-		switch (setting.type) {
-			case 'boolean':
-				return <Switch checked={Boolean(currentValue)} onChange={e => handleValueChange(setting._id, e.currentTarget.checked)} />;
-			case 'number':
-				return <Input type='number' value={String(currentValue)} onChange={e => handleValueChange(setting._id, parseFloat(e.target.value))} />;
-			case 'json':
-				return (
-					<Textarea
-						value={typeof currentValue === 'string' ? currentValue : JSON.stringify(currentValue, null, 2)}
-						onChange={e => {
-							try {
-								const parsed = JSON.parse(e.target.value);
-								handleValueChange(setting._id, parsed);
-							} catch {
-								handleValueChange(setting._id, e.target.value);
-							}
-						}}
-						className='font-mono text-sm'
-						rows={4}
-					/>
-				);
-			default:
-				return <Input value={String(currentValue ?? '')} onChange={e => handleValueChange(setting._id, e.target.value)} />;
+		// UI preference override
+		if (setting.validation?.ui === 'toggle' || setting.type === 'boolean') {
+			return <Switch checked={Boolean(currentValue)} onCheckedChange={val => handleValueChange(setting._id, val)} />;
 		}
+
+		// Dropdown if options provided
+			if (setting.validation?.ui === 'select' || (Array.isArray(setting.validation?.options) && setting.validation!.options!.length > 0) || setting.key === 'site.timezone') {
+			const options = (() => {
+				if (Array.isArray(setting.validation?.options) && setting.validation.options.length > 0) {
+						return setting.validation.options.map((opt: any) =>
+							typeof opt === 'object' && opt !== null ? opt : { label: String(opt), value: opt }
+						);
+				}
+				if (setting.key === 'site.timezone') {
+						return IANATimezones.map((tz: string) => ({ label: tz, value: tz }));
+				}
+				return [] as { label: string; value: any }[];
+			})();
+
+				const toKey = (v: any) => JSON.stringify(v);
+				const selectValue = currentValue === undefined ? '' : toKey(currentValue);
+
+				return (
+					<Select value={selectValue} onValueChange={val => handleValueChange(setting._id, JSON.parse(val))}>
+					<SelectTrigger>
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent>
+							{options.map((opt: any) => (
+								<SelectItem key={toKey(opt.value)} value={toKey(opt.value)}>
+								{opt.label}
+							</SelectItem>
+						))}
+					</SelectContent>
+				</Select>
+			);
+		}
+
+		// Number input
+		if (setting.type === 'number') {
+			return <Input type='number' value={String(currentValue)} onChange={e => handleValueChange(setting._id, parseFloat(e.target.value))} />;
+		}
+
+		// JSON textarea
+		if (setting.type === 'json') {
+			return (
+				<Textarea
+					value={typeof currentValue === 'string' ? currentValue : JSON.stringify(currentValue, null, 2)}
+					onChange={e => {
+						try {
+							const parsed = JSON.parse(e.target.value);
+							handleValueChange(setting._id, parsed);
+						} catch {
+							handleValueChange(setting._id, e.target.value);
+						}
+					}}
+					className='font-mono text-sm'
+					rows={4}
+				/>
+			);
+		}
+
+		// Default text input
+		return <Input value={String(currentValue ?? '')} onChange={e => handleValueChange(setting._id, e.target.value)} />;
 	};
 
 	if (loading) {
@@ -239,19 +252,9 @@ export default function SettingsPage() {
 						<Settings className='h-8 w-8' />
 						Site Settings
 					</h1>
-					<p className='text-gray-600 mt-2'>Quick toggles for common features</p>
+					<p className='text-gray-600 mt-2'>Only the essential controls.</p>
 				</div>
 			</div>
-
-			{Object.keys(editingSettings).length > 0 && (
-				<Card className='border-yellow-200 bg-yellow-50'>
-					<CardContent className='p-4'>
-						<p className='text-sm text-yellow-700'>
-							You have {Object.keys(editingSettings).length} unsaved change(s). Click "Save Changes" to apply them.
-						</p>
-					</CardContent>
-				</Card>
-			)}
 
 			{/* Simple feature toggles */}
 			<div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
@@ -263,8 +266,7 @@ export default function SettingsPage() {
 						</div>
 						<Switch
 							checked={Boolean(data.grouped['features']?.find(s => s.key === 'features.unstable')?.value)}
-							onChange={async e => {
-								const enabled = e.currentTarget.checked;
+							onCheckedChange={async enabled => {
 								await fetch('/api/admin/settings', {
 									method: 'POST',
 									headers: { 'Content-Type': 'application/json' },
@@ -290,8 +292,7 @@ export default function SettingsPage() {
 						</div>
 						<Switch
 							checked={Boolean(data.grouped['features']?.find(s => s.key === 'features.googledrive')?.value)}
-							onChange={async e => {
-								const enabled = e.currentTarget.checked;
+							onCheckedChange={async enabled => {
 								await fetch('/api/admin/settings', {
 									method: 'POST',
 									headers: { 'Content-Type': 'application/json' },
@@ -307,121 +308,44 @@ export default function SettingsPage() {
 						/>
 					</CardContent>
 				</Card>
+
+				{/* Site Timezone */}
+				<Card>
+					<CardContent className='p-6 flex items-start justify-between gap-4'>
+						<div>
+							<h3 className='font-medium'>Site Timezone</h3>
+							<p className='text-sm text-gray-600'>Default timezone for dates and quick notes.</p>
+						</div>
+						<div className='min-w-[220px]'>
+							<Select
+								value={String(data.grouped['general']?.find(s => s.key === 'site.timezone')?.value ?? 'UTC')}
+								onValueChange={async tz => {
+									await fetch('/api/admin/settings', {
+										method: 'POST',
+										headers: { 'Content-Type': 'application/json' },
+										credentials: 'include',
+										body: JSON.stringify({ key: 'site.timezone', value: tz, type: 'string', category: 'general', description: 'Default timezone for site', isPublic: false, validation: { ui: 'select' } }),
+									});
+									toast({ title: 'Saved', description: `Timezone set to ${tz}` });
+									fetchSettings();
+								}}
+							>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent className='max-h-72'>
+									{IANATimezones.map(tz => (
+										<SelectItem key={tz} value={tz}>
+											{tz}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
+						</div>
+					</CardContent>
+				</Card>
 			</div>
 
-			{/* Advanced settings editor (collapsed) */}
-			<details className='mt-4'>
-				<summary className='cursor-pointer text-sm text-gray-600'>Advanced settings (key/value)</summary>
-				<div className='mt-4'>
-					<div className='flex justify-end gap-2 mb-4'>
-						<Button onClick={() => setShowNewForm(!showNewForm)} variant='outline'>
-							<Plus className='h-4 w-4 mr-2' />Add Setting
-						</Button>
-						<Button onClick={saveSettings} disabled={Object.keys(editingSettings).length === 0 || saving}>
-							<Save className='h-4 w-4 mr-2' />{saving ? 'Saving...' : 'Save Changes'}
-						</Button>
-					</div>
-
-					{showNewForm && (
-						<Card className='mb-6'>
-							<CardHeader>
-								<CardTitle>Add New Setting</CardTitle>
-							</CardHeader>
-							<CardContent className='space-y-4'>
-								<div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-									<div>
-										<Label htmlFor='new-key'>Key</Label>
-										<Input id='new-key' value={newSetting.key} onChange={e => setNewSetting(prev => ({ ...prev, key: e.target.value }))} placeholder='e.g., site.title' />
-									</div>
-									<div>
-										<Label htmlFor='new-category'>Category</Label>
-										<Select value={newSetting.category} onValueChange={value => setNewSetting(prev => ({ ...prev, category: value }))}>
-											<SelectTrigger>
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												{data.categories.map(cat => (
-													<SelectItem key={cat} value={cat}>
-														{cat}
-													</SelectItem>
-												))}
-												<SelectItem value='general'>general</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-									<div>
-										<Label htmlFor='new-type'>Type</Label>
-										<Select value={newSetting.type} onValueChange={(value: string) => setNewSetting(prev => ({ ...prev, type: value as NewSetting['type'] }))}>
-											<SelectTrigger>
-												<SelectValue />
-											</SelectTrigger>
-											<SelectContent>
-												<SelectItem value='string'>String</SelectItem>
-												<SelectItem value='number'>Number</SelectItem>
-												<SelectItem value='boolean'>Boolean</SelectItem>
-												<SelectItem value='json'>JSON</SelectItem>
-											</SelectContent>
-										</Select>
-									</div>
-									<div className='flex items-center space-x-2'>
-										<Switch checked={newSetting.isPublic} onChange={e => setNewSetting(prev => ({ ...prev, isPublic: e.currentTarget.checked }))} />
-										<Label>Public Setting</Label>
-									</div>
-								</div>
-								<div>
-									<Label htmlFor='new-value'>Value</Label>
-									<Textarea id='new-value' value={newSetting.value} onChange={e => setNewSetting(prev => ({ ...prev, value: e.target.value }))} placeholder='Enter the setting value' />
-								</div>
-								<div>
-									<Label htmlFor='new-description'>Description</Label>
-									<Textarea id='new-description' value={newSetting.description} onChange={e => setNewSetting(prev => ({ ...prev, description: e.target.value }))} placeholder='Optional description' />
-								</div>
-								<div className='flex gap-2'>
-									<Button onClick={createSetting} disabled={saving}>Create Setting</Button>
-									<Button variant='outline' onClick={() => setShowNewForm(false)}>Cancel</Button>
-								</div>
-							</CardContent>
-						</Card>
-					)}
-
-					{data.categories?.map(category => (
-						<div key={category} className='space-y-4'>
-							<h3 className='font-semibold capitalize'>{category}</h3>
-							{data.grouped[category]?.map(setting => (
-								<Card key={setting._id}>
-									<CardContent className='p-6'>
-										<div className='space-y-4'>
-											<div className='flex justify-between items-start'>
-												<div className='flex-1'>
-													<div className='flex items-center gap-2 mb-2'>
-														<h3 className='font-medium'>{setting.key}</h3>
-														<Badge variant='outline'>{setting.type}</Badge>
-														{!setting.isPublic && <Badge variant='secondary'>Private</Badge>}
-													</div>
-													{setting.description && <p className='text-sm text-gray-600 mb-3'>{setting.description}</p>}
-												</div>
-												<Button variant='ghost' size='sm' onClick={() => deleteSetting(setting._id, setting.key)} className='text-red-600 hover:text-red-700'>
-													<Trash2 className='h-4 w-4' />
-												</Button>
-											</div>
-											<div>
-												<Label className='text-sm font-medium'>Value</Label>
-												<div className='mt-1'>{renderSettingValue(setting)}</div>
-											</div>
-											<div className='text-xs text-gray-500'>Last updated: {new Date(setting.updatedAt).toLocaleString()}</div>
-										</div>
-									</CardContent>
-								</Card>
-							))}
-							{(!data.grouped[category] || data.grouped[category].length === 0) && (
-								<Card>
-									<CardContent className='p-6 text-center text-gray-500'>No settings in this category</CardContent>
-								</Card>
-							)}
-						</div>
-					))}
-				</div>
-			</details>
 		</div>
 	);
 }

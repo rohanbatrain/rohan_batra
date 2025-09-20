@@ -3,7 +3,8 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface ICharacterJournal extends Document {
   _id: mongoose.Types.ObjectId;
   characterId: mongoose.Types.ObjectId;
-  bookId: mongoose.Types.ObjectId;
+  journalId?: mongoose.Types.ObjectId;
+  bookId?: mongoose.Types.ObjectId;
   slug: string;
   title: string;
   content: string; // Rich HTML content
@@ -29,10 +30,15 @@ const CharacterJournalSchema = new Schema<ICharacterJournal>(
       ref: 'Character',
       required: true,
     },
+    journalId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'JournalVolume',
+      required: false,
+    },
     bookId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Book',
-      required: true,
+      required: false,
     },
     title: {
       type: String,
@@ -50,7 +56,8 @@ const CharacterJournalSchema = new Schema<ICharacterJournal>(
     },
     content: {
       type: String,
-      required: true,
+      required: false,
+      default: '',
     },
     entryDate: {
       type: Date,
@@ -107,12 +114,12 @@ const CharacterJournalSchema = new Schema<ICharacterJournal>(
 
 // Indexes for performance
 CharacterJournalSchema.index({ characterId: 1 });
+CharacterJournalSchema.index({ journalId: 1 });
 CharacterJournalSchema.index({ bookId: 1 });
 CharacterJournalSchema.index({ characterId: 1, createdAt: -1 });
 CharacterJournalSchema.index({ entryDate: -1 });
 CharacterJournalSchema.index({ isPrivate: 1 });
 CharacterJournalSchema.index({ status: 1, publishedAt: -1 });
-CharacterJournalSchema.index({ slug: 1 });
 
 // Instance methods
 CharacterJournalSchema.methods.isPublic = function (): boolean {

@@ -13,6 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import RemoteLinkPicker, { AssetLinkItem } from '@/components/ui/RemoteLinkPicker';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Switch } from '@/components/ui/switch';
+import DatePickerInput from '@/components/ui/DatePickerInput';
+import { Info } from 'lucide-react';
+import { InfoTip } from '@/components/ui/tooltip';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -28,17 +33,28 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
     })();
   }, [params]);
   const { data, isLoading, mutate } = useSWR(() => (id ? `/api/admin/characters/${id}` : null), fetcher);
-  const { data: journals, mutate: mutateJournals } = useSWR(() => (id ? `/api/admin/characters/${id}/journals` : null), fetcher);
+  // Legacy per-character entries removed in favor of per-journal manager
+  const { data: journalVolumes, mutate: mutateJournalVolumes } = useSWR(() => (id ? `/api/admin/characters/${id}/journal-volumes` : null), fetcher);
   const { data: rels, mutate: mutateRels } = useSWR(() => (id ? `/api/admin/characters/${id}/relationships` : null), fetcher);
   const [relForm, setRelForm] = useState<any>({ target: '', search: '', relationshipType: '', description: '', strength: 5, direction: 'mutual', inverseType: '', reciprocal: true });
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [editingRelId, setEditingRelId] = useState<string | null>(null);
   const [editingRel, setEditingRel] = useState<any>(null);
   const [form, setForm] = useState<any>({});
-  const [creating, setCreating] = useState(false);
-  const [newTitle, setNewTitle] = useState('');
+  // Removed per-character entry creation
   const [pickerOpen, setPickerOpen] = useState(false);
   const { toast } = useToast();
+  const [volForm, setVolForm] = useState<any>({ title: '' });
+
+  // Journal editing state
+  const [editOpen, setEditOpen] = useState(false);
+  const [editingJournal, setEditingJournal] = useState<any | null>(null);
+  const [editTitle, setEditTitle] = useState('');
+  const [editContent, setEditContent] = useState('');
+  const [editDate, setEditDate] = useState<string>('');
+  const [editPrivate, setEditPrivate] = useState(false);
+  const [editStatus, setEditStatus] = useState<'draft' | 'published' | 'archived'>('draft');
+  const [savingEdit, setSavingEdit] = useState(false);
 
   useEffect(() => {
     if (data?.character) setForm({ ...data.character });
@@ -81,29 +97,83 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
     }
   }
 
-  async function createJournal() {
-    if (!newTitle) return;
-    setCreating(true);
-    const payload = { title: newTitle, content: '<p></p>', status: 'draft' };
-  if (!id) return;
-  const res = await fetch(`/api/admin/characters/${id}/journals`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-    setCreating(false);
+  // Entries creation handled within journal manager
+
+  function openEdit(j: any) {
+    setEditingJournal(j);
+    setEditOpen(true);
+    setEditTitle(j.title || '');
+    setEditContent(j.content || '');
+    setEditDate(j.entryDate ? new Date(j.entryDate).toISOString().slice(0, 10) : '');
+    setEditPrivate(!!j.isPrivate);
+    setEditStatus(j.status || 'draft');
+  }
+
+  async function saveEdit() {
+    if (!editingJournal) return;
+    setSavingEdit(true);
+    const payload: any = {
+      title: editTitle || undefined,
+      content: editContent,
+      status: editStatus,
+      entryDate: editDate ? editDate : null,
+      isPrivate: editPrivate,
+    };
+    const res = await fetch(`/api/admin/journals/${editingJournal.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    setSavingEdit(false);
     if (res.ok) {
-      setNewTitle('');
-      toast({ title: 'Journal created', description: 'Draft created' });
-      mutateJournals();
+      toast({ title: 'Saved', description: 'Journal updated' });
+      setEditOpen(false);
+      setEditingJournal(null);
+  // entries list handled in journal manager
+    } else {
+      const err = await res.json().catch(() => null);
+      toast({ title: 'Error', description: err?.error || 'Failed to update journal', variant: 'destructive' });
     }
   }
 
-  async function deleteJournal(id: string) {
-    const ok = confirm('Move this journal to trash?');
-    if (!ok) return;
-    const res = await fetch(`/api/admin/journals/${id}?trash=true`, { method: 'DELETE' });
+  async function togglePublish(j: any) {
+    const nextStatus = j.status === 'published' ? 'draft' : 'published';
+    const payload: any = { status: nextStatus };
+    const res = await fetch(`/api/admin/journals/${j.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (res.ok) {
-      toast({ title: 'Journal removed', description: 'Moved to trash' });
-      mutateJournals();
+  // entries list handled in journal manager
     } else {
-      toast({ title: 'Error', description: 'Failed to trash journal', variant: 'destructive' });
+      toast({ title: 'Error', description: 'Failed to update publish status', variant: 'destructive' });
+    }
+  }
+
+  async function togglePrivate(j: any, next: boolean) {
+    const res = await fetch(`/api/admin/journals/${j.id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isPrivate: next }) });
+    if (res.ok) {
+  // entries list handled in journal manager
+    } else {
+      toast({ title: 'Error', description: 'Failed to update privacy', variant: 'destructive' });
+    }
+  }
+
+  // Removed grouped entries state
+
+  // Entry deletion happens in the journal manager page
+
+  async function createVolume() {
+    if (!id) return;
+    if (!volForm.title) return;
+    const payload: any = {
+      title: volForm.title,
+    };
+    const res = await fetch(`/api/admin/characters/${id}/journal-volumes`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (res.ok) {
+      setVolForm({ title: '' });
+      toast({ title: 'Journal created', description: 'New journal volume created' });
+      mutateJournalVolumes();
+    } else {
+      const err = await res.json().catch(() => null);
+      toast({ title: 'Error', description: err?.error || 'Failed to create journal volume', variant: 'destructive' });
     }
   }
 
@@ -270,47 +340,78 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
         </Card>
       </div>
 
+      {/* Journal Volumes */}
       <Card className='p-0 overflow-hidden'>
-        <div className='p-4 flex items-center justify-between'>
+        <div className='p-4 flex items-center justify-between gap-3'>
           <div>
             <h2 className='font-medium'>Journals</h2>
-            <p className='text-sm text-muted-foreground'>Create drafts and manage published entries.</p>
+            <p className='text-sm text-muted-foreground'>Create journals (title only). Manage posts inside each journal.</p>
           </div>
           <div className='flex gap-2 items-center'>
-            <Input placeholder='New journal title' value={newTitle} onChange={e => setNewTitle(e.target.value)} className='w-64' />
-            <Button onClick={createJournal} disabled={creating || !newTitle}>Create</Button>
+            <div className='relative flex items-center gap-1'>
+              <Input placeholder='New journal title' value={volForm.title} onChange={e => setVolForm((f: any) => ({ ...f, title: e.target.value }))} className='w-72' />
+              <InfoTip label="Give the journal a short, clear title. Only the title is required; you'll add entries inside.">
+                <button aria-label='Title help' className='text-muted-foreground hover:text-foreground'>
+                  <Info className='h-4 w-4' />
+                </button>
+              </InfoTip>
+            </div>
+            <InfoTip label="Creates a new empty journal volume for this character.">
+              <Button onClick={createVolume} disabled={!volForm.title}>Create Journal</Button>
+            </InfoTip>
           </div>
         </div>
+        
         <Separator />
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Title</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Published</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {!journals?.journals?.length ? (
-              <TableRow>
-                <TableCell colSpan={4}>No journals yet</TableCell>
-              </TableRow>
-            ) : (
-              journals.journals.map((j: any) => (
-                <TableRow key={j.id}>
-                  <TableCell className='font-medium'>{j.title}</TableCell>
-                  <TableCell className='capitalize'>{j.status}</TableCell>
-                  <TableCell>{j.publishedAt ? new Date(j.publishedAt).toLocaleString() : '-'}</TableCell>
-                  <TableCell className='space-x-2'>
-                    <Button size='sm' variant='destructive' onClick={() => deleteJournal(j.id)}>Trash</Button>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+        <div className='p-4 grid grid-cols-1 md:grid-cols-3 gap-4'>
+          {!journalVolumes?.journals?.length ? (
+            <div className='text-sm text-muted-foreground'>No journals yet</div>
+          ) : (
+            journalVolumes.journals.map((j: any) => (
+              <div key={j.id} className='border rounded-md p-3 space-y-2'>
+                <div className='font-medium'>{j.title}</div>
+                <div className='text-xs text-muted-foreground'>Status: {j.status}</div>
+                <div className='flex gap-2'>
+                  <Button variant='outline' size='sm' onClick={() => router.push(`/admin/characters/${id}/journals/${j.id}`)}>Manage</Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </Card>
+
+      {/* Multistep UX: First create a journal (volume), then add entries inside it on the Manage page. */}
+
+      {/* Edit Journal Dialog */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Journal</DialogTitle>
+          </DialogHeader>
+          <div className='space-y-3'>
+            <Label>Title</Label>
+            <Input value={editTitle} onChange={(e) => setEditTitle(e.target.value)} />
+            <Label>Date</Label>
+            <DatePickerInput value={editDate} onChange={setEditDate} />
+            <div className='flex items-center gap-3 pt-2'>
+              <div className='flex items-center gap-2'>
+                <Switch checked={editStatus === 'published'} onChange={(e) => setEditStatus(e.currentTarget.checked ? 'published' : 'draft')} />
+                <span className='text-sm'>Published</span>
+              </div>
+              <div className='flex items-center gap-2'>
+                <Switch checked={editPrivate} onChange={(e) => setEditPrivate(e.currentTarget.checked)} />
+                <span className='text-sm'>Private</span>
+              </div>
+            </div>
+            <Label>Content</Label>
+            <Textarea rows={8} value={editContent} onChange={(e) => setEditContent(e.target.value)} />
+          </div>
+          <DialogFooter>
+            <Button variant='ghost' onClick={() => setEditOpen(false)}>Cancel</Button>
+            <Button onClick={saveEdit} disabled={savingEdit}>Save</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Card className='p-0 overflow-hidden'>
         <div className='p-4 flex items-center justify-between'>
@@ -320,46 +421,54 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
           </div>
         </div>
         <Separator />
-        <div className='p-4 grid grid-cols-1 md:grid-cols-3 gap-4'>
-          <div className='space-y-2'>
-            <Label>Search character</Label>
-            <Input placeholder='Search by name' value={relForm.search} onChange={e => searchCharacters(e.target.value)} />
-            {!!searchResults.length && (
-              <div className='border rounded max-h-48 overflow-auto'>
-                {searchResults.map((c: any) => (
-                  <button key={c.id} className={`w-full text-left px-3 py-2 hover:bg-accent ${relForm.target === c.id ? 'bg-accent' : ''}`} onClick={() => setRelForm((f: any) => ({ ...f, target: c.id }))}>
-                    <div className='font-medium'>{c.name}</div>
-                    <div className='text-xs text-muted-foreground'>{c.slug}</div>
-                  </button>
-                ))}
-              </div>
-            )}
+        <div className='p-4 space-y-4'>
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            <div className='space-y-2'>
+              <Label>Search character</Label>
+              <Input placeholder='Search by name' value={relForm.search} onChange={e => searchCharacters(e.target.value)} />
+              {!!searchResults.length && (
+                <div className='border rounded max-h-48 overflow-auto'>
+                  {searchResults.map((c: any) => (
+                    <button key={c.id} className={`w-full text-left px-3 py-2 hover:bg-accent ${relForm.target === c.id ? 'bg-accent' : ''}`} onClick={() => setRelForm((f: any) => ({ ...f, target: c.id }))}>
+                      <div className='font-medium'>{c.name}</div>
+                      <div className='text-xs text-muted-foreground'>{c.slug}</div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className='space-y-2'>
+              <Label>Relationship type</Label>
+              <Input placeholder='e.g., friend, sibling, mentor' value={relForm.relationshipType} onChange={e => setRelForm((f: any) => ({ ...f, relationshipType: e.target.value }))} />
+            </div>
+            <div className='space-y-2'>
+              <Label>Direction</Label>
+              <Select value={relForm.direction} onValueChange={v => setRelForm((f: any) => ({ ...f, direction: v }))}>
+                <SelectTrigger>
+                  <SelectValue placeholder='Direction' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='mutual'>Mutual</SelectItem>
+                  <SelectItem value='one-way'>One-way</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-          <div className='space-y-2'>
-            <Label>Relationship type</Label>
-            <Input placeholder='e.g., friend, sibling, mentor' value={relForm.relationshipType} onChange={e => setRelForm((f: any) => ({ ...f, relationshipType: e.target.value }))} />
-            <Label>Strength (1-10)</Label>
-            <Input type='number' min={0} max={10} value={relForm.strength} onChange={e => setRelForm((f: any) => ({ ...f, strength: e.target.value }))} />
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            <div className='space-y-2'>
+              <Label>Inverse Type (optional)</Label>
+              <Input placeholder='e.g., mentee, child' value={relForm.inverseType} onChange={e => setRelForm((f: any) => ({ ...f, inverseType: e.target.value }))} />
+            </div>
+            <div className='space-y-2'>
+              <Label>Strength (1-10)</Label>
+              <Input type='number' min={0} max={10} value={relForm.strength} onChange={e => setRelForm((f: any) => ({ ...f, strength: e.target.value }))} />
+            </div>
+            <div className='space-y-2'>
+              <Label>Description</Label>
+              <Textarea rows={3} placeholder='Notes about this relationship' value={relForm.description} onChange={e => setRelForm((f: any) => ({ ...f, description: e.target.value }))} />
+            </div>
           </div>
-          <div className='space-y-2'>
-            <Label>Direction</Label>
-            <Select value={relForm.direction} onValueChange={v => setRelForm((f: any) => ({ ...f, direction: v }))}>
-              <SelectTrigger>
-                <SelectValue placeholder='Direction' />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value='mutual'>Mutual</SelectItem>
-                <SelectItem value='one-way'>One-way</SelectItem>
-              </SelectContent>
-            </Select>
-            <Label>Inverse Type (optional)</Label>
-            <Input placeholder='e.g., mentee, child' value={relForm.inverseType} onChange={e => setRelForm((f: any) => ({ ...f, inverseType: e.target.value }))} />
-          </div>
-          <div className='md:col-span-3'>
-            <Label>Description</Label>
-            <Textarea rows={3} placeholder='Notes about this relationship' value={relForm.description} onChange={e => setRelForm((f: any) => ({ ...f, description: e.target.value }))} />
-          </div>
-          <div className='md:col-span-3 flex justify-end'>
+          <div className='flex justify-end'>
             <Button onClick={addRelationship} disabled={!relForm.target || !relForm.relationshipType}>Add Relationship</Button>
           </div>
         </div>

@@ -43,7 +43,6 @@ const CharacterSchema = new Schema<ICharacter>(
     slug: {
       type: String,
       required: true,
-      unique: true,
       lowercase: true,
       trim: true,
       match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
@@ -52,7 +51,6 @@ const CharacterSchema = new Schema<ICharacter>(
       type: String,
       enum: ['private', 'public'],
       default: 'private',
-      index: true,
     },
     name: {
       type: String,
@@ -67,6 +65,13 @@ const CharacterSchema = new Schema<ICharacter>(
     },
     birthdate: {
       type: Date,
+      set: (v: Date | string | null | undefined) => {
+        if (!v) return v as unknown as Date | undefined;
+        const d = new Date(v as Date);
+        if (isNaN(d.getTime())) return undefined;
+        // Normalize to date-only at UTC midnight
+        return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+      },
     },
     age: {
       type: Number,
@@ -174,6 +179,7 @@ const CharacterSchema = new Schema<ICharacter>(
   {
     timestamps: true,
     toJSON: {
+      virtuals: true,
       transform: function (doc, ret) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = ret as any;
@@ -188,12 +194,16 @@ const CharacterSchema = new Schema<ICharacter>(
 
 // Indexes for performance
 CharacterSchema.index({ bookId: 1 });
-CharacterSchema.index({ slug: 1 });
 CharacterSchema.index({ bookId: 1, role: 1 });
 CharacterSchema.index({ bookId: 1, significance: 1 });
 CharacterSchema.index({ name: 1 });
 CharacterSchema.index({ visibility: 1 });
 CharacterSchema.index({ 'relationships.characterId': 1, 'relationships.relationshipType': 1 });
+// Ensure unique slug among active (non-deleted) documents only
+CharacterSchema.index(
+  { slug: 1 },
+  { unique: true, partialFilterExpression: { deletedAt: null } }
+);
 
 // Instance methods
 CharacterSchema.methods.isMainCharacter = function (): boolean {
@@ -203,6 +213,16 @@ CharacterSchema.methods.isMainCharacter = function (): boolean {
 CharacterSchema.methods.isMajorCharacter = function (): boolean {
   return this.significance === 'major';
 };
+
+// Virtuals
+CharacterSchema.virtual('ageGroup').get(function (this: ICharacter) {
+  const age = this.age ?? undefined;
+  if (typeof age !== 'number') return undefined;
+  if (age <= 12) return 'child';
+  if (age <= 17) return 'teen';
+  if (age <= 64) return 'adult';
+  return 'senior';
+});
 
 // Static methods
 CharacterSchema.statics.findByBook = function (bookId: string) {
@@ -260,6 +280,10 @@ CharacterSchema.pre('findOneAndUpdate', function (next) {
         if (update.$set) update.$set.age = computed; else update.age = computed;
       }
     }
+  }
+  if ($set && $set.birthdate === undefined && update.$unset && update.$unset.birthdate) {
+    // If explicitly unsetting birthdate, also unset age
+    if (!update.$unset.age) update.$unset.age = 1;
   }
   next();
 });

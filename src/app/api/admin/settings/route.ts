@@ -19,6 +19,16 @@ const SettingUpdateSchema = z.object({
       min: z.number().optional(),
       max: z.number().optional(),
       pattern: z.string().optional(),
+      ui: z.enum(['toggle', 'select']).optional(),
+      options: z
+        .array(
+          z.union([
+            z.string(),
+            z.number(),
+            z.object({ label: z.string(), value: z.any() }),
+          ])
+        )
+        .optional(),
     })
     .optional(),
 });

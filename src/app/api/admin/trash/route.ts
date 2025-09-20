@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const me = await User.findOne({ clerkId: userId });
     if (!me || me.role !== 'admin') return NextResponse.json({ success: false, error: 'Admin only' }, { status: 403 });
 
-  const { type, id, action } = await request.json(); // type: 'user'|'post'|'lottie'|'project'|'book'|'comment'|'character'|'journal'
+  const { type, id, action } = await request.json(); // type: 'user'|'post'|'lottie'|'project'|'book'|'comment'|'character'|'journal'|'all'
     let model: any;
     if (type === 'user') model = User;
     if (type === 'post') model = BlogPost;
@@ -52,21 +52,65 @@ export async function POST(request: NextRequest) {
     if (type === 'comment') model = Comment;
     if (type === 'character') model = Character;
     if (type === 'journal') model = CharacterJournal;
-    if (!model) return NextResponse.json({ success: false, error: 'Invalid type' }, { status: 400 });
+  const models: Record<string, any> = { user: User, post: BlogPost, lottie: LottieAsset, project: Project, book: Book, comment: Comment, character: Character, journal: CharacterJournal };
+  if (!model && action !== 'empty') return NextResponse.json({ success: false, error: 'Invalid type' }, { status: 400 });
 
     if (action === 'restore') {
-      const doc = await model.findByIdAndUpdate(id, { $unset: { deletedAt: 1, deletedBy: 1 }, status: type === 'user' ? 'active' : undefined }, { new: true });
+      // Load the document first to check state and potential conflicts
+      const existing = await model.findById(id).lean();
+      if (!existing) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+      if (!existing.deletedAt) {
+        return NextResponse.json({ success: false, error: 'Item is not in trash' }, { status: 400 });
+      }
+
+      // For slugged models, ensure unique slug among non-deleted docs
+      let updateSlug: string | undefined;
+      const hasSlug = ['post', 'project', 'character', 'journal'].includes(type as string) && typeof (existing as any).slug === 'string';
+      if (hasSlug) {
+        const baseSlug: string = (existing as any).slug;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const m: any = model;
+        const isTaken = async (slug: string) => !!(await m.exists({ slug, _id: { $ne: id }, deletedAt: { $exists: false } }));
+        let candidate = baseSlug;
+        let i = 2;
+        // Only adjust if current slug collides
+        if (await isTaken(candidate)) {
+          while (await isTaken(candidate)) {
+            candidate = `${baseSlug}-${i}`;
+            i += 1;
+            if (i > 200) break; // safety
+          }
+          updateSlug = candidate;
+        }
+      }
+
       try {
-        await AuditLog.create({
-          action: 'trash.restore',
-          entityType: type,
-          entityId: id,
-          userId: me._id,
-          userEmail: me.email,
-          meta: { route: 'trash', model: model.modelName },
-        });
-      } catch {}
-      return NextResponse.json({ success: true, message: 'Restored', doc: { _id: doc?._id } });
+        const $set: Record<string, unknown> = {};
+        if (type === 'user') $set.status = 'active';
+        if (updateSlug) $set.slug = updateSlug;
+        const doc = await model.findByIdAndUpdate(
+          id,
+          { $unset: { deletedAt: 1, deletedBy: 1 }, ...(Object.keys($set).length ? { $set } : {}) },
+          { new: true }
+        );
+        try {
+          await AuditLog.create({
+            action: 'trash.restore',
+            entityType: type,
+            entityId: id,
+            userId: me._id,
+            userEmail: me.email,
+            meta: { route: 'trash', model: model.modelName, slugChanged: !!updateSlug },
+          });
+        } catch {}
+        return NextResponse.json({ success: true, message: updateSlug ? `Restored (slug updated to ${updateSlug})` : 'Restored', doc: { _id: doc?._id } });
+      } catch (e: unknown) {
+        // Duplicate key error safety
+        if (e && typeof e === 'object' && 'code' in e && (e as any).code === 11000) {
+          return NextResponse.json({ success: false, error: 'Restore blocked by unique constraint (likely slug conflict). Rename the existing item or the one being restored.' }, { status: 409 });
+        }
+        return NextResponse.json({ success: false, error: 'Failed to restore' }, { status: 500 });
+      }
     }
 
     if (action === 'delete') {
@@ -82,6 +126,28 @@ export async function POST(request: NextRequest) {
         });
       } catch {}
       return NextResponse.json({ success: true, message: 'Permanently deleted' });
+    }
+
+    if (action === 'empty') {
+      const targets = (type && type !== 'all') ? [type] : Object.keys(models);
+      const results: Record<string, number> = {};
+      for (const t of targets) {
+        const m = models[t];
+        if (!m) continue;
+        const res = await m.deleteMany({ deletedAt: { $exists: true } });
+        results[t] = res?.deletedCount || 0;
+      }
+      try {
+        await AuditLog.create({
+          action: 'trash.empty',
+          entityType: 'trash',
+          entityId: 'all',
+          userId: me._id,
+          userEmail: me.email,
+          meta: { results, type: type || 'all' },
+        });
+      } catch {}
+      return NextResponse.json({ success: true, message: 'Trash emptied', results });
     }
 
     return NextResponse.json({ success: false, error: 'Invalid action' }, { status: 400 });

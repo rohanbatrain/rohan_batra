@@ -56,6 +56,27 @@ const SiteSettingSchema = new Schema<ISiteSetting>(
       type: Boolean,
       default: false,
     },
+    validation: {
+      type: Schema.Types.Mixed,
+      required: false,
+    },
+    history: {
+      type: [
+        new Schema(
+          {
+            action: { type: String },
+            userId: { type: Schema.Types.ObjectId, ref: 'User' },
+            userName: { type: String },
+            timestamp: { type: Date },
+            previousValue: { type: Schema.Types.Mixed },
+            newValue: { type: Schema.Types.Mixed },
+            metadata: { type: Schema.Types.Mixed },
+          },
+          { _id: false }
+        ),
+      ],
+      default: [],
+    },
     updatedBy: {
       type: Schema.Types.ObjectId,
       ref: 'User',

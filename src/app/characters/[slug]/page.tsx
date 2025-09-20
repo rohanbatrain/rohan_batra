@@ -1,6 +1,6 @@
 import connectToDatabase from '@/lib/mongodb';
 import Character from '@/models/Character';
-import CharacterJournal from '@/models/CharacterJournal';
+import JournalVolume from '@/models/JournalVolume';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 
@@ -13,8 +13,8 @@ export default async function CharacterPublicPage({ params }: Params) {
   await connectToDatabase();
   const character = (await Character.findOne({ slug, visibility: 'public', deletedAt: { $exists: false } }).lean()) as any;
   if (!character) return notFound();
-  const journals = (await CharacterJournal.find({ characterId: character._id, status: 'published', isPrivate: false, deletedAt: { $exists: false } })
-    .sort({ publishedAt: -1 })
+  const volumes = (await JournalVolume.find({ characterId: character._id, status: 'published', isPrivate: false, deletedAt: { $exists: false } })
+    .sort({ displayOrder: 1, createdAt: -1 })
     .lean()) as any[];
 
   return (
@@ -27,21 +27,31 @@ export default async function CharacterPublicPage({ params }: Params) {
       <section className='prose dark:prose-invert mt-6' dangerouslySetInnerHTML={{ __html: character.background || '' }} />
 
       <h2 className='text-2xl font-semibold mt-10 mb-4'>Journals</h2>
-      {!journals.length ? (
-        <p className='text-muted-foreground'>No public journal entries yet.</p>
+      {volumes.length === 0 ? (
+        <p className='text-muted-foreground'>No journals published yet.</p>
       ) : (
-        <ul className='space-y-3'>
-          {journals.map(j => (
-            <li key={(j._id as any).toString()}>
-              <a className='text-blue-600 hover:underline' href={`/characters/${slug}/journals/${j.slug}`}>{j.title}</a>
-              {j.publishedAt && (
-                <span className='text-sm text-muted-foreground ml-2'>
-                  {new Date(j.publishedAt).toLocaleDateString()}
-                </span>
+        <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>
+          {volumes.map(vol => (
+            <a
+              key={String(vol._id)}
+              href={`/characters/${slug}/journals/${vol.slug}`}
+              className='border rounded-md overflow-hidden hover:shadow transition'
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              {vol.coverImage ? (
+                <img src={vol.coverImage} alt='Cover' className='w-full h-40 object-cover' />
+              ) : (
+                <div className='w-full h-40 bg-gray-100 dark:bg-gray-800' />
               )}
-            </li>
+              <div className='p-3'>
+                <div className='font-medium'>{vol.title}</div>
+                {vol.description && (
+                  <div className='text-xs text-muted-foreground line-clamp-2'>{vol.description}</div>
+                )}
+              </div>
+            </a>
           ))}
-        </ul>
+        </div>
       )}
     </main>
   );

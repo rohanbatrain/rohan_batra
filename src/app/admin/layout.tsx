@@ -19,24 +19,30 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   // Check authentication
-  const user = await currentUser();
+  let user: Awaited<ReturnType<typeof currentUser>> | null = null;
+  try {
+    user = await currentUser();
+  } catch {
+    // Treat as unauthenticated on Clerk errors
+    user = null;
+  }
 
   if (!user) {
     redirect('/sign-in?redirect_url=/admin');
   }
 
   // Get user role from metadata
-  const userRole = (user.publicMetadata?.role as string) || 'user';
+  const userRole = (user?.publicMetadata?.role as string) || 'user';
 
   // Check if user has admin/editor access
   if (!['editor', 'admin'].includes(userRole)) {
-    redirect('/');
+    redirect('/access-denied');
   }
 
   // Extract only serializable user data for client components
   const userData = {
-    firstName: user.firstName,
-    lastName: user.lastName,
+    firstName: user?.firstName || null,
+    lastName: user?.lastName || null,
   };
 
   return (
