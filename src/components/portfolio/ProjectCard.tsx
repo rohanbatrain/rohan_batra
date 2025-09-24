@@ -5,14 +5,55 @@ import Image from 'next/image';
 import { resolveAssetUrl } from '@/lib/assets';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { Github, ExternalLink, Calendar } from 'lucide-react';
+import { Github, ExternalLink, Calendar, GitFork } from 'lucide-react';
+import { formatTechLabel } from '@/lib/utils';
 
 interface ProjectCardProps {
   project: Project;
   index?: number;
+  activeCategory?: string;
 }
 
-export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
+export function ProjectCard({ project, index = 0, activeCategory }: ProjectCardProps) {
+  const allCategories: string[] = Array.from(
+    new Set(
+      [
+        ...(Array.isArray((project as any).categories)
+          ? ((project as any).categories as string[])
+          : []),
+        project.category,
+      ]
+        .filter(Boolean)
+        .map(c => String(c))
+    )
+  );
+
+  const categoryPriority = (label: string): number => {
+    const l = label.toLowerCase();
+    if (l === 'sre' || l.includes('site reliability')) return 1;
+    if (l === 'cloud' || l.includes('cloud solution')) return 2;
+    if (l === 'backend' || l.includes('python') || l.includes('backend')) return 3;
+    return 999; // deprioritize unknowns
+  };
+
+  const primaryCategory = (() => {
+    const hint = (activeCategory || '').toLowerCase();
+    if (hint && allCategories.map(c => c.toLowerCase()).includes(hint)) {
+      return allCategories.find(c => c.toLowerCase() === hint) as string;
+    }
+    if (allCategories.length) {
+      return allCategories
+        .slice()
+        .sort((a, b) => categoryPriority(a) - categoryPriority(b))[0];
+    }
+    return project.category;
+  })();
+  const rawTitle = project.title || '';
+  const colonIdx = rawTitle.indexOf(':');
+  const prefix = colonIdx > -1 ? rawTitle.slice(0, colonIdx) : '';
+  const shouldStrip = /developer|engineer|architect|administrator|systems|cloud|android|open\s*source|backend|full|devops|sre|security/i.test(prefix);
+  const base = shouldStrip && colonIdx > -1 ? rawTitle.slice(colonIdx + 1) : rawTitle;
+  const displayTitle = base.replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -44,11 +85,25 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
 
       {/* Content */}
       <div className='p-6'>
-        {/* Title and Date */}
+        {/* Title Row */}
         <div className='flex items-start justify-between mb-3'>
-          <h3 className='text-xl font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
-            {project.title}
-          </h3>
+          <div>
+            <div className='flex items-center gap-2 mb-1'>
+              {primaryCategory && (
+                <span className='inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600'>
+                  {primaryCategory}
+                </span>
+              )}
+              {project.tags?.includes('forked') && (
+                <span className='inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'>
+                  <GitFork className='w-3 h-3' /> Forked
+                </span>
+              )}
+            </div>
+            <h3 className='text-xl font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors'>
+              {displayTitle}
+            </h3>
+          </div>
           {project.createdAt && (
             <div className='flex items-center text-xs text-gray-500 dark:text-gray-400 ml-2'>
               <Calendar className='w-3 h-3 mr-1' />
@@ -64,20 +119,15 @@ export function ProjectCard({ project, index = 0 }: ProjectCardProps) {
 
         {/* Technologies */}
         {project.technologies && project.technologies.length > 0 && (
-          <div className='flex flex-wrap gap-2 mb-4'>
-            {project.technologies.slice(0, 4).map((tech, techIndex) => (
+          <div className='flex gap-2 mb-4 overflow-x-auto no-scrollbar pr-1'>
+            {project.technologies.map((tech, techIndex) => (
               <span
                 key={techIndex}
                 className='px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded-full font-medium'
               >
-                {tech}
+                {formatTechLabel(tech)}
               </span>
             ))}
-            {project.technologies.length > 4 && (
-              <span className='px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 text-xs rounded-full font-medium'>
-                +{project.technologies.length - 4} more
-              </span>
-            )}
           </div>
         )}
 

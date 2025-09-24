@@ -1,0 +1,51 @@
+repository,role,evidence_type,file_path,description
+second_brain_database,Cybersecurity Engineer,IP Blocking System,src/second_brain_database/main.py,Redis-based IP tracking and whitelisting
+second_brain_database,Cybersecurity Engineer,Rate Limiting,src/second_brain_database/main.py,"200/day, 50/hour limits with automated blocking"
+second_brain_database,Cybersecurity Engineer,JWT Authentication,src/second_brain_database/config.py,Secure token management and session handling
+emotion_tracker,Cybersecurity Engineer,Biometric Auth,lib/,Fingerprint/Face ID integration and 2FA
+sbd_sso,Cybersecurity Engineer,SSO Implementation,root,Single sign-on security system
+second_brain_database,Full Stack Developer,Flask Backend,src/,REST API with MongoDB integration (186+ commits)
+emotion_tracker,Full Stack Developer,Flutter Frontend,lib/,Cross-platform mobile application (173+ commits)
+rohan_batra,Full Stack Developer,Portfolio App,root,Personal portfolio Flutter application
+blog,Full Stack Developer,Web Frontend,root,Static blog site with custom features
+second_brain_database_flutter_frontend,Full Stack Developer,Frontend Integration,root,Flutter frontend for knowledge management
+emotion_tracker,Flutter Developer,Cross-platform App,releases/,"6-platform deployment (Android, iOS, Windows, Linux, macOS)"
+rohan_batra,Flutter Developer,Portfolio Flutter,lib/,Responsive portfolio application
+sbd_flutter_template,Flutter Developer,Flutter Template,root,Reusable Flutter project template
+second_brain_database_flutter_frontend,Flutter Developer,Enterprise Flutter,root,Enterprise-level Flutter frontend
+second_brain_database,DevOps Engineer,Docker Compose,docker-compose.yml,Container orchestration with health checks
+proxmox-auto-install-assistant-docker,DevOps Engineer,Containerization,Dockerfile,Cross-platform Docker solution
+gh-experiments,DevOps Engineer,CI/CD Experiments,.github/workflows/,GitHub Actions experimentation
+docker-compose-setup,DevOps Engineer,Infrastructure,root,Infrastructure as code setup
+scripts,DevOps Engineer,Automation,root,System automation scripts
+second_brain_database,Python Backend Developer,Flask API,src/,Production Flask API (186+ commits)
+MarkLang,Python Backend Developer,CLI Tool,main.py,Translation CLI with Google Translate API
+second-brain-tools-2022,Python Backend Developer,PyPI Package,root,Published Python package
+ollama-gh-action,Python Backend Developer,GitHub Action,root,Python-based GitHub Action
+sbdfs,Python Backend Developer,FUSE Filesystem,root,FUSE filesystem in Python
+second_brain_database,Cloud Solutions Architect,Microservices,README.md,Microservices architecture design
+docker-compose-setup,Cloud Solutions Architect,Orchestration,root,Container orchestration setup
+proxmox-auto-install-assistant-docker,Cloud Solutions Architect,Cross-platform,root,Platform-agnostic deployment
+nix-config,Cloud Solutions Architect,Infrastructure Config,root,Declarative infrastructure management
+nix-config,Linux Systems Administrator,NixOS Config,root,Declarative system configuration
+suckless-dwm,Linux Systems Administrator,Window Manager,root,Custom dwm build with enhancements
+suckless-dmenu,Linux Systems Administrator,App Launcher,root,Custom dmenu application launcher
+suckless-st,Linux Systems Administrator,Terminal,root,Custom st terminal emulator
+scripts,Linux Systems Administrator,System Scripts,root,Shell automation and maintenance
+karmstrot-linux,Linux Systems Administrator,Custom Linux,root,Custom Linux distribution
+second_brain_database,Site Reliability Engineer,Health Monitoring,src/second_brain_database/main.py,/health endpoint with automated checks
+second_brain_database,Site Reliability Engineer,Performance Opt,changelog.md,75% database performance improvement
+emotion_tracker,Site Reliability Engineer,App Reliability,root,Production app with reliability features
+docker-compose-setup,Site Reliability Engineer,Infrastructure Mon,root,Infrastructure monitoring setup
+ALL_REPOSITORIES,Open Source Developer,Portfolio,github.com/rohanbatrain,"55+ public repositories, 1082+ contributions"
+second-brain-tools-2022,Open Source Developer,PyPI Package,root,Published and maintained PyPI package
+MarkLang,Open Source Developer,Community Tool,root,Open source translation CLI tool
+proxmox-auto-install-assistant-docker,Open Source Developer,Community Solution,root,Solving community problem with Docker
+Karmstrot-Builds,Android Systems Developer,KernelSU Builds,root,OnePlus KernelSU build system
+android_kernel_oneplus_sm8250,Android Systems Developer,Kernel Fork,root,LineageOS kernel for OnePlus devices
+kernel_oneplus_sm8250,Android Systems Developer,AOSP Kernel,root,AOSP kernel implementation
+Anomaly-Kernel,Android Systems Developer,Gaming Kernel,root,Performance-optimized gaming kernel
+po_kernel_oneplus_sm8250,Android Systems Developer,Device Support,root,OnePlus 8 series kernel dependency
+KernelSU,Android Systems Developer,Root Management,root,Advanced root management framework
+device_oneplus_opkona,Android Systems Developer,Recovery System,root,OrangeFox recovery for OnePlus
+AnyKernel3-SM8250,Android Systems Developer,Universal Flash,root,Universal kernel flashing solution

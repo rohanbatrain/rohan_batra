@@ -18,6 +18,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { ProjectWithAuthor } from '@/types/project';
+import { formatTechLabel } from '@/lib/utils';
 
 interface ProjectDetailClientProps {
   project: ProjectWithAuthor;
@@ -106,7 +107,7 @@ export default function ProjectDetailClient({
                 key={tech}
                 className='px-3 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-full text-sm font-medium'
               >
-                {tech}
+                {formatTechLabel(tech)}
               </span>
             ))}
           </div>

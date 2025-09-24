@@ -4,6 +4,7 @@ import { getProjectsWithPagination } from '@/lib/portfolio-service';
 import { BlogPostWithAuthor } from '@/types/blog-post';
 import { Project } from '@/types/project';
 import connectToDatabase from '@/lib/mongodb';
+import { listPublishedBooks, listPublishedChapters } from '@/lib/book-service';
 import Character from '@/models/Character';
 import CharacterJournal from '@/models/CharacterJournal';
 
@@ -96,7 +97,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
       .filter(Boolean) as MetadataRoute.Sitemap;
 
-    return [...staticPages, ...blogPages, ...projectPages, ...characterPages, ...journalPages];
+    // Books and chapters (public only)
+    const bookPages: MetadataRoute.Sitemap = [];
+    const { books } = await listPublishedBooks({ page: 1, limit: 100 });
+    for (const b of books as any[]) {
+      bookPages.push({
+        url: `${baseUrl}/books/${b.slug}`,
+        lastModified: new Date(b.updatedAt || b.publishedAt || b.createdAt),
+        changeFrequency: 'weekly',
+        priority: 0.6,
+      });
+      const chapters = await listPublishedChapters(String(b._id));
+      for (const c of chapters as any[]) {
+        if (!c.slug) continue;
+        bookPages.push({
+          url: `${baseUrl}/books/${b.slug}/${c.slug}`,
+          lastModified: new Date(c.updatedAt || c.createdAt),
+          changeFrequency: 'weekly',
+          priority: 0.5,
+        });
+      }
+    }
+
+    return [...staticPages, ...blogPages, ...projectPages, ...characterPages, ...journalPages, ...bookPages];
   } catch (error) {
     console.error('Error generating sitemap:', error);
     // Return static pages only if there's an error

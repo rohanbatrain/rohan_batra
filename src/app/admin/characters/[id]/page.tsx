@@ -2,7 +2,8 @@
 
 import useSWR from 'swr';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import Link from 'next/link';
+import { useEffect, useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,6 +15,7 @@ import RemoteLinkPicker, { AssetLinkItem } from '@/components/ui/RemoteLinkPicke
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Switch } from '@/components/ui/switch';
 import DatePickerInput from '@/components/ui/DatePickerInput';
 import { Info } from 'lucide-react';
@@ -55,10 +57,68 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
   const [editPrivate, setEditPrivate] = useState(false);
   const [editStatus, setEditStatus] = useState<'draft' | 'published' | 'archived'>('draft');
   const [savingEdit, setSavingEdit] = useState(false);
+  const { confirm, ConfirmDialog } = useConfirm();
 
   useEffect(() => {
     if (data?.character) setForm({ ...data.character });
   }, [data]);
+
+  // Attach/detach to a book
+  const [books, setBooks] = useState<any[]>([]);
+  const [attachedBookTitle, setAttachedBookTitle] = useState<string | null>(null);
+  const [attachBookId, setAttachBookId] = useState<string>('');
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/admin/books?limit=100`);
+        if (res.ok) {
+          const json = await res.json();
+          setBooks(json.books || []);
+        }
+      } catch {}
+    })();
+  }, []);
+
+  // When character has a bookId, ensure we have its title
+  useEffect(() => {
+    const bid = form?.bookId;
+    if (!bid) { setAttachedBookTitle(null); return; }
+    const found = books.find((b: any) => (b._id || b.id) === bid);
+    if (found?.title) { setAttachedBookTitle(found.title); return; }
+    (async () => {
+      try {
+        const res = await fetch(`/api/admin/books/${bid}`);
+        if (res.ok) {
+          const b = await res.json();
+          setAttachedBookTitle(b?.title || null);
+        }
+      } catch {}
+    })();
+  }, [form?.bookId, books]);
+
+  async function attachToBook() {
+    if (!id || !attachBookId) return;
+    const res = await fetch(`/api/admin/characters/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bookId: attachBookId }) });
+    if (res.ok) {
+      toast({ title: 'Attached', description: 'Character attached to book' });
+      mutate();
+    } else {
+      toast({ title: 'Error', description: 'Failed to attach', variant: 'destructive' });
+    }
+  }
+
+  async function detachFromBook() {
+    if (!id) return;
+    const ok = await confirm({ title: 'Detach character?', description: 'This will remove the link between the character and the book. You can reattach later.', confirmText: 'Detach', destructive: true });
+    if (!ok) return;
+    const res = await fetch(`/api/admin/characters/${id}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ bookId: null }) });
+    if (res.ok) {
+      toast({ title: 'Detached', description: 'Character detached from book' });
+      mutate();
+    } else {
+      toast({ title: 'Error', description: 'Failed to detach', variant: 'destructive' });
+    }
+  }
 
   async function save() {
     const payload = {
@@ -85,7 +145,7 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
   }
 
   async function moveToTrash() {
-    const ok = confirm('Move this character to trash?');
+    const ok = await confirm({ title: 'Move to trash?', description: 'You can permanently delete it later from Trash.', confirmText: 'Move to Trash', destructive: true });
     if (!ok) return;
   if (!id) return;
   const res = await fetch(`/api/admin/characters/${id}?trash=true`, { method: 'DELETE' });
@@ -212,7 +272,7 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
 
   async function deleteRelationship(relId: string) {
     if (!id) return;
-    const ok = confirm('Remove this relationship?');
+    const ok = await confirm({ title: 'Remove relationship?', confirmText: 'Remove', destructive: true });
     if (!ok) return;
     const res = await fetch(`/api/admin/characters/${id}/relationships/${relId}?reciprocal=true`, { method: 'DELETE' });
     if (res.ok) {
@@ -340,6 +400,41 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
         </Card>
       </div>
 
+      <Card className='p-4 space-y-3'>
+        <h2 className='font-medium'>Attached Book</h2>
+        {form.bookId ? (
+          (() => {
+            return (
+              <div className='flex items-center justify-between'>
+                <div>
+                  <div className='text-sm text-muted-foreground'>This character is attached to</div>
+                  <Link href={`/admin/books/${form.bookId}`} className='text-blue-600 hover:underline'>
+                    {attachedBookTitle || 'View Book'}
+                  </Link>
+                </div>
+                <Button variant='outline' onClick={detachFromBook}>Detach</Button>
+              </div>
+            );
+          })()
+        ) : (
+          <div className='grid grid-cols-1 md:grid-cols-3 gap-3 items-end'>
+            <div className='md:col-span-2'>
+              <Label>Select a book</Label>
+              <select className='border rounded px-2 py-2 w-full' value={attachBookId} onChange={e => setAttachBookId(e.target.value)}>
+                <option value=''>— Choose —</option>
+                {books.map((b: any) => (
+                  <option key={b._id || b.id} value={b._id || b.id}>{b.title}</option>
+                ))}
+              </select>
+            </div>
+            <Button onClick={attachToBook} disabled={!attachBookId}>Attach</Button>
+          </div>
+        )}
+        {!form.bookId && (
+          <div className='text-sm text-muted-foreground'>No book attached. This is an independent character.</div>
+        )}
+      </Card>
+
       {/* Journal Volumes */}
       <Card className='p-0 overflow-hidden'>
         <div className='p-4 flex items-center justify-between gap-3'>
@@ -431,7 +526,10 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
                   {searchResults.map((c: any) => (
                     <button key={c.id} className={`w-full text-left px-3 py-2 hover:bg-accent ${relForm.target === c.id ? 'bg-accent' : ''}`} onClick={() => setRelForm((f: any) => ({ ...f, target: c.id }))}>
                       <div className='font-medium'>{c.name}</div>
-                      <div className='text-xs text-muted-foreground'>{c.slug}</div>
+                      <div className='text-xs text-muted-foreground'>
+                        {c.slug}
+                        {c.bookTitle ? ` • in ${c.bookTitle}` : ''}
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -543,6 +641,7 @@ export default function AdminCharacterDetail({ params }: { params: Promise<{ id:
           </TableBody>
         </Table>
       </Card>
+      {ConfirmDialog}
     </div>
   );
 }

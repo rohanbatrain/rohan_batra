@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 type Character = {
   id: string;
@@ -20,6 +21,8 @@ type Character = {
   significance: 'major' | 'minor' | 'background';
   age?: number;
   tags?: string[];
+  bookId?: string | null;
+  bookTitle?: string | null;
   createdAt: string;
 };
 
@@ -28,6 +31,7 @@ const fetcher = (url: string) => fetch(url).then(r => r.json());
 export default function AdminCharactersPage() {
   const [search, setSearch] = useState('');
   const [visibility, setVisibility] = useState<'all' | 'public' | 'private'>('all');
+  const { confirm, ConfirmDialog } = useConfirm();
   const query = useMemo(() => {
     const params = new URLSearchParams();
     if (search) params.set('search', search);
@@ -57,7 +61,7 @@ export default function AdminCharactersPage() {
   }
 
   async function moveToTrash(id: string) {
-    const ok = confirm('Move this character to trash?');
+    const ok = await confirm({ title: 'Move to trash?', description: 'You can permanently delete it later from Trash.', confirmText: 'Move to Trash', destructive: true });
     if (!ok) return;
     const res = await fetch(`/api/admin/characters/${id}?trash=true`, { method: 'DELETE' });
     if (res.ok) mutate();
@@ -99,6 +103,7 @@ export default function AdminCharactersPage() {
               <TableHead>Name</TableHead>
               <TableHead>Role</TableHead>
               <TableHead>Visibility</TableHead>
+              <TableHead>Book</TableHead>
               <TableHead>Created</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
@@ -106,11 +111,11 @@ export default function AdminCharactersPage() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5}>Loading...</TableCell>
+                <TableCell colSpan={6}>Loading...</TableCell>
               </TableRow>
             ) : !data?.characters?.length ? (
               <TableRow>
-                <TableCell colSpan={5}>No characters found</TableCell>
+                <TableCell colSpan={6}>No characters found</TableCell>
               </TableRow>
             ) : (
               data.characters.map((c: Character) => (
@@ -118,11 +123,20 @@ export default function AdminCharactersPage() {
                   <TableCell>
                     <div className='flex flex-col'>
                       <Link href={`/admin/characters/${c.id}`} className='font-medium text-blue-600 hover:underline'>{c.name}</Link>
-                      <span className='text-xs text-muted-foreground'>{c.slug}</span>
+                      <span className='text-xs text-muted-foreground'>{c.slug}{c.bookTitle ? ` • Attached to ${c.bookTitle}` : ''}</span>
                     </div>
                   </TableCell>
                   <TableCell className='capitalize'>{c.role}</TableCell>
                   <TableCell className='capitalize'>{c.visibility}</TableCell>
+                  <TableCell>
+                    {c.bookId ? (
+                      <Link href={`/admin/books/${c.bookId}`} className='text-blue-600 hover:underline'>
+                        {c.bookTitle || 'View book'}
+                      </Link>
+                    ) : (
+                      <span className='text-muted-foreground'>—</span>
+                    )}
+                  </TableCell>
                   <TableCell>{new Date(c.createdAt).toLocaleDateString()}</TableCell>
                   <TableCell className='space-x-2'>
                     <Link href={`/admin/characters/${c.id}`}><Button size='sm' variant='outline'>Edit</Button></Link>
@@ -134,6 +148,7 @@ export default function AdminCharactersPage() {
           </TableBody>
         </Table>
       </Card>
+      {ConfirmDialog}
     </div>
   );
 }

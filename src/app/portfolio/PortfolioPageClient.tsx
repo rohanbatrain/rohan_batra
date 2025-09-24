@@ -1,10 +1,13 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { Search, Filter, Grid, List, Calendar } from 'lucide-react';
+import { formatTechLabel } from '@/lib/utils';
 import ProjectCard from '@/components/portfolio/ProjectCard';
 import { ProjectWithAuthor } from '@/types/project';
+// removed evidence-based chips to avoid redundant filters
 
 interface PortfolioPageClientProps {
   initialProjects: ProjectWithAuthor[];
@@ -16,20 +19,33 @@ interface PortfolioPageClientProps {
     hasNext: boolean;
     hasPrev: boolean;
   };
+  initialTag?: string;
+  initialCategory?: string;
+  initialTechnology?: string;
+  initialSearch?: string;
 }
 
 export default function PortfolioPageClient({
   initialProjects,
   initialPagination,
+  initialTag,
+  initialCategory,
+  initialTechnology,
+  initialSearch,
 }: PortfolioPageClientProps) {
-  const [projects] = useState<ProjectWithAuthor[]>(initialProjects);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedTechnology, setSelectedTechnology] = useState('All');
+  const [projects, setProjects] = useState<ProjectWithAuthor[]>(initialProjects);
+  const [searchTerm, setSearchTerm] = useState(initialSearch || '');
+  const [selectedCategory, setSelectedCategory] = useState(initialCategory || 'All');
+  const [selectedTechnology, setSelectedTechnology] = useState(initialTechnology || initialTag || 'All');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'popular'>(
     'newest'
   );
+  const [page, setPage] = useState(initialPagination?.page || 1);
+  const [hasNext, setHasNext] = useState(initialPagination?.hasNext || false);
+  const [totalPages, setTotalPages] = useState(initialPagination?.totalPages || 1);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [categoriesMode, setCategoriesMode] = useState<'any' | 'all'>('any');
 
   // Provide default values to prevent undefined errors
   const pagination = initialPagination || {
@@ -41,66 +57,139 @@ export default function PortfolioPageClient({
     hasPrev: false,
   };
 
+  // Router hooks for URL sync
+  const router = useRouter();
+  const pathname = usePathname();
+  const sp = useSearchParams();
+
   // Get unique categories from projects
-  const categories = useMemo(() => {
-    const cats = projects.map(project => project.category);
-    return ['All', ...Array.from(new Set(cats))];
-  }, [projects]);
+  const [categoryOptions, setCategoryOptions] = useState<string[]>(['All']);
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch('/api/portfolio/meta', { cache: 'no-store' });
+        const json = await res.json();
+        const cats = ['All', ...((json?.data?.categories as string[]) || [])];
+        if (initialCategory && !cats.includes(initialCategory)) cats.push(initialCategory);
+        setCategoryOptions(Array.from(new Set(cats)));
+      } catch {}
+    })();
+  }, [initialCategory]);
 
   // Get unique technologies from projects
-  const technologies = useMemo(() => {
-    const techSet = new Set<string>();
-    projects.forEach(project => {
-      project.technologies.forEach(tech => techSet.add(tech));
-    });
-    return ['All', ...Array.from(techSet)];
-  }, [projects]);
+  const [technologyOptions, setTechnologyOptions] = useState<string[]>(['All']);
+  useEffect(() => {
+    (async () => {
+      try {
+        const params = new URLSearchParams();
+        if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
+        const res = await fetch(`/api/portfolio/meta?${params.toString()}`, { cache: 'no-store' });
+        const json = await res.json();
+  const rawTech = (json?.data?.technologies as string[]) || [];
+  const rawTags = ((json?.data?.tags as string[]) || []).filter((t: string) => !['forked', 'original'].includes(String(t).toLowerCase()));
+  const combined = new Set<string>([...rawTech, ...rawTags]);
+        const list = ['All', ...Array.from(combined)];
+        if (initialTag && !list.includes(initialTag)) list.push(initialTag);
+        if (initialTechnology && !list.includes(initialTechnology)) list.push(initialTechnology);
+        setTechnologyOptions(Array.from(new Set(list)));
+      } catch {}
+    })();
+  }, [initialTag, initialTechnology, selectedCategory]);
 
-  // Filter and sort projects
+  // Sort projects (filtering handled server-side)
   const displayProjects = useMemo(() => {
-    const filtered = projects.filter(project => {
-      const matchesSearch =
-        searchTerm === '' ||
-        project.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        project.technologies.some(tech =>
-          tech.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-
-      const matchesCategory =
-        selectedCategory === 'All' || project.category === selectedCategory;
-
-      const matchesTechnology =
-        selectedTechnology === 'All' ||
-        project.technologies.includes(selectedTechnology);
-
-      return matchesSearch && matchesCategory && matchesTechnology;
-    });
-
-    // Sort projects
-    filtered.sort((a, b) => {
+    const sorted = [...projects].sort((a, b) => {
+      const aForked = a.tags?.includes('forked');
+      const bForked = b.tags?.includes('forked');
+      if (aForked !== bForked) return aForked ? 1 : -1;
+      if (a.featured !== b.featured) return a.featured ? -1 : 1;
       switch (sortBy) {
         case 'newest':
-          return (
-            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          );
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         case 'oldest':
-          return (
-            new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
+          return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
         case 'popular':
           return b.viewCount - a.viewCount;
         default:
           return 0;
       }
     });
+    return sorted;
+  }, [projects, sortBy]);
 
-    return filtered;
-  }, [projects, searchTerm, selectedCategory, selectedTechnology, sortBy]);
+  // Fetch a page (with current filters)
+  async function fetchPage(n: number, { append }: { append: boolean }) {
+    const params = new URLSearchParams();
+    params.set('page', String(n));
+    params.set('limit', String(initialPagination?.limit || 12));
+    if (selectedCategories.length > 0) {
+      params.set('categories', selectedCategories.join(','));
+      params.set('mode', categoriesMode);
+    } else if (selectedCategory && selectedCategory !== 'All') {
+      params.set('category', selectedCategory);
+    }
+    if (selectedTechnology && selectedTechnology !== 'All') params.set('technology', selectedTechnology);
+    if (searchTerm) params.set('search', searchTerm);
+    const res = await fetch(`/api/portfolio/projects?${params.toString()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const json = await res.json();
+    const data = json?.data;
+    if (!data) return;
+    setProjects(prev => (append ? [...prev, ...data.projects] : data.projects));
+    setPage(data.currentPage);
+    setHasNext(data.currentPage < data.totalPages);
+    setTotalPages(data.totalPages || 1);
+  }
+
+  // Sync filters and page to URL
+  useEffect(() => {
+    const params = new URLSearchParams(sp?.toString());
+    if (selectedCategories.length > 0) {
+      params.delete('category');
+      params.set('categories', selectedCategories.join(','));
+      params.set('mode', categoriesMode);
+    } else {
+      params.delete('categories');
+      params.delete('mode');
+      if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory); else params.delete('category');
+    }
+    if (selectedTechnology && selectedTechnology !== 'All') params.set('technology', selectedTechnology); else params.delete('technology');
+    if (searchTerm) params.set('search', searchTerm); else params.delete('search');
+    params.set('page', String(page));
+    router.replace(`${pathname}?${params.toString()}`, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, selectedTechnology, searchTerm, page]);
+
+  // Refetch when filters change (reset to page 1)
+  useEffect(() => {
+    (async () => {
+      await fetchPage(1, { append: false });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedCategory, selectedCategories, categoriesMode, selectedTechnology, searchTerm]);
 
   // Separate featured projects
   const featuredProjects = displayProjects.filter(project => project.featured);
   const regularProjects = displayProjects.filter(project => !project.featured);
+
+  async function loadMore() {
+    if (!hasNext) return;
+    const params = new URLSearchParams();
+    params.set('page', String(page + 1));
+    params.set('limit', String(initialPagination?.limit || 12));
+    if (selectedCategory && selectedCategory !== 'All') params.set('category', selectedCategory);
+    if (selectedTechnology && selectedTechnology !== 'All') params.set('technology', selectedTechnology);
+    if (searchTerm) params.set('search', searchTerm);
+    const res = await fetch(`/api/portfolio/projects?${params.toString()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const json = await res.json();
+    const data = json?.data;
+    if (!data) return;
+    setProjects(prev => [...prev, ...data.projects]);
+    setPage(data.currentPage);
+    setHasNext(data.currentPage < data.totalPages);
+    // Removed setVisibleCount as we are switching to Prev/Next only.
+  }
 
   return (
     <>
@@ -119,6 +208,7 @@ export default function PortfolioPageClient({
           the development community. Each project represents a unique challenge
           and learning experience.
         </p>
+        {/* quick chips removed to keep filters simple */}
       </motion.div>
 
       {/* Search and Filters */}
@@ -146,28 +236,31 @@ export default function PortfolioPageClient({
             {/* Category Filter */}
             <div className='flex items-center gap-2'>
               <Filter className='h-5 w-5 text-gray-500' />
+              <span className='text-sm text-gray-600 dark:text-gray-300'>Category</span>
               <select
                 value={selectedCategory}
                 onChange={e => setSelectedCategory(e.target.value)}
+                aria-label='Category filter'
                 className='px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500'
               >
-                {categories.map(category => (
+                {categoryOptions.map(category => (
                   <option key={category} value={category}>
-                    {category}
+                    {formatTechLabel(category)}
                   </option>
                 ))}
               </select>
             </div>
 
-            {/* Technology Filter */}
+            {/* Feature Filter (tech/tags within category) */}
             <select
               value={selectedTechnology}
               onChange={e => setSelectedTechnology(e.target.value)}
+              aria-label={`Feature in ${selectedCategory !== 'All' ? selectedCategory : 'All Categories'}`}
               className='px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500'
             >
-              {technologies.map(tech => (
+              {technologyOptions.map(tech => (
                 <option key={tech} value={tech}>
-                  {tech}
+                  {formatTechLabel(tech)}
                 </option>
               ))}
             </select>
@@ -212,6 +305,53 @@ export default function PortfolioPageClient({
         </div>
       </motion.div>
 
+      {/* Advanced category filters */}
+      <div className='mb-4'>
+        <details className='bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3'>
+          <summary className='cursor-pointer text-sm text-gray-700 dark:text-gray-300'>Advanced: multi-category filter</summary>
+          <div className='mt-3 flex flex-wrap gap-2'>
+            {categoryOptions.filter(c => c !== 'All').map(cat => {
+              const checked = selectedCategories.includes(cat);
+              return (
+                <label key={cat} className={`inline-flex items-center gap-2 text-xs px-2 py-1 rounded border ${checked ? 'bg-blue-50 dark:bg-blue-900/20 border-blue-300 dark:border-blue-700' : 'border-gray-300 dark:border-gray-600'}`}>
+                  <input
+                    type='checkbox'
+                    checked={checked}
+                    onChange={e => {
+                      setSelectedCategory('All');
+                      setSelectedCategories(prev => (
+                        e.target.checked ? [...prev, cat] : prev.filter(c => c !== cat)
+                      ));
+                      setPage(1);
+                    }}
+                  />
+                  <span>{formatTechLabel(cat)}</span>
+                </label>
+              );
+            })}
+          </div>
+          <div className='mt-3 flex items-center gap-2'>
+            <span className='text-xs text-gray-600 dark:text-gray-400'>Match</span>
+            <select
+              value={categoriesMode}
+              onChange={e => setCategoriesMode(e.target.value as 'any' | 'all')}
+              className='px-2 py-1 text-xs border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-800'
+            >
+              <option value='any'>Any of selected</option>
+              <option value='all'>All selected</option>
+            </select>
+            {selectedCategories.length > 0 && (
+              <button
+                onClick={() => { setSelectedCategories([]); setCategoriesMode('any'); setPage(1); }}
+                className='ml-2 text-xs text-gray-600 dark:text-gray-300 underline'
+              >
+                Clear multi-category
+              </button>
+            )}
+          </div>
+        </details>
+      </div>
+
       {/* Results Count */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -224,7 +364,7 @@ export default function PortfolioPageClient({
           {displayProjects.length !== 1 ? 's' : ''} found
           {searchTerm && ` for "${searchTerm}"`}
           {selectedCategory !== 'All' && ` in ${selectedCategory}`}
-          {selectedTechnology !== 'All' && ` using ${selectedTechnology}`}
+          {selectedTechnology !== 'All' && ` using ${formatTechLabel(selectedTechnology)}`}
         </p>
       </motion.div>
 
@@ -251,7 +391,7 @@ export default function PortfolioPageClient({
               }`}
             >
               {featuredProjects.map(project => (
-                <ProjectCard key={project._id} project={project} />
+                <ProjectCard key={project._id} project={project} activeCategory={selectedCategory !== 'All' ? selectedCategory : undefined} />
               ))}
             </div>
           </motion.div>
@@ -285,8 +425,9 @@ export default function PortfolioPageClient({
             selectedTechnology === 'All'
               ? regularProjects
               : displayProjects
-            ).map(project => (
-              <ProjectCard key={project._id} project={project} />
+            )
+              .map(project => (
+              <ProjectCard key={project._id} project={project} activeCategory={selectedCategory !== 'All' ? selectedCategory : undefined} />
             ))}
           </div>
         ) : (
@@ -304,8 +445,8 @@ export default function PortfolioPageClient({
         )}
       </motion.div>
 
-      {/* Pagination (if needed) */}
-      {pagination.totalPages > 1 && (
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -313,10 +454,23 @@ export default function PortfolioPageClient({
           className='mt-12 flex justify-center'
         >
           <div className='flex gap-2'>
-            {/* Add pagination controls here */}
-            <span className='text-sm text-gray-500 dark:text-gray-400'>
-              Page {pagination.page} of {pagination.totalPages}
+            <button
+              onClick={() => fetchPage(Math.max(1, page - 1), { append: false })}
+              disabled={page <= 1}
+              className='px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-50'
+            >
+              Prev
+            </button>
+            <span className='text-sm text-gray-500 dark:text-gray-400 px-2 py-1'>
+              Page {page} of {totalPages}
             </span>
+            <button
+              onClick={() => fetchPage(Math.min(totalPages, page + 1), { append: false })}
+              disabled={page >= totalPages}
+              className='px-3 py-1 text-sm rounded-md border border-gray-300 dark:border-gray-600 disabled:opacity-50'
+            >
+              Next
+            </button>
           </div>
         </motion.div>
       )}

@@ -4,17 +4,15 @@ import connectToDatabase from '@/lib/mongodb';
 import ChapterModel from '@/models/Chapter';
 import BookModel from '@/models/Book';
 import { z } from 'zod';
+import User from '@/models/User';
 
-// Validation schema for chapter update
+// Validation schema for chapter update (mapped to model)
 const ChapterUpdateSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
+  title: z.string().min(1, 'Title is required').max(200, 'Title too long').optional(),
   content: z.string().optional(),
   summary: z.string().optional(),
-  status: z.enum(['draft', 'in-progress', 'completed']),
-  order: z.number().int().min(1),
-  wordCount: z.number().min(0).optional(),
-  isPublished: z.boolean(),
-  notes: z.string().optional(),
+  chapterNumber: z.number().int().min(1).optional(),
+  isPublished: z.boolean().optional(),
 });
 
 // GET /api/admin/chapters/[id] - Get a specific chapter
@@ -23,40 +21,49 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
-
-    if (!['editor', 'admin'].includes(userRole)) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      );
-    }
-
     await connectToDatabase();
+    const currentUser = await User.findOne({ clerkId: userId });
+    const userRole = currentUser?.role || 'user';
+    if (!['editor', 'admin'].includes(userRole)) {
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
 
     const { id } = await params;
 
-    // Build filter - editors can only access their own chapters
-    const filter: Record<string, unknown> = { _id: id };
-    if (userRole === 'editor') {
-      filter.authorId = userId;
-    }
-
-    const chapter = await ChapterModel.findOne(filter).lean();
+    const chapter = await ChapterModel.findById(id);
 
     if (!chapter) {
       return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     }
 
-    return NextResponse.json(chapter);
+    // If editor, ensure ownership via parent book
+    if (userRole === 'editor' && currentUser?._id) {
+      const book = await BookModel.findOne({ _id: chapter.bookId, authorId: currentUser._id }).lean();
+      if (!book) {
+        return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      }
+    }
+    // Shape to contract if needed
+    const shaped = {
+      _id: (chapter as any)._id,
+      title: (chapter as any).title,
+      content: (chapter as any).content,
+      summary: (chapter as any).notes || '',
+      chapterNumber: (chapter as any).orderIndex,
+      wordCount: (chapter as any).wordCount || 0,
+      isPublished: (chapter as any).status === 'complete',
+      bookId: String((chapter as any).bookId),
+      createdAt: (chapter as any).createdAt,
+      updatedAt: (chapter as any).updatedAt,
+    };
+
+    return NextResponse.json({ chapter: shaped });
   } catch (error) {
     console.error('Error fetching chapter:', error);
     return NextResponse.json(
@@ -72,51 +79,45 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
-
+    await connectToDatabase();
+    const currentUser = await User.findOne({ clerkId: userId });
+    const userRole = currentUser?.role || 'user';
     if (!['editor', 'admin'].includes(userRole)) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
     const { id } = await params;
     const body = await request.json();
-    const validatedData = ChapterUpdateSchema.parse(body);
+  const validatedData = ChapterUpdateSchema.parse(body);
 
-    await connectToDatabase();
-
-    // Build filter - editors can only update their own chapters
-    const filter: Record<string, unknown> = { _id: id };
-    if (userRole === 'editor') {
-      filter.authorId = userId;
-    }
-
-    // Get the existing chapter to check word count changes
-    const existingChapter = await ChapterModel.findOne(filter);
+    // Load existing chapter
+    const existingChapter = await ChapterModel.findById(id);
 
     if (!existingChapter) {
       return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     }
 
-    const oldWordCount = existingChapter.wordCount || 0;
-    const newWordCount = validatedData.wordCount || 0;
-    const wordCountDiff = newWordCount - oldWordCount;
+    // Editor access via book
+    if (userRole === 'editor' && currentUser?._id) {
+      const owns = await BookModel.exists({ _id: existingChapter.bookId, authorId: currentUser._id });
+      if (!owns) return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
 
-    // Check if order changed and conflicts with existing chapters
-    if (validatedData.order !== existingChapter.order) {
+    const oldWordCount = existingChapter.wordCount || 0;
+  // word count will be recalculated on save from content; compute diff after save
+  let wordCountDiff = 0;
+
+    // Check if orderIndex changed and conflicts
+    if (typeof validatedData.chapterNumber !== 'undefined' && validatedData.chapterNumber !== existingChapter.orderIndex) {
       const conflictingChapter = await ChapterModel.findOne({
         bookId: existingChapter.bookId,
-        order: validatedData.order,
+        orderIndex: validatedData.chapterNumber,
         _id: { $ne: id },
       });
 
@@ -128,29 +129,36 @@ export async function PUT(
       }
     }
 
-    // Update the chapter
-    const updatedChapter = await ChapterModel.findOneAndUpdate(
-      filter,
-      {
-        ...validatedData,
-        slug: validatedData.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, ''),
-        updatedAt: new Date(),
-      },
-      { new: true, lean: true }
-    );
+    // Apply mapped fields then save
+    if (typeof validatedData.title !== 'undefined') existingChapter.title = validatedData.title;
+    if (typeof validatedData.content !== 'undefined') existingChapter.content = validatedData.content;
+    if (typeof validatedData.summary !== 'undefined') (existingChapter as any).notes = validatedData.summary;
+    if (typeof validatedData.chapterNumber !== 'undefined') (existingChapter as any).orderIndex = validatedData.chapterNumber;
+    if (typeof validatedData.isPublished !== 'undefined') (existingChapter as any).status = validatedData.isPublished ? 'complete' : (existingChapter as any).status === 'complete' ? 'draft' : (existingChapter as any).status;
+    (existingChapter as any).updatedAt = new Date();
+
+    const saved = await existingChapter.save();
 
     // Update book's word count if there's a difference
+    const newWordCount = (saved as any).wordCount || 0;
+    wordCountDiff = newWordCount - oldWordCount;
     if (wordCountDiff !== 0) {
-      await BookModel.findByIdAndUpdate(existingChapter.bookId, {
-        $inc: { currentWordCount: wordCountDiff },
-        updatedAt: new Date(),
-      });
+      await BookModel.findByIdAndUpdate(existingChapter.bookId, { $inc: { currentWordCount: wordCountDiff }, updatedAt: new Date() });
     }
 
-    return NextResponse.json(updatedChapter);
+    const shaped = {
+      _id: saved._id,
+      title: saved.title,
+      content: saved.content,
+      summary: (saved as any).notes || '',
+      chapterNumber: (saved as any).orderIndex,
+      wordCount: saved.wordCount || 0,
+      isPublished: (saved as any).status === 'complete',
+      bookId: String((saved as any).bookId),
+      createdAt: saved.createdAt,
+      updatedAt: saved.updatedAt,
+    };
+    return NextResponse.json({ chapter: shaped });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
@@ -173,44 +181,38 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { userId, sessionClaims } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    // Check for editor/admin role
-    const metadata = sessionClaims?.metadata as { role?: string } | undefined;
-    const userRole = metadata?.role || 'user';
-
+    await connectToDatabase();
+    const currentUser = await User.findOne({ clerkId: userId });
+    const userRole = currentUser?.role || 'user';
     if (!['editor', 'admin'].includes(userRole)) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
     }
 
     const { id } = await params;
 
-    await connectToDatabase();
-
-    // Build filter - editors can only delete their own chapters
-    const filter: Record<string, unknown> = { _id: id };
-    if (userRole === 'editor') {
-      filter.authorId = userId;
-    }
-
-    // Get the existing chapter to update book word count
-    const existingChapter = await ChapterModel.findOne(filter);
+    // Load existing chapter
+    const existingChapter = await ChapterModel.findById(id);
 
     if (!existingChapter) {
       return NextResponse.json({ error: 'Chapter not found' }, { status: 404 });
     }
 
+    // Editor access via book
+    if (userRole === 'editor' && currentUser?._id) {
+      const owns = await BookModel.exists({ _id: existingChapter.bookId, authorId: currentUser._id });
+      if (!owns) return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    }
+
     const wordCountToDeduct = existingChapter.wordCount || 0;
 
     // Delete the chapter
-    await ChapterModel.findOneAndDelete(filter);
+  await ChapterModel.deleteOne({ _id: id });
 
     // Update book's word count
     if (wordCountToDeduct > 0) {

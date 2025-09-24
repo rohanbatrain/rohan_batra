@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from 'mongoose';
 export interface IBook extends Document {
   _id: mongoose.Types.ObjectId;
   title: string;
+  slug: string;
   subtitle?: string;
   description: string;
   genre: string;
@@ -30,6 +31,14 @@ const BookSchema = new Schema<IBook>(
       required: true,
       trim: true,
       maxlength: 200,
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+      match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
     },
     subtitle: {
       type: String,
@@ -146,6 +155,17 @@ BookSchema.statics.findByAuthor = function (authorId: string) {
 BookSchema.statics.findPublic = function () {
   return this.find({ visibility: 'public' }).sort({ publishedAt: -1 });
 };
+
+// Pre-save slug generation
+BookSchema.pre<IBook>('save', function (next) {
+  if (this.isModified('title') && !this.slug) {
+    this.slug = this.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+  next();
+});
 
 const BookModel =
   mongoose.models.Book || mongoose.model<IBook>('Book', BookSchema);

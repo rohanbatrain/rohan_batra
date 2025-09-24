@@ -58,6 +58,55 @@ export async function getPublishedProjects(
   }
 }
 
+export async function getFeaturedProjectsOnly(
+  limit: number = 3
+): Promise<ProjectWithAuthor[]> {
+  try {
+    await connectToDatabase();
+    await UserModel.countDocuments().limit(1).exec();
+
+    const projects = await ProjectModel.find({ status: 'published', featured: true })
+      .populate('authorId', 'firstName lastName email role')
+      .sort({ createdAt: -1 })
+      .limit(limit);
+
+    return projects.map(project => ({
+      _id: project._id.toString(),
+      title: project.title,
+      slug: project.slug,
+      description: project.description,
+      longDescription: project.longDescription,
+      images: project.images,
+      gallery: project.gallery || [],
+      featuredImage: project.featuredImage,
+      category: project.category,
+      technologies: project.technologies,
+      status: project.status,
+      featured: project.featured,
+      demoUrl: project.liveUrl,
+      liveUrl: project.liveUrl,
+      sourceUrl: project.sourceUrl,
+      startDate: project.startDate,
+      endDate: project.endDate,
+      client: project.client || '',
+      tags: project.tags,
+      viewCount: project.viewCount,
+      authorId: project.authorId._id.toString(),
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      author: {
+        id: project.authorId._id.toString(),
+        firstName: project.authorId.firstName,
+        lastName: project.authorId.lastName,
+        avatar: '',
+      },
+    }));
+  } catch (error) {
+    console.error('Error fetching featured projects:', error);
+    return [];
+  }
+}
+
 export async function getProjectBySlug(slug: string): Promise<ProjectWithAuthor | null> {
   try {
     await connectToDatabase();

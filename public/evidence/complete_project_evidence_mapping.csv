@@ -1,0 +1,4 @@
+category,repo,title,url,points
+security,second_brain_database,Security Implementation,https://github.com/rohanbatrain/second_brain_database/blob/main/src/second_brain_database/main.py,"IP blocking; Rate limiting; JWT auth"
+security,emotion_tracker,Mobile Security,https://github.com/rohanbatrain/emotion_tracker,"Biometric auth; 2FA"
+security,sbd_sso,Single Sign-On,https://github.com/rohanbatrain/sbd_sso,"SSO integration; Centralized auth"

@@ -385,6 +385,12 @@ export default function BooksManagement(_: BooksManagementProps) {
                         </p>
                       </div>
                       <div className='flex gap-2 ml-4'>
+                        <a
+                          href={`/admin/books/${book._id}`}
+                          className='px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200'
+                        >
+                          Manage
+                        </a>
                         <button
                           onClick={() => handleDeleteBook(book._id)}
                           className='px-3 py-1 text-sm bg-red-100 text-red-700 rounded hover:bg-red-200'

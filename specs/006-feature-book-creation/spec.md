@@ -1,6 +1,6 @@
 # Feature Specification: Book Creation System
 
-**Feature Branch**: `[006-feature-book-creation]`  
+**Feature Branch**: `006-feature-book-creation`  
 **Created**: [auto-generated]  
 **Status**: Draft  
 **Input**: User description: "Book creation system with rich authoring: create books with metadata (title, subtitle, series, volume, status: draft/published/archived), cover images, synopsis, genres/tags, SEO fields; chapter management (order, publish states, word counts), character linking and roles, timeline with story dates; writing workspace inspired by Novel.sh with markdown paste → rich text, autosave, version history and diff, keyboard shortcuts; role-based permissions (admin/editor), drafts and private flags, public pages for books and chapters with SEO; settings for default timezone (for story dates), default book visibility, and optional analytics. Admin dashboard: list, search, filter by status/visibility, bulk actions, trash and restore; integrations: image uploads, lottie embeds, and embeds; multilingual: translationKey linking for book/chapter translations; activity logs and analytics."

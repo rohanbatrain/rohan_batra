@@ -46,9 +46,24 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
     const [items, total] = await Promise.all([
-      Character.find(filter).sort({ createdAt: -1 }).skip(skip).limit(limit).lean(),
+      Character.find(filter)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
       Character.countDocuments(filter),
     ]);
+
+    // Fetch book titles for attached characters
+    const bookIds = Array.from(new Set(items.map((c: any) => c.bookId?.toString()).filter(Boolean)));
+    let bookMap: Record<string, { title: string }> = {};
+    if (bookIds.length) {
+      try {
+        const Book = (await import('@/models/Book')).default;
+        const books = await Book.find({ _id: { $in: bookIds } }).select('_id title').lean();
+        bookMap = Object.fromEntries(books.map((b: any) => [b._id.toString(), { title: b.title }]));
+      } catch {}
+    }
 
     const characters = items.map((c: any) => ({
       id: c._id?.toString(),
@@ -60,6 +75,8 @@ export async function GET(request: NextRequest) {
       significance: c.significance,
       age: c.age,
       tags: c.tags,
+      bookId: c.bookId?.toString() || null,
+      bookTitle: c.bookId ? bookMap[c.bookId.toString()]?.title || null : null,
       createdAt: c.createdAt,
     }));
 

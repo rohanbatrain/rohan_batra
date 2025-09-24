@@ -4,6 +4,7 @@ export interface IChapter extends Document {
   _id: mongoose.Types.ObjectId;
   bookId: mongoose.Types.ObjectId;
   title: string;
+  slug: string;
   content: string; // Rich HTML content
   markdown?: string; // Optional: store original markdown if pasted
   orderIndex: number;
@@ -27,6 +28,13 @@ const ChapterSchema = new Schema<IChapter>(
       required: true,
       trim: true,
       maxlength: 200,
+    },
+    slug: {
+      type: String,
+      required: true,
+      lowercase: true,
+      trim: true,
+      match: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
     },
     content: {
       type: String,
@@ -76,6 +84,7 @@ const ChapterSchema = new Schema<IChapter>(
 );
 
 // Indexes for performance
+ChapterSchema.index({ bookId: 1, slug: 1 }, { unique: true });
 ChapterSchema.index({ bookId: 1 });
 ChapterSchema.index({ bookId: 1, orderIndex: 1 });
 ChapterSchema.index({ status: 1 });

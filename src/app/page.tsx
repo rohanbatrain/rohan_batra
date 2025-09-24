@@ -3,7 +3,9 @@ import Link from 'next/link';
 import ProjectCard from '@/components/portfolio/ProjectCard';
 import PostSummary from '@/components/blog/PostSummary';
 import { getPublishedBlogPosts } from '@/lib/blog-service';
-import { getPublishedProjects } from '@/lib/portfolio-service';
+import { getFeaturedProjectsOnly, getPublishedProjects } from '@/lib/portfolio-service';
+import connectToDatabase from '@/lib/mongodb';
+import SiteSetting from '@/models/SiteSetting';
 import HeroSection from '@/components/home/HeroSection';
 import SkillsSection from '@/components/home/SkillsSection';
 
@@ -25,9 +27,8 @@ async function getFeaturedBlogPosts() {
 
 async function getFeaturedProjects() {
   try {
-    const projects = await getPublishedProjects(3);
-    // The service already sorts by featured first, then by creation date
-    return projects.slice(0, 3);
+    const projects = await getFeaturedProjectsOnly(3);
+    return projects;
   } catch (error) {
     console.error('Error fetching projects:', error);
     return [];
@@ -39,6 +40,16 @@ export default async function Home() {
     getFeaturedBlogPosts(),
     getFeaturedProjects(),
   ]);
+  // Read admin toggle for trending fallback (defaults to true)
+  await connectToDatabase();
+  const trendingToggle = (await SiteSetting.findOne({ key: 'features.home.trendingfallback' }).lean()) as any;
+  const allowTrendingFallback = typeof trendingToggle?.value === 'boolean' ? Boolean((trendingToggle as any).value) : true;
+
+  const trending = projects.length === 0 && allowTrendingFallback
+    ? (await getPublishedProjects(9))
+        .sort((a, b) => (b.viewCount ?? 0) - (a.viewCount ?? 0))
+        .slice(0, 3)
+    : [];
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800'>
@@ -46,6 +57,7 @@ export default async function Home() {
       <SkillsSection />
 
       {/* Featured Projects */}
+  {projects.length > 0 && (
       <section className='py-16 px-6 lg:px-8 bg-white dark:bg-gray-800'>
         <div className='mx-auto max-w-6xl'>
           <div className='flex items-center justify-between mb-12'>
@@ -67,35 +79,47 @@ export default async function Home() {
 
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
             <Suspense fallback={<div>Loading projects...</div>}>
-              {projects.length > 0 ? (
-                projects.map((project, index) => (
-                  <ProjectCard
-                    key={project._id}
-                    project={project}
-                    index={index}
-                  />
-                ))
-              ) : (
-                <div className='col-span-full text-center py-16'>
-                  <div className='mx-auto max-w-md'>
-                    <div className='w-16 h-16 mx-auto mb-6 rounded-full bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 flex items-center justify-center'>
-                      <svg className='w-8 h-8 text-blue-600 dark:text-blue-400' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
-                        <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10' />
-                      </svg>
-                    </div>
-                    <h3 className='text-lg font-semibold text-gray-900 dark:text-white mb-2'>
-                      Projects Coming Soon
-                    </h3>
-                    <p className='text-gray-500 dark:text-gray-400'>
-                      I'm working on some exciting new projects. Check back soon to see what I'm building!
-                    </p>
-                  </div>
-                </div>
-              )}
+              {projects.map((project, index) => (
+                <ProjectCard
+                  key={project._id}
+                  project={project}
+                  index={index}
+                />
+              ))}
             </Suspense>
           </div>
         </div>
       </section>
+      )}
+
+      {/* Trending CTA when no featured */}
+      {projects.length === 0 && allowTrendingFallback && trending.length > 0 && (
+        <section className='py-12 px-6 lg:px-8 bg-white dark:bg-gray-800'>
+          <div className='mx-auto max-w-6xl'>
+            <div className='flex items-center justify-between mb-8'>
+              <div>
+                <h2 className='text-2xl font-bold text-gray-900 dark:text-white mb-2'>
+                  Trending Projects
+                </h2>
+                <p className='text-gray-600 dark:text-gray-300 text-sm'>
+                  Popular picks based on views and recency.
+                </p>
+              </div>
+              <Link
+                href='/portfolio'
+                className='text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors'
+              >
+                Explore Portfolio →
+              </Link>
+            </div>
+            <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8'>
+              {trending.map((project, index) => (
+                <ProjectCard key={project._id} project={project} index={index} />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Latest Blog Posts */}
       <section className='py-16 px-6 lg:px-8'>

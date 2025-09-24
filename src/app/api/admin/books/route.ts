@@ -4,6 +4,7 @@ import connectToDatabase from '@/lib/mongodb';
 import BookModel from '@/models/Book';
 import { z } from 'zod';
 import User from '@/models/User';
+import { uniqueSlug } from '@/lib/slug';
 
 // Validation schema for book creation/update
 const BookSchema = z.object({
@@ -158,9 +159,13 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = BookSchema.parse(body);
 
-    // Create new book
+    // Create new book with unique slug
+    const slug = await uniqueSlug(validatedData.title, async (candidate: string) => {
+      return !!(await BookModel.exists({ slug: candidate }));
+    });
     const book = new BookModel({
       ...validatedData,
+      slug,
       authorId: currentUser?._id,
       currentWordCount: 0,
       createdAt: new Date(),

@@ -258,6 +258,35 @@ export default function SettingsPage() {
 
 			{/* Simple feature toggles */}
 			<div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+				{/* Trending fallback on Home */}
+				<Card>
+					<CardContent className='p-6 flex items-start justify-between'>
+						<div>
+							<h3 className='font-medium'>Trending Fallback on Home</h3>
+							<p className='text-sm text-gray-600'>Show trending projects when no featured exist.</p>
+						</div>
+						<Switch
+							checked={Boolean(data.grouped['features']?.find(s => s.key === 'features.home.trendingfallback')?.value ?? true)}
+							onCheckedChange={async enabled => {
+								await fetch('/api/admin/settings', {
+									method: 'POST',
+									headers: { 'Content-Type': 'application/json' },
+									credentials: 'include',
+									body: JSON.stringify({
+										key: 'features.home.trendingfallback',
+										value: enabled,
+										type: 'boolean',
+										category: 'features',
+										description: 'Use trending projects on the home page when there are no featured projects',
+										isPublic: false,
+									}),
+								});
+								fetchSettings();
+							}}
+						/>
+					</CardContent>
+				</Card>
+
 				<Card>
 					<CardContent className='p-6 flex items-start justify-between'>
 						<div>

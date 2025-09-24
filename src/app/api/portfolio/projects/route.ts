@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser } from '@clerk/nextjs/server';
-import { getProjectsWithPagination } from '@/lib/portfolio-service';
 import connectToDatabase from '@/lib/mongodb';
 import ProjectModel from '@/models/Project';
 import UserModel from '@/models/User';
@@ -10,19 +9,166 @@ import { ProjectWithAuthor } from '@/types/project';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '12');
-    const category = searchParams.get('category') || undefined;
+  const page = parseInt(searchParams.get('page') || '1');
+  const limit = parseInt(searchParams.get('limit') || '12');
+  const category = searchParams.get('category') || undefined;
     const technology = searchParams.get('technology') || undefined;
-    const featured = searchParams.get('featured');
+  const tag = searchParams.get('tag') || undefined;
+  const categoriesParam = searchParams.get('categories') || undefined;
+  const categoriesMode = (searchParams.get('mode') || 'any').toLowerCase();
+  const featured = searchParams.get('featured');
     const status = searchParams.get('status') || 'published';
     const search = searchParams.get('search') || undefined;
+  const debug = (searchParams.get('debug') || '').toString() === '1' || (searchParams.get('debug') || '').toString().toLowerCase() === 'true';
 
-    const result = await getProjectsWithPagination(page, limit, category || undefined);
+    await connectToDatabase();
+    await UserModel.countDocuments().limit(1).exec();
+
+    const query: any = { status };
+    if (category) {
+      query.$or = [...(query.$or || []), { category }, { categories: category }];
+    }
+    if (categoriesParam) {
+      const list = categoriesParam.split(',').map(s => s.trim()).filter(Boolean);
+      if (list.length) {
+        if (categoriesMode === 'all') {
+          // require every category to be present across category or categories[]
+          query.$and = [
+            ...(query.$and || []),
+            ...list.map(c => ({ $or: [{ category: c }, { categories: c }] })),
+          ];
+        } else {
+          // any
+          query.$or = [
+            ...(query.$or || []),
+            { category: { $in: list } },
+            { categories: { $in: list } },
+          ];
+        }
+      }
+    }
+
+    const orFilters: any[] = [];
+    if (technology) {
+      const tech = technology.toString();
+      orFilters.push({ technologies: { $in: [tech, new RegExp(`^${tech}$`, 'i')] } });
+      orFilters.push({ tags: tech.toLowerCase() });
+    }
+    if (tag) {
+      const t = tag.toString();
+      orFilters.push({ tags: t.toLowerCase() });
+      orFilters.push({ technologies: { $in: [t, new RegExp(`^${t}$`, 'i')] } });
+    }
+    if (search) {
+      const rx = new RegExp(search, 'i');
+      orFilters.push({ title: rx });
+      orFilters.push({ description: rx });
+    }
+  if (orFilters.length) query.$or = [...(query.$or || []), ...orFilters];
+
+    if (featured === 'true') query.featured = true;
+    if (featured === 'false') query.featured = false;
+
+    const skip = (page - 1) * limit;
+
+    const [projects, totalProjects] = await Promise.all([
+      ProjectModel.find(query)
+        .populate('authorId', 'firstName lastName email role')
+        .sort({ featured: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      ProjectModel.countDocuments(query),
+    ]);
+
+    const projectsWithAuthor: ProjectWithAuthor[] = projects.map(project => ({
+      _id: project._id.toString(),
+      title: project.title,
+      slug: project.slug,
+      description: project.description,
+      longDescription: project.longDescription,
+      images: project.images,
+      gallery: project.gallery || [],
+      featuredImage: project.featuredImage,
+      category: project.category,
+  categories: (project as any).categories || [],
+      technologies: project.technologies,
+      status: project.status,
+      featured: project.featured,
+      demoUrl: project.liveUrl,
+      liveUrl: project.liveUrl,
+      sourceUrl: project.sourceUrl,
+      startDate: project.startDate,
+      endDate: project.endDate,
+      client: project.client || '',
+      tags: project.tags,
+      viewCount: project.viewCount,
+      authorId: project.authorId._id.toString(),
+      createdAt: project.createdAt,
+      updatedAt: project.updatedAt,
+      author: {
+        id: project.authorId._id.toString(),
+        firstName: (project.authorId as any).firstName,
+        lastName: (project.authorId as any).lastName,
+        avatar: '',
+      },
+    }));
+
+    // Optional debug: compute match reasons without changing shape of projects
+    let debugInfo: any = undefined;
+    if (debug) {
+      const reasons: Record<string, string[]> = {};
+      const categoryList = categoriesParam
+        ? categoriesParam.split(',').map(s => s.trim()).filter(Boolean)
+        : (category ? [category] : []);
+      for (const p of projects) {
+        const id = p._id.toString();
+        const entries: string[] = [];
+        for (const c of categoryList) {
+          if (p.category === c) entries.push(`primary-category matches "${c}"`);
+          if (Array.isArray((p as any).categories) && (p as any).categories.includes(c)) entries.push(`secondary-categories contain "${c}"`);
+        }
+        if (technology) {
+          const t = technology.toString();
+          const tLower = t.toLowerCase();
+          if (Array.isArray(p.technologies) && p.technologies.some((x: unknown) => String(x as any).toLowerCase() === tLower)) entries.push(`technology list contains "${t}"`);
+          if (Array.isArray(p.tags) && p.tags.includes(tLower)) entries.push(`tags contain "${tLower}"`);
+        }
+        if (tag) {
+          const t = tag.toString();
+          const tLower = t.toLowerCase();
+          if (Array.isArray(p.tags) && p.tags.includes(tLower)) entries.push(`tags contain "${tLower}"`);
+          if (Array.isArray(p.technologies) && p.technologies.some((x: unknown) => String(x as any).toLowerCase() === tLower)) entries.push(`technology list contains "${t}"`);
+        }
+        if (search) {
+          const rx = new RegExp(search, 'i');
+          if (rx.test(p.title)) entries.push('title matches search');
+          if (rx.test(p.description || '')) entries.push('description matches search');
+        }
+        reasons[id] = entries.length ? entries : ['matched by query'];
+      }
+      debugInfo = {
+        reasons,
+        appliedFilters: {
+          category,
+          categories: categoriesParam ? categoriesParam.split(',').map(s => s.trim()).filter(Boolean) : [],
+          categoriesMode,
+          technology,
+          tag,
+          search,
+        },
+        queryUsed: query,
+      };
+    }
 
     return NextResponse.json({
       success: true,
-      data: result,
+      data: {
+        projects: projectsWithAuthor,
+        totalProjects,
+        totalPages: Math.ceil(totalProjects / limit),
+        currentPage: page,
+        ...(debug ? { debug: debugInfo } : {}),
+      },
     });
   } catch (error) {
     console.error('Error fetching portfolio projects:', error);

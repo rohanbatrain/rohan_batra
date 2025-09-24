@@ -16,17 +16,19 @@ interface BlogPageClientProps {
     hasNext: boolean;
     hasPrev: boolean;
   };
+  initialTag?: string;
 }
 
 export default function BlogPageClient({
   initialPosts,
   initialPagination,
+  initialTag,
 }: BlogPageClientProps) {
   const [posts] = useState<BlogPostWithAuthor[]>(initialPosts);
   const [filteredPosts] = useState<BlogPostWithAuthor[]>(initialPosts);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedTag, setSelectedTag] = useState('All');
+  const [selectedTag, setSelectedTag] = useState(initialTag ?? 'All');
 
   // Provide default values to prevent undefined errors
   const pagination = initialPagination || {
@@ -50,7 +52,9 @@ export default function BlogPageClient({
     posts.forEach(post => {
       post.tags.forEach(tag => tagSet.add(tag));
     });
-    return ['All', ...Array.from(tagSet)];
+    const list = ['All', ...Array.from(tagSet)];
+    if (initialTag && !list.includes(initialTag)) list.push(initialTag);
+    return list;
   }, [posts]);
 
   // Filter posts based on search term, category, and tag

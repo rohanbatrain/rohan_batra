@@ -317,6 +317,9 @@ export default function EditProjectPage() {
                 Featured Project
               </label>
             </div>
+            <p className='text-xs text-gray-500 dark:text-gray-400 mt-1'>
+              Homepage shows up to 3 featured projects.
+            </p>
           </div>
 
           {/* Featured Image */}
