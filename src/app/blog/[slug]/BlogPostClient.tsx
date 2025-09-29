@@ -37,7 +37,10 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
           .replace(/"/g, '&quot;')
           .replace(/'/g, '&#39;');
       const escapeAttr = (s: string) =>
-        String(s).replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        String(s)
+          .replace(/"/g, '&quot;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;');
 
       const renderText = (node: any): string => {
         if (!node) return '';
@@ -52,7 +55,9 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
               if (mark.type === 'underline') text = `<u>${text}</u>`;
               if (mark.type === 'link' && mark.attrs?.href) {
                 const href = escapeAttr(String(mark.attrs.href));
-                const rel = href.startsWith('/') ? '' : ' rel="nofollow noopener"';
+                const rel = href.startsWith('/')
+                  ? ''
+                  : ' rel="nofollow noopener"';
                 text = `<a href="${href}"${rel}>${text}</a>`;
               }
             }
@@ -72,20 +77,27 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
             chunks.push(`<p>${renderText(node)}</p>`);
             break;
           case 'heading': {
-            const level = Math.min(Math.max(Number(node.attrs?.level || 1), 1), 6);
+            const level = Math.min(
+              Math.max(Number(node.attrs?.level || 1), 1),
+              6
+            );
             chunks.push(`<h${level}>${renderText(node)}</h${level}>`);
             break;
           }
           case 'bulletList':
           case 'bullet_list': {
-            const items = (node.content || []).map((li: any) => `<li>${renderText(li)}</li>`).join('');
+            const items = (node.content || [])
+              .map((li: any) => `<li>${renderText(li)}</li>`)
+              .join('');
             chunks.push(`<ul>${items}</ul>`);
             break;
           }
           case 'orderedList':
           case 'ordered_list': {
             const start = Number(node.attrs?.start || 1);
-            const items = (node.content || []).map((li: any) => `<li>${renderText(li)}</li>`).join('');
+            const items = (node.content || [])
+              .map((li: any) => `<li>${renderText(li)}</li>`)
+              .join('');
             chunks.push(`<ol start="${start}">${items}</ol>`);
             break;
           }
@@ -98,7 +110,9 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
             break;
           case 'codeBlock':
           case 'code_block': {
-            const language = node.attrs?.language ? ` class="language-${node.attrs.language}"` : '';
+            const language = node.attrs?.language
+              ? ` class="language-${node.attrs.language}"`
+              : '';
             // Escape HTML in code
             const code = escapeHtml(renderText(node));
             chunks.push(`<pre><code${language}>${code}</code></pre>`);
@@ -111,7 +125,10 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
           case 'image': {
             const src = node.attrs?.src;
             const alt = node.attrs?.alt || '';
-            if (src) chunks.push(`<img src="${escapeAttr(src)}" alt="${escapeHtml(alt)}" />`);
+            if (src)
+              chunks.push(
+                `<img src="${escapeAttr(src)}" alt="${escapeHtml(alt)}" />`
+              );
             break;
           }
           default: {
@@ -313,7 +330,9 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
             className='prose prose-lg dark:prose-invert max-w-none'
-            dangerouslySetInnerHTML={{ __html: renderJsonContentToHtml(post.content) }}
+            dangerouslySetInnerHTML={{
+              __html: renderJsonContentToHtml(post.content),
+            }}
           />
         ) : (
           <motion.div

@@ -8,9 +8,14 @@ import { z } from 'zod';
 const CreateSchema = z.object({
   name: z.string().min(1),
   fullName: z.string().optional(),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   visibility: z.enum(['private', 'public']).optional(),
-  role: z.enum(['protagonist', 'antagonist', 'supporting', 'minor']).default('supporting'),
+  role: z
+    .enum(['protagonist', 'antagonist', 'supporting', 'minor'])
+    .default('supporting'),
   significance: z.enum(['major', 'minor', 'background']).optional(),
   description: z.string().optional().default('<p></p>'),
   personality: z.string().optional().default('<p></p>'),
@@ -29,20 +34,36 @@ const CreateSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json(
+        { success: false, error: 'Auth required' },
+        { status: 401 }
+      );
     await connectToDatabase();
     const me = await User.findOne({ clerkId: userId });
-    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!me || !['admin', 'editor'].includes(me.role))
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
 
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
+    const limit = Math.min(
+      parseInt(url.searchParams.get('limit') || '20'),
+      100
+    );
     const visibility = url.searchParams.get('visibility');
     const search = url.searchParams.get('search');
 
     const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
     if (visibility) filter.visibility = visibility;
-    if (search) filter.$or = [{ name: { $regex: search, $options: 'i' } }, { fullName: { $regex: search, $options: 'i' } }, { tags: { $in: [search] } }];
+    if (search)
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { fullName: { $regex: search, $options: 'i' } },
+        { tags: { $in: [search] } },
+      ];
 
     const skip = (page - 1) * limit;
     const [items, total] = await Promise.all([
@@ -55,13 +76,19 @@ export async function GET(request: NextRequest) {
     ]);
 
     // Fetch book titles for attached characters
-    const bookIds = Array.from(new Set(items.map((c: any) => c.bookId?.toString()).filter(Boolean)));
+    const bookIds = Array.from(
+      new Set(items.map((c: any) => c.bookId?.toString()).filter(Boolean))
+    );
     let bookMap: Record<string, { title: string }> = {};
     if (bookIds.length) {
       try {
         const Book = (await import('@/models/Book')).default;
-        const books = await Book.find({ _id: { $in: bookIds } }).select('_id title').lean();
-        bookMap = Object.fromEntries(books.map((b: any) => [b._id.toString(), { title: b.title }]));
+        const books = await Book.find({ _id: { $in: bookIds } })
+          .select('_id title')
+          .lean();
+        bookMap = Object.fromEntries(
+          books.map((b: any) => [b._id.toString(), { title: b.title }])
+        );
       } catch {}
     }
 
@@ -80,19 +107,34 @@ export async function GET(request: NextRequest) {
       createdAt: c.createdAt,
     }));
 
-    return NextResponse.json({ success: true, characters, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    return NextResponse.json({
+      success: true,
+      characters,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   } catch (e) {
-    return NextResponse.json({ success: false, error: 'Failed to list characters' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Failed to list characters' },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json(
+        { success: false, error: 'Auth required' },
+        { status: 401 }
+      );
     await connectToDatabase();
     const me = await User.findOne({ clerkId: userId });
-    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!me || !['admin', 'editor'].includes(me.role))
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
 
     const body = await request.json();
     const data = CreateSchema.parse(body);
@@ -141,9 +183,19 @@ export async function POST(request: NextRequest) {
         meta: { name: doc.name, slug: doc.slug },
       });
     } catch {}
-    return NextResponse.json({ success: true, character: doc.toJSON?.() ?? doc });
+    return NextResponse.json({
+      success: true,
+      character: doc.toJSON?.() ?? doc,
+    });
   } catch (e) {
-    if (e instanceof z.ZodError) return NextResponse.json({ success: false, error: 'Validation failed', details: e.issues }, { status: 400 });
-    return NextResponse.json({ success: false, error: 'Failed to create character' }, { status: 500 });
+    if (e instanceof z.ZodError)
+      return NextResponse.json(
+        { success: false, error: 'Validation failed', details: e.issues },
+        { status: 400 }
+      );
+    return NextResponse.json(
+      { success: false, error: 'Failed to create character' },
+      { status: 500 }
+    );
   }
 }

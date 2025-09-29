@@ -14,7 +14,11 @@ interface ProjectCardProps {
   activeCategory?: string;
 }
 
-export function ProjectCard({ project, index = 0, activeCategory }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  index = 0,
+  activeCategory,
+}: ProjectCardProps) {
   const allCategories: string[] = Array.from(
     new Set(
       [
@@ -32,7 +36,8 @@ export function ProjectCard({ project, index = 0, activeCategory }: ProjectCardP
     const l = label.toLowerCase();
     if (l === 'sre' || l.includes('site reliability')) return 1;
     if (l === 'cloud' || l.includes('cloud solution')) return 2;
-    if (l === 'backend' || l.includes('python') || l.includes('backend')) return 3;
+    if (l === 'backend' || l.includes('python') || l.includes('backend'))
+      return 3;
     return 999; // deprioritize unknowns
   };
 
@@ -51,9 +56,16 @@ export function ProjectCard({ project, index = 0, activeCategory }: ProjectCardP
   const rawTitle = project.title || '';
   const colonIdx = rawTitle.indexOf(':');
   const prefix = colonIdx > -1 ? rawTitle.slice(0, colonIdx) : '';
-  const shouldStrip = /developer|engineer|architect|administrator|systems|cloud|android|open\s*source|backend|full|devops|sre|security/i.test(prefix);
-  const base = shouldStrip && colonIdx > -1 ? rawTitle.slice(colonIdx + 1) : rawTitle;
-  const displayTitle = base.replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const shouldStrip =
+    /developer|engineer|architect|administrator|systems|cloud|android|open\s*source|backend|full|devops|sre|security/i.test(
+      prefix
+    );
+  const base =
+    shouldStrip && colonIdx > -1 ? rawTitle.slice(colonIdx + 1) : rawTitle;
+  const displayTitle = base
+    .replace(/[._-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -63,8 +75,9 @@ export function ProjectCard({ project, index = 0, activeCategory }: ProjectCardP
         delay: index * 0.1,
         ease: 'easeOut',
       }}
-      className='group relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700'
+      className='group relative overflow-hidden rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-300 border border-gray-200 dark:border-gray-700 flex flex-col h-full'
     >
+      {/* no admin/public selection in this card - selection handled in admin UI only */}
       {/* Featured Image */}
       {project.images && project.images.length > 0 && (
         <div className='relative h-48 overflow-hidden'>
@@ -84,19 +97,30 @@ export function ProjectCard({ project, index = 0, activeCategory }: ProjectCardP
       )}
 
       {/* Content */}
-      <div className='p-6'>
+      <div className='p-6 flex flex-col flex-1'>
         {/* Title Row */}
         <div className='flex items-start justify-between mb-3'>
           <div>
             <div className='flex items-center gap-2 mb-1'>
-              {primaryCategory && (
+              {/* Primary category slot (render invisible placeholder when missing) */}
+              {primaryCategory ? (
                 <span className='inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600'>
                   {primaryCategory}
                 </span>
+              ) : (
+                <span className='inline-flex items-center justify-center min-w-[3.5rem] text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 invisible'>
+                  &nbsp;
+                </span>
               )}
-              {project.tags?.includes('forked') && (
+
+              {/* Forked slot (render invisible placeholder when not forked) */}
+              {project.tags?.includes('forked') ? (
                 <span className='inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'>
                   <GitFork className='w-3 h-3' /> Forked
+                </span>
+              ) : (
+                <span className='inline-flex items-center justify-center min-w-[3.5rem] text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 invisible'>
+                  &nbsp;
                 </span>
               )}
             </div>
@@ -132,7 +156,7 @@ export function ProjectCard({ project, index = 0, activeCategory }: ProjectCardP
         )}
 
         {/* Links */}
-        <div className='flex items-center justify-between'>
+        <div className='mt-auto flex items-center justify-between'>
           <div className='flex space-x-3'>
             {project.sourceUrl && (
               <a
@@ -166,6 +190,8 @@ export function ProjectCard({ project, index = 0, activeCategory }: ProjectCardP
           </Link>
         </div>
       </div>
+
+      {/* (checkbox moved earlier) */}
 
       {/* Hover overlay */}
       <div className='absolute inset-0 bg-gradient-to-t from-black/0 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none' />

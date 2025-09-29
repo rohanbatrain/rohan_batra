@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import {
-  getBlogPostBySlug,
-} from '@/lib/blog-service';
+import { getBlogPostBySlug } from '@/lib/blog-service';
 
 interface RouteParams {
   params: Promise<{

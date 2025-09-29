@@ -113,7 +113,8 @@ export default function UsersManagementPage() {
     } catch (e) {
       toast({
         title: 'Error',
-        description: e instanceof Error ? e.message : 'Failed to update user role',
+        description:
+          e instanceof Error ? e.message : 'Failed to update user role',
         variant: 'destructive',
       });
     }
@@ -150,9 +151,7 @@ export default function UsersManagementPage() {
 
   const deleteUser = async (userId: string) => {
     if (
-      !confirm(
-        'Permanently delete this user? This action cannot be undone.'
-      )
+      !confirm('Permanently delete this user? This action cannot be undone.')
     ) {
       return;
     }
@@ -180,7 +179,9 @@ export default function UsersManagementPage() {
       toast({
         title: 'Deleted',
         description:
-          result?.message || result?.data?.message || 'User deleted successfully',
+          result?.message ||
+          result?.data?.message ||
+          'User deleted successfully',
       });
       fetchUsers();
     } catch (e) {

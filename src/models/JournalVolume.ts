@@ -21,7 +21,11 @@ export interface IJournalVolume extends Document {
 
 const JournalVolumeSchema = new Schema<IJournalVolume>(
   {
-    characterId: { type: mongoose.Schema.Types.ObjectId, ref: 'Character', required: true },
+    characterId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Character',
+      required: true,
+    },
     title: { type: String, required: true, trim: true, maxlength: 200 },
     slug: {
       type: String,
@@ -34,7 +38,11 @@ const JournalVolumeSchema = new Schema<IJournalVolume>(
     description: { type: String },
     coverImage: { type: String },
     backCoverImage: { type: String },
-    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
+    status: {
+      type: String,
+      enum: ['draft', 'published', 'archived'],
+      default: 'draft',
+    },
     isPrivate: { type: Boolean, default: false },
     publishedAt: { type: Date },
     displayOrder: { type: Number, default: 0 },
@@ -46,7 +54,6 @@ const JournalVolumeSchema = new Schema<IJournalVolume>(
     timestamps: true,
     toJSON: {
       transform: function (doc, ret) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = ret as any;
         result.id = result._id?.toString();
         delete result._id;

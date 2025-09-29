@@ -26,63 +26,93 @@ const ProjectCreateSchema = z.object({
       github: z.string().optional(),
       demo: z.string().optional(),
       documentation: z.string().optional(),
-      other: z.array(z.object({
-        label: z.string(),
-        url: z.string(),
-      })).optional(),
+      other: z
+        .array(
+          z.object({
+            label: z.string(),
+            url: z.string(),
+          })
+        )
+        .optional(),
     })
     .optional(),
   // Enhanced fields
-  galleryAssets: z.array(z.object({
-    asset: z.string(),
-    type: z.enum(['image', 'video', 'lottie']).default('image'),
-    caption: z.string().optional(),
-    order: z.number().optional(),
-    metadata: z.record(z.any()).optional(),
-  })).optional(),
-  timeline: z.object({
-    startDate: z.string().datetime().optional(),
-    endDate: z.string().datetime().optional(),
-    milestones: z.array(z.object({
-      title: z.string(),
-      date: z.string().datetime(),
-      description: z.string().optional(),
-    })).optional(),
-    estimatedDuration: z.number().optional(),
-    actualDuration: z.number().optional(),
-  }).optional(),
-  collaboration: z.object({
-    teamSize: z.number().optional(),
-    role: z.string().optional(),
-    responsibilities: z.array(z.string()).optional(),
-    collaborators: z.array(z.object({
-      name: z.string(),
-      role: z.string(),
-      contact: z.string().optional(),
-    })).optional(),
-  }).optional(),
-  difficulty: z.enum(['beginner', 'intermediate', 'advanced', 'expert']).optional(),
-  complexity: z.object({
-    technical: z.number().min(1).max(10),
-    design: z.number().min(1).max(10),
-    overall: z.number().min(1).max(10),
-  }).optional(),
-  seoMetadata: z.object({
-    keywords: z.array(z.string()).optional(),
-    canonicalUrl: z.string().url().optional(),
-    openGraph: z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      image: z.string().optional(),
-      type: z.string().optional(),
-    }).optional(),
-    twitter: z.object({
-      card: z.string().optional(),
-      title: z.string().optional(),
-      description: z.string().optional(),
-      image: z.string().optional(),
-    }).optional(),
-  }).optional(),
+  galleryAssets: z
+    .array(
+      z.object({
+        asset: z.string(),
+        type: z.enum(['image', 'video', 'lottie']).default('image'),
+        caption: z.string().optional(),
+        order: z.number().optional(),
+        metadata: z.record(z.any()).optional(),
+      })
+    )
+    .optional(),
+  timeline: z
+    .object({
+      startDate: z.string().datetime().optional(),
+      endDate: z.string().datetime().optional(),
+      milestones: z
+        .array(
+          z.object({
+            title: z.string(),
+            date: z.string().datetime(),
+            description: z.string().optional(),
+          })
+        )
+        .optional(),
+      estimatedDuration: z.number().optional(),
+      actualDuration: z.number().optional(),
+    })
+    .optional(),
+  collaboration: z
+    .object({
+      teamSize: z.number().optional(),
+      role: z.string().optional(),
+      responsibilities: z.array(z.string()).optional(),
+      collaborators: z
+        .array(
+          z.object({
+            name: z.string(),
+            role: z.string(),
+            contact: z.string().optional(),
+          })
+        )
+        .optional(),
+    })
+    .optional(),
+  difficulty: z
+    .enum(['beginner', 'intermediate', 'advanced', 'expert'])
+    .optional(),
+  complexity: z
+    .object({
+      technical: z.number().min(1).max(10),
+      design: z.number().min(1).max(10),
+      overall: z.number().min(1).max(10),
+    })
+    .optional(),
+  seoMetadata: z
+    .object({
+      keywords: z.array(z.string()).optional(),
+      canonicalUrl: z.string().url().optional(),
+      openGraph: z
+        .object({
+          title: z.string().optional(),
+          description: z.string().optional(),
+          image: z.string().optional(),
+          type: z.string().optional(),
+        })
+        .optional(),
+      twitter: z
+        .object({
+          card: z.string().optional(),
+          title: z.string().optional(),
+          description: z.string().optional(),
+          image: z.string().optional(),
+        })
+        .optional(),
+    })
+    .optional(),
   publishedAt: z.string().datetime().optional(),
   completedAt: z.string().datetime().optional(),
 });
@@ -103,15 +133,22 @@ function filterEnhancedFields(data: any, context: FeatureFlagContext) {
   const filtered = { ...data };
 
   // Remove enhanced fields if features are disabled
-  if (!featureFlags.isAdvancedFeatureEnabled('multiCategories', context).enabled) {
+  if (
+    !featureFlags.isAdvancedFeatureEnabled('multiCategories', context).enabled
+  ) {
     delete filtered.categories;
   }
 
-  if (!featureFlags.isAdvancedFeatureEnabled('assetIntegration', context).enabled) {
+  if (
+    !featureFlags.isAdvancedFeatureEnabled('assetIntegration', context).enabled
+  ) {
     delete filtered.galleryAssets;
   }
 
-  if (!featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context).enabled) {
+  if (
+    !featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context)
+      .enabled
+  ) {
     delete filtered.timeline;
     delete filtered.collaboration;
     delete filtered.difficulty;
@@ -171,7 +208,7 @@ export async function GET(request: NextRequest) {
     const includeAnalytics =
       url.searchParams.get('includeAnalytics') === 'true';
 
-  const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
+    const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
 
     if (status) {
       filter.status = status;
@@ -414,7 +451,9 @@ export async function POST(request: NextRequest) {
       priority: validatedData.priority || 1,
       authorId: user._id,
       publishedAt: validatedData.status === 'published' ? new Date() : null,
-      completedAt: validatedData.completedAt ? new Date(validatedData.completedAt) : null,
+      completedAt: validatedData.completedAt
+        ? new Date(validatedData.completedAt)
+        : null,
       viewCount: 0,
       // Handle links properly
       liveUrl: validatedData.links?.live || '',

@@ -9,8 +9,8 @@ import User from '@/models/User';
 // GET /api/admin/assets - List all assets with pagination and filtering
 export async function GET(request: NextRequest) {
   try {
-  const { userId } = await auth();
-    
+    const { userId } = await auth();
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -24,8 +24,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '10');
-  const type = searchParams.get('type');
-  const category = searchParams.get('category');
+    const type = searchParams.get('type');
+    const category = searchParams.get('category');
     const search = searchParams.get('search');
     const isActive = searchParams.get('isActive');
 
@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
           .sort({ createdAt: -1 })
           .skip((page - 1) * limit)
           .limit(limit),
-        Asset.countDocuments(query)
+        Asset.countDocuments(query),
       ]);
 
       return { assets, total };
@@ -75,7 +75,6 @@ export async function GET(request: NextRequest) {
         },
       },
     });
-
   } catch (error) {
     console.error('Error fetching assets:', error);
     return NextResponse.json(
@@ -88,8 +87,8 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/assets - Create new asset (kept for future use)
 export async function POST(request: NextRequest) {
   try {
-  const { userId } = await auth();
-    
+    const { userId } = await auth();
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -105,9 +104,15 @@ export async function POST(request: NextRequest) {
       userId: userId,
       userEmail: undefined,
       userRole: me.role,
-      environment: process.env.NODE_ENV as 'development' | 'test' | 'production',
+      environment: process.env.NODE_ENV as
+        | 'development'
+        | 'test'
+        | 'production',
     };
-    const hasAssetIntegration = featureFlags.isAdvancedFeatureEnabled('assetIntegration', featureFlagContext);
+    const hasAssetIntegration = featureFlags.isAdvancedFeatureEnabled(
+      'assetIntegration',
+      featureFlagContext
+    );
     if (!hasAssetIntegration.enabled) {
       return NextResponse.json(
         { error: 'Asset integration feature not available' },
@@ -117,14 +122,16 @@ export async function POST(request: NextRequest) {
 
     // This JSON-based create endpoint is not used (file uploads go to /uploads).
     return NextResponse.json({ error: 'Not implemented' }, { status: 501 });
-
   } catch (error) {
     console.error('Error creating asset:', error);
-    
-    if (error instanceof Error && error.message.includes('Invalid file extension')) {
+
+    if (
+      error instanceof Error &&
+      error.message.includes('Invalid file extension')
+    ) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
-    
+
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

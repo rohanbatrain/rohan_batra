@@ -10,25 +10,39 @@ export async function GET(req: NextRequest) {
     const baseMatch = category
       ? { status: 'published', $or: [{ category }, { categories: category }] }
       : { status: 'published' };
-    const [categoriesPrimary, categoriesExtra, technologies, tags] = await Promise.all([
-      ProjectModel.distinct('category', { status: 'published' }) as Promise<string[]>,
-      ProjectModel.distinct('categories', { status: 'published' }) as Promise<string[]>,
-      ProjectModel.distinct('technologies', baseMatch) as Promise<string[]>,
-      ProjectModel.distinct('tags', baseMatch) as Promise<string[]>,
-    ]);
+    const [categoriesPrimary, categoriesExtra, technologies, tags] =
+      await Promise.all([
+        ProjectModel.distinct('category', { status: 'published' }) as Promise<
+          string[]
+        >,
+        ProjectModel.distinct('categories', { status: 'published' }) as Promise<
+          string[]
+        >,
+        ProjectModel.distinct('technologies', baseMatch) as Promise<string[]>,
+        ProjectModel.distinct('tags', baseMatch) as Promise<string[]>,
+      ]);
 
-    const clean = (arr: string[]) => Array.from(new Set((arr || []).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+    const clean = (arr: string[]) =>
+      Array.from(new Set((arr || []).filter(Boolean))).sort((a, b) =>
+        a.localeCompare(b)
+      );
 
     return NextResponse.json({
       success: true,
       data: {
-        categories: clean([...(categoriesPrimary || []), ...(categoriesExtra || [])]),
+        categories: clean([
+          ...(categoriesPrimary || []),
+          ...(categoriesExtra || []),
+        ]),
         technologies: clean(technologies),
         tags: clean(tags),
       },
     });
   } catch (error) {
     console.error('Error fetching portfolio meta:', error);
-    return NextResponse.json({ success: false, error: 'Failed to fetch portfolio meta' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch portfolio meta' },
+      { status: 500 }
+    );
   }
 }

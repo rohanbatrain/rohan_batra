@@ -62,12 +62,20 @@ When building our portfolio platform, we leveraged these features to create a bl
 
 Next.js 14 represents a significant leap forward in web development, offering tools and patterns that make building fast, scalable applications more accessible than ever.
     `,
-    excerpt: 'Explore the revolutionary features of Next.js 14 and learn how to build modern, performant web applications with Server Components, enhanced performance optimizations, and improved developer experience.',
+    excerpt:
+      'Explore the revolutionary features of Next.js 14 and learn how to build modern, performant web applications with Server Components, enhanced performance optimizations, and improved developer experience.',
     status: 'published',
     category: 'Web Development',
-    tags: ['nextjs', 'react', 'web-development', 'performance', 'server-components'],
+    tags: [
+      'nextjs',
+      'react',
+      'web-development',
+      'performance',
+      'server-components',
+    ],
     seoTitle: 'Next.js 14 Guide: Building Modern Web Applications',
-    seoDescription: 'Complete guide to Next.js 14 features including Server Components, performance optimizations, and best practices for modern web development.',
+    seoDescription:
+      'Complete guide to Next.js 14 features including Server Components, performance optimizations, and best practices for modern web development.',
   },
   {
     title: 'Mastering TypeScript for Full-Stack Development',
@@ -140,27 +148,41 @@ export interface PaginationInfo {
 
 TypeScript's powerful type system enables us to build more reliable, maintainable applications. By leveraging advanced features like conditional types, template literals, and proper type guards, we can achieve end-to-end type safety that catches errors at compile time rather than runtime.
     `,
-    excerpt: 'Deep dive into advanced TypeScript patterns for full-stack development, including conditional types, template literals, type guards, and best practices for building type-safe applications.',
+    excerpt:
+      'Deep dive into advanced TypeScript patterns for full-stack development, including conditional types, template literals, type guards, and best practices for building type-safe applications.',
     status: 'published',
     category: 'Programming',
-    tags: ['typescript', 'javascript', 'full-stack', 'type-safety', 'best-practices'],
+    tags: [
+      'typescript',
+      'javascript',
+      'full-stack',
+      'type-safety',
+      'best-practices',
+    ],
     seoTitle: 'Advanced TypeScript Guide for Full-Stack Developers',
-    seoDescription: 'Master advanced TypeScript concepts and patterns for building robust, type-safe full-stack applications with practical examples and best practices.',
+    seoDescription:
+      'Master advanced TypeScript concepts and patterns for building robust, type-safe full-stack applications with practical examples and best practices.',
   },
 ];
 
 const DEMO_PROJECTS = [
   {
     title: 'E-Commerce Platform with Next.js',
-    description: 'A full-stack e-commerce platform built with Next.js, featuring modern UI, secure payments, and real-time inventory management.',
-    shortDescription: 'Full-stack e-commerce platform with secure payments and real-time inventory.',
-    technologies: ['Next.js', 'TypeScript', 'MongoDB', 'Stripe', 'Tailwind CSS'],
+    description:
+      'A full-stack e-commerce platform built with Next.js, featuring modern UI, secure payments, and real-time inventory management.',
+    shortDescription:
+      'Full-stack e-commerce platform with secure payments and real-time inventory.',
+    technologies: [
+      'Next.js',
+      'TypeScript',
+      'MongoDB',
+      'Stripe',
+      'Tailwind CSS',
+    ],
     category: 'Full-Stack',
     status: 'published',
     featured: true,
-    images: [
-      { url: '/placeholder-project.jpg', alt: 'E-Commerce Platform' }
-    ],
+    images: [{ url: '/placeholder-project.jpg', alt: 'E-Commerce Platform' }],
     links: {
       live: 'https://ecommerce-demo.vercel.app',
       github: 'https://github.com/example/ecommerce-platform',
@@ -168,37 +190,57 @@ const DEMO_PROJECTS = [
   },
   {
     title: 'AI-Powered Task Management App',
-    description: 'An intelligent task management application that uses AI to help users prioritize tasks, set realistic deadlines, and improve productivity.',
-    shortDescription: 'AI-powered task management with intelligent prioritization and automated scheduling.',
+    description:
+      'An intelligent task management application that uses AI to help users prioritize tasks, set realistic deadlines, and improve productivity.',
+    shortDescription:
+      'AI-powered task management with intelligent prioritization and automated scheduling.',
     technologies: ['React', 'Node.js', 'OpenAI', 'PostgreSQL', 'Docker'],
     category: 'AI/ML',
     status: 'published',
     featured: true,
-    images: [
-      { url: '/placeholder-project-2.jpg', alt: 'AI Task Manager' }
-    ],
+    images: [{ url: '/placeholder-project-2.jpg', alt: 'AI Task Manager' }],
     links: {
       live: 'https://ai-tasks.app',
       github: 'https://github.com/example/ai-task-manager',
     },
     seo: {
       title: 'AI Task Management Platform - Smart Productivity Solution',
-      description: 'Revolutionary task management platform powered by AI for intelligent prioritization and automated scheduling.',
+      description:
+        'Revolutionary task management platform powered by AI for intelligent prioritization and automated scheduling.',
       keywords: ['ai', 'task management', 'productivity', 'nextjs', 'openai'],
     },
   },
   {
     title: 'Real-Time Collaborative Code Editor',
-    description: 'A web-based collaborative code editor with real-time synchronization, multi-language support, and integrated video chat for pair programming sessions.',
-    shortDescription: 'Real-time collaborative code editor with video chat for pair programming.',
-    technologies: ['React', 'Node.js', 'Socket.io', 'Monaco Editor', 'WebRTC', 'Express', 'MongoDB'],
+    description:
+      'A web-based collaborative code editor with real-time synchronization, multi-language support, and integrated video chat for pair programming sessions.',
+    shortDescription:
+      'Real-time collaborative code editor with video chat for pair programming.',
+    technologies: [
+      'React',
+      'Node.js',
+      'Socket.io',
+      'Monaco Editor',
+      'WebRTC',
+      'Express',
+      'MongoDB',
+    ],
     categories: ['Web Application', 'Developer Tools', 'Real-time'],
     status: 'published',
     featured: true,
     images: [
-      { url: '/images/projects/code-editor-main.jpg', alt: 'Code Editor Interface' },
-      { url: '/images/projects/code-editor-collaboration.jpg', alt: 'Collaboration Features' },
-      { url: '/images/projects/code-editor-video.jpg', alt: 'Video Chat Integration' }
+      {
+        url: '/images/projects/code-editor-main.jpg',
+        alt: 'Code Editor Interface',
+      },
+      {
+        url: '/images/projects/code-editor-collaboration.jpg',
+        alt: 'Collaboration Features',
+      },
+      {
+        url: '/images/projects/code-editor-video.jpg',
+        alt: 'Video Chat Integration',
+      },
     ],
     links: {
       live: 'https://codepair.dev',
@@ -207,8 +249,15 @@ const DEMO_PROJECTS = [
     },
     seo: {
       title: 'Real-Time Collaborative Code Editor - CodePair',
-      description: 'Web-based collaborative code editor with real-time sync and video chat for seamless pair programming.',
-      keywords: ['code editor', 'collaboration', 'real-time', 'pair programming', 'webrtc'],
+      description:
+        'Web-based collaborative code editor with real-time sync and video chat for seamless pair programming.',
+      keywords: [
+        'code editor',
+        'collaboration',
+        'real-time',
+        'pair programming',
+        'webrtc',
+      ],
     },
   },
 ];
@@ -216,7 +265,9 @@ const DEMO_PROJECTS = [
 async function migrateContent() {
   try {
     // Dynamic imports after env is loaded
-    const { default: connectToDatabase } = await import('../src/lib/mongodb.js');
+    const { default: connectToDatabase } = await import(
+      '../src/lib/mongodb.js'
+    );
     const { default: BlogPost } = await import('../src/models/BlogPost.js');
     const { default: Project } = await import('../src/models/Project.js');
     const { default: User } = await import('../src/models/User.js');
@@ -227,7 +278,9 @@ async function migrateContent() {
     // Find the admin user
     const adminUser = await User.findOne({ role: 'admin' });
     if (!adminUser) {
-      throw new Error('Admin user not found. Please create an admin user first.');
+      throw new Error(
+        'Admin user not found. Please create an admin user first.'
+      );
     }
 
     console.log(`Found admin user: ${adminUser.name}`);
@@ -240,7 +293,7 @@ async function migrateContent() {
     // Migrate blog posts
     console.log('Creating demo blog posts...');
     const blogPosts = [];
-    
+
     for (const postData of DEMO_BLOG_POSTS) {
       const slug = postData.title
         .toLowerCase()
@@ -288,7 +341,7 @@ async function migrateContent() {
     // Migrate projects
     console.log('Creating demo projects...');
     const projects = [];
-    
+
     for (const projectData of DEMO_PROJECTS) {
       const slug = projectData.title
         .toLowerCase()
@@ -339,7 +392,6 @@ async function migrateContent() {
 
 🎉 Your admin dashboard should now display the demo content!
     `);
-
   } catch (error) {
     console.error('❌ Migration failed:', error);
     process.exit(1);
@@ -349,7 +401,7 @@ async function migrateContent() {
 // Run migration
 migrateContent()
   .then(() => process.exit(0))
-  .catch((error) => {
+  .catch(error => {
     console.error('Migration error:', error);
     process.exit(1);
   });

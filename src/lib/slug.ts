@@ -9,7 +9,7 @@ export async function uniqueSlug(
   base: string,
   isTaken: (candidate: string) => Promise<boolean>
 ): Promise<string> {
-  let candidate = slugify(base) || 'item';
+  const candidate = slugify(base) || 'item';
   if (!(await isTaken(candidate))) return candidate;
   let n = 2;
   while (await isTaken(`${candidate}-${n}`)) n++;

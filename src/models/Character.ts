@@ -70,7 +70,9 @@ const CharacterSchema = new Schema<ICharacter>(
         const d = new Date(v as Date);
         if (isNaN(d.getTime())) return undefined;
         // Normalize to date-only at UTC midnight
-        return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+        return new Date(
+          Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
+        );
       },
     },
     age: {
@@ -113,27 +115,27 @@ const CharacterSchema = new Schema<ICharacter>(
           required: true,
           trim: true,
         },
-          strength: {
-            type: Number, // 1-10 scale
-            min: 0,
-            max: 10,
-            default: 5,
-          },
-          direction: {
-            type: String, // one-way or mutual
-            enum: ['one-way', 'mutual'],
-            default: 'mutual',
-          },
-          inverseType: {
-            type: String,
-            trim: true,
-          },
-          startedAt: {
-            type: Date,
-          },
-          endedAt: {
-            type: Date,
-          },
+        strength: {
+          type: Number, // 1-10 scale
+          min: 0,
+          max: 10,
+          default: 5,
+        },
+        direction: {
+          type: String, // one-way or mutual
+          enum: ['one-way', 'mutual'],
+          default: 'mutual',
+        },
+        inverseType: {
+          type: String,
+          trim: true,
+        },
+        startedAt: {
+          type: Date,
+        },
+        endedAt: {
+          type: Date,
+        },
         description: {
           type: String,
           trim: true,
@@ -181,7 +183,6 @@ const CharacterSchema = new Schema<ICharacter>(
     toJSON: {
       virtuals: true,
       transform: function (doc, ret) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = ret as any;
         result.id = result._id?.toString();
         delete result._id;
@@ -198,7 +199,10 @@ CharacterSchema.index({ bookId: 1, role: 1 });
 CharacterSchema.index({ bookId: 1, significance: 1 });
 CharacterSchema.index({ name: 1 });
 CharacterSchema.index({ visibility: 1 });
-CharacterSchema.index({ 'relationships.characterId': 1, 'relationships.relationshipType': 1 });
+CharacterSchema.index({
+  'relationships.characterId': 1,
+  'relationships.relationshipType': 1,
+});
 // Ensure unique slug among active (non-deleted) documents only
 CharacterSchema.index(
   { slug: 1 },
@@ -269,7 +273,6 @@ CharacterSchema.pre<ICharacter>('validate', function (next) {
 
 // Keep age in sync when using findOneAndUpdate
 CharacterSchema.pre('findOneAndUpdate', function (next) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const update: any = this.getUpdate() || {};
   const $set = update.$set ?? update;
   if ($set && $set.birthdate) {
@@ -277,11 +280,17 @@ CharacterSchema.pre('findOneAndUpdate', function (next) {
     if (!isNaN(bd.getTime())) {
       const computed = computeAgeFromDate(bd);
       if (typeof computed === 'number') {
-        if (update.$set) update.$set.age = computed; else update.age = computed;
+        if (update.$set) update.$set.age = computed;
+        else update.age = computed;
       }
     }
   }
-  if ($set && $set.birthdate === undefined && update.$unset && update.$unset.birthdate) {
+  if (
+    $set &&
+    $set.birthdate === undefined &&
+    update.$unset &&
+    update.$unset.birthdate
+  ) {
     // If explicitly unsetting birthdate, also unset age
     if (!update.$unset.age) update.$unset.age = 1;
   }

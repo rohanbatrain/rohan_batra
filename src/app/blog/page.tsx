@@ -19,9 +19,9 @@ async function getBlogPosts(): Promise<{
 }> {
   const page = 1;
   const limit = 12;
-  
+
   const result = await getBlogPostsWithPagination(page, limit);
-  
+
   return {
     posts: result.posts,
     pagination: {
@@ -52,10 +52,15 @@ function LoadingSkeleton() {
   );
 }
 
-export default async function BlogPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
+export default async function BlogPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const { posts, pagination } = await getBlogPosts();
   const sp = await searchParams;
-  const initialTag = typeof sp?.tag === 'string' ? decodeURIComponent(sp.tag) : undefined;
+  const initialTag =
+    typeof sp?.tag === 'string' ? decodeURIComponent(sp.tag) : undefined;
 
   return (
     <div className='min-h-screen bg-gray-50 dark:bg-gray-900 py-12'>

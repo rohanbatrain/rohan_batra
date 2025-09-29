@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -9,7 +9,13 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
 import { DatePickerInput } from '@/components/ui/DatePickerInput';
@@ -19,13 +25,27 @@ import { X } from 'lucide-react';
 
 const FormSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Max 100 characters'),
-  fullName: z.string().max(200, 'Max 200 characters').optional().or(z.literal('')),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, 'Only lowercase letters, numbers, and dashes').optional().or(z.literal('')),
+  fullName: z
+    .string()
+    .max(200, 'Max 200 characters')
+    .optional()
+    .or(z.literal('')),
+  slug: z
+    .string()
+    .regex(
+      /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+      'Only lowercase letters, numbers, and dashes'
+    )
+    .optional()
+    .or(z.literal('')),
   visibility: z.enum(['private', 'public']),
   role: z.enum(['protagonist', 'antagonist', 'supporting', 'minor']),
   significance: z.enum(['major', 'minor', 'background']),
   birthdate: z.string().optional().or(z.literal('')),
-  age: z.preprocess((v) => (v === '' || v === undefined ? undefined : Number(v)), z.number().min(0, 'Age must be 0 or greater').optional()),
+  age: z.preprocess(
+    v => (v === '' || v === undefined ? undefined : Number(v)),
+    z.number().min(0, 'Age must be 0 or greater').optional()
+  ),
   tags: z.array(z.string()).optional(),
   description: z.string().optional(),
   personality: z.string().optional(),
@@ -67,14 +87,26 @@ export default function NewCharacterPage() {
   const [submitting, setSubmitting] = useState(false);
   const [autoSlug, setAutoSlug] = useState(true);
   const [manualAge, setManualAge] = useState(false);
-  const [slugStatus, setSlugStatus] = useState<null | 'checking' | 'available' | 'unavailable'>(null);
+  const [slugStatus, setSlugStatus] = useState<
+    null | 'checking' | 'available' | 'unavailable'
+  >(null);
   const [books, setBooks] = useState<Array<{ id: string; title: string }>>([]);
   const leaveGuardAttached = useRef(false);
 
   const today = useMemo(() => formatDateOnly(new Date()), []);
   const minDate = '1900-01-01';
 
-  const { register, handleSubmit, setValue, watch, formState, reset, trigger, getValues, getFieldState } = useForm<FormValues>({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    formState,
+    reset,
+    trigger,
+    getValues,
+    getFieldState,
+  } = useForm<FormValues>({
     resolver: zodResolver(FormSchema) as any,
     defaultValues: {
       name: '',
@@ -107,11 +139,20 @@ export default function NewCharacterPage() {
         const res = await fetch('/api/admin/books');
         if (!res.ok) return;
         const json = await res.json();
-        const list: Array<{ id: string; title: string } > = (json?.books || json?.items || []).map((b: any) => ({ id: b.id || b._id || b._doc?._id, title: b.title || b.name || 'Untitled' }));
+        const list: Array<{ id: string; title: string }> = (
+          json?.books ||
+          json?.items ||
+          []
+        ).map((b: any) => ({
+          id: b.id || b._id || b._doc?._id,
+          title: b.title || b.name || 'Untitled',
+        }));
         if (mounted) setBooks(list);
       } catch {}
     })();
-    return () => { mounted = false; };
+    return () => {
+      mounted = false;
+    };
   }, []);
 
   // Auto-slug from name when enabled
@@ -121,24 +162,32 @@ export default function NewCharacterPage() {
     if (!autoSlug) return;
     const generated = name ? generateSlug(name) : '';
     setValue('slug', generated, { shouldDirty: false, shouldValidate: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [name, autoSlug]);
 
   // Debounced slug uniqueness check
   useEffect(() => {
-    if (!slug) { setSlugStatus(null); return; }
+    if (!slug) {
+      setSlugStatus(null);
+      return;
+    }
     let canceled = false;
     setSlugStatus('checking');
     const t = setTimeout(async () => {
       try {
-        const res = await fetch(`/api/admin/characters/slug/exists?slug=${encodeURIComponent(slug)}`);
+        const res = await fetch(
+          `/api/admin/characters/slug/exists?slug=${encodeURIComponent(slug)}`
+        );
         const json = await res.json();
-        if (!canceled) setSlugStatus(json?.exists ? 'unavailable' : 'available');
+        if (!canceled)
+          setSlugStatus(json?.exists ? 'unavailable' : 'available');
       } catch {
         if (!canceled) setSlugStatus(null);
       }
     }, 400);
-    return () => { canceled = true; clearTimeout(t); };
+    return () => {
+      canceled = true;
+      clearTimeout(t);
+    };
   }, [slug]);
 
   // Birthdate -> Age auto compute unless manual
@@ -148,7 +197,6 @@ export default function NewCharacterPage() {
       const derived = computeAgeFromBirthdate(birthdate || undefined);
       setValue('age', derived, { shouldDirty: true, shouldValidate: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [birthdate, manualAge]);
 
   // Unsaved changes guard
@@ -184,15 +232,28 @@ export default function NewCharacterPage() {
 
   // Tags as chips helpers
   const tags = watch('tags') || [];
-  const addTag = useCallback((t: string) => {
-    const v = t.trim().toLowerCase();
-    if (!v) return;
-    if (tags.includes(v)) return;
-    setValue('tags', [...tags, v], { shouldDirty: true, shouldValidate: false });
-  }, [tags, setValue]);
-  const removeTag = useCallback((t: string) => {
-    setValue('tags', tags.filter(x => x !== t), { shouldDirty: true, shouldValidate: false });
-  }, [tags, setValue]);
+  const addTag = useCallback(
+    (t: string) => {
+      const v = t.trim().toLowerCase();
+      if (!v) return;
+      if (tags.includes(v)) return;
+      setValue('tags', [...tags, v], {
+        shouldDirty: true,
+        shouldValidate: false,
+      });
+    },
+    [tags, setValue]
+  );
+  const removeTag = useCallback(
+    (t: string) => {
+      setValue(
+        'tags',
+        tags.filter(x => x !== t),
+        { shouldDirty: true, shouldValidate: false }
+      );
+    },
+    [tags, setValue]
+  );
   const onTagKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' || e.key === ',') {
       e.preventDefault();
@@ -201,9 +262,13 @@ export default function NewCharacterPage() {
     }
   };
 
-  const onSubmit: SubmitHandler<FormValues> = async (values) => {
+  const onSubmit: SubmitHandler<FormValues> = async values => {
     if (slugStatus === 'unavailable') {
-      toast({ title: 'Slug in use', description: 'Please choose another slug', variant: 'destructive' });
+      toast({
+        title: 'Slug in use',
+        description: 'Please choose another slug',
+        variant: 'destructive',
+      });
       return;
     }
     setSubmitting(true);
@@ -226,12 +291,22 @@ export default function NewCharacterPage() {
       avatar: values.avatar || undefined,
       bookId: values.bookId || undefined,
     };
-    const res = await fetch('/api/admin/characters', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    const res = await fetch('/api/admin/characters', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
     setSubmitting(false);
     if (res.ok) {
-      toast({ title: 'Created', description: 'Character created successfully' });
+      toast({
+        title: 'Created',
+        description: 'Character created successfully',
+      });
       const json = await res.json();
-      const id = json?.character?.id || json?.character?._id || json?.character?._doc?._id;
+      const id =
+        json?.character?.id ||
+        json?.character?._id ||
+        json?.character?._doc?._id;
       router.push(`/admin/characters/${id}`);
     } else {
       let message = 'Failed to create character';
@@ -239,177 +314,284 @@ export default function NewCharacterPage() {
         const err = await res.json();
         message = err?.error || err?.details?.[0]?.message || message;
       } catch {}
-      toast({ title: 'Error', description: message || 'Fix highlighted fields', variant: 'destructive' });
+      toast({
+        title: 'Error',
+        description: message || 'Fix highlighted fields',
+        variant: 'destructive',
+      });
     }
   };
 
   return (
-    <div className="p-6 space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">New Character</h1>
-        <div className="space-x-2">
-          <Button variant="outline" onClick={() => router.push('/admin/characters')}>Cancel</Button>
-          <Button onClick={handleSubmit(onSubmit)} disabled={submitting || !isValid}>Create</Button>
+    <div className='p-6 space-y-6'>
+      <div className='flex items-center justify-between'>
+        <h1 className='text-2xl font-semibold'>New Character</h1>
+        <div className='space-x-2'>
+          <Button
+            variant='outline'
+            onClick={() => router.push('/admin/characters')}
+          >
+            Cancel
+          </Button>
+          <Button
+            onClick={handleSubmit(onSubmit)}
+            disabled={submitting || !isValid}
+          >
+            Create
+          </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card className="p-4 space-y-3">
-          <h2 className="font-medium">Basics</h2>
-          <div className="space-y-1">
-            <Label className="after:content-['*'] after:ml-0.5 after:text-red-500">Name</Label>
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-6'>
+        <Card className='p-4 space-y-3'>
+          <h2 className='font-medium'>Basics</h2>
+          <div className='space-y-1'>
+            <Label className="after:content-['*'] after:ml-0.5 after:text-red-500">
+              Name
+            </Label>
             <Input {...register('name')} />
-            {errors.name && <p className="text-sm text-red-600">{errors.name.message}</p>}
+            {errors.name && (
+              <p className='text-sm text-red-600'>{errors.name.message}</p>
+            )}
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Full Name</Label>
             <Input {...register('fullName')} />
-            {errors.fullName && <p className="text-sm text-red-600">{errors.fullName.message}</p>}
+            {errors.fullName && (
+              <p className='text-sm text-red-600'>{errors.fullName.message}</p>
+            )}
           </div>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
+          <div className='space-y-1'>
+            <div className='flex items-center justify-between'>
               <Label>Slug (optional)</Label>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                 <span>Auto</span>
                 <Switch checked={autoSlug} onCheckedChange={setAutoSlug} />
               </div>
             </div>
-            <Input {...register('slug', { onChange: (e) => { setAutoSlug(false); } })} />
-            <div className="text-xs text-muted-foreground">
+            <Input
+              {...register('slug', {
+                onChange: e => {
+                  setAutoSlug(false);
+                },
+              })}
+            />
+            <div className='text-xs text-muted-foreground'>
               {slugStatus === 'checking' && 'Checking…'}
-              {slugStatus === 'available' && <span className="text-green-600">Available</span>}
-              {slugStatus === 'unavailable' && <span className="text-red-600">Already in use</span>}
+              {slugStatus === 'available' && (
+                <span className='text-green-600'>Available</span>
+              )}
+              {slugStatus === 'unavailable' && (
+                <span className='text-red-600'>Already in use</span>
+              )}
             </div>
-            {errors.slug && <p className="text-sm text-red-600">{errors.slug.message}</p>}
+            {errors.slug && (
+              <p className='text-sm text-red-600'>{errors.slug.message}</p>
+            )}
           </div>
-          <div className="flex gap-3">
-            <div className="w-full space-y-1">
+          <div className='flex gap-3'>
+            <div className='w-full space-y-1'>
               <Label>Visibility</Label>
-              <Select value={watch('visibility')} onValueChange={v => setValue('visibility', v as any, { shouldDirty: true, shouldValidate: true })}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Visibility" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="private">Private</SelectItem>
-                <SelectItem value="public">Public</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select
+                value={watch('visibility')}
+                onValueChange={v =>
+                  setValue('visibility', v as any, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Visibility' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='private'>Private</SelectItem>
+                  <SelectItem value='public'>Public</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="w-full space-y-1">
+            <div className='w-full space-y-1'>
               <Label>Role</Label>
-              <Select value={watch('role')} onValueChange={v => setValue('role', v as any, { shouldDirty: true, shouldValidate: true })}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="protagonist">Protagonist</SelectItem>
-                <SelectItem value="antagonist">Antagonist</SelectItem>
-                <SelectItem value="supporting">Supporting</SelectItem>
-                <SelectItem value="minor">Minor</SelectItem>
-              </SelectContent>
-            </Select>
+              <Select
+                value={watch('role')}
+                onValueChange={v =>
+                  setValue('role', v as any, {
+                    shouldDirty: true,
+                    shouldValidate: true,
+                  })
+                }
+              >
+                <SelectTrigger className='w-full'>
+                  <SelectValue placeholder='Role' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='protagonist'>Protagonist</SelectItem>
+                  <SelectItem value='antagonist'>Antagonist</SelectItem>
+                  <SelectItem value='supporting'>Supporting</SelectItem>
+                  <SelectItem value='minor'>Minor</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Significance</Label>
-            <Select value={watch('significance')} onValueChange={v => setValue('significance', v as any, { shouldDirty: true, shouldValidate: true })}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Significance" />
+            <Select
+              value={watch('significance')}
+              onValueChange={v =>
+                setValue('significance', v as any, {
+                  shouldDirty: true,
+                  shouldValidate: true,
+                })
+              }
+            >
+              <SelectTrigger className='w-full'>
+                <SelectValue placeholder='Significance' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="major">Major</SelectItem>
-                <SelectItem value="minor">Minor</SelectItem>
-                <SelectItem value="background">Background</SelectItem>
+                <SelectItem value='major'>Major</SelectItem>
+                <SelectItem value='minor'>Minor</SelectItem>
+                <SelectItem value='background'>Background</SelectItem>
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Book (optional)</Label>
             <Select
               value={watch('bookId') || undefined}
               onValueChange={v => {
-                if (v === 'none') setValue('bookId', '', { shouldDirty: true, shouldValidate: false });
-                else setValue('bookId', v, { shouldDirty: true, shouldValidate: false });
+                if (v === 'none')
+                  setValue('bookId', '', {
+                    shouldDirty: true,
+                    shouldValidate: false,
+                  });
+                else
+                  setValue('bookId', v, {
+                    shouldDirty: true,
+                    shouldValidate: false,
+                  });
               }}
             >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select book" />
+              <SelectTrigger className='w-full'>
+                <SelectValue placeholder='Select book' />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="none">None</SelectItem>
+                <SelectItem value='none'>None</SelectItem>
                 {books.map(b => (
-                  <SelectItem key={b.id} value={b.id}>{b.title}</SelectItem>
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.title}
+                  </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Birthdate</Label>
-            <div className="flex items-center gap-2">
-              <div className="flex-1">
-                <DatePickerInput value={watch('birthdate') || ''} min={minDate} max={today} onChange={(v) => setValue('birthdate', v, { shouldDirty: true, shouldValidate: true })} />
+            <div className='flex items-center gap-2'>
+              <div className='flex-1'>
+                <DatePickerInput
+                  value={watch('birthdate') || ''}
+                  min={minDate}
+                  max={today}
+                  onChange={v =>
+                    setValue('birthdate', v, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    })
+                  }
+                />
               </div>
-              {typeof watch('age') === 'number' && !manualAge ? <Badge variant="secondary">{String(watch('age'))} yrs</Badge> : null}
+              {typeof watch('age') === 'number' && !manualAge ? (
+                <Badge variant='secondary'>{String(watch('age'))} yrs</Badge>
+              ) : null}
             </div>
-            <p className="text-xs text-muted-foreground">Age is derived from birthdate unless you enable manual age.</p>
+            <p className='text-xs text-muted-foreground'>
+              Age is derived from birthdate unless you enable manual age.
+            </p>
           </div>
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
+          <div className='space-y-1'>
+            <div className='flex items-center justify-between'>
               <Label>Age</Label>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <div className='flex items-center gap-2 text-sm text-muted-foreground'>
                 <span>Manual</span>
                 <Switch checked={manualAge} onCheckedChange={setManualAge} />
               </div>
             </div>
-            <Input type="number" disabled={!manualAge} value={watch('age') ?? ''} onChange={e => setValue('age', e.target.value === '' ? undefined : Number(e.target.value), { shouldDirty: true, shouldValidate: true })} />
-            {errors.age && <p className="text-sm text-red-600">{errors.age.message as string}</p>}
+            <Input
+              type='number'
+              disabled={!manualAge}
+              value={watch('age') ?? ''}
+              onChange={e =>
+                setValue(
+                  'age',
+                  e.target.value === '' ? undefined : Number(e.target.value),
+                  { shouldDirty: true, shouldValidate: true }
+                )
+              }
+            />
+            {errors.age && (
+              <p className='text-sm text-red-600'>
+                {errors.age.message as string}
+              </p>
+            )}
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Tags</Label>
-            <div className="flex flex-wrap gap-2">
+            <div className='flex flex-wrap gap-2'>
               {tags.map(t => (
-                <Badge key={t} variant="secondary" className="gap-1">
+                <Badge key={t} variant='secondary' className='gap-1'>
                   {t}
-                  <button type="button" className="ml-1" onClick={() => removeTag(t)} aria-label={`Remove ${t}`}>
-                    <X className="h-3 w-3" />
+                  <button
+                    type='button'
+                    className='ml-1'
+                    onClick={() => removeTag(t)}
+                    aria-label={`Remove ${t}`}
+                  >
+                    <X className='h-3 w-3' />
                   </button>
                 </Badge>
               ))}
             </div>
-            <Input placeholder="Type a tag and press Enter" onKeyDown={onTagKey} />
+            <Input
+              placeholder='Type a tag and press Enter'
+              onKeyDown={onTagKey}
+            />
           </div>
         </Card>
 
-        <Card className="p-4 space-y-3">
-          <h2 className="font-medium">Details</h2>
-          <div className="space-y-1">
+        <Card className='p-4 space-y-3'>
+          <h2 className='font-medium'>Details</h2>
+          <div className='space-y-1'>
             <Label>Description (Rich HTML)</Label>
             <Textarea rows={5} {...register('description')} />
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Personality (Rich HTML)</Label>
             <Textarea rows={5} {...register('personality')} />
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Background (Rich HTML)</Label>
             <Textarea rows={5} {...register('background')} />
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Physical Description</Label>
             <Textarea rows={3} {...register('physicalDescription')} />
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Goals</Label>
             <Textarea rows={3} {...register('goals')} />
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Conflicts</Label>
             <Textarea rows={3} {...register('conflicts')} />
           </div>
-          <div className="space-y-1">
+          <div className='space-y-1'>
             <Label>Avatar URL</Label>
             <Input {...register('avatar')} />
-            {errors.avatar && <p className="text-sm text-red-600">{errors.avatar.message as string}</p>}
+            {errors.avatar && (
+              <p className='text-sm text-red-600'>
+                {errors.avatar.message as string}
+              </p>
+            )}
           </div>
         </Card>
       </div>

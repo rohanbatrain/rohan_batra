@@ -24,7 +24,7 @@ const BookSchema = z.object({
 // GET /api/admin/books - List all books with filtering and pagination
 export async function GET(request: NextRequest) {
   try {
-  const { userId } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const sortOrder = searchParams.get('sortOrder') === 'asc' ? 1 : -1;
 
     // Build filter query
-  const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
+    const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
 
     if (status) {
       filter.status = status;
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/books - Create a new book
 export async function POST(request: NextRequest) {
   try {
-  const { userId } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -160,9 +160,12 @@ export async function POST(request: NextRequest) {
     const validatedData = BookSchema.parse(body);
 
     // Create new book with unique slug
-    const slug = await uniqueSlug(validatedData.title, async (candidate: string) => {
-      return !!(await BookModel.exists({ slug: candidate }));
-    });
+    const slug = await uniqueSlug(
+      validatedData.title,
+      async (candidate: string) => {
+        return !!(await BookModel.exists({ slug: candidate }));
+      }
+    );
     const book = new BookModel({
       ...validatedData,
       slug,

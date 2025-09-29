@@ -1,7 +1,10 @@
 import { NextResponse } from 'next/server';
 import { env } from '@/lib/env';
 import { featureFlags } from '@/lib/feature-flags';
-import { getCircuitBreakerHealth, getAllCircuitBreakers } from '@/lib/circuit-breaker';
+import {
+  getCircuitBreakerHealth,
+  getAllCircuitBreakers,
+} from '@/lib/circuit-breaker';
 import { progressiveRollout } from '@/lib/progressive-rollout';
 import mongoose from 'mongoose';
 
@@ -53,33 +56,38 @@ interface HealthCheckResponse {
 export async function GET() {
   const startTime = Date.now();
   const checks: HealthCheckResponse['checks'] = [];
-  
+
   try {
     // Check database connection
     const dbCheckStart = Date.now();
     let dbStatus: 'healthy' | 'degraded' | 'unhealthy' = 'healthy';
     let dbConnectionState = 'unknown';
     let dbResponseTime = 0;
-    
+
     try {
       dbConnectionState = mongoose.connection.readyState.toString();
       const dbTestStart = Date.now();
-      
+
       // Simple ping to test database responsiveness
       if (mongoose.connection.readyState === 1) {
         await mongoose.connection.db?.admin().ping();
         dbResponseTime = Date.now() - dbTestStart;
-        
+
         if (dbResponseTime > 1000) {
           dbStatus = 'degraded';
         }
       } else {
         dbStatus = 'unhealthy';
       }
-      
+
       checks.push({
         name: 'database',
-        status: dbStatus === 'healthy' ? 'pass' : dbStatus === 'degraded' ? 'warn' : 'fail',
+        status:
+          dbStatus === 'healthy'
+            ? 'pass'
+            : dbStatus === 'degraded'
+              ? 'warn'
+              : 'fail',
         duration: Date.now() - dbCheckStart,
       });
     } catch (error) {
@@ -88,7 +96,8 @@ export async function GET() {
         name: 'database',
         status: 'fail',
         duration: Date.now() - dbCheckStart,
-        error: error instanceof Error ? error.message : 'Unknown database error',
+        error:
+          error instanceof Error ? error.message : 'Unknown database error',
       });
     }
 
@@ -96,7 +105,7 @@ export async function GET() {
     const circuitBreakerCheckStart = Date.now();
     const circuitBreakerHealth = getCircuitBreakerHealth();
     const allBreakers = getAllCircuitBreakers();
-    
+
     checks.push({
       name: 'circuit-breakers',
       status: circuitBreakerHealth.status === 'healthy' ? 'pass' : 'warn',
@@ -106,7 +115,7 @@ export async function GET() {
     // Check rollout service
     const rolloutCheckStart = Date.now();
     const rolloutStatus = progressiveRollout.getStatus();
-    
+
     checks.push({
       name: 'progressive-rollout',
       status: 'pass',
@@ -116,21 +125,33 @@ export async function GET() {
     // Get feature flags status
     const featureCheckStart = Date.now();
     let allFeatures: Record<string, boolean> = {};
-    
+
     try {
       const featureConfig = featureFlags.getConfiguration();
-      const coreFeatures = Object.keys(featureConfig.features).reduce((acc, key) => {
-        acc[key] = featureConfig.features[key as keyof typeof featureConfig.features];
-        return acc;
-      }, {} as Record<string, boolean>);
-      
-      const advancedFeatures = Object.keys(featureConfig.advancedFeatures).reduce((acc, key) => {
-        acc[`advanced.${key}`] = featureConfig.advancedFeatures[key as keyof typeof featureConfig.advancedFeatures];
-        return acc;
-      }, {} as Record<string, boolean>);
-      
+      const coreFeatures = Object.keys(featureConfig.features).reduce(
+        (acc, key) => {
+          acc[key] =
+            featureConfig.features[key as keyof typeof featureConfig.features];
+          return acc;
+        },
+        {} as Record<string, boolean>
+      );
+
+      const advancedFeatures = Object.keys(
+        featureConfig.advancedFeatures
+      ).reduce(
+        (acc, key) => {
+          acc[`advanced.${key}`] =
+            featureConfig.advancedFeatures[
+              key as keyof typeof featureConfig.advancedFeatures
+            ];
+          return acc;
+        },
+        {} as Record<string, boolean>
+      );
+
       allFeatures = { ...coreFeatures, ...advancedFeatures };
-      
+
       checks.push({
         name: 'feature-flags',
         status: 'pass',
@@ -141,18 +162,20 @@ export async function GET() {
         name: 'feature-flags',
         status: 'fail',
         duration: Date.now() - featureCheckStart,
-        error: error instanceof Error ? error.message : 'Feature flag system error',
+        error:
+          error instanceof Error ? error.message : 'Feature flag system error',
       });
     }
 
     // Memory usage
     const memoryUsage = process.memoryUsage();
-    const memoryPercentage = (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
+    const memoryPercentage =
+      (memoryUsage.heapUsed / memoryUsage.heapTotal) * 100;
 
     // Overall status calculation
     const failedChecks = checks.filter(check => check.status === 'fail');
     const warnChecks = checks.filter(check => check.status === 'warn');
-    
+
     let overallStatus: 'healthy' | 'degraded' | 'unhealthy';
     if (failedChecks.length > 0) {
       overallStatus = 'unhealthy';
@@ -178,7 +201,10 @@ export async function GET() {
           responseTime: dbResponseTime,
         },
         circuitBreakers: {
-          status: circuitBreakerHealth.status as 'healthy' | 'degraded' | 'unhealthy',
+          status: circuitBreakerHealth.status as
+            | 'healthy'
+            | 'degraded'
+            | 'unhealthy',
           breakers: allBreakers.map(breaker => {
             const metrics = breaker.getMetrics();
             return {
@@ -208,13 +234,17 @@ export async function GET() {
     };
 
     // Set appropriate HTTP status based on health
-    const httpStatus = overallStatus === 'healthy' ? 200 : overallStatus === 'degraded' ? 200 : 503;
-    
+    const httpStatus =
+      overallStatus === 'healthy'
+        ? 200
+        : overallStatus === 'degraded'
+          ? 200
+          : 503;
+
     return NextResponse.json(response, { status: httpStatus });
-    
   } catch (error) {
     console.error('Health check failed:', error);
-    
+
     const errorResponse: HealthCheckResponse = {
       status: 'unhealthy',
       timestamp: new Date().toISOString(),

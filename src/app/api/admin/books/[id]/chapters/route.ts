@@ -23,13 +23,17 @@ export async function GET(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await connectToDatabase();
     const currentUser = await User.findOne({ clerkId: userId });
     const userRole = currentUser?.role || 'user';
     if (!['editor', 'admin'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     const { id: bookId } = await params;
@@ -81,17 +85,21 @@ export async function POST(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const { id: bookId } = await params;
-  const body = await request.json();
-  const validatedData = ChapterCreateSchema.parse(body);
+    const { id: bookId } = await params;
+    const body = await request.json();
+    const validatedData = ChapterCreateSchema.parse(body);
 
     await connectToDatabase();
     const currentUser = await User.findOne({ clerkId: userId });
     const userRole = currentUser?.role || 'user';
     if (!['editor', 'admin'].includes(userRole)) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     // Verify book exists and user has access
@@ -110,7 +118,10 @@ export async function POST(
     let orderIndex: number;
     if (typeof validatedData.chapterNumber === 'number') {
       // If provided, ensure it's not taken
-      const existingChapter = await ChapterModel.findOne({ bookId, orderIndex: validatedData.chapterNumber });
+      const existingChapter = await ChapterModel.findOne({
+        bookId,
+        orderIndex: validatedData.chapterNumber,
+      });
       if (existingChapter) {
         return NextResponse.json(
           { error: 'Chapter order already exists' },
@@ -119,14 +130,20 @@ export async function POST(
       }
       orderIndex = validatedData.chapterNumber;
     } else {
-      const last = await ChapterModel.find({ bookId }).sort({ orderIndex: -1 }).limit(1).lean();
+      const last = await ChapterModel.find({ bookId })
+        .sort({ orderIndex: -1 })
+        .limit(1)
+        .lean();
       orderIndex = last.length ? (last[0] as any).orderIndex + 1 : 1;
     }
 
     // Generate unique slug per book
-    const slug = await uniqueSlug(validatedData.title, async (candidate: string) => {
-      return !!(await ChapterModel.exists({ bookId, slug: candidate }));
-    });
+    const slug = await uniqueSlug(
+      validatedData.title,
+      async (candidate: string) => {
+        return !!(await ChapterModel.exists({ bookId, slug: candidate }));
+      }
+    );
 
     // Create new chapter
     const chapter = new ChapterModel({
@@ -135,7 +152,7 @@ export async function POST(
       slug,
       content: validatedData.content || '',
       notes: validatedData.summary,
-  orderIndex,
+      orderIndex,
       status: validatedData.isPublished ? 'complete' : 'draft',
       createdAt: new Date(),
       updatedAt: new Date(),

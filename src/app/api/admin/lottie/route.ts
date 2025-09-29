@@ -70,7 +70,7 @@ export async function GET(request: NextRequest) {
     const includeAnimationData =
       url.searchParams.get('includeAnimationData') === 'true';
 
-  const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
+    const filter: Record<string, unknown> = { deletedAt: { $exists: false } };
 
     if (category) {
       filter.category = category;

@@ -1,9 +1,9 @@
-"use client";
+'use client';
 
-import { Input } from "./input";
-import { Button } from "./button";
-import { Calendar, X } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Input } from './input';
+import { Button } from './button';
+import { Calendar, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 type Props = {
   value?: string;
@@ -18,37 +18,63 @@ type Props = {
   max?: string;
 };
 
-export function DatePickerInput({ value, onChange, placeholder = "yyyy-mm-dd", className, disabled, required, name, id, min, max }: Props) {
+export function DatePickerInput({
+  value,
+  onChange,
+  placeholder = 'yyyy-mm-dd',
+  className,
+  disabled,
+  required,
+  name,
+  id,
+  min,
+  max,
+}: Props) {
   return (
-    <div className={cn("relative", className)}>
+    <div className={cn('relative', className)}>
       <Input
         id={id}
         name={name}
-        type="date"
+        type='date'
         placeholder={placeholder}
-        value={value || ""}
-        onChange={(e) => onChange(e.target.value)}
+        value={value || ''}
+        onChange={e => onChange(e.target.value)}
         disabled={disabled}
         required={required}
         min={min}
         max={max}
-        className="pr-20"
+        className='pr-20'
       />
       {value ? (
-        <Button type="button" variant="ghost" size="sm" className="absolute right-10 top-1/2 -translate-y-1/2 text-muted-foreground" onClick={() => onChange("")}
-          aria-label="Clear date">
-          <X className="h-4 w-4" />
+        <Button
+          type='button'
+          variant='ghost'
+          size='sm'
+          className='absolute right-10 top-1/2 -translate-y-1/2 text-muted-foreground'
+          onClick={() => onChange('')}
+          aria-label='Clear date'
+        >
+          <X className='h-4 w-4' />
         </Button>
       ) : null}
-      <Button type="button" variant="ghost" size="sm" className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground"
-        onClick={(e) => {
+      <Button
+        type='button'
+        variant='ghost'
+        size='sm'
+        className='absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground'
+        onClick={e => {
           // Focus the input to trigger native picker
-          const container = (e.currentTarget.parentElement as HTMLElement) || undefined;
-          const input = container?.querySelector('input[type="date"]') as HTMLInputElement | null;
+          const container =
+            (e.currentTarget.parentElement as HTMLElement) || undefined;
+          const input = container?.querySelector(
+            'input[type="date"]'
+          ) as HTMLInputElement | null;
           input?.showPicker?.();
           input?.focus();
-        }} aria-label="Open date picker">
-        <Calendar className="h-4 w-4" />
+        }}
+        aria-label='Open date picker'
+      >
+        <Calendar className='h-4 w-4' />
       </Button>
     </div>
   );

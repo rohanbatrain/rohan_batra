@@ -58,7 +58,9 @@ export async function getPublishedBlogPosts(
   }
 }
 
-export async function getBlogPostBySlug(slug: string): Promise<BlogPostWithAuthor | null> {
+export async function getBlogPostBySlug(
+  slug: string
+): Promise<BlogPostWithAuthor | null> {
   try {
     await connectToDatabase();
 
@@ -68,8 +70,7 @@ export async function getBlogPostBySlug(slug: string): Promise<BlogPostWithAutho
     const post = await BlogPostModel.findOne({
       slug,
       status: 'published',
-    })
-      .populate('authorId', 'firstName lastName email role');
+    }).populate('authorId', 'firstName lastName email role');
 
     if (!post) {
       return null;

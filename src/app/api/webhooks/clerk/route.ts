@@ -34,7 +34,10 @@ export async function POST(req: NextRequest) {
   const svixSignature = headerList.get('svix-signature');
 
   if (!svixId || !svixTimestamp || !svixSignature) {
-    return NextResponse.json({ error: 'Missing Svix headers' }, { status: 400 });
+    return NextResponse.json(
+      { error: 'Missing Svix headers' },
+      { status: 400 }
+    );
   }
 
   const secret = process.env.CLERK_WEBHOOK_SECRET;
@@ -66,7 +69,9 @@ export async function POST(req: NextRequest) {
       case 'user.created': {
         const data = evt.data as ClerkUserPayload;
         const emails = data.email_addresses || [];
-        const primary = emails.find(e => e.id === data.primary_email_address_id);
+        const primary = emails.find(
+          e => e.id === data.primary_email_address_id
+        );
         const fallback = emails[0]?.email_address;
         const email = primary?.email_address || fallback || '';
 
@@ -97,7 +102,9 @@ export async function POST(req: NextRequest) {
       case 'user.updated': {
         const data = evt.data as ClerkUserPayload;
         const emails = data.email_addresses || [];
-        const primary = emails.find(e => e.id === data.primary_email_address_id);
+        const primary = emails.find(
+          e => e.id === data.primary_email_address_id
+        );
         const fallback = emails[0]?.email_address;
         const email = primary?.email_address || fallback;
 
@@ -142,7 +149,10 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[CLERK WEBHOOK] Error:', error);
-    return NextResponse.json({ error: 'Webhook handling failed' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Webhook handling failed' },
+      { status: 500 }
+    );
   }
 }
 

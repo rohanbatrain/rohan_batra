@@ -103,10 +103,13 @@ export class FeatureFlagService {
   /**
    * Check if a core feature is enabled
    */
-  isFeatureEnabled(feature: keyof EnvConfig['features'], context?: FeatureFlagContext): FeatureFlagResult {
+  isFeatureEnabled(
+    feature: keyof EnvConfig['features'],
+    context?: FeatureFlagContext
+  ): FeatureFlagResult {
     const config = this.getConfig();
     const baseEnabled = config.features[feature];
-    
+
     if (!baseEnabled) {
       return {
         enabled: false,
@@ -114,7 +117,7 @@ export class FeatureFlagService {
         reason: `Feature ${String(feature)} is disabled in environment configuration`,
       };
     }
-    
+
     return {
       enabled: true,
       source: 'environment',
@@ -131,7 +134,7 @@ export class FeatureFlagService {
   ): FeatureFlagResult {
     const config = this.getConfig();
     const baseEnabled = config.advancedFeatures[feature];
-    
+
     if (!baseEnabled) {
       return {
         enabled: false,
@@ -155,7 +158,7 @@ export class FeatureFlagService {
       return {
         enabled: rolloutEnabled,
         source: 'rollout',
-        reason: rolloutEnabled 
+        reason: rolloutEnabled
           ? `User included in ${config.rollout.percentage}% rollout`
           : 'User not included in rollout',
       };
@@ -171,23 +174,28 @@ export class FeatureFlagService {
   /**
    * Get all feature flags for a context
    */
-  getFeatureFlags(context?: FeatureFlagContext): Record<string, FeatureFlagResult> {
+  getFeatureFlags(
+    context?: FeatureFlagContext
+  ): Record<string, FeatureFlagResult> {
     const config = this.getConfig();
     const results: Record<string, FeatureFlagResult> = {};
-    
+
     // Core features
-    Object.keys(config.features).forEach((feature) => {
-      results[feature] = this.isFeatureEnabled(feature as keyof EnvConfig['features'], context);
+    Object.keys(config.features).forEach(feature => {
+      results[feature] = this.isFeatureEnabled(
+        feature as keyof EnvConfig['features'],
+        context
+      );
     });
-    
+
     // Advanced features (with 'advanced.' prefix)
-    Object.keys(config.advancedFeatures).forEach((feature) => {
+    Object.keys(config.advancedFeatures).forEach(feature => {
       results[`advanced.${feature}`] = this.isAdvancedFeatureEnabled(
         feature as keyof EnvConfig['advancedFeatures'],
         context
       );
     });
-    
+
     return results;
   }
 
@@ -224,20 +232,20 @@ export class FeatureFlagService {
    */
   private isUserInRollout(userId: string): boolean {
     const config = this.getConfig();
-    
+
     // For testing environments, use deterministic rollout based on userId
     if (config.environment === 'test') {
       // Simple hash function for testing
       let hash = 0;
       for (let i = 0; i < userId.length; i++) {
         const char = userId.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
+        hash = (hash << 5) - hash + char;
         hash = hash & hash; // Convert to 32bit integer
       }
       const userPercentile = Math.abs(hash) % 100;
       return userPercentile < config.rollout.percentage;
     }
-    
+
     // Use progressive rollout service for production
     try {
       return progressiveRollout.shouldReceiveFeature('rollout', { userId });
@@ -269,11 +277,11 @@ export function getFeatureFlags(testConfig?: EnvConfig): FeatureFlagService {
   if (testConfig) {
     return new FeatureFlagService(testConfig);
   }
-  
+
   if (!globalFeatureFlags) {
     globalFeatureFlags = new FeatureFlagService();
   }
-  
+
   return globalFeatureFlags;
 }
 

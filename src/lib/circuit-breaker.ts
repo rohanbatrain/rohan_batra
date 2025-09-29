@@ -96,15 +96,21 @@ export class CircuitBreaker {
     if (this.state.state === 'half-open') {
       // Any failure in half-open state returns to open
       this.state.state = 'open';
-      this.state.nextAttemptTime = new Date(Date.now() + this.config.resetTimeout);
-      console.log(`Circuit breaker ${this.name} failed in half-open, returning to open`);
+      this.state.nextAttemptTime = new Date(
+        Date.now() + this.config.resetTimeout
+      );
+      console.log(
+        `Circuit breaker ${this.name} failed in half-open, returning to open`
+      );
     } else if (
       this.state.state === 'closed' &&
       this.state.failureCount >= this.config.failureThreshold
     ) {
       // Too many failures, open the circuit
       this.state.state = 'open';
-      this.state.nextAttemptTime = new Date(Date.now() + this.config.resetTimeout);
+      this.state.nextAttemptTime = new Date(
+        Date.now() + this.config.resetTimeout
+      );
       console.log(
         `Circuit breaker ${this.name} opened due to ${this.state.failureCount} failures`
       );
@@ -145,7 +151,9 @@ export class CircuitBreaker {
 
   forceOpen(): void {
     this.state.state = 'open';
-    this.state.nextAttemptTime = new Date(Date.now() + this.config.resetTimeout);
+    this.state.nextAttemptTime = new Date(
+      Date.now() + this.config.resetTimeout
+    );
     console.log(`Circuit breaker ${this.name} manually opened`);
   }
 }
@@ -168,7 +176,7 @@ export function getAllCircuitBreakers(): CircuitBreaker[] {
 }
 
 export function resetAllCircuitBreakers(): void {
-  circuitBreakers.forEach((breaker) => breaker.reset());
+  circuitBreakers.forEach(breaker => breaker.reset());
 }
 
 // Specific circuit breakers for different operations
@@ -180,13 +188,15 @@ export const assetCircuitBreaker = getCircuitBreaker('assets');
 // Health check function for circuit breakers
 export function getCircuitBreakerHealth() {
   const breakers = getAllCircuitBreakers();
-  const metrics = breakers.map((breaker) => breaker.getMetrics());
-  
-  const overallStatus = breakers.every((breaker) => breaker.getState().state === 'closed')
+  const metrics = breakers.map(breaker => breaker.getMetrics());
+
+  const overallStatus = breakers.every(
+    breaker => breaker.getState().state === 'closed'
+  )
     ? 'healthy'
-    : breakers.some((breaker) => breaker.getState().state === 'open')
-    ? 'degraded'
-    : 'warning';
+    : breakers.some(breaker => breaker.getState().state === 'open')
+      ? 'degraded'
+      : 'warning';
 
   return {
     status: overallStatus,

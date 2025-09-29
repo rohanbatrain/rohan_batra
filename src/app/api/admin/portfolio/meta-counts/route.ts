@@ -10,9 +10,17 @@ export async function GET(_req: NextRequest) {
     await connectToDatabase();
     const clerk = await currentUser();
     const email = clerk?.emailAddresses?.[0]?.emailAddress;
-    if (!email) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+    if (!email)
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
     const user = await UserModel.findOne({ email });
-    if (!user || user.role !== 'admin') return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!user || user.role !== 'admin')
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
 
     const pipeline: PipelineStage[] = [
       { $match: { status: 'published' } },
@@ -23,6 +31,9 @@ export async function GET(_req: NextRequest) {
     return NextResponse.json({ success: true, data: { byCategory } });
   } catch (e) {
     console.error('admin meta-counts error', e);
-    return NextResponse.json({ success: false, error: 'Failed to aggregate' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Failed to aggregate' },
+      { status: 500 }
+    );
   }
 }

@@ -7,7 +7,9 @@ import { z } from 'zod';
 
 const SettingUpdateSchema = z.object({
   value: z.any(),
-  type: z.enum(['string', 'number', 'boolean', 'json', 'array', 'object']).optional(),
+  type: z
+    .enum(['string', 'number', 'boolean', 'json', 'array', 'object'])
+    .optional(),
   category: z.string().optional(),
   description: z.string().optional(),
   isPublic: z.boolean().optional(),
@@ -137,8 +139,9 @@ export async function PUT(
 
     const body = await request.json();
     const validatedData = SettingUpdateSchema.parse(body);
-    const normalizeType = (t?: 'string' | 'number' | 'boolean' | 'json' | 'array' | 'object') =>
-      t && (t === 'array' || t === 'object') ? 'json' : t;
+    const normalizeType = (
+      t?: 'string' | 'number' | 'boolean' | 'json' | 'array' | 'object'
+    ) => (t && (t === 'array' || t === 'object') ? 'json' : t);
 
     const setting = await SiteSetting.findOne({ key });
 

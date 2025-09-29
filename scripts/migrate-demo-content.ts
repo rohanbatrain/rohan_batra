@@ -68,12 +68,20 @@ When building our portfolio platform, we leveraged these features to create a bl
 
 Next.js 14 represents a significant leap forward in web development, offering tools and patterns that make building fast, scalable applications more accessible than ever.
     `,
-    excerpt: 'Explore the revolutionary features of Next.js 14 and learn how to build modern, performant web applications with Server Components, enhanced performance optimizations, and improved developer experience.',
+    excerpt:
+      'Explore the revolutionary features of Next.js 14 and learn how to build modern, performant web applications with Server Components, enhanced performance optimizations, and improved developer experience.',
     status: 'published',
     categories: ['Web Development', 'React', 'Next.js'],
-    tags: ['nextjs', 'react', 'web-development', 'performance', 'server-components'],
+    tags: [
+      'nextjs',
+      'react',
+      'web-development',
+      'performance',
+      'server-components',
+    ],
     seoTitle: 'Next.js 14 Guide: Building Modern Web Applications',
-    seoDescription: 'Complete guide to Next.js 14 features including Server Components, performance optimizations, and best practices for modern web development.',
+    seoDescription:
+      'Complete guide to Next.js 14 features including Server Components, performance optimizations, and best practices for modern web development.',
   },
   {
     title: 'Mastering TypeScript for Full-Stack Development',
@@ -245,12 +253,20 @@ type CreateInput<T> = Optional<WithTimestamps<T>, 'createdAt' | 'updatedAt'>;
 
 TypeScript's powerful type system enables us to build more reliable, maintainable applications. By leveraging advanced features like conditional types, template literals, and proper type guards, we can achieve end-to-end type safety that catches errors at compile time rather than runtime.
     `,
-    excerpt: 'Deep dive into advanced TypeScript patterns for full-stack development, including conditional types, template literals, type guards, and best practices for building type-safe applications.',
+    excerpt:
+      'Deep dive into advanced TypeScript patterns for full-stack development, including conditional types, template literals, type guards, and best practices for building type-safe applications.',
     status: 'published',
     categories: ['TypeScript', 'Web Development', 'Programming'],
-    tags: ['typescript', 'javascript', 'full-stack', 'type-safety', 'best-practices'],
+    tags: [
+      'typescript',
+      'javascript',
+      'full-stack',
+      'type-safety',
+      'best-practices',
+    ],
     seoTitle: 'Advanced TypeScript Guide for Full-Stack Developers',
-    seoDescription: 'Master advanced TypeScript concepts and patterns for building robust, type-safe full-stack applications with practical examples and best practices.',
+    seoDescription:
+      'Master advanced TypeScript concepts and patterns for building robust, type-safe full-stack applications with practical examples and best practices.',
   },
   {
     title: 'The Art of API Design: Building RESTful Services',
@@ -581,12 +597,14 @@ app.use('/api/', limiter);
 
 Building excellent APIs requires attention to detail, consistency, and a deep understanding of how developers will interact with your services. Focus on creating intuitive, well-documented, and performant APIs that scale with your application's growth.
     `,
-    excerpt: 'Learn the principles and best practices for designing robust, scalable RESTful APIs including resource design, authentication, error handling, and performance optimization.',
+    excerpt:
+      'Learn the principles and best practices for designing robust, scalable RESTful APIs including resource design, authentication, error handling, and performance optimization.',
     status: 'published',
     categories: ['API Design', 'Backend Development', 'Web Development'],
     tags: ['api', 'rest', 'backend', 'nodejs', 'design-patterns'],
     seoTitle: 'RESTful API Design Guide: Best Practices & Patterns',
-    seoDescription: 'Comprehensive guide to designing RESTful APIs with best practices for authentication, error handling, performance optimization, and developer experience.',
+    seoDescription:
+      'Comprehensive guide to designing RESTful APIs with best practices for authentication, error handling, performance optimization, and developer experience.',
   },
   {
     title: 'Database Design Patterns for Modern Applications',
@@ -978,155 +996,292 @@ pg_basebackup -h localhost -D /backup/base_backup -U postgres -P -W
 
 Effective database design requires understanding your application's access patterns, consistency requirements, and scalability needs. Choose the right database technology and design patterns that align with your specific use case, and always plan for performance, reliability, and maintainability from the start.
     `,
-    excerpt: 'Comprehensive guide to modern database design patterns covering SQL and NoSQL databases, performance optimization, data consistency, caching strategies, and backup solutions.',
+    excerpt:
+      'Comprehensive guide to modern database design patterns covering SQL and NoSQL databases, performance optimization, data consistency, caching strategies, and backup solutions.',
     status: 'published',
     categories: ['Database Design', 'Backend Development', 'Performance'],
     tags: ['database', 'mongodb', 'postgresql', 'optimization', 'architecture'],
     seoTitle: 'Database Design Patterns for Scalable Applications',
-    seoDescription: 'Master modern database design patterns for building scalable applications with MongoDB and PostgreSQL, including performance optimization and best practices.',
+    seoDescription:
+      'Master modern database design patterns for building scalable applications with MongoDB and PostgreSQL, including performance optimization and best practices.',
   },
 ];
 
 const DEMO_PROJECTS = [
   {
     title: 'AI-Powered Task Management Platform',
-    description: 'A comprehensive task management platform with AI-powered features for intelligent task prioritization, automated scheduling, and productivity insights.',
-    shortDescription: 'AI-powered task management with intelligent prioritization and automated scheduling features.',
-    technologies: ['Next.js', 'TypeScript', 'OpenAI API', 'PostgreSQL', 'Prisma', 'Tailwind CSS', 'Clerk'],
+    description:
+      'A comprehensive task management platform with AI-powered features for intelligent task prioritization, automated scheduling, and productivity insights.',
+    shortDescription:
+      'AI-powered task management with intelligent prioritization and automated scheduling features.',
+    technologies: [
+      'Next.js',
+      'TypeScript',
+      'OpenAI API',
+      'PostgreSQL',
+      'Prisma',
+      'Tailwind CSS',
+      'Clerk',
+    ],
     categories: ['Web Application', 'AI/ML', 'Productivity'],
     status: 'published',
     featured: true,
     images: [
-      { url: '/images/projects/task-manager-dashboard.jpg', alt: 'Task Manager Dashboard' },
+      {
+        url: '/images/projects/task-manager-dashboard.jpg',
+        alt: 'Task Manager Dashboard',
+      },
       { url: '/images/projects/task-manager-ai.jpg', alt: 'AI Features' },
-      { url: '/images/projects/task-manager-mobile.jpg', alt: 'Mobile Interface' }
+      {
+        url: '/images/projects/task-manager-mobile.jpg',
+        alt: 'Mobile Interface',
+      },
     ],
     links: {
       live: 'https://taskmaster-ai.vercel.app',
       github: 'https://github.com/rohanbatra/taskmaster-ai',
-      demo: 'https://demo.taskmaster-ai.vercel.app'
+      demo: 'https://demo.taskmaster-ai.vercel.app',
     },
     seo: {
       title: 'AI Task Management Platform - Smart Productivity Solution',
-      description: 'Revolutionary task management platform powered by AI for intelligent prioritization and automated scheduling.',
-      keywords: ['ai', 'task management', 'productivity', 'nextjs', 'openai']
-    }
+      description:
+        'Revolutionary task management platform powered by AI for intelligent prioritization and automated scheduling.',
+      keywords: ['ai', 'task management', 'productivity', 'nextjs', 'openai'],
+    },
   },
   {
     title: 'Real-Time Collaborative Code Editor',
-    description: 'A web-based collaborative code editor with real-time synchronization, multi-language support, and integrated video chat for pair programming sessions.',
-    shortDescription: 'Real-time collaborative code editor with video chat for pair programming.',
-    technologies: ['React', 'Node.js', 'Socket.io', 'Monaco Editor', 'WebRTC', 'Express', 'MongoDB'],
+    description:
+      'A web-based collaborative code editor with real-time synchronization, multi-language support, and integrated video chat for pair programming sessions.',
+    shortDescription:
+      'Real-time collaborative code editor with video chat for pair programming.',
+    technologies: [
+      'React',
+      'Node.js',
+      'Socket.io',
+      'Monaco Editor',
+      'WebRTC',
+      'Express',
+      'MongoDB',
+    ],
     categories: ['Web Application', 'Developer Tools', 'Real-time'],
     status: 'published',
     featured: true,
     images: [
-      { url: '/images/projects/code-editor-main.jpg', alt: 'Code Editor Interface' },
-      { url: '/images/projects/code-editor-collaboration.jpg', alt: 'Collaboration Features' },
-      { url: '/images/projects/code-editor-video.jpg', alt: 'Video Chat Integration' }
+      {
+        url: '/images/projects/code-editor-main.jpg',
+        alt: 'Code Editor Interface',
+      },
+      {
+        url: '/images/projects/code-editor-collaboration.jpg',
+        alt: 'Collaboration Features',
+      },
+      {
+        url: '/images/projects/code-editor-video.jpg',
+        alt: 'Video Chat Integration',
+      },
     ],
     links: {
       live: 'https://codepair.dev',
       github: 'https://github.com/rohanbatra/codepair',
-      demo: 'https://demo.codepair.dev'
+      demo: 'https://demo.codepair.dev',
     },
     seo: {
       title: 'Real-Time Collaborative Code Editor - CodePair',
-      description: 'Web-based collaborative code editor with real-time sync and video chat for seamless pair programming.',
-      keywords: ['code editor', 'collaboration', 'real-time', 'pair programming', 'webrtc']
-    }
+      description:
+        'Web-based collaborative code editor with real-time sync and video chat for seamless pair programming.',
+      keywords: [
+        'code editor',
+        'collaboration',
+        'real-time',
+        'pair programming',
+        'webrtc',
+      ],
+    },
   },
   {
     title: 'E-Commerce Analytics Dashboard',
-    description: 'A comprehensive analytics dashboard for e-commerce businesses featuring real-time sales tracking, customer insights, inventory management, and predictive analytics.',
-    shortDescription: 'Comprehensive e-commerce analytics with real-time tracking and predictive insights.',
-    technologies: ['Vue.js', 'D3.js', 'Python', 'FastAPI', 'PostgreSQL', 'Redis', 'Docker'],
+    description:
+      'A comprehensive analytics dashboard for e-commerce businesses featuring real-time sales tracking, customer insights, inventory management, and predictive analytics.',
+    shortDescription:
+      'Comprehensive e-commerce analytics with real-time tracking and predictive insights.',
+    technologies: [
+      'Vue.js',
+      'D3.js',
+      'Python',
+      'FastAPI',
+      'PostgreSQL',
+      'Redis',
+      'Docker',
+    ],
     categories: ['Web Application', 'Analytics', 'E-commerce'],
     status: 'published',
     featured: false,
     images: [
-      { url: '/images/projects/ecommerce-dashboard.jpg', alt: 'Analytics Dashboard' },
-      { url: '/images/projects/ecommerce-insights.jpg', alt: 'Customer Insights' },
-      { url: '/images/projects/ecommerce-mobile.jpg', alt: 'Mobile Dashboard' }
+      {
+        url: '/images/projects/ecommerce-dashboard.jpg',
+        alt: 'Analytics Dashboard',
+      },
+      {
+        url: '/images/projects/ecommerce-insights.jpg',
+        alt: 'Customer Insights',
+      },
+      { url: '/images/projects/ecommerce-mobile.jpg', alt: 'Mobile Dashboard' },
     ],
     links: {
       github: 'https://github.com/rohanbatra/ecommerce-analytics',
-      demo: 'https://demo-analytics.vercel.app'
+      demo: 'https://demo-analytics.vercel.app',
     },
     seo: {
       title: 'E-Commerce Analytics Dashboard - Business Intelligence',
-      description: 'Powerful analytics dashboard for e-commerce businesses with real-time tracking and predictive insights.',
-      keywords: ['ecommerce', 'analytics', 'dashboard', 'business intelligence', 'vuejs']
-    }
+      description:
+        'Powerful analytics dashboard for e-commerce businesses with real-time tracking and predictive insights.',
+      keywords: [
+        'ecommerce',
+        'analytics',
+        'dashboard',
+        'business intelligence',
+        'vuejs',
+      ],
+    },
   },
   {
     title: 'Social Media Content Scheduler',
-    description: 'A unified platform for scheduling and managing social media content across multiple platforms with AI-powered content suggestions and performance analytics.',
-    shortDescription: 'Multi-platform social media scheduler with AI content suggestions.',
-    technologies: ['React', 'Node.js', 'GraphQL', 'Apollo', 'PostgreSQL', 'Bull Queue', 'AWS S3'],
+    description:
+      'A unified platform for scheduling and managing social media content across multiple platforms with AI-powered content suggestions and performance analytics.',
+    shortDescription:
+      'Multi-platform social media scheduler with AI content suggestions.',
+    technologies: [
+      'React',
+      'Node.js',
+      'GraphQL',
+      'Apollo',
+      'PostgreSQL',
+      'Bull Queue',
+      'AWS S3',
+    ],
     categories: ['Web Application', 'Social Media', 'Marketing'],
     status: 'published',
     featured: false,
     images: [
-      { url: '/images/projects/social-scheduler-main.jpg', alt: 'Content Scheduler' },
-      { url: '/images/projects/social-scheduler-calendar.jpg', alt: 'Calendar View' },
-      { url: '/images/projects/social-scheduler-analytics.jpg', alt: 'Performance Analytics' }
+      {
+        url: '/images/projects/social-scheduler-main.jpg',
+        alt: 'Content Scheduler',
+      },
+      {
+        url: '/images/projects/social-scheduler-calendar.jpg',
+        alt: 'Calendar View',
+      },
+      {
+        url: '/images/projects/social-scheduler-analytics.jpg',
+        alt: 'Performance Analytics',
+      },
     ],
     links: {
       live: 'https://socialsync.app',
-      github: 'https://github.com/rohanbatra/social-sync'
+      github: 'https://github.com/rohanbatra/social-sync',
     },
     seo: {
       title: 'Social Media Content Scheduler - SocialSync',
-      description: 'Unified platform for scheduling social media content with AI-powered suggestions and analytics.',
-      keywords: ['social media', 'content scheduler', 'marketing', 'automation', 'ai']
-    }
+      description:
+        'Unified platform for scheduling social media content with AI-powered suggestions and analytics.',
+      keywords: [
+        'social media',
+        'content scheduler',
+        'marketing',
+        'automation',
+        'ai',
+      ],
+    },
   },
   {
     title: 'Blockchain-Based Supply Chain Tracker',
-    description: 'A transparent supply chain tracking system built on blockchain technology, enabling end-to-end traceability of products from manufacturer to consumer.',
-    shortDescription: 'Blockchain-powered supply chain tracking for product traceability.',
-    technologies: ['Solidity', 'Web3.js', 'React', 'Node.js', 'Ethereum', 'IPFS', 'Material-UI'],
+    description:
+      'A transparent supply chain tracking system built on blockchain technology, enabling end-to-end traceability of products from manufacturer to consumer.',
+    shortDescription:
+      'Blockchain-powered supply chain tracking for product traceability.',
+    technologies: [
+      'Solidity',
+      'Web3.js',
+      'React',
+      'Node.js',
+      'Ethereum',
+      'IPFS',
+      'Material-UI',
+    ],
     categories: ['Blockchain', 'Supply Chain', 'Web3'],
     status: 'published',
     featured: true,
     images: [
-      { url: '/images/projects/blockchain-tracker-main.jpg', alt: 'Supply Chain Dashboard' },
-      { url: '/images/projects/blockchain-tracker-timeline.jpg', alt: 'Product Timeline' },
-      { url: '/images/projects/blockchain-tracker-verify.jpg', alt: 'Verification System' }
+      {
+        url: '/images/projects/blockchain-tracker-main.jpg',
+        alt: 'Supply Chain Dashboard',
+      },
+      {
+        url: '/images/projects/blockchain-tracker-timeline.jpg',
+        alt: 'Product Timeline',
+      },
+      {
+        url: '/images/projects/blockchain-tracker-verify.jpg',
+        alt: 'Verification System',
+      },
     ],
     links: {
       github: 'https://github.com/rohanbatra/supply-chain-blockchain',
-      demo: 'https://supply-tracker-demo.vercel.app'
+      demo: 'https://supply-tracker-demo.vercel.app',
     },
     seo: {
       title: 'Blockchain Supply Chain Tracker - Transparent Traceability',
-      description: 'Blockchain-based supply chain tracking system for transparent product traceability from source to consumer.',
-      keywords: ['blockchain', 'supply chain', 'ethereum', 'web3', 'traceability']
-    }
+      description:
+        'Blockchain-based supply chain tracking system for transparent product traceability from source to consumer.',
+      keywords: [
+        'blockchain',
+        'supply chain',
+        'ethereum',
+        'web3',
+        'traceability',
+      ],
+    },
   },
   {
     title: 'Voice-Controlled Smart Home Hub',
-    description: 'An intelligent home automation system with voice control, machine learning-based pattern recognition, and seamless integration with IoT devices.',
-    shortDescription: 'AI-powered smart home hub with voice control and IoT integration.',
-    technologies: ['Python', 'TensorFlow', 'React Native', 'MQTT', 'Raspberry Pi', 'SQLite', 'Speech Recognition'],
+    description:
+      'An intelligent home automation system with voice control, machine learning-based pattern recognition, and seamless integration with IoT devices.',
+    shortDescription:
+      'AI-powered smart home hub with voice control and IoT integration.',
+    technologies: [
+      'Python',
+      'TensorFlow',
+      'React Native',
+      'MQTT',
+      'Raspberry Pi',
+      'SQLite',
+      'Speech Recognition',
+    ],
     categories: ['IoT', 'AI/ML', 'Mobile App'],
     status: 'published',
     featured: false,
     images: [
       { url: '/images/projects/smart-home-app.jpg', alt: 'Mobile Control App' },
-      { url: '/images/projects/smart-home-dashboard.jpg', alt: 'Control Dashboard' },
-      { url: '/images/projects/smart-home-devices.jpg', alt: 'Connected Devices' }
+      {
+        url: '/images/projects/smart-home-dashboard.jpg',
+        alt: 'Control Dashboard',
+      },
+      {
+        url: '/images/projects/smart-home-devices.jpg',
+        alt: 'Connected Devices',
+      },
     ],
     links: {
-      github: 'https://github.com/rohanbatra/smart-home-hub'
+      github: 'https://github.com/rohanbatra/smart-home-hub',
     },
     seo: {
       title: 'Voice-Controlled Smart Home Hub - AI Home Automation',
-      description: 'Intelligent home automation system with voice control and machine learning for seamless IoT device management.',
-      keywords: ['smart home', 'iot', 'voice control', 'ai', 'home automation']
-    }
-  }
+      description:
+        'Intelligent home automation system with voice control and machine learning for seamless IoT device management.',
+      keywords: ['smart home', 'iot', 'voice control', 'ai', 'home automation'],
+    },
+  },
 ];
 
 async function migrateContent() {
@@ -1137,7 +1292,9 @@ async function migrateContent() {
     // Find the admin user
     const adminUser = await User.findOne({ role: 'admin' });
     if (!adminUser) {
-      throw new Error('Admin user not found. Please create an admin user first.');
+      throw new Error(
+        'Admin user not found. Please create an admin user first.'
+      );
     }
 
     console.log(`Found admin user: ${adminUser.name}`);
@@ -1150,7 +1307,7 @@ async function migrateContent() {
     // Migrate blog posts
     console.log('Creating demo blog posts...');
     const blogPosts = [];
-    
+
     for (const postData of DEMO_BLOG_POSTS) {
       const slug = postData.title
         .toLowerCase()
@@ -1198,7 +1355,7 @@ async function migrateContent() {
     // Migrate projects
     console.log('Creating demo projects...');
     const projects = [];
-    
+
     for (const projectData of DEMO_PROJECTS) {
       const slug = projectData.title
         .toLowerCase()
@@ -1249,7 +1406,6 @@ async function migrateContent() {
 
 🎉 Your admin dashboard should now display the demo content!
     `);
-
   } catch (error) {
     console.error('❌ Migration failed:', error);
     process.exit(1);
@@ -1260,7 +1416,7 @@ async function migrateContent() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   migrateContent()
     .then(() => process.exit(0))
-    .catch((error) => {
+    .catch(error => {
       console.error('Migration error:', error);
       process.exit(1);
     });

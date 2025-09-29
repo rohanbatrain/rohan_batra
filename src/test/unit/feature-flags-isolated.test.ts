@@ -15,16 +15,21 @@ interface TestFeatureFlagResult {
 }
 
 class TestFeatureFlagService {
-  constructor(private config: {
-    features: Record<string, boolean>;
-    advancedFeatures: Record<string, boolean>;
-    rollout: { percentage: number; whitelist: string[] };
-    environment: string;
-  }) {}
+  constructor(
+    private config: {
+      features: Record<string, boolean>;
+      advancedFeatures: Record<string, boolean>;
+      rollout: { percentage: number; whitelist: string[] };
+      environment: string;
+    }
+  ) {}
 
-  isFeatureEnabled(feature: string, context?: TestFeatureFlagContext): TestFeatureFlagResult {
+  isFeatureEnabled(
+    feature: string,
+    context?: TestFeatureFlagContext
+  ): TestFeatureFlagResult {
     const baseEnabled = this.config.features[feature];
-    
+
     if (!baseEnabled) {
       return {
         enabled: false,
@@ -32,7 +37,7 @@ class TestFeatureFlagService {
         reason: `Feature ${feature} is disabled in environment configuration`,
       };
     }
-    
+
     return {
       enabled: true,
       source: 'environment',
@@ -45,7 +50,7 @@ class TestFeatureFlagService {
     context?: TestFeatureFlagContext
   ): TestFeatureFlagResult {
     const baseEnabled = this.config.advancedFeatures[feature];
-    
+
     if (!baseEnabled) {
       return {
         enabled: false,
@@ -55,7 +60,10 @@ class TestFeatureFlagService {
     }
 
     // If user is in whitelist, enable immediately
-    if (context?.userEmail && this.config.rollout.whitelist.includes(context.userEmail)) {
+    if (
+      context?.userEmail &&
+      this.config.rollout.whitelist.includes(context.userEmail)
+    ) {
       return {
         enabled: true,
         source: 'whitelist',
@@ -69,7 +77,7 @@ class TestFeatureFlagService {
       return {
         enabled: rolloutEnabled,
         source: 'rollout',
-        reason: rolloutEnabled 
+        reason: rolloutEnabled
           ? `User included in ${this.config.rollout.percentage}% rollout`
           : 'User not included in rollout',
       };
@@ -82,19 +90,24 @@ class TestFeatureFlagService {
     };
   }
 
-  getFeatureFlags(context?: TestFeatureFlagContext): Record<string, TestFeatureFlagResult> {
+  getFeatureFlags(
+    context?: TestFeatureFlagContext
+  ): Record<string, TestFeatureFlagResult> {
     const results: Record<string, TestFeatureFlagResult> = {};
-    
+
     // Core features
-    Object.keys(this.config.features).forEach((feature) => {
+    Object.keys(this.config.features).forEach(feature => {
       results[feature] = this.isFeatureEnabled(feature, context);
     });
-    
+
     // Advanced features (with 'advanced.' prefix)
-    Object.keys(this.config.advancedFeatures).forEach((feature) => {
-      results[`advanced.${feature}`] = this.isAdvancedFeatureEnabled(feature, context);
+    Object.keys(this.config.advancedFeatures).forEach(feature => {
+      results[`advanced.${feature}`] = this.isAdvancedFeatureEnabled(
+        feature,
+        context
+      );
     });
-    
+
     return results;
   }
 
@@ -107,7 +120,7 @@ class TestFeatureFlagService {
     let hash = 0;
     for (let i = 0; i < userId.length; i++) {
       const char = userId.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32bit integer
     }
     const userPercentile = Math.abs(hash) % 100;
@@ -129,7 +142,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: false,
         enhancedValidation: false,
-        
+
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -154,7 +167,10 @@ describe('Feature Flag Service', () => {
     expect(blogResult.source).toBe('environment');
 
     // Test advanced features (should be disabled by default)
-    const assetResult = featureFlags.isAdvancedFeatureEnabled('assetIntegration', context);
+    const assetResult = featureFlags.isAdvancedFeatureEnabled(
+      'assetIntegration',
+      context
+    );
     expect(assetResult.enabled).toBe(false);
     expect(assetResult.source).toBe('environment');
   });
@@ -172,7 +188,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: true, // Enabled
         enhancedValidation: false,
-        
+
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -191,7 +207,10 @@ describe('Feature Flag Service', () => {
       environment: 'development',
     };
 
-    const result = featureFlags.isAdvancedFeatureEnabled('assetIntegration', context);
+    const result = featureFlags.isAdvancedFeatureEnabled(
+      'assetIntegration',
+      context
+    );
     expect(result.enabled).toBe(false);
     expect(result.source).toBe('rollout');
   });
@@ -209,7 +228,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: true, // Enabled
         enhancedValidation: false,
-        
+
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -228,7 +247,10 @@ describe('Feature Flag Service', () => {
       environment: 'development',
     };
 
-    const result = featureFlags.isAdvancedFeatureEnabled('assetIntegration', whitelistedContext);
+    const result = featureFlags.isAdvancedFeatureEnabled(
+      'assetIntegration',
+      whitelistedContext
+    );
     expect(result.enabled).toBe(true);
     expect(result.source).toBe('whitelist');
   });
@@ -246,7 +268,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: true, // Enabled
         enhancedValidation: false,
-        
+
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -265,7 +287,10 @@ describe('Feature Flag Service', () => {
       environment: 'development',
     };
 
-    const result = featureFlags.isAdvancedFeatureEnabled('assetIntegration', context);
+    const result = featureFlags.isAdvancedFeatureEnabled(
+      'assetIntegration',
+      context
+    );
     expect(result.enabled).toBe(true);
     expect(result.source).toBe('rollout');
   });
@@ -283,7 +308,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: false,
         enhancedValidation: false,
-        
+
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -303,23 +328,25 @@ describe('Feature Flag Service', () => {
     };
 
     const flags = featureFlags.getFeatureFlags(context);
-    
+
     // Should include core features
     expect(flags).toHaveProperty('blog');
     expect(flags).toHaveProperty('portfolio');
     expect(flags).toHaveProperty('comments');
-    
+
     // Should include advanced features with 'advanced.' prefix
     expect(flags).toHaveProperty('advanced.assetIntegration');
     expect(flags).toHaveProperty('advanced.enhancedValidation');
-  // 'richEditor' advanced feature removed from codebase
-    
+    // 'richEditor' advanced feature removed from codebase
+
     // All results should have enabled and source properties
-    Object.values(flags).forEach((flag) => {
+    Object.values(flags).forEach(flag => {
       expect(flag).toHaveProperty('enabled');
       expect(flag).toHaveProperty('source');
       expect(typeof flag.enabled).toBe('boolean');
-      expect(['environment', 'rollout', 'whitelist', 'default']).toContain(flag.source);
+      expect(['environment', 'rollout', 'whitelist', 'default']).toContain(
+        flag.source
+      );
     });
   });
 
@@ -336,7 +363,7 @@ describe('Feature Flag Service', () => {
       advancedFeatures: {
         assetIntegration: false,
         enhancedValidation: false,
-        
+
         analyticsTracking: false,
         aiSuggestions: false,
         realTimeCollaboration: false,
@@ -349,12 +376,12 @@ describe('Feature Flag Service', () => {
     });
 
     const config = featureFlags.getConfiguration();
-    
+
     expect(config).toHaveProperty('features');
     expect(config).toHaveProperty('advancedFeatures');
     expect(config).toHaveProperty('rollout');
     expect(config).toHaveProperty('environment');
-    
+
     expect(config.environment).toBe('test');
   });
 });

@@ -2,7 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import RemoteLinkPicker, { AssetLinkItem } from '@/components/ui/RemoteLinkPicker';
+import RemoteLinkPicker, {
+  AssetLinkItem,
+} from '@/components/ui/RemoteLinkPicker';
 
 interface Project {
   _id: string;
@@ -28,7 +30,7 @@ export default function EditProjectPage() {
   const router = useRouter();
   const params = useParams();
   const projectId = params.id as string;
-  
+
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
   const [formData, setFormData] = useState({
@@ -82,7 +84,10 @@ export default function EditProjectPage() {
         },
       });
     } catch (error) {
-      alert('Failed to fetch project: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        'Failed to fetch project: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
       router.push('/admin/portfolio');
     } finally {
       setFetching(false);
@@ -118,9 +123,14 @@ export default function EditProjectPage() {
         },
         body: JSON.stringify({
           ...formData,
-          technologies: formData.technologies.split(',').map(tech => tech.trim()).filter(Boolean),
+          technologies: formData.technologies
+            .split(',')
+            .map(tech => tech.trim())
+            .filter(Boolean),
           links: Object.fromEntries(
-            Object.entries(formData.links).filter(([, value]) => value.trim() !== '')
+            Object.entries(formData.links).filter(
+              ([, value]) => value.trim() !== ''
+            )
           ),
         }),
       });
@@ -131,7 +141,10 @@ export default function EditProjectPage() {
 
       router.push('/admin/portfolio');
     } catch (error) {
-      alert('Failed to update project: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        'Failed to update project: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
     } finally {
       setLoading(false);
     }
@@ -208,7 +221,9 @@ export default function EditProjectPage() {
             <input
               type='text'
               value={formData.slug}
-              onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, slug: e.target.value }))
+              }
               required
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               placeholder='project-slug'
@@ -222,7 +237,9 @@ export default function EditProjectPage() {
             </label>
             <textarea
               value={formData.description}
-              onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, description: e.target.value }))
+              }
               required
               rows={3}
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
@@ -237,7 +254,12 @@ export default function EditProjectPage() {
             </label>
             <textarea
               value={formData.longDescription}
-              onChange={e => setFormData(prev => ({ ...prev, longDescription: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  longDescription: e.target.value,
+                }))
+              }
               rows={8}
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               placeholder='Detailed description of the project, features, challenges, etc.'
@@ -253,7 +275,9 @@ export default function EditProjectPage() {
               <input
                 type='text'
                 value={formData.category}
-                onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, category: e.target.value }))
+                }
                 required
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                 placeholder='e.g., Web Development, Mobile App, etc.'
@@ -267,7 +291,12 @@ export default function EditProjectPage() {
               <input
                 type='text'
                 value={formData.technologies}
-                onChange={e => setFormData(prev => ({ ...prev, technologies: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    technologies: e.target.value,
+                  }))
+                }
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                 placeholder='React, Node.js, MongoDB, etc.'
               />
@@ -282,7 +311,12 @@ export default function EditProjectPage() {
               </label>
               <select
                 value={formData.status}
-                onChange={e => setFormData(prev => ({ ...prev, status: e.target.value as typeof formData.status }))}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    status: e.target.value as typeof formData.status,
+                  }))
+                }
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               >
                 <option value='draft'>Draft</option>
@@ -300,7 +334,12 @@ export default function EditProjectPage() {
                 min='1'
                 max='10'
                 value={formData.priority}
-                onChange={e => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    priority: parseInt(e.target.value),
+                  }))
+                }
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               />
             </div>
@@ -310,10 +349,15 @@ export default function EditProjectPage() {
                 type='checkbox'
                 id='featured'
                 checked={formData.featured}
-                onChange={e => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, featured: e.target.checked }))
+                }
                 className='mr-2'
               />
-              <label htmlFor='featured' className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+              <label
+                htmlFor='featured'
+                className='text-sm font-medium text-gray-700 dark:text-gray-300'
+              >
                 Featured Project
               </label>
             </div>
@@ -330,18 +374,29 @@ export default function EditProjectPage() {
             <input
               type='url'
               value={formData.featuredImage}
-              onChange={e => setFormData(prev => ({ ...prev, featuredImage: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  featuredImage: e.target.value,
+                }))
+              }
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               placeholder='https://example.com/image.jpg'
             />
             <div className='mt-2 flex items-center gap-2'>
-              <button type='button' className='text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                onClick={() => setPickerOpen(true)}>
+              <button
+                type='button'
+                className='text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                onClick={() => setPickerOpen(true)}
+              >
                 Pick from Remote Links
               </button>
               {formData.featuredImage && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={formData.featuredImage} alt='Preview' className='h-14 w-14 rounded object-cover border' />
+                <img
+                  src={formData.featuredImage}
+                  alt='Preview'
+                  className='h-14 w-14 rounded object-cover border'
+                />
               )}
             </div>
           </div>
@@ -359,10 +414,12 @@ export default function EditProjectPage() {
                 <input
                   type='url'
                   value={formData.links.live}
-                  onChange={e => setFormData(prev => ({
-                    ...prev,
-                    links: { ...prev.links, live: e.target.value }
-                  }))}
+                  onChange={e =>
+                    setFormData(prev => ({
+                      ...prev,
+                      links: { ...prev.links, live: e.target.value },
+                    }))
+                  }
                   className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   placeholder='https://project-demo.com'
                 />
@@ -375,10 +432,12 @@ export default function EditProjectPage() {
                 <input
                   type='url'
                   value={formData.links.github}
-                  onChange={e => setFormData(prev => ({
-                    ...prev,
-                    links: { ...prev.links, github: e.target.value }
-                  }))}
+                  onChange={e =>
+                    setFormData(prev => ({
+                      ...prev,
+                      links: { ...prev.links, github: e.target.value },
+                    }))
+                  }
                   className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   placeholder='https://github.com/username/repo'
                 />
@@ -391,10 +450,12 @@ export default function EditProjectPage() {
                 <input
                   type='url'
                   value={formData.links.demo}
-                  onChange={e => setFormData(prev => ({
-                    ...prev,
-                    links: { ...prev.links, demo: e.target.value }
-                  }))}
+                  onChange={e =>
+                    setFormData(prev => ({
+                      ...prev,
+                      links: { ...prev.links, demo: e.target.value },
+                    }))
+                  }
                   className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   placeholder='https://demo-media.com'
                 />
@@ -407,10 +468,12 @@ export default function EditProjectPage() {
                 <input
                   type='url'
                   value={formData.links.documentation}
-                  onChange={e => setFormData(prev => ({
-                    ...prev,
-                    links: { ...prev.links, documentation: e.target.value }
-                  }))}
+                  onChange={e =>
+                    setFormData(prev => ({
+                      ...prev,
+                      links: { ...prev.links, documentation: e.target.value },
+                    }))
+                  }
                   className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                   placeholder='https://docs.project.com'
                 />

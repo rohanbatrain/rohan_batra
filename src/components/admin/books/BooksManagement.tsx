@@ -35,7 +35,6 @@ interface BooksManagementProps {
   userRole: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default function BooksManagement(_: BooksManagementProps) {
   const { isLoaded, isSignedIn } = useAuth();
   const [booksData, setBooksData] = useState<BooksData | null>(null);
@@ -83,7 +82,22 @@ export default function BooksManagement(_: BooksManagementProps) {
       }
 
       const data = await response.json();
-      setBooksData(data?.books ? data : { books: [], pagination: { page: 1, limit: 10, total: 0, totalPages: 0, hasNextPage: false, hasPrevPage: false }, stats: {} });
+      setBooksData(
+        data?.books
+          ? data
+          : {
+              books: [],
+              pagination: {
+                page: 1,
+                limit: 10,
+                total: 0,
+                totalPages: 0,
+                hasNextPage: false,
+                hasPrevPage: false,
+              },
+              stats: {},
+            }
+      );
     } catch (error) {
       console.error('Error fetching books:', error);
     } finally {
@@ -141,7 +155,12 @@ export default function BooksManagement(_: BooksManagementProps) {
   };
 
   const handleDeleteBook = async (bookId: string) => {
-    if (!confirm('Move this book to trash? You can permanently delete it later from Trash.')) return;
+    if (
+      !confirm(
+        'Move this book to trash? You can permanently delete it later from Trash.'
+      )
+    )
+      return;
 
     try {
       const response = await fetch(`/api/admin/books/${bookId}?trash=true`, {

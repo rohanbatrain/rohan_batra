@@ -162,7 +162,13 @@ export async function GET(request: NextRequest) {
           $facet: {
             total: [{ $count: 'count' }],
             recent: [
-              { $match: { createdAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } } },
+              {
+                $match: {
+                  createdAt: {
+                    $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                  },
+                },
+              },
               { $count: 'count' },
             ],
             totalSize: [
@@ -273,8 +279,11 @@ export async function GET(request: NextRequest) {
           recent: lottieAssetStats[0]?.recent[0]?.count || 0,
           totalSize: lottieAssetStats[0]?.totalSize[0]?.totalSize || 0,
           averageSize:
-            totalLottieAssets > 0 && lottieAssetStats[0]?.totalSize[0]?.totalSize
-              ? Math.round(lottieAssetStats[0].totalSize[0].totalSize / totalLottieAssets)
+            totalLottieAssets > 0 &&
+            lottieAssetStats[0]?.totalSize[0]?.totalSize
+              ? Math.round(
+                  lottieAssetStats[0].totalSize[0].totalSize / totalLottieAssets
+                )
               : 0,
           byCategory: lottieAssetStats[0]?.byCategory || [],
         },

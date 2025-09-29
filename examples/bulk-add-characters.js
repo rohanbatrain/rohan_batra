@@ -35,7 +35,9 @@ const token = arg('token');
 const file = arg('file');
 
 if (!token) {
-  console.error('Missing --token (Bearer JWT for Clerk-authenticated admin/editor)');
+  console.error(
+    'Missing --token (Bearer JWT for Clerk-authenticated admin/editor)'
+  );
   process.exit(1);
 }
 if (!file) {
@@ -55,7 +57,7 @@ const url = `${base}/api/admin/characters/bulk`;
 const content = fs.readFileSync(filePath);
 
 const headers = {
-  'Authorization': `Bearer ${token}`,
+  Authorization: `Bearer ${token}`,
 };
 
 let contentType = 'application/json';

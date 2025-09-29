@@ -6,7 +6,8 @@ describe('Safety Mechanisms Integration', () => {
   beforeEach(() => {
     originalEnv = {
       CIRCUIT_BREAKER_ENABLED: process.env.CIRCUIT_BREAKER_ENABLED,
-      CIRCUIT_BREAKER_FAILURE_THRESHOLD: process.env.CIRCUIT_BREAKER_FAILURE_THRESHOLD,
+      CIRCUIT_BREAKER_FAILURE_THRESHOLD:
+        process.env.CIRCUIT_BREAKER_FAILURE_THRESHOLD,
       CIRCUIT_BREAKER_RESET_TIMEOUT: process.env.CIRCUIT_BREAKER_RESET_TIMEOUT,
       ROLLOUT_ADMIN_USERS: process.env.ROLLOUT_ADMIN_USERS,
       ROLLOUT_PERCENTAGE: process.env.ROLLOUT_PERCENTAGE,
@@ -14,7 +15,7 @@ describe('Safety Mechanisms Integration', () => {
   });
 
   afterEach(() => {
-    Object.keys(originalEnv).forEach((key) => {
+    Object.keys(originalEnv).forEach(key => {
       if (originalEnv[key] === undefined) {
         delete process.env[key];
       } else {
@@ -35,7 +36,7 @@ describe('Safety Mechanisms Integration', () => {
     };
 
     const failurePromises = [];
-    
+
     // Make multiple requests that should fail
     for (let i = 0; i < 5; i++) {
       failurePromises.push(
@@ -73,13 +74,13 @@ describe('Safety Mechanisms Integration', () => {
 
     // Trigger circuit breaker
     const invalidPayload = { title: '' };
-    
+
     await fetch('http://localhost:3000/api/admin/blog-posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(invalidPayload),
     });
-    
+
     await fetch('http://localhost:3000/api/admin/blog-posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -87,11 +88,14 @@ describe('Safety Mechanisms Integration', () => {
     });
 
     // Should trigger circuit breaker
-    const circuitResponse = await fetch('http://localhost:3000/api/admin/blog-posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(invalidPayload),
-    });
+    const circuitResponse = await fetch(
+      'http://localhost:3000/api/admin/blog-posts',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(invalidPayload),
+      }
+    );
 
     // Either circuit breaker triggered (503) or normal failure (400)
     expect([400, 503]).toContain(circuitResponse.status);
@@ -108,11 +112,14 @@ describe('Safety Mechanisms Integration', () => {
       category: 'Testing',
     };
 
-    const resetResponse = await fetch('http://localhost:3000/api/admin/blog-posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(validPayload),
-    });
+    const resetResponse = await fetch(
+      'http://localhost:3000/api/admin/blog-posts',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(validPayload),
+      }
+    );
 
     // Should succeed after reset
     expect(resetResponse.status).toBe(201);
@@ -124,7 +131,9 @@ describe('Safety Mechanisms Integration', () => {
 
     // Test will need to be enhanced when user authentication is available
     // For now, just test that environment variables are set correctly
-    expect(process.env.ROLLOUT_ADMIN_USERS).toBe('admin1@example.com,admin2@example.com');
+    expect(process.env.ROLLOUT_ADMIN_USERS).toBe(
+      'admin1@example.com,admin2@example.com'
+    );
     expect(process.env.ROLLOUT_PERCENTAGE).toBe('50');
 
     // This test will be expanded to:
@@ -137,7 +146,7 @@ describe('Safety Mechanisms Integration', () => {
   it('should handle database connection failures gracefully', async () => {
     // This test simulates database connection issues
     // and verifies graceful degradation
-    
+
     const payload = {
       title: 'Database Failure Test',
       slug: 'database-failure-test',
@@ -167,28 +176,34 @@ describe('Safety Mechanisms Integration', () => {
   });
 
   it('should implement automatic health checks', async () => {
-    const healthResponse = await fetch('http://localhost:3000/api/health/enhanced');
+    const healthResponse = await fetch(
+      'http://localhost:3000/api/health/enhanced'
+    );
 
     if (healthResponse.status === 200) {
       const healthData = await healthResponse.json();
-      
+
       // Health endpoint should provide comprehensive status
       expect(healthData).toHaveProperty('status');
       expect(healthData).toHaveProperty('timestamp');
       expect(healthData).toHaveProperty('features');
-      
+
       // Feature flags should be reported
       expect(healthData.features).toHaveProperty('assetIntegration');
       expect(healthData.features).toHaveProperty('enhancedValidation');
-  // 'richEditor' feature removed from codebase
-      
+      // 'richEditor' feature removed from codebase
+
       // System health indicators
       expect(healthData).toHaveProperty('database');
-      expect(['healthy', 'degraded', 'unhealthy']).toContain(healthData.database.status);
-      
+      expect(['healthy', 'degraded', 'unhealthy']).toContain(
+        healthData.database.status
+      );
+
       if (healthData.circuitBreaker) {
         expect(healthData.circuitBreaker).toHaveProperty('status');
-        expect(['closed', 'open', 'half-open']).toContain(healthData.circuitBreaker.status);
+        expect(['closed', 'open', 'half-open']).toContain(
+          healthData.circuitBreaker.status
+        );
       }
     } else {
       // Health endpoint might not be implemented yet
@@ -197,11 +212,13 @@ describe('Safety Mechanisms Integration', () => {
   });
 
   it('should handle memory and performance monitoring', async () => {
-    const healthResponse = await fetch('http://localhost:3000/api/health/enhanced');
+    const healthResponse = await fetch(
+      'http://localhost:3000/api/health/enhanced'
+    );
 
     if (healthResponse.status === 200) {
       const healthData = await healthResponse.json();
-      
+
       if (healthData.performance) {
         // Memory usage monitoring
         expect(healthData.performance).toHaveProperty('memory');
@@ -210,13 +227,17 @@ describe('Safety Mechanisms Integration', () => {
         expect(healthData.performance.memory.used).toBeLessThanOrEqual(
           healthData.performance.memory.total
         );
-        
+
         // Response time monitoring
         if (healthData.performance.responseTime) {
-          expect(typeof healthData.performance.responseTime.average).toBe('number');
-          expect(healthData.performance.responseTime.average).toBeGreaterThan(0);
+          expect(typeof healthData.performance.responseTime.average).toBe(
+            'number'
+          );
+          expect(healthData.performance.responseTime.average).toBeGreaterThan(
+            0
+          );
         }
-        
+
         // Error rate monitoring
         if (healthData.performance.errorRate) {
           expect(typeof healthData.performance.errorRate).toBe('number');
@@ -233,12 +254,12 @@ describe('Safety Mechanisms Integration', () => {
   it('should provide audit trail for safety events', async () => {
     // This test will verify that safety-related events are properly logged
     // for audit and compliance purposes
-    
+
     process.env.CIRCUIT_BREAKER_ENABLED = 'true';
-    
+
     // Trigger a safety event (circuit breaker activation)
     const invalidPayload = { title: '' };
-    
+
     for (let i = 0; i < 3; i++) {
       await fetch('http://localhost:3000/api/admin/blog-posts', {
         method: 'POST',
@@ -255,15 +276,17 @@ describe('Safety Mechanisms Integration', () => {
   it('should handle graceful shutdown scenarios', async () => {
     // This test simulates graceful shutdown behavior
     // ensuring data integrity during system shutdown
-    
-    const healthResponse = await fetch('http://localhost:3000/api/health/enhanced');
-    
+
+    const healthResponse = await fetch(
+      'http://localhost:3000/api/health/enhanced'
+    );
+
     if (healthResponse.status === 200) {
       const healthData = await healthResponse.json();
-      
+
       // Health status should indicate system readiness
       expect(['healthy', 'degraded']).toContain(healthData.status);
-      
+
       // If shutdown is in progress, it should be indicated
       if (healthData.shutdown) {
         expect(typeof healthData.shutdown.inProgress).toBe('boolean');

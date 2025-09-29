@@ -11,10 +11,12 @@ export const runtime = 'nodejs';
 export async function GET() {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     await connectToDatabase();
     const me = await User.findOne({ clerkId: userId });
-    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!me || !['admin', 'editor'].includes(me.role))
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
 
     let driveToggle = false;
     try {

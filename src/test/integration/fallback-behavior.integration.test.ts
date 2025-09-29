@@ -7,12 +7,11 @@ describe('Fallback Behavior Integration', () => {
     originalEnv = {
       FEATURE_ASSET_INTEGRATION: process.env.FEATURE_ASSET_INTEGRATION,
       FEATURE_ENHANCED_VALIDATION: process.env.FEATURE_ENHANCED_VALIDATION,
-      
     };
   });
 
   afterEach(() => {
-    Object.keys(originalEnv).forEach((key) => {
+    Object.keys(originalEnv).forEach(key => {
       if (originalEnv[key] === undefined) {
         delete process.env[key];
       } else {
@@ -56,11 +55,11 @@ describe('Fallback Behavior Integration', () => {
 
     // Should succeed with basic functionality
     expect(response.status).toBe(201);
-    
+
     const data = await response.json();
     expect(data.success).toBe(true);
     expect(data.post.title).toBe('Fallback Test Post');
-    
+
     // Enhanced fields should not be present in response
     expect(data.post.attachedAssets).toBeUndefined();
     expect(data.post.seoMetadata).toBeUndefined();
@@ -101,11 +100,11 @@ describe('Fallback Behavior Integration', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     const data = await response.json();
     expect(data.success).toBe(true);
     expect(data.project.title).toBe('Fallback Project Test');
-    
+
     // Should use single category, not multiple
     expect(data.project.category).toBe('Web Development');
     expect(data.project.categories).toBeUndefined();
@@ -117,7 +116,6 @@ describe('Fallback Behavior Integration', () => {
     // Enable some features but not others
     process.env.FEATURE_ENHANCED_VALIDATION = 'true';
     process.env.FEATURE_ASSET_INTEGRATION = 'false'; // This one disabled
-    
 
     const mixedPayload = {
       title: 'Mixed Features Test',
@@ -148,7 +146,7 @@ describe('Fallback Behavior Integration', () => {
 
     // Should succeed, using available features and ignoring disabled ones
     expect(response.status).toBe(201);
-    
+
     const data = await response.json();
     expect(data.success).toBe(true);
     expect(data.post.title).toBe('Mixed Features Test');
@@ -174,13 +172,16 @@ describe('Fallback Behavior Integration', () => {
       ],
     };
 
-    const createResponse = await fetch('http://localhost:3000/api/admin/blog-posts', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(enhancedPayload),
-    });
+    const createResponse = await fetch(
+      'http://localhost:3000/api/admin/blog-posts',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(enhancedPayload),
+      }
+    );
 
     expect(createResponse.status).toBe(201);
     const createData = await createResponse.json();
@@ -191,12 +192,14 @@ describe('Fallback Behavior Integration', () => {
     process.env.FEATURE_ASSET_INTEGRATION = 'false';
 
     // Try to fetch the post - should still work
-    const fetchResponse = await fetch(`http://localhost:3000/api/admin/blog-posts/${postId}`);
-    
+    const fetchResponse = await fetch(
+      `http://localhost:3000/api/admin/blog-posts/${postId}`
+    );
+
     if (fetchResponse.status === 200) {
       const fetchData = await fetchResponse.json();
       expect(fetchData.post.title).toBe('Consistency Test Post');
-      
+
       // Enhanced fields might be hidden but basic fields should remain
       expect(fetchData.post.category).toBe('Testing');
       expect(fetchData.post.content).toBe('This post has enhanced features');
@@ -209,8 +212,7 @@ describe('Fallback Behavior Integration', () => {
   it('should handle UI component fallbacks gracefully', async () => {
     // This test simulates what happens when enhanced UI components fail to load
     // For now, we'll test the concept with a simple check
-    
-    
+
     process.env.FEATURE_ASSET_INTEGRATION = 'false';
 
     // In a real test, this would check that:
@@ -219,7 +221,7 @@ describe('Fallback Behavior Integration', () => {
     // 3. Basic forms work even when enhanced components fail
 
     // For now, just verify environment is set correctly
-    
+
     expect(process.env.FEATURE_ASSET_INTEGRATION).toBe('false');
 
     // This test will be expanded when UI components are implemented
@@ -229,7 +231,7 @@ describe('Fallback Behavior Integration', () => {
   it('should log fallback events for monitoring', async () => {
     // This test will verify that fallback behavior is properly logged
     // for monitoring and debugging purposes
-    
+
     process.env.FEATURE_ENHANCED_VALIDATION = 'false';
 
     const basicPayload = {
@@ -248,7 +250,7 @@ describe('Fallback Behavior Integration', () => {
     });
 
     expect(response.status).toBe(201);
-    
+
     // In the future, this would verify that fallback events are logged
     // to the monitoring system for analysis
     const data = await response.json();

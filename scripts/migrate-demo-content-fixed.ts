@@ -67,12 +67,20 @@ When building our portfolio platform, we leveraged these features to create a bl
 
 Next.js 14 represents a significant leap forward in web development, offering tools and patterns that make building fast, scalable applications more accessible than ever.
     `,
-    excerpt: 'Explore the revolutionary features of Next.js 14 and learn how to build modern, performant web applications with Server Components, enhanced performance optimizations, and improved developer experience.',
+    excerpt:
+      'Explore the revolutionary features of Next.js 14 and learn how to build modern, performant web applications with Server Components, enhanced performance optimizations, and improved developer experience.',
     status: 'published',
     category: 'Web Development',
-    tags: ['nextjs', 'react', 'web-development', 'performance', 'server-components'],
+    tags: [
+      'nextjs',
+      'react',
+      'web-development',
+      'performance',
+      'server-components',
+    ],
     seoTitle: 'Next.js 14 Guide: Building Modern Web Applications',
-    seoDescription: 'Complete guide to Next.js 14 features including Server Components, performance optimizations, and best practices for modern web development.',
+    seoDescription:
+      'Complete guide to Next.js 14 features including Server Components, performance optimizations, and best practices for modern web development.',
   },
   {
     title: 'Mastering TypeScript for Full-Stack Development',
@@ -145,12 +153,20 @@ export interface PaginationInfo {
 
 TypeScript's powerful type system enables us to build more reliable, maintainable applications. By leveraging advanced features like conditional types, template literals, and proper type guards, we can achieve end-to-end type safety that catches errors at compile time rather than runtime.
     `,
-    excerpt: 'Deep dive into advanced TypeScript patterns for full-stack development, including conditional types, template literals, type guards, and best practices for building type-safe applications.',
+    excerpt:
+      'Deep dive into advanced TypeScript patterns for full-stack development, including conditional types, template literals, type guards, and best practices for building type-safe applications.',
     status: 'published',
     category: 'Programming',
-    tags: ['typescript', 'javascript', 'full-stack', 'type-safety', 'best-practices'],
+    tags: [
+      'typescript',
+      'javascript',
+      'full-stack',
+      'type-safety',
+      'best-practices',
+    ],
     seoTitle: 'Advanced TypeScript Guide for Full-Stack Developers',
-    seoDescription: 'Master advanced TypeScript concepts and patterns for building robust, type-safe full-stack applications with practical examples and best practices.',
+    seoDescription:
+      'Master advanced TypeScript concepts and patterns for building robust, type-safe full-stack applications with practical examples and best practices.',
   },
   {
     title: 'Building Scalable APIs with Node.js and Express',
@@ -254,27 +270,35 @@ const cacheMiddleware = (duration = 300) => {
 
 Building scalable APIs requires careful consideration of architecture, performance, security, and maintainability. By following these patterns and best practices, you can create robust APIs that grow with your application's needs.
     `,
-    excerpt: 'Learn how to build scalable, production-ready APIs with Node.js and Express, including authentication, validation, caching strategies, and performance optimization techniques.',
+    excerpt:
+      'Learn how to build scalable, production-ready APIs with Node.js and Express, including authentication, validation, caching strategies, and performance optimization techniques.',
     status: 'published',
     category: 'Backend Development',
     tags: ['nodejs', 'express', 'api', 'backend', 'scalability'],
     seoTitle: 'Node.js API Development: Building Scalable Backend Services',
-    seoDescription: 'Comprehensive guide to building scalable APIs with Node.js and Express, covering architecture patterns, authentication, caching, and best practices.',
+    seoDescription:
+      'Comprehensive guide to building scalable APIs with Node.js and Express, covering architecture patterns, authentication, caching, and best practices.',
   },
 ];
 
 const DEMO_PROJECTS = [
   {
     title: 'E-Commerce Platform with Next.js',
-    description: 'A comprehensive e-commerce platform built with Next.js 14, featuring modern UI, secure payments, real-time inventory management, and advanced admin dashboard.',
-    shortDescription: 'Full-stack e-commerce platform with secure payments and real-time inventory.',
-    technologies: ['Next.js', 'TypeScript', 'MongoDB', 'Stripe', 'Tailwind CSS'],
+    description:
+      'A comprehensive e-commerce platform built with Next.js 14, featuring modern UI, secure payments, real-time inventory management, and advanced admin dashboard.',
+    shortDescription:
+      'Full-stack e-commerce platform with secure payments and real-time inventory.',
+    technologies: [
+      'Next.js',
+      'TypeScript',
+      'MongoDB',
+      'Stripe',
+      'Tailwind CSS',
+    ],
     category: 'Full-Stack',
     status: 'published',
     featured: true,
-    images: [
-      { url: '/placeholder-project.jpg', alt: 'E-Commerce Platform' }
-    ],
+    images: [{ url: '/placeholder-project.jpg', alt: 'E-Commerce Platform' }],
     links: {
       live: 'https://ecommerce-demo.vercel.app',
       github: 'https://github.com/example/ecommerce-platform',
@@ -282,15 +306,15 @@ const DEMO_PROJECTS = [
   },
   {
     title: 'AI-Powered Task Management App',
-    description: 'An intelligent task management application that uses AI to help users prioritize tasks, set realistic deadlines, and improve productivity with machine learning insights.',
-    shortDescription: 'AI-powered task management with intelligent prioritization and automated scheduling.',
+    description:
+      'An intelligent task management application that uses AI to help users prioritize tasks, set realistic deadlines, and improve productivity with machine learning insights.',
+    shortDescription:
+      'AI-powered task management with intelligent prioritization and automated scheduling.',
     technologies: ['React', 'Node.js', 'OpenAI', 'PostgreSQL', 'Docker'],
     category: 'AI/ML',
     status: 'published',
     featured: true,
-    images: [
-      { url: '/placeholder-project-2.jpg', alt: 'AI Task Manager' }
-    ],
+    images: [{ url: '/placeholder-project-2.jpg', alt: 'AI Task Manager' }],
     links: {
       live: 'https://ai-tasks.app',
       github: 'https://github.com/example/ai-task-manager',
@@ -298,15 +322,15 @@ const DEMO_PROJECTS = [
   },
   {
     title: 'Real-Time Collaborative Code Editor',
-    description: 'A web-based collaborative code editor with real-time synchronization, multi-language support, and integrated video chat for seamless pair programming sessions.',
-    shortDescription: 'Real-time collaborative code editor with video chat for pair programming.',
+    description:
+      'A web-based collaborative code editor with real-time synchronization, multi-language support, and integrated video chat for seamless pair programming sessions.',
+    shortDescription:
+      'Real-time collaborative code editor with video chat for pair programming.',
     technologies: ['React', 'Node.js', 'Socket.io', 'Monaco Editor', 'WebRTC'],
     category: 'Developer Tools',
     status: 'published',
     featured: false,
-    images: [
-      { url: '/placeholder-project.jpg', alt: 'Code Editor' }
-    ],
+    images: [{ url: '/placeholder-project.jpg', alt: 'Code Editor' }],
     links: {
       live: 'https://codepair.dev',
       github: 'https://github.com/example/codepair',
@@ -320,13 +344,13 @@ async function migrateContent() {
 
     // Import mongoose to ensure it's available
     const mongoose = await import('mongoose');
-    
+
     // Wait for MongoDB connection
     if (mongoose.default.connection.readyState === 0) {
       console.log('⏳ Connecting to MongoDB...');
       await mongoose.default.connection.asPromise();
     }
-    
+
     console.log('✅ MongoDB connected');
 
     // Access models directly from mongoose registry since they're already loaded
@@ -352,17 +376,27 @@ async function migrateContent() {
 
     // Clear existing demo content
     console.log('🧹 Clearing existing demo content...');
-    await BlogPost.deleteMany({ 
+    await BlogPost.deleteMany({
       $or: [
         { title: { $regex: 'Next.js 14|TypeScript|Node.js', $options: 'i' } },
-        { slug: { $regex: 'nextjs-14|typescript|nodejs', $options: 'i' } }
-      ]
+        { slug: { $regex: 'nextjs-14|typescript|nodejs', $options: 'i' } },
+      ],
     });
-    await Project.deleteMany({ 
+    await Project.deleteMany({
       $or: [
-        { title: { $regex: 'E-Commerce|Task Management|Code Editor', $options: 'i' } },
-        { slug: { $regex: 'ecommerce|task-management|code-editor', $options: 'i' } }
-      ]
+        {
+          title: {
+            $regex: 'E-Commerce|Task Management|Code Editor',
+            $options: 'i',
+          },
+        },
+        {
+          slug: {
+            $regex: 'ecommerce|task-management|code-editor',
+            $options: 'i',
+          },
+        },
+      ],
     });
 
     // Create blog posts
@@ -371,7 +405,8 @@ async function migrateContent() {
     for (const postData of DEMO_BLOG_POSTS) {
       const post = new BlogPost({
         ...postData,
-        slug: postData.title.toLowerCase()
+        slug: postData.title
+          .toLowerCase()
           .replace(/[^a-z0-9\s-]/g, '')
           .replace(/\s+/g, '-')
           .replace(/-+/g, '-')
@@ -393,7 +428,8 @@ async function migrateContent() {
     for (const projectData of DEMO_PROJECTS) {
       const project = new Project({
         ...projectData,
-        slug: projectData.title.toLowerCase()
+        slug: projectData.title
+          .toLowerCase()
           .replace(/[^a-z0-9\s-]/g, '')
           .replace(/\s+/g, '-')
           .replace(/-+/g, '-')

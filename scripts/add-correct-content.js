@@ -14,7 +14,7 @@ async function connectToDatabase() {
 
 // Import the actual models
 const BlogPost = require('../dist/src/models/BlogPost.js').default;
-const Project = require('../dist/src/models/Project.js').default; 
+const Project = require('../dist/src/models/Project.js').default;
 const User = require('../dist/src/models/User.js').default;
 
 async function addSampleContent() {
@@ -30,18 +30,19 @@ async function addSampleContent() {
     console.log('✅ Found user:', user.firstName, user.lastName);
 
     // Delete any existing sample content first to recreate with correct fields
-    await BlogPost.deleteMany({ 
-      slug: { $in: ['building-modern-web-apps-nextjs-15'] }
+    await BlogPost.deleteMany({
+      slug: { $in: ['building-modern-web-apps-nextjs-15'] },
     });
-    await Project.deleteMany({ 
-      slug: { $in: ['ai-powered-portfolio-website'] }
+    await Project.deleteMany({
+      slug: { $in: ['ai-powered-portfolio-website'] },
     });
 
     // Create blog post with correct authorId field
     const blogPostData = {
       title: 'Building Modern Web Applications with Next.js 15',
       slug: 'building-modern-web-apps-nextjs-15',
-      excerpt: 'Learn how to leverage the latest features in Next.js 15 to build fast, modern web applications with React Server Components.',
+      excerpt:
+        'Learn how to leverage the latest features in Next.js 15 to build fast, modern web applications with React Server Components.',
       content: `# Building Modern Web Applications with Next.js 15
 
 Next.js 15 represents a significant leap forward in the React ecosystem, introducing powerful features that enable developers to build faster, more efficient web applications.
@@ -62,22 +63,26 @@ The App Router is now stable and production-ready, providing:
 
 ## Conclusion
 Next.js 15 provides powerful tools for building modern web applications with excellent performance and developer experience.`,
-      featuredImage: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=400&fit=crop',
-      images: ['https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=400&fit=crop'],
+      featuredImage:
+        'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=400&fit=crop',
+      images: [
+        'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=400&fit=crop',
+      ],
       category: 'Web Development',
       tags: ['Next.js', 'React', 'Web Development', 'JavaScript'],
       status: 'published',
       featured: true,
       seoTitle: 'Building Modern Web Apps with Next.js 15 - Complete Guide',
-      seoDescription: 'Learn how to leverage Next.js 15 features to build fast, modern web applications.',
+      seoDescription:
+        'Learn how to leverage Next.js 15 features to build fast, modern web applications.',
       readingTime: 8,
       viewCount: 1250,
       likeCount: 42,
       commentCount: 15,
-      authorId: user._id,  // Use correct field name
+      authorId: user._id, // Use correct field name
       publishedAt: new Date('2024-09-15'),
       createdAt: new Date('2024-09-15'),
-      updatedAt: new Date('2024-09-15')
+      updatedAt: new Date('2024-09-15'),
     };
 
     const blogPost = new BlogPost(blogPostData);
@@ -88,7 +93,8 @@ Next.js 15 provides powerful tools for building modern web applications with exc
     const projectData = {
       title: 'AI-Powered Portfolio Website',
       slug: 'ai-powered-portfolio-website',
-      description: 'Modern portfolio website with AI-powered content management and dynamic blog functionality',
+      description:
+        'Modern portfolio website with AI-powered content management and dynamic blog functionality',
       longDescription: `## AI-Powered Portfolio Website
 
 A cutting-edge portfolio website that leverages artificial intelligence to enhance content management and user experience.
@@ -110,10 +116,16 @@ A cutting-edge portfolio website that leverages artificial intelligence to enhan
 - 95% reduction in content management time`,
       images: [
         'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
-        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop'
+        'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop',
       ],
       category: 'Web Development',
-      technologies: ['Next.js', 'TypeScript', 'MongoDB', 'Tailwind CSS', 'Clerk'],
+      technologies: [
+        'Next.js',
+        'TypeScript',
+        'MongoDB',
+        'Tailwind CSS',
+        'Clerk',
+      ],
       status: 'published',
       featured: true,
       liveUrl: 'https://rohanbatra.dev',
@@ -123,16 +135,18 @@ A cutting-edge portfolio website that leverages artificial intelligence to enhan
       client: 'Personal Project',
       tags: ['portfolio', 'ai', 'nextjs', 'typescript'],
       viewCount: 0,
-      authorId: user._id,  // Use correct field name
+      authorId: user._id, // Use correct field name
       createdAt: new Date('2024-09-15'),
-      updatedAt: new Date('2024-09-15')
+      updatedAt: new Date('2024-09-15'),
     };
 
     const project = new Project(projectData);
     await project.save();
     console.log('✅ Created project:', project.title);
 
-    console.log('\n🎉 Sample content setup complete! Your homepage should now show real content instead of placeholders.');
+    console.log(
+      '\n🎉 Sample content setup complete! Your homepage should now show real content instead of placeholders.'
+    );
   } catch (error) {
     console.error('❌ Error adding sample content:', error);
   } finally {

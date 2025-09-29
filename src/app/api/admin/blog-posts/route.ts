@@ -23,31 +23,43 @@ const BlogPostCreateSchema = z.object({
   seoDescription: z.string().max(160).optional(),
   publishedAt: z.string().datetime().optional(),
   // Enhanced fields (conditionally validated)
-  attachedAssets: z.array(z.object({
-    asset: z.string(),
-    usage: z.enum(['featured', 'content', 'gallery', 'attachment']).default('content'),
-    caption: z.string().optional(),
-    altText: z.string().optional(),
-    position: z.number().optional(),
-    metadata: z.record(z.any()).optional(),
-  })).optional(),
-  seoMetadata: z.object({
-    keywords: z.array(z.string()).optional(),
-    canonicalUrl: z.string().url().optional(),
-    openGraph: z.object({
-      title: z.string().optional(),
-      description: z.string().optional(),
-      image: z.string().optional(),
-      type: z.string().optional(),
-    }).optional(),
-    twitter: z.object({
-      card: z.string().optional(),
-      title: z.string().optional(),
-      description: z.string().optional(),
-      image: z.string().optional(),
-    }).optional(),
-    structuredData: z.record(z.any()).optional(),
-  }).optional(),
+  attachedAssets: z
+    .array(
+      z.object({
+        asset: z.string(),
+        usage: z
+          .enum(['featured', 'content', 'gallery', 'attachment'])
+          .default('content'),
+        caption: z.string().optional(),
+        altText: z.string().optional(),
+        position: z.number().optional(),
+        metadata: z.record(z.any()).optional(),
+      })
+    )
+    .optional(),
+  seoMetadata: z
+    .object({
+      keywords: z.array(z.string()).optional(),
+      canonicalUrl: z.string().url().optional(),
+      openGraph: z
+        .object({
+          title: z.string().optional(),
+          description: z.string().optional(),
+          image: z.string().optional(),
+          type: z.string().optional(),
+        })
+        .optional(),
+      twitter: z
+        .object({
+          card: z.string().optional(),
+          title: z.string().optional(),
+          description: z.string().optional(),
+          image: z.string().optional(),
+        })
+        .optional(),
+      structuredData: z.record(z.any()).optional(),
+    })
+    .optional(),
 });
 
 const BulkActionSchema = z.object({
@@ -71,11 +83,16 @@ function filterEnhancedFields(data: any, context: FeatureFlagContext) {
   const filtered = { ...data };
 
   // Remove enhanced fields if features are disabled
-  if (!featureFlags.isAdvancedFeatureEnabled('assetIntegration', context).enabled) {
+  if (
+    !featureFlags.isAdvancedFeatureEnabled('assetIntegration', context).enabled
+  ) {
     delete filtered.attachedAssets;
   }
 
-  if (!featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context).enabled) {
+  if (
+    !featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context)
+      .enabled
+  ) {
     delete filtered.seoMetadata;
     delete filtered.validation;
     delete filtered.analytics;
@@ -315,7 +332,7 @@ export async function POST(request: NextRequest) {
       await connectToDatabase();
       const user = await User.findOne({ clerkId: userId });
 
-    if (!user || !['admin', 'editor'].includes(user.role)) {
+      if (!user || !['admin', 'editor'].includes(user.role)) {
         return NextResponse.json(
           { success: false, error: 'Admin access required' },
           { status: 403 }
@@ -327,204 +344,238 @@ export async function POST(request: NextRequest) {
 
       // Handle bulk actions
       if (body.action && body.postIds) {
-      const bulkData = BulkActionSchema.parse(body);
+        const bulkData = BulkActionSchema.parse(body);
 
-      const updateData: Record<string, unknown> = {};
-      const currentTime = new Date();
+        const updateData: Record<string, unknown> = {};
+        const currentTime = new Date();
 
-      switch (bulkData.action) {
-        case 'publish':
-          updateData.status = 'published';
-          updateData.publishedAt = currentTime;
-          break;
-        case 'unpublish':
-          updateData.status = 'draft';
-          updateData.publishedAt = null;
-          break;
-        case 'archive':
-          updateData.status = 'archived';
-          break;
-        case 'delete':
-          // Soft delete - mark as deleted
-          updateData.deletedAt = currentTime;
-          updateData.deletedBy = user._id;
-          break;
+        switch (bulkData.action) {
+          case 'publish':
+            updateData.status = 'published';
+            updateData.publishedAt = currentTime;
+            break;
+          case 'unpublish':
+            updateData.status = 'draft';
+            updateData.publishedAt = null;
+            break;
+          case 'archive':
+            updateData.status = 'archived';
+            break;
+          case 'delete':
+            // Soft delete - mark as deleted
+            updateData.deletedAt = currentTime;
+            updateData.deletedBy = user._id;
+            break;
+        }
+
+        const result = await BlogPost.updateMany(
+          { _id: { $in: bulkData.postIds } },
+          {
+            $set: updateData,
+            $push: {
+              'audit.log': {
+                action: bulkData.action,
+                userId: user._id,
+                userName: user.name,
+                timestamp: currentTime,
+                metadata: { bulk: true, count: bulkData.postIds.length },
+              },
+            },
+          }
+        );
+
+        // Global audit trail entry
+        try {
+          const AuditLog = (await import('@/models/AuditLog')).default;
+          await AuditLog.create({
+            action: `blog.${bulkData.action}`,
+            entityType: 'BlogPost',
+            entityId: bulkData.postIds.join(','),
+            userId: user._id.toString(),
+            userEmail: user.email,
+            meta: { bulk: true, count: result.modifiedCount },
+          });
+        } catch {}
+
+        return NextResponse.json({
+          success: true,
+          action: bulkData.action,
+          affectedPosts: result.modifiedCount,
+          message: `Successfully ${bulkData.action}ed ${result.modifiedCount} posts`,
+        });
       }
 
-      const result = await BlogPost.updateMany(
-        { _id: { $in: bulkData.postIds } },
-        {
-          $set: updateData,
-          $push: {
-            'audit.log': {
-              action: bulkData.action,
-              userId: user._id,
-              userName: user.name,
-              timestamp: currentTime,
-              metadata: { bulk: true, count: bulkData.postIds.length },
-            },
-          },
+      // Handle single post creation with enhanced features
+      let validatedData;
+
+      try {
+        validatedData = BlogPostCreateSchema.parse(body);
+      } catch (validationError) {
+        if (validationError instanceof z.ZodError) {
+          // Check if enhanced validation is enabled
+          if (
+            featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context)
+              .enabled
+          ) {
+            throw validationError; // Full validation for enhanced features
+          } else {
+            // Fallback: validate only basic fields
+            const basicSchema = BlogPostCreateSchema.omit({
+              attachedAssets: true,
+              seoMetadata: true,
+            });
+            validatedData = basicSchema.parse(body);
+          }
+        } else {
+          throw validationError;
         }
-      );
+      }
+
+      // Filter enhanced fields based on feature flags
+      const filteredData = filterEnhancedFields(validatedData, context);
+
+      // Generate slug if not provided or empty
+      if (!filteredData.slug || filteredData.slug.trim() === '') {
+        filteredData.slug = filteredData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/^-|-$/g, '');
+      }
+
+      // Check for duplicate slug
+      const existingPost = await BlogPost.findOne({ slug: filteredData.slug });
+      if (existingPost) {
+        filteredData.slug = `${filteredData.slug}-${Date.now()}`;
+      }
+
+      // Create the blog post with progressive feature support
+      const postData: any = {
+        title: filteredData.title,
+        slug: filteredData.slug,
+        excerpt: filteredData.excerpt,
+        content: filteredData.content,
+        markdown: filteredData.markdown || undefined,
+        contentType: filteredData.markdown ? 'markdown' : 'html',
+        category: filteredData.category,
+        tags: filteredData.tags,
+        status: filteredData.status,
+        featured: filteredData.featured || false,
+        featuredImageUrl: filteredData.featuredImage || '',
+        seoTitle: filteredData.seoTitle || '',
+        seoDescription: filteredData.seoDescription || '',
+        authorId: user._id,
+        readingTime: Math.ceil(filteredData.content.split(' ').length / 200),
+        publishedAt: filteredData.status === 'published' ? new Date() : null,
+        viewCount: 0,
+        likeCount: 0,
+        commentCount: 0,
+      };
+
+      // Add enhanced fields if features are enabled
+      if (
+        featureFlags.isAdvancedFeatureEnabled('assetIntegration', context)
+          .enabled &&
+        filteredData.attachedAssets
+      ) {
+        postData.attachedAssets = filteredData.attachedAssets;
+      }
+
+      if (
+        featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context)
+          .enabled &&
+        filteredData.seoMetadata
+      ) {
+        postData.seoMetadata = filteredData.seoMetadata;
+      }
+
+      const newPost = new BlogPost(postData);
+      await newPost.save();
+
+      // Populate author for response
+      await newPost.populate('authorId', 'name email');
+
+      // Build response with feature-appropriate fields
+      const responsePost: any = {
+        _id: newPost._id,
+        title: newPost.title,
+        slug: newPost.slug,
+        excerpt: newPost.excerpt,
+        status: newPost.status,
+        category: newPost.category,
+        tags: newPost.tags,
+        featuredImage: newPost.featuredImage,
+        author: {
+          _id: (
+            newPost.authorId as { _id: string; name: string; email: string }
+          )._id,
+          name: (
+            newPost.authorId as { _id: string; name: string; email: string }
+          ).name,
+          email: (
+            newPost.authorId as { _id: string; name: string; email: string }
+          ).email,
+        },
+        createdAt: newPost.createdAt,
+        updatedAt: newPost.updatedAt,
+        publishedAt: newPost.publishedAt,
+        seo: {
+          title: newPost.seoTitle,
+          description: newPost.seoDescription,
+        },
+      };
+
+      // Include enhanced fields in response if features are enabled
+      if (
+        featureFlags.isAdvancedFeatureEnabled('assetIntegration', context)
+          .enabled &&
+        newPost.attachedAssets
+      ) {
+        responsePost.attachedAssets = newPost.attachedAssets;
+      }
+
+      if (
+        featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context)
+          .enabled &&
+        newPost.seoMetadata
+      ) {
+        responsePost.seoMetadata = newPost.seoMetadata;
+      }
 
       // Global audit trail entry
       try {
         const AuditLog = (await import('@/models/AuditLog')).default;
         await AuditLog.create({
-          action: `blog.${bulkData.action}`,
+          action: 'blog.create',
           entityType: 'BlogPost',
-          entityId: bulkData.postIds.join(','),
+          entityId: newPost._id.toString(),
           userId: user._id.toString(),
           userEmail: user.email,
-          meta: { bulk: true, count: result.modifiedCount },
+          meta: { slug: newPost.slug, title: newPost.title },
         });
       } catch {}
 
-      return NextResponse.json({
-        success: true,
-        action: bulkData.action,
-        affectedPosts: result.modifiedCount,
-        message: `Successfully ${bulkData.action}ed ${result.modifiedCount} posts`,
-      });
-    }
-
-    // Handle single post creation with enhanced features
-    let validatedData;
-    
-    try {
-      validatedData = BlogPostCreateSchema.parse(body);
-    } catch (validationError) {
-      if (validationError instanceof z.ZodError) {
-        // Check if enhanced validation is enabled
-        if (featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context).enabled) {
-          throw validationError; // Full validation for enhanced features
-        } else {
-          // Fallback: validate only basic fields
-          const basicSchema = BlogPostCreateSchema.omit({
-            attachedAssets: true,
-            seoMetadata: true,
-          });
-          validatedData = basicSchema.parse(body);
-        }
-      } else {
-        throw validationError;
-      }
-    }
-
-    // Filter enhanced fields based on feature flags
-    const filteredData = filterEnhancedFields(validatedData, context);
-
-    // Generate slug if not provided or empty
-    if (!filteredData.slug || filteredData.slug.trim() === '') {
-      filteredData.slug = filteredData.title
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-    }
-
-    // Check for duplicate slug
-    const existingPost = await BlogPost.findOne({ slug: filteredData.slug });
-    if (existingPost) {
-      filteredData.slug = `${filteredData.slug}-${Date.now()}`;
-    }
-
-    // Create the blog post with progressive feature support
-    const postData: any = {
-      title: filteredData.title,
-      slug: filteredData.slug,
-      excerpt: filteredData.excerpt,
-      content: filteredData.content,
-      markdown: filteredData.markdown || undefined,
-      contentType: filteredData.markdown ? 'markdown' : 'html',
-      category: filteredData.category,
-      tags: filteredData.tags,
-      status: filteredData.status,
-      featured: filteredData.featured || false,
-      featuredImageUrl: filteredData.featuredImage || '',
-      seoTitle: filteredData.seoTitle || '',
-      seoDescription: filteredData.seoDescription || '',
-      authorId: user._id,
-      readingTime: Math.ceil(filteredData.content.split(' ').length / 200),
-      publishedAt: filteredData.status === 'published' ? new Date() : null,
-      viewCount: 0,
-      likeCount: 0,
-      commentCount: 0,
-    };
-
-    // Add enhanced fields if features are enabled
-    if (featureFlags.isAdvancedFeatureEnabled('assetIntegration', context).enabled && filteredData.attachedAssets) {
-      postData.attachedAssets = filteredData.attachedAssets;
-    }
-
-    if (featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context).enabled && filteredData.seoMetadata) {
-      postData.seoMetadata = filteredData.seoMetadata;
-    }
-
-  const newPost = new BlogPost(postData);
-  await newPost.save();
-
-    // Populate author for response
-    await newPost.populate('authorId', 'name email');
-
-    // Build response with feature-appropriate fields
-    const responsePost: any = {
-      _id: newPost._id,
-      title: newPost.title,
-      slug: newPost.slug,
-      excerpt: newPost.excerpt,
-      status: newPost.status,
-      category: newPost.category,
-      tags: newPost.tags,
-      featuredImage: newPost.featuredImage,
-      author: {
-        _id: (newPost.authorId as { _id: string; name: string; email: string })._id,
-        name: (newPost.authorId as { _id: string; name: string; email: string }).name,
-        email: (newPost.authorId as { _id: string; name: string; email: string }).email,
-      },
-      createdAt: newPost.createdAt,
-      updatedAt: newPost.updatedAt,
-      publishedAt: newPost.publishedAt,
-      seo: {
-        title: newPost.seoTitle,
-        description: newPost.seoDescription,
-      },
-    };
-
-    // Include enhanced fields in response if features are enabled
-    if (featureFlags.isAdvancedFeatureEnabled('assetIntegration', context).enabled && newPost.attachedAssets) {
-      responsePost.attachedAssets = newPost.attachedAssets;
-    }
-
-    if (featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context).enabled && newPost.seoMetadata) {
-      responsePost.seoMetadata = newPost.seoMetadata;
-    }
-
-    // Global audit trail entry
-    try {
-      const AuditLog = (await import('@/models/AuditLog')).default;
-      await AuditLog.create({
-        action: 'blog.create',
-        entityType: 'BlogPost',
-        entityId: newPost._id.toString(),
-        userId: user._id.toString(),
-        userEmail: user.email,
-        meta: { slug: newPost.slug, title: newPost.title },
-      });
-    } catch {}
-
-    return NextResponse.json(
-      {
-        success: true,
-        post: responsePost,
-        message: 'Blog post created successfully',
-        features: {
-          assetIntegration: featureFlags.isAdvancedFeatureEnabled('assetIntegration', context).enabled,
-          enhancedValidation: featureFlags.isAdvancedFeatureEnabled('enhancedValidation', context).enabled,
-          advancedAnalytics: featureFlags.isAdvancedFeatureEnabled('advancedAnalytics', context).enabled,
+      return NextResponse.json(
+        {
+          success: true,
+          post: responsePost,
+          message: 'Blog post created successfully',
+          features: {
+            assetIntegration: featureFlags.isAdvancedFeatureEnabled(
+              'assetIntegration',
+              context
+            ).enabled,
+            enhancedValidation: featureFlags.isAdvancedFeatureEnabled(
+              'enhancedValidation',
+              context
+            ).enabled,
+            advancedAnalytics: featureFlags.isAdvancedFeatureEnabled(
+              'advancedAnalytics',
+              context
+            ).enabled,
+          },
         },
-      },
-      { status: 201 }
-    );
+        { status: 201 }
+      );
     }); // Close circuit breaker execute
   } catch (error) {
     if (error instanceof z.ZodError) {

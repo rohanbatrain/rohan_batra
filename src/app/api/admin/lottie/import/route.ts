@@ -37,8 +37,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { url, name, description, category = 'other', tags = [] } =
-      ImportSchema.parse(body);
+    const {
+      url,
+      name,
+      description,
+      category = 'other',
+      tags = [],
+    } = ImportSchema.parse(body);
 
     // Fetch the remote JSON (supports GitHub raw URLs, generic HTTPS)
     const res = await fetch(url, { cache: 'no-store' });

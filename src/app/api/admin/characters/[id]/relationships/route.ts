@@ -17,18 +17,35 @@ const CreateRelSchema = z.object({
   reciprocal: z.boolean().optional(),
 });
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json(
+        { success: false, error: 'Auth required' },
+        { status: 401 }
+      );
     await connectToDatabase();
     const me = await User.findOne({ clerkId: userId });
-    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!me || !['admin', 'editor'].includes(me.role))
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
     const { id } = await params;
-  const doc = await Character.findById(id).populate('relationships.characterId', 'name slug').lean();
-    if (!doc) return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
-  const d: any = doc as any;
-  const relationships = (d.relationships || []).map((r: any) => ({
+    const doc = await Character.findById(id)
+      .populate('relationships.characterId', 'name slug')
+      .lean();
+    if (!doc)
+      return NextResponse.json(
+        { success: false, error: 'Not found' },
+        { status: 404 }
+      );
+    const d: any = doc as any;
+    const relationships = (d.relationships || []).map((r: any) => ({
       id: r._id?.toString(),
       characterId: r.characterId?._id?.toString() || r.characterId?.toString(),
       characterName: r.characterId?.name,
@@ -43,24 +60,42 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }));
     return NextResponse.json({ success: true, relationships });
   } catch (e) {
-    return NextResponse.json({ success: false, error: 'Failed to list relationships' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Failed to list relationships' },
+      { status: 500 }
+    );
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json(
+        { success: false, error: 'Auth required' },
+        { status: 401 }
+      );
     await connectToDatabase();
     const me = await User.findOne({ clerkId: userId });
-    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!me || !['admin', 'editor'].includes(me.role))
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
     const { id } = await params;
     const body = await request.json();
     const data = CreateRelSchema.parse(body);
 
     const source = await Character.findById(id);
     const target = await Character.findById(data.targetId);
-    if (!source || !target) return NextResponse.json({ success: false, error: 'Character not found' }, { status: 404 });
+    if (!source || !target)
+      return NextResponse.json(
+        { success: false, error: 'Character not found' },
+        { status: 404 }
+      );
 
     const rel = {
       characterId: target._id,
@@ -101,13 +136,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         entityId: source._id.toString(),
         userId: me._id.toString(),
         userEmail: me.email,
-        meta: { targetId: target._id.toString(), relationshipType: data.relationshipType, reciprocal: reciprocalCreated },
+        meta: {
+          targetId: target._id.toString(),
+          relationshipType: data.relationshipType,
+          reciprocal: reciprocalCreated,
+        },
       });
     } catch {}
 
     return NextResponse.json({ success: true, relationship: rel });
   } catch (e) {
-    if (e instanceof z.ZodError) return NextResponse.json({ success: false, error: 'Validation failed', details: e.issues }, { status: 400 });
-    return NextResponse.json({ success: false, error: 'Failed to create relationship' }, { status: 500 });
+    if (e instanceof z.ZodError)
+      return NextResponse.json(
+        { success: false, error: 'Validation failed', details: e.issues },
+        { status: 400 }
+      );
+    return NextResponse.json(
+      { success: false, error: 'Failed to create relationship' },
+      { status: 500 }
+    );
   }
 }

@@ -65,7 +65,10 @@ export async function getFeaturedProjectsOnly(
     await connectToDatabase();
     await UserModel.countDocuments().limit(1).exec();
 
-    const projects = await ProjectModel.find({ status: 'published', featured: true })
+    const projects = await ProjectModel.find({
+      status: 'published',
+      featured: true,
+    })
       .populate('authorId', 'firstName lastName email role')
       .sort({ createdAt: -1 })
       .limit(limit);
@@ -107,7 +110,9 @@ export async function getFeaturedProjectsOnly(
   }
 }
 
-export async function getProjectBySlug(slug: string): Promise<ProjectWithAuthor | null> {
+export async function getProjectBySlug(
+  slug: string
+): Promise<ProjectWithAuthor | null> {
   try {
     await connectToDatabase();
 
@@ -117,8 +122,7 @@ export async function getProjectBySlug(slug: string): Promise<ProjectWithAuthor 
     const project = await ProjectModel.findOne({
       slug,
       status: 'published',
-    })
-      .populate('authorId', 'firstName lastName email role');
+    }).populate('authorId', 'firstName lastName email role');
 
     if (!project) {
       return null;
@@ -177,7 +181,9 @@ export async function getProjectsWithPagination(
     // Ensure UserModel is loaded for populate to work
     await UserModel.countDocuments().limit(1).exec();
 
-    const query: { status: string; category?: string } = { status: 'published' };
+    const query: { status: string; category?: string } = {
+      status: 'published',
+    };
     if (category) {
       query.category = category;
     }

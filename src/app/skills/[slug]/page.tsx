@@ -12,7 +12,9 @@ import {
   Activity,
 } from 'lucide-react';
 
-interface Props { params: Promise<{ slug: string }> }
+interface Props {
+  params: Promise<{ slug: string }>;
+}
 
 export default async function SkillDetailPage({ params }: Props) {
   const { slug } = await params;
@@ -30,10 +32,14 @@ export default async function SkillDetailPage({ params }: Props) {
           <div className='flex items-start justify-between gap-6'>
             <div>
               <div className='flex items-center gap-3 mb-3'>
-                <div className={`h-10 w-10 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-gray-800 ${''}`}>
+                <div
+                  className={`h-10 w-10 rounded-lg flex items-center justify-center bg-slate-100 dark:bg-gray-800 ${''}`}
+                >
                   <skill.Icon className={`h-6 w-6 ${skill.color}`} />
                 </div>
-                <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>{skill.title}</h1>
+                <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
+                  {skill.title}
+                </h1>
               </div>
               <p className='text-gray-600 dark:text-gray-300 max-w-2xl'>
                 {skill.description}
@@ -42,19 +48,31 @@ export default async function SkillDetailPage({ params }: Props) {
             </div>
 
             <div className='hidden md:flex flex-col gap-3'>
-              <Link href={`/blog?tag=${blogQuery}`} className='inline-flex items-center justify-center h-10 px-4 rounded-md bg-primary text-white hover:opacity-90'>
+              <Link
+                href={`/blog?tag=${blogQuery}`}
+                className='inline-flex items-center justify-center h-10 px-4 rounded-md bg-primary text-white hover:opacity-90'
+              >
                 View Blog Posts
               </Link>
-              <Link href={`/portfolio?tag=${projectQuery}`} className='inline-flex items-center justify-center h-10 px-4 rounded-md bg-secondary text-secondary-foreground hover:opacity-90'>
+              <Link
+                href={`/portfolio?tag=${projectQuery}`}
+                className='inline-flex items-center justify-center h-10 px-4 rounded-md bg-secondary text-secondary-foreground hover:opacity-90'
+              >
                 View Projects
               </Link>
             </div>
           </div>
           <div className='mt-6 md:hidden flex gap-3'>
-            <Link href={`/blog?tag=${blogQuery}`} className='flex-1 inline-flex items-center justify-center h-10 px-4 rounded-md bg-primary text-white hover:opacity-90'>
+            <Link
+              href={`/blog?tag=${blogQuery}`}
+              className='flex-1 inline-flex items-center justify-center h-10 px-4 rounded-md bg-primary text-white hover:opacity-90'
+            >
               View Blog Posts
             </Link>
-            <Link href={`/portfolio?tag=${projectQuery}`} className='flex-1 inline-flex items-center justify-center h-10 px-4 rounded-md bg-secondary text-secondary-foreground hover:opacity-90'>
+            <Link
+              href={`/portfolio?tag=${projectQuery}`}
+              className='flex-1 inline-flex items-center justify-center h-10 px-4 rounded-md bg-secondary text-secondary-foreground hover:opacity-90'
+            >
               View Projects
             </Link>
           </div>
@@ -66,13 +84,20 @@ export default async function SkillDetailPage({ params }: Props) {
 
         {/* Tags */}
         <div className='rounded-xl bg-white dark:bg-gray-900 p-6 border border-slate-200 dark:border-slate-800'>
-          <h2 className='text-xl font-semibold mb-3 text-gray-900 dark:text-white'>Tags</h2>
+          <h2 className='text-xl font-semibold mb-3 text-gray-900 dark:text-white'>
+            Tags
+          </h2>
           <div className='flex flex-wrap gap-2'>
-            {Array.from(new Set([...skill.blogTags, ...skill.projectTags])).map(tag => (
-              <span key={tag} className='text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200'>
-                {tag}
-              </span>
-            ))}
+            {Array.from(new Set([...skill.blogTags, ...skill.projectTags])).map(
+              tag => (
+                <span
+                  key={tag}
+                  className='text-xs px-2 py-1 rounded bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200'
+                >
+                  {tag}
+                </span>
+              )
+            )}
           </div>
         </div>
       </div>

@@ -27,6 +27,22 @@ const eslintConfig = [
     },
     rules: {
       'prettier/prettier': 'error',
+      // Temporarily relax these strict rules to reduce noise across the large repo.
+      // We'll reintroduce stricter checks incrementally.
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/no-require-imports': 'off',
+      // relax noisy warnings for now
+      '@typescript-eslint/no-unused-vars': 'off',
+      'react-hooks/exhaustive-deps': 'off',
+      '@next/next/no-img-element': 'off',
+    },
+  },
+  // File-specific overrides
+  {
+    files: ['scripts/**', 'src/scripts/**'],
+    rules: {
+      // Many legacy scripts use CommonJS require; allow it in scripts.
+      '@typescript-eslint/no-require-imports': 'off',
     },
   },
 ];

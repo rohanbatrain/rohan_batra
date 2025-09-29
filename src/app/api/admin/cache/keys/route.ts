@@ -47,7 +47,8 @@ export async function GET(request: NextRequest) {
             switch (type) {
               case 'string': {
                 const str = await redis.get(key);
-                value = str && str.length > 200 ? str.slice(0, 200) + '...' : str;
+                value =
+                  str && str.length > 200 ? str.slice(0, 200) + '...' : str;
                 length = str?.length || 0;
                 break;
               }
@@ -58,12 +59,14 @@ export async function GET(request: NextRequest) {
               }
               case 'set': {
                 length = await redis.scard(key);
-                value = length > 0 ? (await redis.smembers(key)).slice(0, 5) : [];
+                value =
+                  length > 0 ? (await redis.smembers(key)).slice(0, 5) : [];
                 break;
               }
               case 'zset': {
                 length = await redis.zcard(key);
-                value = length > 0 ? await redis.zrange(key, 0, 4, 'WITHSCORES') : [];
+                value =
+                  length > 0 ? await redis.zrange(key, 0, 4, 'WITHSCORES') : [];
                 break;
               }
               case 'hash': {
@@ -73,22 +76,44 @@ export async function GET(request: NextRequest) {
               }
             }
 
-            return { key, type, ttl, size: size || 0, length, value, expired: ttl === 0 };
+            return {
+              key,
+              type,
+              ttl,
+              size: size || 0,
+              length,
+              value,
+              expired: ttl === 0,
+            };
           } catch (e) {
-            return { key, error: e instanceof Error ? e.message : 'Unknown error' };
+            return {
+              key,
+              error: e instanceof Error ? e.message : 'Unknown error',
+            };
           }
         })
       );
 
       return NextResponse.json({
         success: true,
-        data: { keys: details, total: keys.length, showing: limitedKeys.length, pattern },
+        data: {
+          keys: details,
+          total: keys.length,
+          showing: limitedKeys.length,
+          pattern,
+        },
       });
     } catch (redisError) {
       console.error('Cache keys redis error:', redisError);
       return NextResponse.json({
         success: true,
-        data: { keys: [], total: 0, showing: 0, pattern, error: 'Redis connection failed' },
+        data: {
+          keys: [],
+          total: 0,
+          showing: 0,
+          pattern,
+          error: 'Redis connection failed',
+        },
       });
     }
   } catch (error) {
@@ -97,7 +122,8 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: 'Failed to fetch cache keys',
-        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+        details:
+          process.env.NODE_ENV === 'development' ? String(error) : undefined,
       },
       { status: 500 }
     );

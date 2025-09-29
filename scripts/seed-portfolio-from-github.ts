@@ -36,14 +36,22 @@ function normalizeTag(s: string): string {
 }
 
 function toSlug(title: string): string {
-  return title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  return title
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
 }
 
 function prettifyName(raw: string): string {
-  const cleaned = raw.replace(/[._-]+/g, ' ').replace(/\s+/g, ' ').trim();
+  const cleaned = raw
+    .replace(/[._-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
   return cleaned
     .split(' ')
-    .map(w => (w.length <= 2 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)))
+    .map(w =>
+      w.length <= 2 ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)
+    )
     .join(' ');
 }
 
@@ -79,7 +87,10 @@ function mapRoleToCategory(role: string): string {
 }
 
 // Extract plausible technologies and tags from evidence
-function inferTechAndTags(row: EvidenceRow): { technologies: string[]; tags: string[] } {
+function inferTechAndTags(row: EvidenceRow): {
+  technologies: string[];
+  tags: string[];
+} {
   const tech: string[] = [];
   const tags: string[] = [];
   const repo = row.repository.toLowerCase();
@@ -87,8 +98,10 @@ function inferTechAndTags(row: EvidenceRow): { technologies: string[]; tags: str
 
   // Core languages & frameworks
   if (/python/.test(desc) || /python/.test(repo)) tech.push('Python');
-  if (/node\.js|nodejs|node\b/.test(desc) || /node/.test(repo)) tech.push('Node.js');
-  if (/typescript/.test(desc) || /typescript/.test(repo)) tech.push('TypeScript');
+  if (/node\.js|nodejs|node\b/.test(desc) || /node/.test(repo))
+    tech.push('Node.js');
+  if (/typescript/.test(desc) || /typescript/.test(repo))
+    tech.push('TypeScript');
   if (/javascript/.test(desc)) tech.push('JavaScript');
   if (/go\b|golang/.test(desc) || /go-/.test(repo)) tech.push('Go');
   if (/(rust|cargo)/.test(desc) || /rust/.test(repo)) tech.push('Rust');
@@ -109,11 +122,13 @@ function inferTechAndTags(row: EvidenceRow): { technologies: string[]; tags: str
   if (/prisma/.test(desc)) tech.push('Prisma');
 
   // DevOps / infra
-  if (/docker|container|compose/.test(desc) || /docker/.test(repo)) tech.push('Docker');
+  if (/docker|container|compose/.test(desc) || /docker/.test(repo))
+    tech.push('Docker');
   if (/(kubernetes|k8s|helm|argocd|k3s)/.test(desc)) tech.push('Kubernetes');
   if (/terraform/.test(desc) || /tf-/.test(repo)) tech.push('Terraform');
   if (/ansible/.test(desc)) tech.push('Ansible');
-  if (/(github actions|workflow|ci\/cd|ci\/)/.test(desc)) tech.push('GitHub Actions');
+  if (/(github actions|workflow|ci\/cd|ci\/)/.test(desc))
+    tech.push('GitHub Actions');
   if (/nix|nixos/.test(repo) || /nix|nixos/.test(desc)) tech.push('Nix');
   if (/proxmox/.test(desc) || /proxmox/.test(repo)) tech.push('Proxmox');
   if (/nginx/.test(desc) || /nginx/.test(repo)) tech.push('Nginx');
@@ -127,7 +142,8 @@ function inferTechAndTags(row: EvidenceRow): { technologies: string[]; tags: str
   if (/vercel/.test(desc)) tech.push('Vercel');
 
   // Mobile / Android / Kernel
-  if (/kernel|android/.test(repo) || /aosp|android/.test(desc)) tech.push('Android');
+  if (/kernel|android/.test(repo) || /aosp|android/.test(desc))
+    tech.push('Android');
   if (/kernelsu/.test(desc) || /kernelsu/.test(repo)) tech.push('Kernel');
 
   // Auth / payments
@@ -141,7 +157,23 @@ function inferTechAndTags(row: EvidenceRow): { technologies: string[]; tags: str
     if (!tags.includes(t)) tags.push(t);
   });
   // tags from description keywords
-  ['security', 'sso', 'biometric', 'rate-limiting', 'ip-blocking', 'docker', 'ci-cd', 'microservices', 'flutter', 'flask', 'mongodb', 'open-source', 'kernel', 'android', 'nixos'].forEach(k => {
+  [
+    'security',
+    'sso',
+    'biometric',
+    'rate-limiting',
+    'ip-blocking',
+    'docker',
+    'ci-cd',
+    'microservices',
+    'flutter',
+    'flask',
+    'mongodb',
+    'open-source',
+    'kernel',
+    'android',
+    'nixos',
+  ].forEach(k => {
     if (desc.includes(k.replace('-', ' ')) || desc.includes(k)) {
       const t = normalizeTag(k);
       if (!tags.includes(t)) tags.push(t);
@@ -162,7 +194,10 @@ async function run() {
   }
 
   const dataDir = path.join(process.cwd(), 'data', 'github-evidence');
-  const evidenceCsv = path.join(dataDir, 'complete_project_evidence_mapping.csv');
+  const evidenceCsv = path.join(
+    dataDir,
+    'complete_project_evidence_mapping.csv'
+  );
   const urlsCsv = path.join(dataDir, 'github_project_urls.csv');
 
   const evidence = readCsv<EvidenceRow>(evidenceCsv);
@@ -174,17 +209,19 @@ async function run() {
   });
 
   // Known forked repositories (from attached analysis)
-  const forkedSet = new Set([
-    'Karmstrot-Builds',
-    'android_kernel_oneplus_sm8250',
-    'kernel_oneplus_sm8250',
-    'Anomaly-Kernel',
-    'po_kernel_oneplus_sm8250',
-    'KernelSU',
-    'device_oneplus_opkona',
-    'AnyKernel3-SM8250',
-    'AppManager',
-  ].map(n => n.toLowerCase()));
+  const forkedSet = new Set(
+    [
+      'Karmstrot-Builds',
+      'android_kernel_oneplus_sm8250',
+      'kernel_oneplus_sm8250',
+      'Anomaly-Kernel',
+      'po_kernel_oneplus_sm8250',
+      'KernelSU',
+      'device_oneplus_opkona',
+      'AnyKernel3-SM8250',
+      'AppManager',
+    ].map(n => n.toLowerCase())
+  );
 
   // Group evidence by repository + role creating one project per pair
   const groups = new Map<string, EvidenceRow[]>();
@@ -203,12 +240,13 @@ async function run() {
     const category = mapRoleToCategory(role);
 
     // Keep slug stable using the previous base while improving display title
-  const slugBase = `${role}: ${repository}`;
+    const slugBase = `${role}: ${repository}`;
     const slug = toSlug(slugBase);
     const title = prettifyName(repository);
 
     const githubUrl = urlMap.get(repository) || '';
-    const description = rows[0]?.description || `${repository} evidence for ${role}`;
+    const description =
+      rows[0]?.description || `${repository} evidence for ${role}`;
     const longDescription = rows
       .map(r => `- ${r.evidence_type}: ${r.description} (${r.file_path})`)
       .join('\n');
@@ -221,18 +259,31 @@ async function run() {
       tags.forEach(t => allTags.add(t));
     });
 
-  const isFork = forkedSet.has(repository.toLowerCase()) || /fork/i.test(description);
+    const isFork =
+      forkedSet.has(repository.toLowerCase()) || /fork/i.test(description);
     // Multi-category inference
     const extraCategories = new Set<string>();
     const lowerRepo = repository.toLowerCase();
     const lowerRole = role.toLowerCase();
     const descAll = rows.map(r => r.description.toLowerCase()).join(' ');
-    const pushCat = (c: string) => { if (c && c !== category) extraCategories.add(c); };
-    if (/security|pentest|auth|jwt|owasp|cve|mitre/.test(descAll) || /security/.test(lowerRole)) pushCat('Security');
-    if (/backend|api|server|microservice/.test(descAll) || /backend/.test(lowerRole)) pushCat('Backend');
-    if (/android|kernel|aosp/.test(descAll) || /android/.test(lowerRole)) pushCat('Android');
+    const pushCat = (c: string) => {
+      if (c && c !== category) extraCategories.add(c);
+    };
+    if (
+      /security|pentest|auth|jwt|owasp|cve|mitre/.test(descAll) ||
+      /security/.test(lowerRole)
+    )
+      pushCat('Security');
+    if (
+      /backend|api|server|microservice/.test(descAll) ||
+      /backend/.test(lowerRole)
+    )
+      pushCat('Backend');
+    if (/android|kernel|aosp/.test(descAll) || /android/.test(lowerRole))
+      pushCat('Android');
     if (/cloud|aws|gcp|azure|vercel|cloudflare/.test(descAll)) pushCat('Cloud');
-    if (/devops|kubernetes|docker|terraform|ci|cd|ansible|nix/.test(descAll)) pushCat('DevOps');
+    if (/devops|kubernetes|docker|terraform|ci|cd|ansible|nix/.test(descAll))
+      pushCat('DevOps');
     if (/flutter|mobile/.test(descAll)) pushCat('Mobile');
     if (/system|linux|kernel|proxmox/.test(descAll)) pushCat('Systems');
 
@@ -251,7 +302,7 @@ async function run() {
       categories: Array.from(extraCategories),
       technologies: Array.from(allTech),
       status: 'published' as const,
-  featured: false,
+      featured: false,
       images: [],
       demoUrl: githubUrl || undefined,
       sourceUrl: githubUrl || undefined,
@@ -259,13 +310,16 @@ async function run() {
       startDate: undefined,
       endDate: undefined,
       client: undefined,
-      tags: Array.from(new Set([...(isFork ? ['forked'] : ['original']), ...allTags])),
+      tags: Array.from(
+        new Set([...(isFork ? ['forked'] : ['original']), ...allTags])
+      ),
       viewCount: Math.floor(Math.random() * 250),
       authorId: admin._id,
     };
 
     // Exclude any aggregate/placeholder card
-    const isAggregate = /all\s*repositories/i.test(title) || /aggregate/i.test(description);
+    const isAggregate =
+      /all\s*repositories/i.test(title) || /aggregate/i.test(description);
     if (isAggregate) {
       continue;
     }
@@ -281,7 +335,9 @@ async function run() {
     }
   }
 
-  console.log(`Portfolio seeding complete. Created: ${created}, Updated: ${updated}`);
+  console.log(
+    `Portfolio seeding complete. Created: ${created}, Updated: ${updated}`
+  );
   process.exit(0);
 }
 

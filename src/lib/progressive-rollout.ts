@@ -31,7 +31,10 @@ export interface RolloutMetrics {
 export class ProgressiveRolloutService {
   private static instance: ProgressiveRolloutService;
   private rolloutRules: Map<string, RolloutRule> = new Map();
-  private userCache: Map<string, { features: Record<string, boolean>; expiry: Date }> = new Map();
+  private userCache: Map<
+    string,
+    { features: Record<string, boolean>; expiry: Date }
+  > = new Map();
   private metrics: Map<string, RolloutMetrics> = new Map();
 
   static getInstance(): ProgressiveRolloutService {
@@ -51,16 +54,20 @@ export class ProgressiveRolloutService {
    */
   private initializeDefaultRules(): void {
     // Create rules for advanced features
-    Object.keys(env.advancedFeatures).forEach((feature) => {
+    Object.keys(env.advancedFeatures).forEach(feature => {
       const rule: RolloutRule = {
         id: `default-${feature}`,
         name: `Default rollout for ${feature}`,
         feature,
-        enabled: env.advancedFeatures[feature as keyof typeof env.advancedFeatures],
+        enabled:
+          env.advancedFeatures[feature as keyof typeof env.advancedFeatures],
         percentage: env.rollout.percentage,
         conditions: {
           userEmails: env.rollout.whitelist,
-          environments: env.nodeEnv === 'production' ? ['production'] : ['development', 'test'],
+          environments:
+            env.nodeEnv === 'production'
+              ? ['production']
+              : ['development', 'test'],
         },
       };
       this.rolloutRules.set(rule.id, rule);
@@ -74,14 +81,18 @@ export class ProgressiveRolloutService {
     // Check cache first
     const cacheKey = context.userEmail || context.userId || 'anonymous';
     const cached = this.userCache.get(cacheKey);
-    
-    if (cached && cached.expiry > new Date() && cached.features[feature] !== undefined) {
+
+    if (
+      cached &&
+      cached.expiry > new Date() &&
+      cached.features[feature] !== undefined
+    ) {
       return cached.features[feature];
     }
 
     // Calculate feature eligibility
     const eligible = this.calculateFeatureEligibility(feature, context);
-    
+
     // Update cache
     const currentFeatures = cached?.features || {};
     currentFeatures[feature] = eligible;
@@ -99,10 +110,14 @@ export class ProgressiveRolloutService {
   /**
    * Calculate feature eligibility based on rules
    */
-  private calculateFeatureEligibility(feature: string, context: FeatureFlagContext): boolean {
+  private calculateFeatureEligibility(
+    feature: string,
+    context: FeatureFlagContext
+  ): boolean {
     // Find applicable rules for this feature
-    const applicableRules = Array.from(this.rolloutRules.values())
-      .filter(rule => rule.feature === feature && rule.enabled);
+    const applicableRules = Array.from(this.rolloutRules.values()).filter(
+      rule => rule.feature === feature && rule.enabled
+    );
 
     if (applicableRules.length === 0) {
       return false;
@@ -121,11 +136,17 @@ export class ProgressiveRolloutService {
   /**
    * Evaluate a single rollout rule against user context
    */
-  private evaluateRule(rule: RolloutRule, context: FeatureFlagContext): boolean {
+  private evaluateRule(
+    rule: RolloutRule,
+    context: FeatureFlagContext
+  ): boolean {
     // Check conditions
     if (rule.conditions) {
       // Environment check
-      if (rule.conditions.environments && rule.conditions.environments.length > 0) {
+      if (
+        rule.conditions.environments &&
+        rule.conditions.environments.length > 0
+      ) {
         if (!rule.conditions.environments.includes(env.nodeEnv)) {
           return false;
         }
@@ -133,14 +154,20 @@ export class ProgressiveRolloutService {
 
       // User role check
       if (rule.conditions.userRoles && rule.conditions.userRoles.length > 0) {
-        if (!context.userRole || !rule.conditions.userRoles.includes(context.userRole)) {
+        if (
+          !context.userRole ||
+          !rule.conditions.userRoles.includes(context.userRole)
+        ) {
           return false;
         }
       }
 
       // Whitelist check (highest priority)
       if (rule.conditions.userEmails && rule.conditions.userEmails.length > 0) {
-        if (context.userEmail && rule.conditions.userEmails.includes(context.userEmail)) {
+        if (
+          context.userEmail &&
+          rule.conditions.userEmails.includes(context.userEmail)
+        ) {
           return true; // Whitelist overrides percentage
         }
       }
@@ -148,7 +175,10 @@ export class ProgressiveRolloutService {
       // Date range check
       if (rule.conditions.dateRange) {
         const now = new Date();
-        if (now < rule.conditions.dateRange.start || now > rule.conditions.dateRange.end) {
+        if (
+          now < rule.conditions.dateRange.start ||
+          now > rule.conditions.dateRange.end
+        ) {
           return false;
         }
       }
@@ -161,14 +191,18 @@ export class ProgressiveRolloutService {
   /**
    * Check if user falls within percentage rollout
    */
-  private isUserInPercentage(context: FeatureFlagContext, percentage: number): boolean {
+  private isUserInPercentage(
+    context: FeatureFlagContext,
+    percentage: number
+  ): boolean {
     if (percentage >= 100) return true;
     if (percentage <= 0) return false;
 
-    const identifier = context.userEmail || context.userId || this.generateSessionId();
+    const identifier =
+      context.userEmail || context.userId || this.generateSessionId();
     const hash = this.deterministicHash(identifier);
     const userPercentile = hash % 100;
-    
+
     return userPercentile < percentage;
   }
 
@@ -187,7 +221,7 @@ export class ProgressiveRolloutService {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash;
     }
     return Math.abs(hash);
@@ -248,8 +282,9 @@ export class ProgressiveRolloutService {
    * Get rules for a specific feature
    */
   getRulesForFeature(feature: string): RolloutRule[] {
-    return Array.from(this.rolloutRules.values())
-      .filter(rule => rule.feature === feature);
+    return Array.from(this.rolloutRules.values()).filter(
+      rule => rule.feature === feature
+    );
   }
 
   /**
@@ -271,7 +306,8 @@ export class ProgressiveRolloutService {
     } else {
       current.disabledUsers++;
     }
-    current.enabledPercentage = (current.enabledUsers / current.totalUsers) * 100;
+    current.enabledPercentage =
+      (current.enabledUsers / current.totalUsers) * 100;
     current.lastUpdated = new Date();
 
     this.metrics.set(feature, current);
@@ -342,10 +378,16 @@ export class ProgressiveRolloutService {
 export const progressiveRollout = ProgressiveRolloutService.getInstance();
 
 // Convenience functions
-export function shouldReceiveFeature(feature: string, context: FeatureFlagContext): boolean {
+export function shouldReceiveFeature(
+  feature: string,
+  context: FeatureFlagContext
+): boolean {
   return progressiveRollout.shouldReceiveFeature(feature, context);
 }
 
-export function updateFeatureRollout(feature: string, percentage: number): void {
+export function updateFeatureRollout(
+  feature: string,
+  percentage: number
+): void {
   progressiveRollout.updateRolloutPercentage(feature, percentage);
 }

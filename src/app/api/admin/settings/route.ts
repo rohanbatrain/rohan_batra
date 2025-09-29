@@ -196,8 +196,9 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Helper to normalize type
-    const normalizeType = (t: 'string' | 'number' | 'boolean' | 'json' | 'array' | 'object') =>
-      t === 'array' || t === 'object' ? 'json' : t;
+    const normalizeType = (
+      t: 'string' | 'number' | 'boolean' | 'json' | 'array' | 'object'
+    ) => (t === 'array' || t === 'object' ? 'json' : t);
 
     // Handle bulk settings update
     if (body.settings) {
@@ -280,7 +281,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Handle single setting creation/update
-  const validatedData = SettingUpdateSchema.parse(body);
+    const validatedData = SettingUpdateSchema.parse(body);
     const existing = await SiteSetting.findOne({ key: validatedData.key });
     const currentTime = new Date();
 

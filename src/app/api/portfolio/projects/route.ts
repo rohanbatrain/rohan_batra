@@ -9,27 +9,45 @@ import { ProjectWithAuthor } from '@/types/project';
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-  const page = parseInt(searchParams.get('page') || '1');
-  const limit = parseInt(searchParams.get('limit') || '12');
-  const category = searchParams.get('category') || undefined;
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '12');
+    const category = searchParams.get('category') || undefined;
     const technology = searchParams.get('technology') || undefined;
-  const tag = searchParams.get('tag') || undefined;
-  const categoriesParam = searchParams.get('categories') || undefined;
-  const categoriesMode = (searchParams.get('mode') || 'any').toLowerCase();
-  const featured = searchParams.get('featured');
+    const tag = searchParams.get('tag') || undefined;
+    const categoriesParam = searchParams.get('categories') || undefined;
+    const categoriesMode = (searchParams.get('mode') || 'any').toLowerCase();
+    const categoryMode = (
+      searchParams.get('categoryMode') || 'any'
+    ).toLowerCase();
+    const featured = searchParams.get('featured');
     const status = searchParams.get('status') || 'published';
     const search = searchParams.get('search') || undefined;
-  const debug = (searchParams.get('debug') || '').toString() === '1' || (searchParams.get('debug') || '').toString().toLowerCase() === 'true';
+    const debug =
+      (searchParams.get('debug') || '').toString() === '1' ||
+      (searchParams.get('debug') || '').toString().toLowerCase() === 'true';
 
     await connectToDatabase();
     await UserModel.countDocuments().limit(1).exec();
 
     const query: any = { status };
     if (category) {
-      query.$or = [...(query.$or || []), { category }, { categories: category }];
+      if (categoryMode === 'primary') {
+        query.category = category;
+      } else if (categoryMode === 'secondary') {
+        query.categories = category;
+      } else {
+        query.$or = [
+          ...(query.$or || []),
+          { category },
+          { categories: category },
+        ];
+      }
     }
     if (categoriesParam) {
-      const list = categoriesParam.split(',').map(s => s.trim()).filter(Boolean);
+      const list = categoriesParam
+        .split(',')
+        .map(s => s.trim())
+        .filter(Boolean);
       if (list.length) {
         if (categoriesMode === 'all') {
           // require every category to be present across category or categories[]
@@ -51,7 +69,9 @@ export async function GET(request: NextRequest) {
     const orFilters: any[] = [];
     if (technology) {
       const tech = technology.toString();
-      orFilters.push({ technologies: { $in: [tech, new RegExp(`^${tech}$`, 'i')] } });
+      orFilters.push({
+        technologies: { $in: [tech, new RegExp(`^${tech}$`, 'i')] },
+      });
       orFilters.push({ tags: tech.toLowerCase() });
     }
     if (tag) {
@@ -64,7 +84,7 @@ export async function GET(request: NextRequest) {
       orFilters.push({ title: rx });
       orFilters.push({ description: rx });
     }
-  if (orFilters.length) query.$or = [...(query.$or || []), ...orFilters];
+    if (orFilters.length) query.$or = [...(query.$or || []), ...orFilters];
 
     if (featured === 'true') query.featured = true;
     if (featured === 'false') query.featured = false;
@@ -90,7 +110,7 @@ export async function GET(request: NextRequest) {
       gallery: project.gallery || [],
       featuredImage: project.featuredImage,
       category: project.category,
-  categories: (project as any).categories || [],
+      categories: (project as any).categories || [],
       technologies: project.technologies,
       status: project.status,
       featured: project.featured,
@@ -118,31 +138,55 @@ export async function GET(request: NextRequest) {
     if (debug) {
       const reasons: Record<string, string[]> = {};
       const categoryList = categoriesParam
-        ? categoriesParam.split(',').map(s => s.trim()).filter(Boolean)
-        : (category ? [category] : []);
+        ? categoriesParam
+            .split(',')
+            .map(s => s.trim())
+            .filter(Boolean)
+        : category
+          ? [category]
+          : [];
       for (const p of projects) {
         const id = p._id.toString();
         const entries: string[] = [];
         for (const c of categoryList) {
           if (p.category === c) entries.push(`primary-category matches "${c}"`);
-          if (Array.isArray((p as any).categories) && (p as any).categories.includes(c)) entries.push(`secondary-categories contain "${c}"`);
+          if (
+            Array.isArray((p as any).categories) &&
+            (p as any).categories.includes(c)
+          )
+            entries.push(`secondary-categories contain "${c}"`);
         }
         if (technology) {
           const t = technology.toString();
           const tLower = t.toLowerCase();
-          if (Array.isArray(p.technologies) && p.technologies.some((x: unknown) => String(x as any).toLowerCase() === tLower)) entries.push(`technology list contains "${t}"`);
-          if (Array.isArray(p.tags) && p.tags.includes(tLower)) entries.push(`tags contain "${tLower}"`);
+          if (
+            Array.isArray(p.technologies) &&
+            p.technologies.some(
+              (x: unknown) => String(x as any).toLowerCase() === tLower
+            )
+          )
+            entries.push(`technology list contains "${t}"`);
+          if (Array.isArray(p.tags) && p.tags.includes(tLower))
+            entries.push(`tags contain "${tLower}"`);
         }
         if (tag) {
           const t = tag.toString();
           const tLower = t.toLowerCase();
-          if (Array.isArray(p.tags) && p.tags.includes(tLower)) entries.push(`tags contain "${tLower}"`);
-          if (Array.isArray(p.technologies) && p.technologies.some((x: unknown) => String(x as any).toLowerCase() === tLower)) entries.push(`technology list contains "${t}"`);
+          if (Array.isArray(p.tags) && p.tags.includes(tLower))
+            entries.push(`tags contain "${tLower}"`);
+          if (
+            Array.isArray(p.technologies) &&
+            p.technologies.some(
+              (x: unknown) => String(x as any).toLowerCase() === tLower
+            )
+          )
+            entries.push(`technology list contains "${t}"`);
         }
         if (search) {
           const rx = new RegExp(search, 'i');
           if (rx.test(p.title)) entries.push('title matches search');
-          if (rx.test(p.description || '')) entries.push('description matches search');
+          if (rx.test(p.description || ''))
+            entries.push('description matches search');
         }
         reasons[id] = entries.length ? entries : ['matched by query'];
       }
@@ -150,7 +194,12 @@ export async function GET(request: NextRequest) {
         reasons,
         appliedFilters: {
           category,
-          categories: categoriesParam ? categoriesParam.split(',').map(s => s.trim()).filter(Boolean) : [],
+          categories: categoriesParam
+            ? categoriesParam
+                .split(',')
+                .map(s => s.trim())
+                .filter(Boolean)
+            : [],
           categoriesMode,
           technology,
           tag,

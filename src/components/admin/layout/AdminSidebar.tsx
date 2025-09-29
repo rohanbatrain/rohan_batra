@@ -16,6 +16,8 @@ import {
   Database,
   Trash2,
   History,
+  GraduationCap,
+  Layers,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React from 'react';
@@ -57,9 +59,21 @@ const navItems: NavItem[] = [
     roles: ['editor', 'admin'],
   },
   {
+    name: 'Courses',
+    href: '/admin/courses',
+    icon: GraduationCap,
+    roles: ['editor', 'admin'],
+  },
+  {
     name: 'Books',
     href: '/admin/books',
     icon: BookOpen,
+    roles: ['editor', 'admin'],
+  },
+  {
+    name: 'Flashcards',
+    href: '/admin/flashcards',
+    icon: Layers,
     roles: ['editor', 'admin'],
   },
   {
@@ -117,9 +131,11 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
   const [unstable, setUnstable] = React.useState(false);
   React.useEffect(() => {
     fetch('/api/admin/settings?category=features')
-      .then(r => r.ok ? r.json() : null)
+      .then(r => (r.ok ? r.json() : null))
       .then(d => {
-        const enabled = !!d?.settings?.find((s: any) => s.key === 'features.unstable')?.value;
+        const enabled = !!d?.settings?.find(
+          (s: any) => s.key === 'features.unstable'
+        )?.value;
         setUnstable(enabled);
       })
       .catch(() => {});
@@ -133,7 +149,9 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
     icon: BarChart3,
     roles: ['editor', 'admin'],
   };
-  const availableNavItems = unstable ? [...baseItems.slice(0, 2), unstableItem, ...baseItems.slice(2)] : baseItems;
+  const availableNavItems = unstable
+    ? [...baseItems.slice(0, 2), unstableItem, ...baseItems.slice(2)]
+    : baseItems;
 
   return (
     <div className='w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 min-h-screen flex flex-col'>

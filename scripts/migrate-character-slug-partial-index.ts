@@ -22,8 +22,11 @@ async function run() {
   const conn = await mongoose.createConnection(uri, { dbName }).asPromise();
   const collection = (conn.db as any).collection('characters');
 
-  const indexes: Array<{ key: Record<string, number>; name?: string }> = await collection.indexes();
-  const slugIdx = indexes.find((i) => JSON.stringify(i.key) === JSON.stringify({ slug: 1 }));
+  const indexes: Array<{ key: Record<string, number>; name?: string }> =
+    await collection.indexes();
+  const slugIdx = indexes.find(
+    i => JSON.stringify(i.key) === JSON.stringify({ slug: 1 })
+  );
 
   if (slugIdx && slugIdx.name) {
     console.log(`Dropping existing slug index: ${slugIdx.name}`);
@@ -37,14 +40,18 @@ async function run() {
   console.log('Creating partial unique index on slug where not deleted...');
   await collection.createIndex(
     { slug: 1 },
-    { unique: true, name: 'slug_unique_active', partialFilterExpression: { deletedAt: null } }
+    {
+      unique: true,
+      name: 'slug_unique_active',
+      partialFilterExpression: { deletedAt: null },
+    }
   );
 
   console.log('Done.');
   await conn.close();
 }
 
-run().catch((e) => {
+run().catch(e => {
   console.error(e);
   process.exit(1);
 });

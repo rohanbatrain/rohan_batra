@@ -15,7 +15,7 @@ describe('Feature Flags Integration', () => {
 
   afterEach(() => {
     // Restore original environment
-    Object.keys(originalEnv).forEach((key) => {
+    Object.keys(originalEnv).forEach(key => {
       if (originalEnv[key] === undefined) {
         delete process.env[key];
       } else {
@@ -32,12 +32,12 @@ describe('Feature Flags Integration', () => {
 
     // This test will fail until FeatureFlagManager is implemented
     // Import will be: const { FeatureFlagManager } = await import('@/lib/feature-flags');
-    
+
     try {
       // Simulate checking if whitelisted user gets enhanced features
       const isWhitelistedUserEnabled = true; // This should use FeatureFlagManager.enableForUser('admin@example.com', 'ENHANCED_VALIDATION')
       const isNormalUserEnabled = false; // This should use FeatureFlagManager.enableForUser('user@example.com', 'ENHANCED_VALIDATION')
-      
+
       expect(isWhitelistedUserEnabled).toBe(true);
       expect(isNormalUserEnabled).toBe(false);
     } catch (error) {
@@ -56,7 +56,7 @@ describe('Feature Flags Integration', () => {
       // For now, expect it to fail
       const testUsers = [
         'user1@example.com',
-        'user2@example.com', 
+        'user2@example.com',
         'user3@example.com',
         'user4@example.com',
       ];
@@ -84,7 +84,7 @@ describe('Feature Flags Integration', () => {
       // Even whitelisted users should not get disabled features
       // This should use FeatureFlagManager.isEnabled('ENHANCED_VALIDATION')
       const isGloballyEnabled = false; // Placeholder
-      
+
       expect(isGloballyEnabled).toBe(false);
     } catch (error) {
       // Expected to fail until FeatureFlagManager is implemented

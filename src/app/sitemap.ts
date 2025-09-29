@@ -62,7 +62,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
 
     // Characters (public only) and their public journals
-    const characters = await Character.find({ visibility: 'public', deletedAt: { $exists: false } })
+    const characters = await Character.find({
+      visibility: 'public',
+      deletedAt: { $exists: false },
+    })
       .select('slug updatedAt createdAt')
       .lean();
     const characterPages = characters.map((c: any) => ({
@@ -119,7 +122,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
-    return [...staticPages, ...blogPages, ...projectPages, ...characterPages, ...journalPages, ...bookPages];
+    return [
+      ...staticPages,
+      ...blogPages,
+      ...projectPages,
+      ...characterPages,
+      ...journalPages,
+      ...bookPages,
+    ];
   } catch (error) {
     console.error('Error generating sitemap:', error);
     // Return static pages only if there's an error

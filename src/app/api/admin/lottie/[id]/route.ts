@@ -262,9 +262,9 @@ export async function DELETE(
       );
     }
 
-  const url = new URL(request.url);
-  const permanent = url.searchParams.get('permanent') === 'true';
-  const toTrash = url.searchParams.get('trash') === 'true';
+    const url = new URL(request.url);
+    const permanent = url.searchParams.get('permanent') === 'true';
+    const toTrash = url.searchParams.get('trash') === 'true';
 
     const asset = await LottieAsset.findById(id);
 

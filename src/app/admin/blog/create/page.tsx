@@ -1,9 +1,11 @@
-"use client";
+'use client';
 
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import RemoteLinkPicker, { AssetLinkItem } from '@/components/ui/RemoteLinkPicker';
+import RemoteLinkPicker, {
+  AssetLinkItem,
+} from '@/components/ui/RemoteLinkPicker';
 
 export default function CreateBlogPostPage() {
   const router = useRouter();
@@ -52,7 +54,10 @@ export default function CreateBlogPostPage() {
         },
         body: JSON.stringify({
           ...formData,
-          tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+          tags: formData.tags
+            .split(',')
+            .map(tag => tag.trim())
+            .filter(Boolean),
         }),
       });
 
@@ -62,12 +67,14 @@ export default function CreateBlogPostPage() {
 
       router.push('/admin/blog');
     } catch (error) {
-      alert('Failed to create blog post: ' + (error instanceof Error ? error.message : 'Unknown error'));
+      alert(
+        'Failed to create blog post: ' +
+          (error instanceof Error ? error.message : 'Unknown error')
+      );
     } finally {
       setLoading(false);
     }
   };
-
 
   return (
     <div className='space-y-6'>
@@ -118,7 +125,9 @@ export default function CreateBlogPostPage() {
             <input
               type='text'
               value={formData.slug}
-              onChange={e => setFormData(prev => ({ ...prev, slug: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, slug: e.target.value }))
+              }
               required
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               placeholder='blog-post-slug'
@@ -132,7 +141,9 @@ export default function CreateBlogPostPage() {
             </label>
             <textarea
               value={formData.excerpt}
-              onChange={e => setFormData(prev => ({ ...prev, excerpt: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, excerpt: e.target.value }))
+              }
               rows={3}
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               placeholder='Brief description of the blog post'
@@ -146,7 +157,9 @@ export default function CreateBlogPostPage() {
             </label>
             <textarea
               value={formData.content}
-              onChange={e => setFormData(prev => ({ ...prev, content: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({ ...prev, content: e.target.value }))
+              }
               required
               rows={12}
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
@@ -163,7 +176,9 @@ export default function CreateBlogPostPage() {
               <input
                 type='text'
                 value={formData.category}
-                onChange={e => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, category: e.target.value }))
+                }
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                 placeholder='e.g., Technology, Travel, etc.'
               />
@@ -176,7 +191,9 @@ export default function CreateBlogPostPage() {
               <input
                 type='text'
                 value={formData.tags}
-                onChange={e => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, tags: e.target.value }))
+                }
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                 placeholder='tag1, tag2, tag3'
               />
@@ -191,7 +208,12 @@ export default function CreateBlogPostPage() {
               </label>
               <select
                 value={formData.status}
-                onChange={e => setFormData(prev => ({ ...prev, status: e.target.value as typeof formData.status }))}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    status: e.target.value as typeof formData.status,
+                  }))
+                }
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               >
                 <option value='draft'>Draft</option>
@@ -205,10 +227,15 @@ export default function CreateBlogPostPage() {
                 type='checkbox'
                 id='featured'
                 checked={formData.featured}
-                onChange={e => setFormData(prev => ({ ...prev, featured: e.target.checked }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, featured: e.target.checked }))
+                }
                 className='mr-2'
               />
-              <label htmlFor='featured' className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+              <label
+                htmlFor='featured'
+                className='text-sm font-medium text-gray-700 dark:text-gray-300'
+              >
                 Featured Post
               </label>
             </div>
@@ -222,18 +249,29 @@ export default function CreateBlogPostPage() {
             <input
               type='url'
               value={formData.featuredImage}
-              onChange={e => setFormData(prev => ({ ...prev, featuredImage: e.target.value }))}
+              onChange={e =>
+                setFormData(prev => ({
+                  ...prev,
+                  featuredImage: e.target.value,
+                }))
+              }
               className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
               placeholder='https://example.com/image.jpg'
             />
             <div className='mt-2 flex items-center gap-2'>
-              <button type='button' className='text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-                onClick={() => setPickerOpen(true)}>
+              <button
+                type='button'
+                className='text-sm px-3 py-1.5 rounded border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
+                onClick={() => setPickerOpen(true)}
+              >
                 Pick from Remote Links
               </button>
               {formData.featuredImage && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={formData.featuredImage} alt='Preview' className='h-14 w-14 rounded object-cover border' />
+                <img
+                  src={formData.featuredImage}
+                  alt='Preview'
+                  className='h-14 w-14 rounded object-cover border'
+                />
               )}
             </div>
           </div>
@@ -247,7 +285,9 @@ export default function CreateBlogPostPage() {
               <input
                 type='text'
                 value={formData.seoTitle}
-                onChange={e => setFormData(prev => ({ ...prev, seoTitle: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, seoTitle: e.target.value }))
+                }
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                 placeholder='SEO optimized title'
                 maxLength={60}
@@ -261,7 +301,12 @@ export default function CreateBlogPostPage() {
               <input
                 type='text'
                 value={formData.seoDescription}
-                onChange={e => setFormData(prev => ({ ...prev, seoDescription: e.target.value }))}
+                onChange={e =>
+                  setFormData(prev => ({
+                    ...prev,
+                    seoDescription: e.target.value,
+                  }))
+                }
                 className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                 placeholder='SEO meta description'
                 maxLength={160}

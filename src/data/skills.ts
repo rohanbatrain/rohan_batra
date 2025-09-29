@@ -1,4 +1,17 @@
-import { Code, Palette, Rocket, ShieldCheck, Smartphone, Workflow, FlaskConical, Cloud, Terminal, Gauge, GitBranch, Cpu } from 'lucide-react';
+import {
+  Code,
+  Palette,
+  Rocket,
+  ShieldCheck,
+  Smartphone,
+  Workflow,
+  FlaskConical,
+  Cloud,
+  Terminal,
+  Gauge,
+  GitBranch,
+  Cpu,
+} from 'lucide-react';
 
 export type SkillCategoryKey =
   | 'security'

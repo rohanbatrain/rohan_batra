@@ -8,16 +8,16 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Upload, 
-  X, 
-  Image, 
-  File, 
-  Video, 
-  CheckCircle, 
+import {
+  Upload,
+  X,
+  Image,
+  File,
+  Video,
+  CheckCircle,
   AlertCircle,
   Loader2,
-  FolderOpen
+  FolderOpen,
 } from 'lucide-react';
 import { featureFlags } from '@/lib/feature-flags';
 
@@ -49,9 +49,14 @@ interface AssetPickerProps {
 
 const DEFAULT_ACCEPTED_FORMATS = {
   image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
-  document: ['application/pdf', 'text/plain', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+  document: [
+    'application/pdf',
+    'text/plain',
+    'application/msword',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  ],
   video: ['video/mp4', 'video/mpeg', 'video/quicktime', 'video/webm'],
-  any: ['*/*']
+  any: ['*/*'],
 };
 
 export function AssetPicker({
@@ -63,7 +68,7 @@ export function AssetPicker({
   onAssetsSelected,
   onAssetRemoved,
   className = '',
-  disabled = false
+  disabled = false,
 }: AssetPickerProps) {
   const { user } = useUser();
   const [assets, setAssets] = useState<AssetFile[]>([]);
@@ -80,9 +85,12 @@ export function AssetPicker({
   };
 
   // Check if enhanced asset features are enabled
-  const enhancedFeaturesEnabled = featureFlags.getFeatureFlags(featureFlagContext);
-  const hasAssetIntegration = enhancedFeaturesEnabled['advanced.assetIntegration']?.enabled;
-  const hasEnhancedValidation = enhancedFeaturesEnabled['advanced.enhancedValidation']?.enabled;
+  const enhancedFeaturesEnabled =
+    featureFlags.getFeatureFlags(featureFlagContext);
+  const hasAssetIntegration =
+    enhancedFeaturesEnabled['advanced.assetIntegration']?.enabled;
+  const hasEnhancedValidation =
+    enhancedFeaturesEnabled['advanced.enhancedValidation']?.enabled;
 
   // Get accepted file types
   const getAcceptedTypes = () => {
@@ -94,12 +102,18 @@ export function AssetPicker({
   const validateFile = (file: File): { valid: boolean; error?: string } => {
     // Check file size
     if (file.size > maxFileSize * 1024 * 1024) {
-      return { valid: false, error: `File size exceeds ${maxFileSize}MB limit` };
+      return {
+        valid: false,
+        error: `File size exceeds ${maxFileSize}MB limit`,
+      };
     }
 
     // Check file type
     const acceptedTypes = getAcceptedTypes();
-    if (!acceptedTypes.includes('*/*') && !acceptedTypes.some(type => file.type.match(type))) {
+    if (
+      !acceptedTypes.includes('*/*') &&
+      !acceptedTypes.some(type => file.type.match(type))
+    ) {
       return { valid: false, error: 'File type not supported' };
     }
 
@@ -124,10 +138,10 @@ export function AssetPicker({
 
   // Create preview for file
   const createPreview = (file: File): Promise<string | undefined> => {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (file.type.startsWith('image/')) {
         const reader = new FileReader();
-        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.onload = e => resolve(e.target?.result as string);
         reader.onerror = () => resolve(undefined);
         reader.readAsDataURL(file);
       } else {
@@ -143,7 +157,7 @@ export function AssetPicker({
 
     for (const file of files) {
       const validation = validateFile(file);
-      
+
       if (!validation.valid) {
         console.warn(`File ${file.name} rejected:`, validation.error);
         continue;
@@ -156,7 +170,7 @@ export function AssetPicker({
         type: getAssetTypeFromFile(file),
         preview,
         status: 'pending',
-        uploadProgress: 0
+        uploadProgress: 0,
       };
 
       newAssets.push(asset);
@@ -166,7 +180,7 @@ export function AssetPicker({
       const updatedAssets = multiple ? [...assets, ...newAssets] : newAssets;
       setAssets(updatedAssets);
       onAssetsSelected(updatedAssets);
-      
+
       // Start upload simulation if enhanced features are enabled
       if (hasAssetIntegration) {
         simulateUpload(newAssets);
@@ -180,27 +194,35 @@ export function AssetPicker({
 
     for (const asset of assetsToUpload) {
       // Update status to uploading
-      setAssets(prev => prev.map(a => 
-        a.id === asset.id ? { ...a, status: 'uploading' as const } : a
-      ));
+      setAssets(prev =>
+        prev.map(a =>
+          a.id === asset.id ? { ...a, status: 'uploading' as const } : a
+        )
+      );
 
       // Simulate upload progress
       for (let progress = 0; progress <= 100; progress += 10) {
         await new Promise(resolve => setTimeout(resolve, 100));
-        setAssets(prev => prev.map(a => 
-          a.id === asset.id ? { ...a, uploadProgress: progress } : a
-        ));
+        setAssets(prev =>
+          prev.map(a =>
+            a.id === asset.id ? { ...a, uploadProgress: progress } : a
+          )
+        );
       }
 
       // Complete upload
-      setAssets(prev => prev.map(a => 
-        a.id === asset.id ? { 
-          ...a, 
-          status: 'completed' as const,
-          uploadProgress: 100,
-          url: `https://example.com/assets/${asset.file.name}`
-        } : a
-      ));
+      setAssets(prev =>
+        prev.map(a =>
+          a.id === asset.id
+            ? {
+                ...a,
+                status: 'completed' as const,
+                uploadProgress: 100,
+                url: `https://example.com/assets/${asset.file.name}`,
+              }
+            : a
+        )
+      );
     }
 
     setIsUploading(false);
@@ -234,15 +256,18 @@ export function AssetPicker({
     setDragActive(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      processFiles(e.dataTransfer.files);
-    }
-  }, [assets, multiple, maxFiles]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      setDragActive(false);
+
+      if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        processFiles(e.dataTransfer.files);
+      }
+    },
+    [assets, multiple, maxFiles]
+  );
 
   // Handle file input change
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -262,11 +287,11 @@ export function AssetPicker({
   const getAssetIcon = (type: AssetType) => {
     switch (type) {
       case 'image':
-        return <Image className="h-5 w-5" />;
+        return <Image className='h-5 w-5' />;
       case 'video':
-        return <Video className="h-5 w-5" />;
+        return <Video className='h-5 w-5' />;
       default:
-        return <File className="h-5 w-5" />;
+        return <File className='h-5 w-5' />;
     }
   };
 
@@ -274,11 +299,11 @@ export function AssetPicker({
   const getStatusIcon = (status: AssetFile['status']) => {
     switch (status) {
       case 'uploading':
-        return <Loader2 className="h-4 w-4 animate-spin text-blue-500" />;
+        return <Loader2 className='h-4 w-4 animate-spin text-blue-500' />;
       case 'completed':
-        return <CheckCircle className="h-4 w-4 text-green-500" />;
+        return <CheckCircle className='h-4 w-4 text-green-500' />;
       case 'error':
-        return <AlertCircle className="h-4 w-4 text-red-500" />;
+        return <AlertCircle className='h-4 w-4 text-red-500' />;
       default:
         return null;
     }
@@ -297,8 +322,8 @@ export function AssetPicker({
     <div className={`space-y-4 ${className}`}>
       {/* Enhanced features indicator */}
       {hasAssetIntegration && (
-        <div className="flex items-center gap-2 text-sm text-green-600">
-          <CheckCircle className="h-4 w-4" />
+        <div className='flex items-center gap-2 text-sm text-green-600'>
+          <CheckCircle className='h-4 w-4' />
           Enhanced asset management enabled
         </div>
       )}
@@ -306,11 +331,11 @@ export function AssetPicker({
       {/* File input (hidden) */}
       <input
         ref={fileInputRef}
-        type="file"
+        type='file'
         multiple={multiple}
         accept={getAcceptedTypes().join(',')}
         onChange={handleFileInputChange}
-        className="hidden"
+        className='hidden'
         disabled={disabled}
       />
 
@@ -328,13 +353,15 @@ export function AssetPicker({
           onDrop={handleDrop}
           onClick={disabled ? undefined : openFileDialog}
         >
-          <div className="space-y-2">
-            <Upload className="h-8 w-8 mx-auto text-gray-400" />
+          <div className='space-y-2'>
+            <Upload className='h-8 w-8 mx-auto text-gray-400' />
             <div>
-              <p className="text-lg font-medium">
-                {dragActive ? 'Drop files here' : 'Drag & drop files or click to browse'}
+              <p className='text-lg font-medium'>
+                {dragActive
+                  ? 'Drop files here'
+                  : 'Drag & drop files or click to browse'}
               </p>
-              <p className="text-sm text-gray-500">
+              <p className='text-sm text-gray-500'>
                 {assetType !== 'any' && `${assetType} files only • `}
                 Max {maxFileSize}MB per file
                 {multiple && ` • Up to ${maxFiles} files`}
@@ -345,23 +372,23 @@ export function AssetPicker({
       ) : (
         // Fallback for basic file input
         <Card>
-          <CardContent className="p-6">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <FolderOpen className="h-5 w-5 text-gray-500" />
+          <CardContent className='p-6'>
+            <div className='space-y-4'>
+              <div className='flex items-center gap-2'>
+                <FolderOpen className='h-5 w-5 text-gray-500' />
                 <Label>Select Files</Label>
               </div>
               <Button
-                type="button"
-                variant="outline"
+                type='button'
+                variant='outline'
                 onClick={openFileDialog}
                 disabled={disabled}
-                className="w-full"
+                className='w-full'
               >
-                <Upload className="h-4 w-4 mr-2" />
+                <Upload className='h-4 w-4 mr-2' />
                 Choose Files
               </Button>
-              <p className="text-sm text-gray-500">
+              <p className='text-sm text-gray-500'>
                 {assetType !== 'any' && `${assetType} files only • `}
                 Max {maxFileSize}MB per file
                 {multiple && ` • Up to ${maxFiles} files`}
@@ -375,51 +402,54 @@ export function AssetPicker({
       {assets.length > 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-sm">
+            <CardTitle className='text-sm'>
               Selected Files ({assets.length}/{multiple ? maxFiles : 1})
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {assets.map((asset) => (
+          <CardContent className='space-y-3'>
+            {assets.map(asset => (
               <div
                 key={asset.id}
-                className="flex items-center gap-3 p-3 border rounded-lg"
+                className='flex items-center gap-3 p-3 border rounded-lg'
               >
                 {/* Preview or icon */}
-                <div className="flex-shrink-0">
+                <div className='flex-shrink-0'>
                   {asset.preview ? (
                     <img
                       src={asset.preview}
                       alt={asset.file.name}
-                      className="h-12 w-12 object-cover rounded"
+                      className='h-12 w-12 object-cover rounded'
                     />
                   ) : (
-                    <div className="h-12 w-12 flex items-center justify-center bg-gray-100 rounded">
+                    <div className='h-12 w-12 flex items-center justify-center bg-gray-100 rounded'>
                       {getAssetIcon(asset.type)}
                     </div>
                   )}
                 </div>
 
                 {/* File info */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-medium truncate">
+                <div className='flex-1 min-w-0'>
+                  <div className='flex items-center gap-2'>
+                    <p className='text-sm font-medium truncate'>
                       {asset.file.name}
                     </p>
                     {getStatusIcon(asset.status)}
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className='text-xs text-gray-500'>
                     {formatFileSize(asset.file.size)}
                     {asset.url && (
-                      <span className="ml-2 text-green-600">Uploaded</span>
+                      <span className='ml-2 text-green-600'>Uploaded</span>
                     )}
                   </p>
-                  
+
                   {/* Upload progress */}
                   {asset.status === 'uploading' && hasAssetIntegration && (
-                    <div className="mt-2">
-                      <Progress value={asset.uploadProgress || 0} className="h-2" />
-                      <p className="text-xs text-gray-500 mt-1">
+                    <div className='mt-2'>
+                      <Progress
+                        value={asset.uploadProgress || 0}
+                        className='h-2'
+                      />
+                      <p className='text-xs text-gray-500 mt-1'>
                         {asset.uploadProgress || 0}% uploaded
                       </p>
                     </div>
@@ -427,7 +457,7 @@ export function AssetPicker({
 
                   {/* Error message */}
                   {asset.status === 'error' && asset.errorMessage && (
-                    <p className="text-xs text-red-500 mt-1">
+                    <p className='text-xs text-red-500 mt-1'>
                       {asset.errorMessage}
                     </p>
                   )}
@@ -435,13 +465,13 @@ export function AssetPicker({
 
                 {/* Remove button */}
                 <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
+                  type='button'
+                  variant='ghost'
+                  size='sm'
                   onClick={() => removeAsset(asset.id)}
                   disabled={disabled || asset.status === 'uploading'}
                 >
-                  <X className="h-4 w-4" />
+                  <X className='h-4 w-4' />
                 </Button>
               </div>
             ))}
@@ -452,29 +482,34 @@ export function AssetPicker({
       {/* Validation info */}
       {hasEnhancedValidation && assets.length > 0 && (
         <Card>
-          <CardContent className="p-4">
-            <div className="grid grid-cols-2 gap-4 text-sm">
+          <CardContent className='p-4'>
+            <div className='grid grid-cols-2 gap-4 text-sm'>
               <div>
-                <span className="font-medium">Total Size:</span>
-                <span className="ml-2">
-                  {formatFileSize(assets.reduce((total, asset) => total + asset.file.size, 0))}
+                <span className='font-medium'>Total Size:</span>
+                <span className='ml-2'>
+                  {formatFileSize(
+                    assets.reduce((total, asset) => total + asset.file.size, 0)
+                  )}
                 </span>
               </div>
               <div>
-                <span className="font-medium">Files:</span>
-                <span className="ml-2">{assets.length}</span>
+                <span className='font-medium'>Files:</span>
+                <span className='ml-2'>{assets.length}</span>
               </div>
               <div>
-                <span className="font-medium">Status:</span>
-                <span className="ml-2">
+                <span className='font-medium'>Status:</span>
+                <span className='ml-2'>
                   {assets.every(a => a.status === 'completed') ? (
-                    <Badge variant="default" className="bg-green-100 text-green-800">
+                    <Badge
+                      variant='default'
+                      className='bg-green-100 text-green-800'
+                    >
                       All uploaded
                     </Badge>
                   ) : isUploading ? (
-                    <Badge variant="secondary">Uploading...</Badge>
+                    <Badge variant='secondary'>Uploading...</Badge>
                   ) : (
-                    <Badge variant="outline">Ready</Badge>
+                    <Badge variant='outline'>Ready</Badge>
                   )}
                 </span>
               </div>

@@ -159,7 +159,9 @@ export const env: EnvConfig = {
   // Rollout Configuration
   rollout: {
     percentage: getNumberEnvVar('ROLLOUT_PERCENTAGE', 0),
-    whitelist: getOptionalEnvVar('ROLLOUT_ADMIN_USERS', '').split(',').filter(Boolean),
+    whitelist: getOptionalEnvVar('ROLLOUT_ADMIN_USERS', '')
+      .split(',')
+      .filter(Boolean),
   },
 
   // Circuit Breaker Configuration
@@ -167,7 +169,10 @@ export const env: EnvConfig = {
     enabled: getBooleanEnvVar('CIRCUIT_BREAKER_ENABLED', false),
     failureThreshold: getNumberEnvVar('CIRCUIT_BREAKER_FAILURE_THRESHOLD', 5),
     resetTimeout: getNumberEnvVar('CIRCUIT_BREAKER_RESET_TIMEOUT', 60000),
-    monitoringPeriod: getNumberEnvVar('CIRCUIT_BREAKER_MONITORING_PERIOD', 300000),
+    monitoringPeriod: getNumberEnvVar(
+      'CIRCUIT_BREAKER_MONITORING_PERIOD',
+      300000
+    ),
     halfOpenMaxCalls: getNumberEnvVar('CIRCUIT_BREAKER_HALF_OPEN_MAX_CALLS', 3),
   },
 

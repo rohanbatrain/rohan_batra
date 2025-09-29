@@ -1,0 +1,1151 @@
+openapi: 3.0.3
+info:
+  title: Courses & Certification API
+  description: API surface for the Courses expansion, learner dashboard, and multi-provider certificates on the Rohan Batra portfolio platform.
+  version: 1.0.0
+  contact:
+    name: Courses API
+servers:
+  - url: https://localhost:3000/api
+    description: Development server
+  - url: https://portfolio.rohanbatra.com/api
+    description: Production server
+
+components:
+  securitySchemes:
+    ClerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  responses:
+    Unauthorized:
+      description: Authorization required
+    Forbidden:
+      description: Authenticated user lacks required role
+    NotFound:
+      description: Resource not found
+    BadRequest:
+      description: Validation failed
+
+  schemas:
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        total:
+          type: integer
+          example: 42
+        hasNext:
+          type: boolean
+          example: true
+
+    CourseSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: objectid
+        slug:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        summary:
+          type: string
+        heroImage:
+          type: string
+          format: uri
+        heroLottieId:
+          type: string
+          format: objectid
+        difficulty:
+          type: string
+          enum: [beginner, intermediate, advanced]
+        categories:
+          type: array
+          items:
+            type: string
+        tags:
+          type: array
+          items:
+            type: string
+        estimatedDurationMinutes:
+          type: integer
+        lessonCount:
+          type: integer
+        status:
+          type: string
+          enum: [draft, published, archived]
+        isFeatured:
+          type: boolean
+        publishedAt:
+          type: string
+          format: date-time
+
+    CourseLesson:
+      type: object
+      properties:
+        id:
+          type: string
+          format: objectid
+        title:
+          type: string
+        slug:
+          type: string
+        contentType:
+          type: string
+          enum: [blog, standalone, video, quiz]
+        blogSlug:
+          type: string
+          nullable: true
+        externalResource:
+          type: object
+          nullable: true
+          properties:
+            provider:
+              type: string
+              enum: [youtube, vimeo, loom, custom]
+            url:
+              type: string
+              format: uri
+            durationSeconds:
+              type: integer
+              nullable: true
+            thumbnailUrl:
+              type: string
+              format: uri
+              nullable: true
+        standaloneContent:
+          type: string
+          nullable: true
+        standaloneFormat:
+          type: string
+          enum: [mdx, novelsh]
+          nullable: true
+        assets:
+          type: object
+          properties:
+            lottieIds:
+              type: array
+              items:
+                type: string
+                format: objectid
+            imageUrls:
+              type: array
+              items:
+                type: string
+                format: uri
+        estimatedDurationMinutes:
+          type: integer
+        isPreviewable:
+          type: boolean
+        progressWeight:
+          type: number
+        prerequisiteLessonIds:
+          type: array
+          items:
+            type: string
+            format: objectid
+        quizId:
+          type: string
+          format: objectid
+          nullable: true
+        releaseAt:
+          type: string
+          format: date-time
+          nullable: true
+
+    CourseModule:
+      type: object
+      properties:
+        id:
+          type: string
+          format: objectid
+        title:
+          type: string
+        summary:
+          type: string
+        order:
+          type: integer
+        estimatedDurationMinutes:
+          type: integer
+          nullable: true
+        lessons:
+          type: array
+          items:
+            $ref: '#/components/schemas/CourseLesson'
+
+    CourseDetail:
+      allOf:
+        - $ref: '#/components/schemas/CourseSummary'
+        - type: object
+          properties:
+            modules:
+              type: array
+              items:
+                $ref: '#/components/schemas/CourseModule'
+            recommendedBlogs:
+              type: array
+              items:
+                type: string
+            recommendedBooks:
+              type: array
+              items:
+                type: string
+                format: objectid
+            prerequisites:
+              type: array
+              items:
+                type: string
+                description: Course or blog slug
+            seo:
+              type: object
+              properties:
+                title:
+                  type: string
+                  nullable: true
+                description:
+                  type: string
+                  nullable: true
+                image:
+                  type: string
+                  format: uri
+                  nullable: true
+            structureVersion:
+              type: integer
+            visibility:
+              type: string
+              enum: [public, unlisted]
+
+    Enrollment:
+      type: object
+      properties:
+        id:
+          type: string
+          format: objectid
+        courseId:
+          type: string
+          format: objectid
+        userId:
+          type: string
+          format: objectid
+        status:
+          type: string
+          enum: [enrolled, in_progress, completed, withdrawn]
+        origin:
+          type: string
+          enum: [self_enroll, admin_grant, auto_bundle]
+        enrolledAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+        lastAccessedAt:
+          type: string
+          format: date-time
+          nullable: true
+        certificateId:
+          type: string
+          format: objectid
+          nullable: true
+
+    ModuleProgress:
+      type: object
+      properties:
+        moduleId:
+          type: string
+          format: objectid
+        completedWeight:
+          type: number
+        totalWeight:
+          type: number
+        percentage:
+          type: number
+
+    CourseProgress:
+      type: object
+      properties:
+        enrollmentId:
+          type: string
+          format: objectid
+        courseId:
+          type: string
+          format: objectid
+        userId:
+          type: string
+          format: objectid
+        completedLessonIds:
+          type: array
+          items:
+            type: string
+            format: objectid
+        currentLessonId:
+          type: string
+          format: objectid
+          nullable: true
+        moduleProgress:
+          type: array
+          items:
+            $ref: '#/components/schemas/ModuleProgress'
+        percentageComplete:
+          type: number
+        timeSpentSeconds:
+          type: integer
+        streak:
+          type: object
+          nullable: true
+          properties:
+            currentCount:
+              type: integer
+            longestCount:
+              type: integer
+            lastUpdatedAt:
+              type: string
+              format: date-time
+        quizAttempts:
+          type: array
+          items:
+            type: object
+            properties:
+              lessonId:
+                type: string
+                format: objectid
+              attempts:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    score:
+                      type: number
+                    passed:
+                      type: boolean
+                    attemptedAt:
+                      type: string
+                      format: date-time
+
+    CertificateProvider:
+      type: object
+      properties:
+        key:
+          type: string
+        displayName:
+          type: string
+        type:
+          type: string
+          enum: [internal, sbd, external]
+        isActive:
+          type: boolean
+        branding:
+          type: object
+          properties:
+            logoUrl:
+              type: string
+              format: uri
+              nullable: true
+            accentColor:
+              type: string
+              nullable: true
+        template:
+          type: object
+          properties:
+            version:
+              type: integer
+            format:
+              type: string
+              enum: [landscape, portrait]
+        verificationBaseUrl:
+          type: string
+          format: uri
+          nullable: true
+
+    Certificate:
+      type: object
+      properties:
+        id:
+          type: string
+          format: objectid
+        courseId:
+          type: string
+          format: objectid
+        userId:
+          type: string
+          format: objectid
+        enrollmentId:
+          type: string
+          format: objectid
+        providerKey:
+          type: string
+        status:
+          type: string
+          enum: [pending, issued, failed, revoked]
+        issuedAt:
+          type: string
+          format: date-time
+          nullable: true
+        certificateNumber:
+          type: string
+        qrCodeUrl:
+          type: string
+          format: uri
+          nullable: true
+        pdfUrl:
+          type: string
+          format: uri
+          nullable: true
+        pngUrl:
+          type: string
+          format: uri
+          nullable: true
+        verificationUrl:
+          type: string
+          format: uri
+        sbdReferenceId:
+          type: string
+          nullable: true
+        downloadCount:
+          type: integer
+
+    DashboardSummary:
+      type: object
+      properties:
+        enrolledCourses:
+          type: array
+          items:
+            type: object
+            properties:
+              course:
+                $ref: '#/components/schemas/CourseSummary'
+              enrollment:
+                $ref: '#/components/schemas/Enrollment'
+              progress:
+                $ref: '#/components/schemas/CourseProgress'
+        recommendedContent:
+          type: array
+          items:
+            type: object
+            properties:
+              type:
+                type: string
+                enum: [course, blog, book]
+              id:
+                type: string
+              title:
+                type: string
+              reason:
+                type: string
+        certificates:
+          type: array
+          items:
+            $ref: '#/components/schemas/Certificate'
+        metrics:
+          type: object
+          properties:
+            totalCourses:
+              type: integer
+            coursesInProgress:
+              type: integer
+            completionRate:
+              type: number
+            streak:
+              type: integer
+
+paths:
+  /courses:
+    get:
+      summary: List published courses
+      description: Retrieve paginated courses with optional filters.
+      tags: [Courses]
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+        - name: difficulty
+          in: query
+          schema:
+            type: string
+            enum: [beginner, intermediate, advanced]
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: search
+          in: query
+          schema:
+            type: string
+        - name: featured
+          in: query
+          schema:
+            type: boolean
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+            default: published
+      responses:
+        200:
+          description: Paginated course listings
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseSummary'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+
+  /courses/{slug}:
+    get:
+      summary: Get course details
+      tags: [Courses]
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Course detail with curriculum
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /courses/{slug}/enroll:
+    post:
+      summary: Enroll current user in a course
+      tags: [Courses]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        201:
+          description: Enrollment created or reused
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enrollment:
+                    $ref: '#/components/schemas/Enrollment'
+                  progress:
+                    $ref: '#/components/schemas/CourseProgress'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        409:
+          description: User already enrolled and not withdrawn
+
+  /courses/{slug}/progress:
+    get:
+      summary: Get learner progress for a course
+      tags: [Progress]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Current progress snapshot
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseProgress'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+    put:
+      summary: Update progress for the active learner
+      tags: [Progress]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                completedLessonIds:
+                  type: array
+                  items:
+                    type: string
+                    format: objectid
+                currentLessonId:
+                  type: string
+                  format: objectid
+                  nullable: true
+                quizAttempts:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      lessonId:
+                        type: string
+                        format: objectid
+                      score:
+                        type: number
+                      passed:
+                        type: boolean
+      responses:
+        200:
+          description: Progress updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseProgress'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /courses/{slug}/complete:
+    post:
+      summary: Mark course complete and trigger certificate issuance
+      tags: [Progress]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+      responses:
+        200:
+          description: Completion acknowledged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enrollment:
+                    $ref: '#/components/schemas/Enrollment'
+                  certificate:
+                    $ref: '#/components/schemas/Certificate'
+        400:
+          description: Course not eligible for completion
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /dashboard/summary:
+    get:
+      summary: Retrieve learner dashboard summary
+      tags: [Dashboard]
+      security:
+        - ClerkAuth: []
+      responses:
+        200:
+          description: Aggregated dashboard payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardSummary'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /dashboard/certificates:
+    get:
+      summary: List certificates for current user
+      tags: [Dashboard]
+      security:
+        - ClerkAuth: []
+      responses:
+        200:
+          description: Certificates issued to user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  certificates:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Certificate'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /dashboard/recommendations:
+    get:
+      summary: Personalized recommendations for the learner dashboard
+      tags: [Dashboard]
+      security:
+        - ClerkAuth: []
+      responses:
+        200:
+          description: Recommendation list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recommendations:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          enum: [course, blog, book]
+                        id:
+                          type: string
+                        title:
+                          type: string
+                        reason:
+                          type: string
+        401:
+          $ref: '#/components/responses/Unauthorized'
+
+  /certificates/{certificateNumber}:
+    get:
+      summary: Public certificate verification
+      tags: [Certificates]
+      parameters:
+        - name: certificateNumber
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Verification payload for public lookup
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  certificate:
+                    $ref: '#/components/schemas/Certificate'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /certificates/{certificateId}/download:
+    get:
+      summary: Download certificate asset
+      tags: [Certificates]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: certificateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: objectid
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [pdf, png]
+            default: pdf
+      responses:
+        302:
+          description: Redirect to signed download URL
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /admin/courses:
+    get:
+      summary: Admin list of courses (all statuses)
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [draft, published, archived]
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        200:
+          description: Admin course listing
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseDetail'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      summary: Create or clone a course
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, slug]
+              properties:
+                title:
+                  type: string
+                slug:
+                  type: string
+                summary:
+                  type: string
+                difficulty:
+                  type: string
+                categories:
+                  type: array
+                  items:
+                    type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                heroImage:
+                  type: string
+                  format: uri
+                heroLottieId:
+                  type: string
+                  format: objectid
+                prerequisiteCourseIds:
+                  type: array
+                  items:
+                    type: string
+                    format: objectid
+                prerequisiteBlogSlugs:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        201:
+          description: Course created in draft status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/courses/{courseId}:
+    patch:
+      summary: Update course metadata
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: objectid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title:
+                  type: string
+                subtitle:
+                  type: string
+                summary:
+                  type: string
+                difficulty:
+                  type: string
+                categories:
+                  type: array
+                  items:
+                    type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+                status:
+                  type: string
+                  enum: [draft, published, archived]
+                visibility:
+                  type: string
+                  enum: [public, unlisted]
+                seo:
+                  type: object
+                recommendedBlogSlugs:
+                  type: array
+                  items:
+                    type: string
+                recommendedBookIds:
+                  type: array
+                  items:
+                    type: string
+                    format: objectid
+      responses:
+        200:
+          description: Updated course metadata
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/courses/{courseId}/modules:
+    put:
+      summary: Replace course modules & lessons (curriculum editor)
+      description: Accepts full curriculum payload to support drag-and-drop editors with optimistic UI.
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: objectid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [modules]
+              properties:
+                modules:
+                  type: array
+                  items:
+                    type: object
+                    required: [title, order, lessons]
+                    properties:
+                      moduleId:
+                        type: string
+                        format: objectid
+                        nullable: true
+                      title:
+                        type: string
+                      summary:
+                        type: string
+                        nullable: true
+                      order:
+                        type: integer
+                      lessons:
+                        type: array
+                        items:
+                          type: object
+                          required: [title, contentType, estimatedDurationMinutes]
+                          properties:
+                            lessonId:
+                              type: string
+                              format: objectid
+                              nullable: true
+                            title:
+                              type: string
+                            contentType:
+                              type: string
+                              enum: [blog, standalone, video, quiz]
+                            blogSlug:
+                              type: string
+                              nullable: true
+                            standaloneContent:
+                              type: string
+                              nullable: true
+                            externalResource:
+                              type: object
+                              nullable: true
+                            quizId:
+                              type: string
+                              format: objectid
+                              nullable: true
+                            estimatedDurationMinutes:
+                              type: integer
+                            isPreviewable:
+                              type: boolean
+      responses:
+        200:
+          description: Curriculum saved with new structure version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/certificates/providers:
+    get:
+      summary: List certificate providers & templates
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      responses:
+        200:
+          description: Provider definitions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  providers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CertificateProvider'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+    post:
+      summary: Create or update a certificate provider
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [key, displayName, type]
+              properties:
+                key:
+                  type: string
+                displayName:
+                  type: string
+                type:
+                  type: string
+                  enum: [internal, sbd, external]
+                isActive:
+                  type: boolean
+                branding:
+                  type: object
+                template:
+                  type: object
+                delivery:
+                  type: object
+      responses:
+        200:
+          description: Provider saved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CertificateProvider'
+        400:
+          $ref: '#/components/responses/BadRequest'
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+
+  /admin/certificates/{certificateId}/reissue:
+    post:
+      summary: Reissue a certificate (e.g., updated name, provider change)
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: certificateId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: objectid
+      requestBody:
+        required: false
+      responses:
+        202:
+          description: Reissue queued
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+        404:
+          $ref: '#/components/responses/NotFound'
+
+  /admin/courses/{courseId}/publish:
+    post:
+      summary: Validate and transition a course to published status
+      tags: [Admin]
+      security:
+        - ClerkAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: objectid
+      responses:
+        200:
+          description: Course published
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+        400:
+          description: Validation failed (e.g., lesson gaps, missing assets)
+        401:
+          $ref: '#/components/responses/Unauthorized'
+        403:
+          $ref: '#/components/responses/Forbidden'
+

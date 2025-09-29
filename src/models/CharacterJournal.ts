@@ -79,7 +79,11 @@ const CharacterJournalSchema = new Schema<ICharacterJournal>(
         lowercase: true,
       },
     ],
-    status: { type: String, enum: ['draft', 'published', 'archived'], default: 'draft' },
+    status: {
+      type: String,
+      enum: ['draft', 'published', 'archived'],
+      default: 'draft',
+    },
     publishedAt: { type: Date },
     isPrivate: { type: Boolean, default: false },
     referencedChapters: [
@@ -101,7 +105,6 @@ const CharacterJournalSchema = new Schema<ICharacterJournal>(
     timestamps: true,
     toJSON: {
       transform: function (doc, ret) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = ret as any;
         result.id = result._id?.toString();
         delete result._id;

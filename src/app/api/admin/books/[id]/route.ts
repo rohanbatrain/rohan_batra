@@ -25,7 +25,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-  const { userId } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -72,7 +72,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-  const { userId } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -135,15 +135,15 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-  const { userId } = await auth();
+    const { userId } = await auth();
 
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-  await connectToDatabase();
-  const currentUser = await User.findOne({ clerkId: userId });
-  const userRole = currentUser?.role || 'user';
+    await connectToDatabase();
+    const currentUser = await User.findOne({ clerkId: userId });
+    const userRole = currentUser?.role || 'user';
 
     if (userRole !== 'admin') {
       return NextResponse.json(
@@ -182,7 +182,9 @@ export async function DELETE(
       { new: true }
     );
 
-    return NextResponse.json({ message: toTrash ? 'Book moved to trash' : 'Book soft deleted' });
+    return NextResponse.json({
+      message: toTrash ? 'Book moved to trash' : 'Book soft deleted',
+    });
   } catch (error) {
     console.error('Error deleting book:', error);
     return NextResponse.json(

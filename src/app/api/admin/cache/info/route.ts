@@ -44,7 +44,9 @@ export async function GET() {
         },
         keyspace: keyspace,
         stats: {
-          connections: stats.match(/total_connections_received:(.+)/)?.[1]?.trim(),
+          connections: stats
+            .match(/total_connections_received:(.+)/)?.[1]
+            ?.trim(),
           commands: stats.match(/total_commands_processed:(.+)/)?.[1]?.trim(),
           hits: stats.match(/keyspace_hits:(.+)/)?.[1]?.trim(),
           misses: stats.match(/keyspace_misses:(.+)/)?.[1]?.trim(),
@@ -71,7 +73,8 @@ export async function GET() {
       {
         success: false,
         error: 'Failed to fetch cache information',
-        details: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+        details:
+          process.env.NODE_ENV === 'development' ? String(error) : undefined,
       },
       { status: 500 }
     );

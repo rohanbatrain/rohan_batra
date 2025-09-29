@@ -195,7 +195,8 @@ export async function PUT(
         userEmail: user.email,
         meta: {
           fieldsModified: Object.keys(validatedData),
-          roleChanged: validatedData.role && validatedData.role !== existingUser.role,
+          roleChanged:
+            validatedData.role && validatedData.role !== existingUser.role,
           previousRole: existingUser.role,
           newRole: updatedUser.role,
         },
@@ -278,7 +279,7 @@ export async function PATCH(
     }
 
     const body = await request.json();
-    
+
     // For PATCH, we only validate the fields that are provided
     const validatedData = UserUpdateSchema.partial().parse(body);
 
@@ -341,7 +342,8 @@ export async function PATCH(
         userEmail: user.email,
         meta: {
           fieldsModified: Object.keys(validatedData),
-          roleChanged: validatedData.role && validatedData.role !== existingUser.role,
+          roleChanged:
+            validatedData.role && validatedData.role !== existingUser.role,
           previousRole: existingUser.role,
           newRole: updatedUser.role,
         },

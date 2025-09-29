@@ -309,7 +309,6 @@ AssetSchema.methods = {
    * Get optimized URL for different sizes
    */
   getOptimizedUrl(
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     _options: {
       width?: number;
       height?: number;

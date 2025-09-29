@@ -72,7 +72,8 @@ export default function CachePage() {
     } catch (e) {
       toast({
         title: 'Error',
-        description: e instanceof Error ? e.message : 'Failed to fetch cache information',
+        description:
+          e instanceof Error ? e.message : 'Failed to fetch cache information',
         variant: 'destructive',
       });
     }
@@ -99,7 +100,8 @@ export default function CachePage() {
     } catch (e) {
       toast({
         title: 'Error',
-        description: e instanceof Error ? e.message : 'Failed to fetch cache keys',
+        description:
+          e instanceof Error ? e.message : 'Failed to fetch cache keys',
         variant: 'destructive',
       });
     } finally {

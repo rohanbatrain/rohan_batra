@@ -46,7 +46,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-  const { id: targetUserId } = await context.params;
+    const { id: targetUserId } = await context.params;
     const body = await request.json();
 
     // Validate the avatar configuration
@@ -121,7 +121,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
 
-  const { id: targetUserId } = await context.params;
+    const { id: targetUserId } = await context.params;
 
     // Reset to default avatar configuration
     const defaultConfig = {

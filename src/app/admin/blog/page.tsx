@@ -61,7 +61,7 @@ export default function BlogManagementPage() {
 
   useEffect(() => {
     fetchPosts();
-  }, [pagination.currentPage, filters]);
+  }, [pagination.currentPage, pagination.itemsPerPage, filters]);
 
   const fetchPosts = async () => {
     try {
@@ -165,7 +165,7 @@ export default function BlogManagementPage() {
         <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
           Blog Management
         </h1>
-        <button 
+        <button
           onClick={() => router.push('/admin/blog/create')}
           className='bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium'
         >
@@ -317,8 +317,10 @@ export default function BlogManagementPage() {
                       >
                         {post.status === 'published' ? 'Unpublish' : 'Publish'}
                       </button>
-                      <button 
-                        onClick={() => router.push(`/admin/blog/edit/${post._id}`)}
+                      <button
+                        onClick={() =>
+                          router.push(`/admin/blog/edit/${post._id}`)
+                        }
                         className='text-indigo-600 hover:text-indigo-900 dark:text-indigo-400 dark:hover:text-indigo-300'
                       >
                         Edit
@@ -338,40 +340,58 @@ export default function BlogManagementPage() {
         )}
 
         {/* Pagination */}
-        {pagination.totalPages > 1 && (
-          <div className='px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between'>
-            <div className='text-sm text-gray-700 dark:text-gray-300'>
-              Showing page {pagination.currentPage} of {pagination.totalPages} (
-              {pagination.totalItems} total)
-            </div>
-            <div className='flex space-x-2'>
-              <button
-                onClick={() =>
-                  setPagination({
-                    ...pagination,
-                    currentPage: pagination.currentPage - 1,
-                  })
-                }
-                disabled={!pagination.hasPreviousPage}
-                className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
-              >
-                Previous
-              </button>
-              <button
-                onClick={() =>
-                  setPagination({
-                    ...pagination,
-                    currentPage: pagination.currentPage + 1,
-                  })
-                }
-                disabled={!pagination.hasNextPage}
-                className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
-              >
-                Next
-              </button>
-            </div>
+        <div className='px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
+          <div className='flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300'>
+            <span>Items per page</span>
+            <select
+              value={pagination.itemsPerPage}
+              onChange={event =>
+                setPagination(prev => ({
+                  ...prev,
+                  currentPage: 1,
+                  itemsPerPage: Number(event.target.value),
+                }))
+              }
+              className='px-3 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100'
+            >
+              {[10, 25, 50, 100].map(option => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
           </div>
-        )}
+          <div className='text-sm text-gray-700 dark:text-gray-300'>
+            Showing page {pagination.currentPage} of{' '}
+            {Math.max(pagination.totalPages, 1)} ({pagination.totalItems} total)
+          </div>
+          <div className='flex space-x-2'>
+            <button
+              onClick={() =>
+                setPagination({
+                  ...pagination,
+                  currentPage: pagination.currentPage - 1,
+                })
+              }
+              disabled={!pagination.hasPreviousPage}
+              className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
+            >
+              Previous
+            </button>
+            <button
+              onClick={() =>
+                setPagination({
+                  ...pagination,
+                  currentPage: pagination.currentPage + 1,
+                })
+              }
+              disabled={!pagination.hasNextPage}
+              className='px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed rounded dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'
+            >
+              Next
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -507,7 +507,6 @@ export default function AnalyticsPage() {
                       cx='50%'
                       cy='50%'
                       labelLine={false}
-                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
                       label={(props: any) => {
                         const total = userDistribution.reduce(
                           (sum, item) => sum + item.value,
@@ -685,7 +684,11 @@ export default function AnalyticsPage() {
                 <div className='space-y-3'>
                   {data.recentActivity.comments.map((comment, idx) => (
                     <div
-                      key={comment._id || comment.id || `${comment.createdAt}-${idx}`}
+                      key={
+                        comment._id ||
+                        comment.id ||
+                        `${comment.createdAt}-${idx}`
+                      }
                       className='space-y-1'
                     >
                       <div className='flex items-center justify-between'>
@@ -705,7 +708,9 @@ export default function AnalyticsPage() {
                         </Badge>
                       </div>
                       <p className='text-sm'>
-                        {comment.content ? comment.content.substring(0, 100) + '...' : 'No content'}
+                        {comment.content
+                          ? comment.content.substring(0, 100) + '...'
+                          : 'No content'}
                       </p>
                     </div>
                   ))}
@@ -722,7 +727,12 @@ export default function AnalyticsPage() {
                 <div className='space-y-3'>
                   {data.recentActivity.users.map((user, idx) => (
                     <div
-                      key={user._id || user.id || user.email || `${user.name}-${idx}`}
+                      key={
+                        user._id ||
+                        user.id ||
+                        user.email ||
+                        `${user.name}-${idx}`
+                      }
                       className='flex items-center justify-between'
                     >
                       <div>
@@ -745,7 +755,9 @@ export default function AnalyticsPage() {
                 <div className='space-y-3'>
                   {data.recentActivity.projects.map((project, idx) => (
                     <div
-                      key={project._id || project.id || `${project.title}-${idx}`}
+                      key={
+                        project._id || project.id || `${project.title}-${idx}`
+                      }
                       className='flex items-center justify-between'
                     >
                       <div>

@@ -7,7 +7,11 @@ export const metadata: Metadata = {
   description: 'Explore public character profiles and their journals',
 };
 
-export default async function CharactersIndex({ searchParams }: { searchParams?: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function CharactersIndex({
+  searchParams,
+}: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
   const sp = (await searchParams) || {};
   const q = (sp.q as string) || '';
   await connectToDatabase();
@@ -19,7 +23,10 @@ export default async function CharactersIndex({ searchParams }: { searchParams?:
       { tags: { $in: [q] } },
     ];
   }
-  const items = (await Character.find(filter).sort({ featured: -1, createdAt: -1 }).select('name fullName slug role significance createdAt').lean()) as any[];
+  const items = (await Character.find(filter)
+    .sort({ featured: -1, createdAt: -1 })
+    .select('name fullName slug role significance createdAt')
+    .lean()) as any[];
 
   return (
     <main className='container mx-auto px-4 py-10'>
@@ -38,11 +45,19 @@ export default async function CharactersIndex({ searchParams }: { searchParams?:
       ) : (
         <ul className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           {items.map(c => (
-            <li key={c.slug} className='border rounded-lg p-4 hover:shadow-sm transition'>
-              <a href={`/characters/${c.slug}`} className='text-lg font-semibold text-blue-600 hover:underline'>
+            <li
+              key={c.slug}
+              className='border rounded-lg p-4 hover:shadow-sm transition'
+            >
+              <a
+                href={`/characters/${c.slug}`}
+                className='text-lg font-semibold text-blue-600 hover:underline'
+              >
                 {c.name}
               </a>
-              {c.fullName && <p className='text-sm text-muted-foreground'>{c.fullName}</p>}
+              {c.fullName && (
+                <p className='text-sm text-muted-foreground'>{c.fullName}</p>
+              )}
               <p className='text-xs text-muted-foreground mt-1 capitalize'>
                 {c.role} • {c.significance}
               </p>

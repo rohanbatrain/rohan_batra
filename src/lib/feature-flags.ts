@@ -28,21 +28,24 @@ export class FeatureFlagService {
   /**
    * Check if a core feature is enabled
    */
-  isFeatureEnabled(feature: keyof typeof env.features, context?: FeatureFlagContext): FeatureFlagResult {
+  isFeatureEnabled(
+    feature: keyof typeof env.features,
+    context?: FeatureFlagContext
+  ): FeatureFlagResult {
     const baseEnabled = env.features[feature];
-    
+
     if (!baseEnabled) {
       return {
         enabled: false,
         source: 'environment',
-  reason: `Feature ${String(feature)} is disabled in environment configuration`,
+        reason: `Feature ${String(feature)} is disabled in environment configuration`,
       };
     }
 
     return {
       enabled: true,
       source: 'environment',
-  reason: `Feature ${String(feature)} is enabled in environment configuration`,
+      reason: `Feature ${String(feature)} is enabled in environment configuration`,
     };
   }
 
@@ -50,17 +53,17 @@ export class FeatureFlagService {
    * Check if an advanced feature is enabled with progressive rollout
    */
   isAdvancedFeatureEnabled(
-  feature: keyof typeof env.advancedFeatures,
+    feature: keyof typeof env.advancedFeatures,
     context?: FeatureFlagContext
   ): FeatureFlagResult {
     const baseEnabled = env.advancedFeatures[feature];
-    
+
     // If disabled at environment level, return early
     if (!baseEnabled) {
       return {
         enabled: false,
         source: 'environment',
-  reason: `Advanced feature ${String(feature)} is disabled in environment configuration`,
+        reason: `Advanced feature ${String(feature)} is disabled in environment configuration`,
       };
     }
 
@@ -92,16 +95,21 @@ export class FeatureFlagService {
   /**
    * Check multiple features at once
    */
-  getFeatureFlags(context?: FeatureFlagContext): Record<string, FeatureFlagResult> {
+  getFeatureFlags(
+    context?: FeatureFlagContext
+  ): Record<string, FeatureFlagResult> {
     const results: Record<string, FeatureFlagResult> = {};
 
     // Core features
-    Object.keys(env.features).forEach((feature) => {
-      results[feature] = this.isFeatureEnabled(feature as keyof typeof env.features, context);
+    Object.keys(env.features).forEach(feature => {
+      results[feature] = this.isFeatureEnabled(
+        feature as keyof typeof env.features,
+        context
+      );
     });
 
     // Advanced features
-    Object.keys(env.advancedFeatures).forEach((feature) => {
+    Object.keys(env.advancedFeatures).forEach(feature => {
       results[`advanced.${feature}`] = this.isAdvancedFeatureEnabled(
         feature as keyof typeof env.advancedFeatures,
         context
@@ -166,7 +174,7 @@ export class FeatureFlagService {
     let hash = 0;
     for (let i = 0; i < str.length; i++) {
       const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
+      hash = (hash << 5) - hash + char;
       hash = hash & hash; // Convert to 32-bit integer
     }
     return Math.abs(hash);
@@ -194,7 +202,9 @@ export class FeatureFlagService {
    */
   overrideFeature(feature: string, enabled: boolean): void {
     if (env.nodeEnv !== 'development') {
-      console.warn('Feature flag overrides are only allowed in development environment');
+      console.warn(
+        'Feature flag overrides are only allowed in development environment'
+      );
       return;
     }
 
@@ -205,7 +215,11 @@ export class FeatureFlagService {
   /**
    * Log feature flag usage for analytics
    */
-  private logFeatureUsage(feature: string, enabled: boolean, context?: FeatureFlagContext): void {
+  private logFeatureUsage(
+    feature: string,
+    enabled: boolean,
+    context?: FeatureFlagContext
+  ): void {
     if (env.advancedFeatures.auditTrail) {
       console.log('Feature flag usage:', {
         feature,
@@ -245,7 +259,6 @@ export function hasAssetIntegration(context?: FeatureFlagContext): boolean {
 export function hasEnhancedValidation(context?: FeatureFlagContext): boolean {
   return isAdvancedFeatureEnabled('enhancedValidation', context);
 }
-
 
 export function hasAdvancedAnalytics(context?: FeatureFlagContext): boolean {
   return isAdvancedFeatureEnabled('advancedAnalytics', context);

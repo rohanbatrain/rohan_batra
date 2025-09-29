@@ -280,7 +280,6 @@ const ProjectSchema = new Schema<IProject>(
     timestamps: true,
     toJSON: {
       transform: function (doc, ret) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const result = ret as any;
         result.id = result._id?.toString();
         delete result._id;

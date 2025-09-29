@@ -8,9 +8,14 @@ import { z } from 'zod';
 const ItemSchema = z.object({
   name: z.string().min(1),
   fullName: z.string().optional(),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   visibility: z.enum(['private', 'public']).optional(),
-  role: z.enum(['protagonist', 'antagonist', 'supporting', 'minor']).default('supporting'),
+  role: z
+    .enum(['protagonist', 'antagonist', 'supporting', 'minor'])
+    .default('supporting'),
   significance: z.enum(['major', 'minor', 'background']).optional(),
   description: z.string().optional(),
   personality: z.string().optional(),
@@ -37,7 +42,7 @@ function computeAgeFromDate(date?: Date) {
 
 function parseCSV(text: string): Record<string, string>[] {
   // very lightweight CSV parser: handles comma-separated with optional quotes, no newlines within fields
-  const lines = text.split(/\r?\n/).filter((l) => l.trim().length);
+  const lines = text.split(/\r?\n/).filter(l => l.trim().length);
   if (lines.length === 0) return [];
   const header = splitCSVLine(lines[0]);
   const rows: Record<string, string>[] = [];
@@ -73,38 +78,61 @@ function splitCSVLine(line: string): string[] {
     }
   }
   result.push(cur);
-  return result.map((s) => s.trim().replace(/^"|"$/g, ''));
+  return result.map(s => s.trim().replace(/^"|"$/g, ''));
 }
 
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json(
+        { success: false, error: 'Auth required' },
+        { status: 401 }
+      );
     await connectToDatabase();
     const me = await User.findOne({ clerkId: userId });
-    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!me || !['admin', 'editor'].includes(me.role))
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
 
     const contentType = request.headers.get('content-type') || '';
     let items: Array<z.infer<typeof ItemSchema>> = [];
     if (contentType.includes('application/json')) {
       const body = await request.json();
-      if (!Array.isArray(body)) return NextResponse.json({ success: false, error: 'Expected JSON array' }, { status: 400 });
-      items = body.map((it) => ItemSchema.parse(it));
-    } else if (contentType.includes('text/csv') || contentType.includes('application/csv')) {
+      if (!Array.isArray(body))
+        return NextResponse.json(
+          { success: false, error: 'Expected JSON array' },
+          { status: 400 }
+        );
+      items = body.map(it => ItemSchema.parse(it));
+    } else if (
+      contentType.includes('text/csv') ||
+      contentType.includes('application/csv')
+    ) {
       const text = await request.text();
       const rows = parseCSV(text);
-      items = rows.map((row) => {
+      items = rows.map(row => {
         const mapped: Record<string, unknown> = { ...row };
-        if (row.tags) mapped.tags = row.tags.split('|').map((t) => t.trim()).filter(Boolean);
-        if (row.featured) mapped.featured = row.featured.toLowerCase() === 'true';
+        if (row.tags)
+          mapped.tags = row.tags
+            .split('|')
+            .map(t => t.trim())
+            .filter(Boolean);
+        if (row.featured)
+          mapped.featured = row.featured.toLowerCase() === 'true';
         if (row.age) mapped.age = Number(row.age);
         return ItemSchema.parse(mapped);
       });
     } else {
-      return NextResponse.json({ success: false, error: 'Unsupported content type' }, { status: 415 });
+      return NextResponse.json(
+        { success: false, error: 'Unsupported content type' },
+        { status: 415 }
+      );
     }
 
-    const docsInput = items.map((data) => {
+    const docsInput = items.map(data => {
       let birthdate: Date | undefined;
       if (data.birthdate) {
         const bd = new Date(data.birthdate);
@@ -132,7 +160,7 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    const results: Array<{ index: number; id?: string; error?: string } > = [];
+    const results: Array<{ index: number; id?: string; error?: string }> = [];
     for (let i = 0; i < docsInput.length; i++) {
       try {
         const doc = await Character.create(docsInput[i] as any);
@@ -153,10 +181,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const successCount = results.filter((r) => r.id).length;
-    return NextResponse.json({ success: true, inserted: successCount, results });
+    const successCount = results.filter(r => r.id).length;
+    return NextResponse.json({
+      success: true,
+      inserted: successCount,
+      results,
+    });
   } catch (e) {
-    if (e instanceof z.ZodError) return NextResponse.json({ success: false, error: 'Validation failed', details: e.issues }, { status: 400 });
-    return NextResponse.json({ success: false, error: 'Failed to bulk import characters' }, { status: 500 });
+    if (e instanceof z.ZodError)
+      return NextResponse.json(
+        { success: false, error: 'Validation failed', details: e.issues },
+        { status: 400 }
+      );
+    return NextResponse.json(
+      { success: false, error: 'Failed to bulk import characters' },
+      { status: 500 }
+    );
   }
 }

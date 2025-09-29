@@ -7,49 +7,76 @@ import CharacterJournal from '@/models/CharacterJournal';
 import { z } from 'zod';
 import mongoose from 'mongoose';
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json(
+        { success: false, error: 'Auth required' },
+        { status: 401 }
+      );
     await connectToDatabase();
     const me = await User.findOne({ clerkId: userId });
-    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!me || !['admin', 'editor'].includes(me.role))
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
     const { id } = await params;
     const url = new URL(request.url);
     const page = parseInt(url.searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(url.searchParams.get('limit') || '20'), 100);
-  const status = url.searchParams.get('status');
-  const journalId = url.searchParams.get('journalId');
+    const limit = Math.min(
+      parseInt(url.searchParams.get('limit') || '20'),
+      100
+    );
+    const status = url.searchParams.get('status');
+    const journalId = url.searchParams.get('journalId');
 
-  const filter: Record<string, unknown> = { characterId: id, deletedAt: { $exists: false } };
+    const filter: Record<string, unknown> = {
+      characterId: id,
+      deletedAt: { $exists: false },
+    };
     if (status) filter.status = status;
-  if (journalId) filter.journalId = journalId;
+    if (journalId) filter.journalId = journalId;
     const skip = (page - 1) * limit;
 
     const [items, total] = await Promise.all([
-      CharacterJournal.find(filter).sort({ entryDate: -1, createdAt: -1 }).skip(skip).limit(limit),
+      CharacterJournal.find(filter)
+        .sort({ entryDate: -1, createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
       CharacterJournal.countDocuments(filter),
     ]);
 
-    return NextResponse.json({ success: true, journals: items, pagination: { page, limit, total, totalPages: Math.ceil(total / limit) } });
+    return NextResponse.json({
+      success: true,
+      journals: items,
+      pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
+    });
   } catch (e) {
-    return NextResponse.json({ success: false, error: 'Failed to list journals' }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: 'Failed to list journals' },
+      { status: 500 }
+    );
   }
 }
 
 const CreateSchema = z.object({
   title: z.string().min(1),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   content: z.string().optional(),
   status: z.enum(['draft', 'published', 'archived']).optional(),
   bookId: z.string().optional(),
   journalId: z.string().optional(),
   // Accept either full ISO datetime or simple YYYY-MM-DD
   entryDate: z
-    .union([
-      z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
-      z.string().datetime(),
-    ])
+    .union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.string().datetime()])
     .optional(),
   mood: z.string().optional(),
   location: z.string().optional(),
@@ -77,16 +104,31 @@ function parseEntryDate(val?: string): Date | undefined {
   return undefined;
 }
 
-export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ success: false, error: 'Auth required' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json(
+        { success: false, error: 'Auth required' },
+        { status: 401 }
+      );
     await connectToDatabase();
     const me = await User.findOne({ clerkId: userId });
-    if (!me || !['admin', 'editor'].includes(me.role)) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
+    if (!me || !['admin', 'editor'].includes(me.role))
+      return NextResponse.json(
+        { success: false, error: 'Forbidden' },
+        { status: 403 }
+      );
     const { id } = await params;
     const character = await Character.findById(id);
-    if (!character) return NextResponse.json({ success: false, error: 'Character not found' }, { status: 404 });
+    if (!character)
+      return NextResponse.json(
+        { success: false, error: 'Character not found' },
+        { status: 404 }
+      );
     const body = await request.json();
     const data = CreateSchema.parse(body);
 
@@ -101,8 +143,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const journal = await CharacterJournal.create({
       characterId: character._id,
-      bookId: data.bookId ? new mongoose.Types.ObjectId(data.bookId) : character.bookId,
-      journalId: data.journalId ? new mongoose.Types.ObjectId(data.journalId) : undefined,
+      bookId: data.bookId
+        ? new mongoose.Types.ObjectId(data.bookId)
+        : character.bookId,
+      journalId: data.journalId
+        ? new mongoose.Types.ObjectId(data.journalId)
+        : undefined,
       title: data.title,
       slug: candidate,
       content: data.content ?? '',
@@ -117,7 +163,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     return NextResponse.json({ success: true, journal });
   } catch (e) {
     if (e instanceof z.ZodError)
-      return NextResponse.json({ success: false, error: 'Validation failed', details: e.issues }, { status: 400 });
-    return NextResponse.json({ success: false, error: (e as Error)?.message || 'Failed to create journal' }, { status: 500 });
+      return NextResponse.json(
+        { success: false, error: 'Validation failed', details: e.issues },
+        { status: 400 }
+      );
+    return NextResponse.json(
+      {
+        success: false,
+        error: (e as Error)?.message || 'Failed to create journal',
+      },
+      { status: 500 }
+    );
   }
 }

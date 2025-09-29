@@ -5,7 +5,8 @@ import connectToDatabase from '../src/lib/mongodb.js';
 const sampleBlogPost = {
   title: 'Building Modern Web Applications with Next.js 15',
   slug: 'building-modern-web-apps-nextjs-15',
-  excerpt: 'Learn how to leverage the latest features in Next.js 15 to build fast, modern web applications with React Server Components.',
+  excerpt:
+    'Learn how to leverage the latest features in Next.js 15 to build fast, modern web applications with React Server Components.',
   content: `# Building Modern Web Applications with Next.js 15
 
 Next.js 15 represents a significant leap forward in the React ecosystem, introducing powerful features that enable developers to build faster, more efficient web applications. In this comprehensive guide, we'll explore the key features and best practices for leveraging Next.js 15 in your projects.
@@ -57,14 +58,18 @@ npm run dev
 ## Conclusion
 
 Next.js 15 provides powerful tools for building modern web applications. By understanding and leveraging these features, you can create faster, more efficient applications that provide excellent user experiences.`,
-  featuredImage: 'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=400&fit=crop',
-  images: ['https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=400&fit=crop'],
+  featuredImage:
+    'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=400&fit=crop',
+  images: [
+    'https://images.unsplash.com/photo-1517180102446-f3ece451e9d8?w=800&h=400&fit=crop',
+  ],
   category: 'Web Development',
   tags: ['Next.js', 'React', 'Web Development', 'JavaScript'],
   status: 'published',
   featured: true,
   seoTitle: 'Building Modern Web Apps with Next.js 15 - Complete Guide',
-  seoDescription: 'Learn how to leverage Next.js 15 features to build fast, modern web applications. Complete guide with examples and best practices.',
+  seoDescription:
+    'Learn how to leverage Next.js 15 features to build fast, modern web applications. Complete guide with examples and best practices.',
   readingTime: 8,
   viewCount: 1250,
   likeCount: 42,
@@ -78,7 +83,8 @@ Next.js 15 provides powerful tools for building modern web applications. By unde
 const sampleProject = {
   title: 'AI-Powered Portfolio Website',
   slug: 'ai-powered-portfolio-website',
-  description: 'Modern portfolio website with AI-powered content management and dynamic blog functionality',
+  description:
+    'Modern portfolio website with AI-powered content management and dynamic blog functionality',
   longDescription: `## AI-Powered Portfolio Website
 
 A cutting-edge portfolio website that leverages artificial intelligence to enhance content management and user experience.
@@ -103,7 +109,7 @@ A cutting-edge portfolio website that leverages artificial intelligence to enhan
 - Featured in multiple web development showcases`,
   images: [
     'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop'
+    'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&h=600&fit=crop',
   ],
   category: 'Web Development',
   technologies: ['Next.js', 'TypeScript', 'MongoDB', 'Tailwind CSS', 'Clerk'],
@@ -138,9 +144,10 @@ async function addSampleContent() {
         email: 'rohan@example.com',
         name: 'Rohan Batra',
         role: 'admin',
-        avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        avatar:
+          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       });
       await user.save();
       console.log('Created sample user:', user.name);
@@ -149,10 +156,12 @@ async function addSampleContent() {
     // Create blog post with user reference
     const blogPostWithAuthor = {
       ...sampleBlogPost,
-      author: user._id
+      author: user._id,
     };
 
-    const existingBlogPost = await BlogPost.findOne({ slug: sampleBlogPost.slug });
+    const existingBlogPost = await BlogPost.findOne({
+      slug: sampleBlogPost.slug,
+    });
     if (!existingBlogPost) {
       const blogPost = new BlogPost(blogPostWithAuthor);
       await blogPost.save();
@@ -164,7 +173,7 @@ async function addSampleContent() {
     // Create project with user reference
     const projectWithAuthor = {
       ...sampleProject,
-      author: user._id
+      author: user._id,
     };
 
     const existingProject = await Project.findOne({ slug: sampleProject.slug });
