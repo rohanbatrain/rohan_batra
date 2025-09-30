@@ -7,6 +7,8 @@ import { getPublishedProjects } from '@/lib/portfolio-service';
 import PostSummary from '@/components/blog/PostSummary';
 import ProjectCard from '@/components/portfolio/ProjectCard';
 import { Tag, FileText as FileTextIcon, FolderOpen, ArrowRight } from 'lucide-react';
+import { skillsData } from '@/data/skills';
+import { getBooleanSetting, SettingKeys } from '@/lib/settings';
 import {
   ShieldCheck,
   ShieldAlert,
@@ -27,6 +29,9 @@ export default async function SkillDetailPage({ params }: Props) {
   const skill = getSkillBySlug(slug);
   if (!skill) return notFound();
 
+  // Feature toggle: show/hide Tags panel (default hidden)
+  const showTagsPanel = await getBooleanSetting(SettingKeys.skillsTagsPanel, false);
+
   const blogQuery = encodeURIComponent(skill.blogTags[0] || skill.title);
   const projectQuery = encodeURIComponent(skill.projectTags[0] || skill.title);
 
@@ -46,6 +51,11 @@ export default async function SkillDetailPage({ params }: Props) {
   const matchedProjects = allProjects.filter(pr =>
     Array.isArray(pr.tags) && pr.tags.some(t => projectTagSet.has(String(t).toLowerCase()))
   ).slice(0, 3);
+
+  // Related skills from same category (exclude current)
+  const relatedSkills = skillsData
+    .filter(s => s.category === skill.category && s.slug !== skill.slug)
+    .slice(0, 4);
 
   return (
     <div className='min-h-screen bg-gradient-to-b from-slate-50 to-white dark:from-gray-950 dark:to-gray-900'>
@@ -101,10 +111,12 @@ export default async function SkillDetailPage({ params }: Props) {
       </section>
 
       <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10'>
+        {/* Intro sentence removed per request */}
         {/* Cybersecurity-specific sections removed as requested */}
 
-        {/* Tags */}
-        <div className='rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 p-6 md:p-8 border border-slate-200/70 dark:border-slate-800/70 shadow-sm overflow-hidden'>
+  {/* Tags */}
+  {showTagsPanel && (
+  <div className='rounded-2xl bg-slate-50/80 dark:bg-slate-900/60 p-6 md:p-8 border border-slate-200/70 dark:border-slate-800/70 shadow-sm overflow-hidden'>
           <div className='flex items-center justify-between mb-4 flex-wrap gap-2'>
             <div className='inline-flex items-center gap-2'>
               <span className='inline-flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100 dark:bg-slate-800'>
@@ -120,16 +132,21 @@ export default async function SkillDetailPage({ params }: Props) {
                 <FileTextIcon className='h-4 w-4' /> Blog tags
               </div>
               <div className='flex flex-wrap gap-2 min-w-0'>
+                {skill.blogTags.length === 0 && (
+                  <span className='text-xs text-slate-500 dark:text-slate-400'>No tags yet</span>
+                )}
                 {skill.blogTags.map(tag => (
                   <Link
                     key={`blog-${tag}`}
                     href={`/blog?tag=${encodeURIComponent(tag)}`}
+                    aria-label={`Filter blog posts by tag ${tag}`}
                     className='inline-flex items-center gap-2 rounded-full ring-1 ring-slate-200 dark:ring-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors max-w-[180px] truncate'
                   >
                     <span className='h-1.5 w-1.5 rounded-full bg-blue-500' />
                     {tag}
                   </Link>
                 ))}
+
               </div>
             </div>
             <div className='min-w-0'>
@@ -137,10 +154,14 @@ export default async function SkillDetailPage({ params }: Props) {
                 <FolderOpen className='h-4 w-4' /> Project tags
               </div>
               <div className='flex flex-wrap gap-2 min-w-0'>
+                {skill.projectTags.length === 0 && (
+                  <span className='text-xs text-slate-500 dark:text-slate-400'>No tags yet</span>
+                )}
                 {skill.projectTags.map(tag => (
                   <Link
                     key={`proj-${tag}`}
                     href={`/portfolio?tag=${encodeURIComponent(tag)}`}
+                    aria-label={`Filter projects by tag ${tag}`}
                     className='inline-flex items-center gap-2 rounded-full ring-1 ring-slate-200 dark:ring-slate-700 bg-slate-100 dark:bg-slate-800 px-3 py-1 text-xs font-medium text-slate-800 dark:text-slate-200 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors max-w-[180px] truncate'
                   >
                     <span className='h-1.5 w-1.5 rounded-full bg-purple-500' />
@@ -150,7 +171,12 @@ export default async function SkillDetailPage({ params }: Props) {
               </div>
             </div>
           </div>
-        </div>
+  </div>
+  )}
+
+        {/* Related Skills moved to the end of the page */}
+
+        {/* Practice hub removed for competitive programming as requested */}
 
         {/* Top Projects matching skill tags */}
         <section className='mt-10'>
@@ -231,9 +257,63 @@ export default async function SkillDetailPage({ params }: Props) {
         </section>
       </div>
 
-      {/* TryHackMe summary only for cybersecurity-related page */}
+      {/* TryHackMe summary only for cybersecurity-related page (single placement) */}
       {skill.slug === 'cybersecurity-engineer' && (
-        <TryHackMeSection />
+        <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10'>
+          <TryHackMeSection />
+        </div>
+      )}
+
+      {/* Related Skills (final section at the bottom) */}
+      {relatedSkills.length > 0 && (
+        <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12'>
+          <section>
+            <h2 className='text-2xl font-semibold text-gray-900 dark:text-white mb-6'>Related Skills</h2>
+            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8'>
+              {relatedSkills.map(s => {
+                const bq = encodeURIComponent((s.blogTags?.[0] ?? s.title) as string);
+                const pq = encodeURIComponent((s.projectTags?.[0] ?? s.title) as string);
+                return (
+                  <div
+                    key={s.slug}
+                    className='rounded-xl bg-white dark:bg-gray-800 shadow ring-1 ring-slate-200 dark:ring-slate-800 p-6 sm:p-8 transition-shadow hover:shadow-lg'
+                  >
+                    <div className='flex flex-col items-center text-center'>
+                      <div className='mb-4 h-12 w-12 rounded-full bg-slate-100 dark:bg-gray-700 flex items-center justify-center ring-1 ring-slate-200 dark:ring-gray-600'>
+                        <s.Icon className={`h-6 w-6 ${s.color}`} />
+                      </div>
+                      <Link
+                        href={`/skills/${s.slug}`}
+                        className='text-lg font-semibold text-slate-900 dark:text-slate-100 hover:text-blue-600 dark:hover:text-blue-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded'
+                        aria-label={`Navigate to ${s.title}`}
+                      >
+                        {s.title}
+                      </Link>
+                      <p className='mt-2 text-sm text-slate-600 dark:text-slate-300 line-clamp-2'>
+                        {s.description}
+                      </p>
+                      <div className='mt-4 flex items-center gap-3 text-sm'>
+                        <Link
+                          href={`/blog?tag=${bq}`}
+                          className='text-slate-600 dark:text-slate-300 underline underline-offset-2 hover:text-blue-600 dark:hover:text-blue-400'
+                        >
+                          Blog
+                        </Link>
+                        <span className='text-slate-400'>•</span>
+                        <Link
+                          href={`/portfolio?tag=${pq}`}
+                          className='text-slate-600 dark:text-slate-300 underline underline-offset-2 hover:text-blue-600 dark:hover:text-blue-400'
+                        >
+                          Projects
+                        </Link>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+        </div>
       )}
     </div>
   );

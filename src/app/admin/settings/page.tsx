@@ -358,6 +358,39 @@ export default function SettingsPage() {
 
       {/* Simple feature toggles */}
       <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>
+        {/* Skill page: Tags panel visibility */}
+        <Card>
+          <CardContent className='p-6 flex items-start justify-between'>
+            <div>
+              <h3 className='font-medium'>Skill Tags Panel</h3>
+              <p className='text-sm text-gray-600'>Show the Tags card on skill pages.</p>
+            </div>
+            <Switch
+              checked={Boolean(
+                data.grouped['features']?.find(
+                  s => s.key === 'features.skills.tagsPanel'
+                )?.value ?? false
+              )}
+              onCheckedChange={async enabled => {
+                await fetch('/api/admin/settings', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  credentials: 'include',
+                  body: JSON.stringify({
+                    key: 'features.skills.tagsPanel',
+                    value: enabled,
+                    type: 'boolean',
+                    category: 'features',
+                    description: 'Show the tags panel on skill pages',
+                    isPublic: false,
+                    validation: { ui: 'toggle' },
+                  }),
+                });
+                fetchSettings();
+              }}
+            />
+          </CardContent>
+        </Card>
         {/* Portfolio: show Category Match Mode control */}
         <Card>
           <CardContent className='p-6 flex items-start justify-between'>

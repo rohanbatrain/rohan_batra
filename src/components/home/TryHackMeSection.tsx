@@ -1,15 +1,31 @@
 import { getTryHackMeSummary } from '@/lib/tryhackme-service';
+import { getPublishedBlogPosts } from '@/lib/blog-service';
+import { getPublishedProjects } from '@/lib/portfolio-service';
 import Link from 'next/link';
+import RelatedContentRail from '@/components/shared/RelatedContentRail';
 
 export default async function TryHackMeSection() {
   const { profile, recentBadges, recentRooms } = await getTryHackMeSummary(6);
 
   if (!profile && recentBadges.length === 0 && recentRooms.length === 0) return null;
 
+  // Fetch related content by common security tags
+  const securityTags = ['security', 'authentication', 'jwt', 'cybersecurity'];
+  const [postsAll, projectsAll] = await Promise.all([
+    getPublishedBlogPosts(50),
+    getPublishedProjects(50),
+  ]);
+  const relatedPosts = postsAll
+    .filter(p => Array.isArray(p.tags) && p.tags.some(t => securityTags.includes(String(t).toLowerCase())))
+    .slice(0, 3);
+  const relatedProjects = projectsAll
+    .filter(pr => Array.isArray(pr.tags) && pr.tags.some(t => securityTags.includes(String(t).toLowerCase())))
+    .slice(0, 3);
+
   return (
     <section className='py-16 px-6 lg:px-8 bg-white dark:bg-gray-800'>
       <div className='mx-auto max-w-6xl'>
-        <div className='flex items-center justify-between mb-10'>
+        <div className='flex items-center justify-between mb-2'>
           <div>
             <h2 className='text-3xl font-bold text-gray-900 dark:text-white mb-2'>TryHackMe Progress</h2>
             <p className='text-gray-600 dark:text-gray-300'>Rooms completed and badges earned while sharpening security skills.</p>
@@ -18,6 +34,14 @@ export default async function TryHackMeSection() {
             <Link href={String(profile.profileUrl)} target='_blank' className='text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium transition-colors'>View Profile →</Link>
           )}
         </div>
+        {profile && (
+          <div className='mb-8 text-sm text-slate-600 dark:text-slate-400'>
+            <span className='inline-flex items-center gap-2'>
+              <span className='inline-block h-2 w-2 rounded-full bg-green-500' />
+              Rank: <strong className='text-slate-800 dark:text-slate-200'>{profile.rank || '—'}</strong> · Points: <strong className='text-slate-800 dark:text-slate-200'>{profile.points ?? 0}</strong>
+            </span>
+          </div>
+        )}
 
         {/* Stats */}
         {profile && (
@@ -95,6 +119,10 @@ export default async function TryHackMeSection() {
             )}
           </div>
         </div>
+
+        {/* Related content */}
+        <RelatedContentRail title='Related Security Articles' type='posts' items={relatedPosts} viewAllHref='/blog?tag=security' />
+        <RelatedContentRail title='Related Security Projects' type='projects' items={relatedProjects} viewAllHref='/portfolio?tag=security' />
       </div>
     </section>
   );

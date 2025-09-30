@@ -6,6 +6,9 @@ import {
 } from '@/lib/seo';
 import { getBlogPostBySlug, getPublishedBlogPosts } from '@/lib/blog-service';
 import BlogPostClient from './BlogPostClient';
+import { getPublishedProjects } from '@/lib/portfolio-service';
+import RelatedContentRail from '@/components/shared/RelatedContentRail';
+import SkillChips from '@/components/shared/SkillChips';
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -36,6 +39,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     featuredImage: post.featuredImage,
   });
 
+  // Related projects by shared tags (take top 3)
+  const allProjects = await getPublishedProjects(100);
+  const postTags = (post.tags || []).map(t => String(t));
+  const relatedProjects = allProjects
+    .filter(p => Array.isArray(p.tags) && p.tags.some(t => postTags.includes(String(t))))
+    .slice(0, 3);
+
   return (
     <>
       <script
@@ -43,6 +53,27 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
       <BlogPostClient post={post} />
+
+      <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
+        {/* Skills derived from tags */}
+        <div className='mt-10'>
+          <h3 className='text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3'>Skills</h3>
+          <SkillChips tags={postTags} />
+        </div>
+
+        {/* Explore more by primary tag */}
+        {postTags.length > 0 && (
+          <div className='mt-6 text-sm text-slate-600 dark:text-slate-400'>
+            Explore more: {' '}
+            <a className='text-blue-600 dark:text-blue-400 hover:underline' href={`/blog?tag=${encodeURIComponent(postTags[0])}`}>Blog</a>
+            {' '}·{' '}
+            <a className='text-blue-600 dark:text-blue-400 hover:underline' href={`/portfolio?tag=${encodeURIComponent(postTags[0])}`}>Projects</a>
+          </div>
+        )}
+
+        {/* Related Projects */}
+        <RelatedContentRail title='Related Projects' type='projects' items={relatedProjects} viewAllHref={postTags[0] ? `/portfolio?tag=${encodeURIComponent(postTags[0])}` : undefined} />
+      </div>
     </>
   );
 }

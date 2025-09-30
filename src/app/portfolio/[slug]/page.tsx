@@ -5,6 +5,9 @@ import {
   getPublishedProjects,
 } from '@/lib/portfolio-service';
 import ProjectDetailClient from './ProjectDetailClient';
+import { getPublishedBlogPosts } from '@/lib/blog-service';
+import RelatedContentRail from '@/components/shared/RelatedContentRail';
+import SkillChips from '@/components/shared/SkillChips';
 
 interface ProjectPageProps {
   params: Promise<{
@@ -25,7 +28,28 @@ export default async function ProjectPage({ params }: ProjectPageProps) {
     notFound();
   }
 
-  return <ProjectDetailClient project={project} />;
+  // Related posts by shared tags (take top 3)
+  const allPosts = await getPublishedBlogPosts(100);
+  const tags = (project.tags || []).map(t => String(t));
+  const relatedPosts = allPosts
+    .filter(p => Array.isArray(p.tags) && p.tags.some(t => tags.includes(String(t))))
+    .slice(0, 3);
+
+  return (
+    <>
+      <ProjectDetailClient project={project} />
+      <div className='max-w-6xl mx-auto px-4 sm:px-6 lg:px-8'>
+        {/* Built with / Skills */}
+        <div className='mt-10'>
+          <h3 className='text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3'>Built with</h3>
+          <SkillChips tags={tags} />
+        </div>
+
+        {/* Related Posts */}
+        <RelatedContentRail title='Related Articles' type='posts' items={relatedPosts} viewAllHref={tags[0] ? `/blog?tag=${encodeURIComponent(tags[0])}` : undefined} />
+      </div>
+    </>
+  );
 }
 
 // Generate static params for build time (optional)
