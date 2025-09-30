@@ -4,13 +4,12 @@ import Course from '@/models/Course';
 
 export const dynamic = 'force-dynamic';
 
-interface PageProps {
-  params: { slug: string };
-}
+type PageProps = { params: Promise<{ slug: string }> };
 
-export async function generateMetadata({ params }: PageProps) {
+export async function generateMetadata(ctx: PageProps) {
+  const { slug } = await ctx.params;
   await connectToDatabase();
-  const course = await Course.findOne({ slug: params.slug }).lean();
+  const course = await Course.findOne({ slug }).lean();
   if (!course || course.status !== 'published') {
     return { title: 'Course not found' };
   }
@@ -25,9 +24,10 @@ export async function generateMetadata({ params }: PageProps) {
   } as any;
 }
 
-export default async function CoursePublicPage({ params }: PageProps) {
+export default async function CoursePublicPage(ctx: PageProps) {
+  const { slug } = await ctx.params;
   await connectToDatabase();
-  const course = await Course.findOne({ slug: params.slug }).lean();
+  const course = await Course.findOne({ slug }).lean();
 
   if (!course) return notFound();
   // Allow preview of drafts in development via ?preview=1 (Next provides no searchParams here by default).

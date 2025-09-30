@@ -40,6 +40,7 @@ import { DeckMultiSelect, type DeckOption } from './DeckMultiSelect';
 import { slugify } from '@/lib/slug';
 import { GripVertical } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 interface CourseDetailResponse {
   course: CourseDetail;
@@ -186,6 +187,13 @@ interface ModuleFormState {
   flashcardDeckIds: string[];
 }
 
+interface ModuleFormErrors {
+  title?: string;
+  summary?: string;
+  order?: string;
+  estimatedDurationMinutes?: string;
+}
+
 const defaultModuleForm: ModuleFormState = {
   title: '',
   summary: '',
@@ -227,7 +235,7 @@ const defaultLessonForm: LessonFormState = {
 };
 
 const fetcher = (url: string) =>
-  fetch(url).then(res => {
+  fetch(url, { cache: 'no-store' }).then(res => {
     if (!res.ok) {
       throw new Error('Failed to load course');
     }
@@ -446,12 +454,14 @@ export default function CourseManagerContent({
   courseId,
   onChanged,
 }: CourseManagerContentProps) {
+  const router = useRouter();
   const { toast } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
   const [courseForm, setCourseForm] =
     useState<CourseFormState>(defaultCourseForm);
   const [moduleForm, setModuleForm] =
     useState<ModuleFormState>(defaultModuleForm);
+  const [moduleErrors, setModuleErrors] = useState<ModuleFormErrors>({});
   const [lessonForm, setLessonForm] =
     useState<LessonFormState>(defaultLessonForm);
   const [moduleList, setModuleList] = useState<ModuleDetail[]>([]);
@@ -745,6 +755,7 @@ export default function CourseManagerContent({
   const openCreateModule = () => {
     setEditingModuleId(null);
     setModuleForm(defaultModuleForm);
+    setModuleErrors({});
     setModuleDialogOpen(true);
   };
 
@@ -758,20 +769,64 @@ export default function CourseManagerContent({
         module.estimatedDurationMinutes?.toString() ?? '',
       flashcardDeckIds: module.flashcardDeckIds ?? [],
     });
+    setModuleErrors({});
     setModuleDialogOpen(true);
   };
 
+  const isNonNegativeInteger = (v: string) => {
+    if (v.trim() === '') return true; // empty means let backend default/ignore
+    if (!/^\d+$/.test(v.trim())) return false;
+    const n = Number(v);
+    return Number.isInteger(n) && n >= 0;
+  };
+
+  const validateModuleForm = (form: ModuleFormState): ModuleFormErrors => {
+    const errs: ModuleFormErrors = {};
+    const t = form.title.trim();
+    if (!t) {
+      errs.title = 'Title is required';
+    } else if (t.length < 3) {
+      errs.title = 'Title must be at least 3 characters';
+    } else if (t.length > 150) {
+      errs.title = 'Title must be 150 characters or fewer';
+    }
+
+    const s = form.summary.trim();
+    if (s && s.length > 300) {
+      errs.summary = 'Summary must be 300 characters or fewer';
+    }
+
+    if (!isNonNegativeInteger(form.order)) {
+      errs.order = 'Order must be a whole number ≥ 0';
+    }
+
+    if (!isNonNegativeInteger(form.estimatedDurationMinutes)) {
+      errs.estimatedDurationMinutes = 'Estimated minutes must be a whole number ≥ 0';
+    }
+
+    return errs;
+  };
+
+  // Re-validate as user types when dialog is open
+  useEffect(() => {
+    if (!moduleDialogOpen) return;
+    setModuleErrors(validateModuleForm(moduleForm));
+  }, [moduleForm, moduleDialogOpen]);
+
   const saveModule = async () => {
     if (!courseId) return;
-    const title = moduleForm.title.trim();
-    if (!title) {
+    const errors = validateModuleForm(moduleForm);
+    setModuleErrors(errors);
+    if (Object.keys(errors).length > 0) {
       toast({
-        title: 'Title required',
-        description: 'Module title is required.',
+        title: 'Fix validation errors',
+        description: 'Please correct the highlighted fields and try again.',
         variant: 'destructive',
       });
       return;
     }
+
+    const title = moduleForm.title.trim();
 
     try {
       setSavingModule(true);
@@ -824,6 +879,7 @@ export default function CourseManagerContent({
       setModuleDialogOpen(false);
       setEditingModuleId(null);
       setModuleForm(defaultModuleForm);
+      setModuleErrors({});
     } catch (err) {
       toast({
         title: 'Unable to save module',
@@ -878,37 +934,14 @@ export default function CourseManagerContent({
   };
 
   const openCreateLesson = (moduleId: string) => {
-    setLessonModuleId(moduleId);
-    setEditingLessonId(null);
-    setLessonSlugEdited(false);
-    setLessonForm(defaultLessonForm);
-    setLessonDialogOpen(true);
+    // Navigate to the dedicated page for creating a lesson
+    router.push(`/admin/courses/${courseId}/modules/${moduleId}/lessons/new`);
   };
 
   const openEditLesson = (moduleId: string, lesson: LessonDetail) => {
-    setLessonModuleId(moduleId);
-    setEditingLessonId(lesson.id);
-    setLessonSlugEdited(Boolean(lesson.slug));
-    setLessonForm({
-      title: lesson.title,
-      slug: lesson.slug ?? '',
-      contentType: lesson.contentType,
-      blogSlug: lesson.blogSlug ?? '',
-      standaloneContent: lesson.standaloneContent ?? '',
-      standaloneFormat:
-        (lesson.standaloneFormat as LessonFormState['standaloneFormat']) ??
-        'mdx',
-      externalResource: lesson.externalResource ?? '',
-      quizId: lesson.quizId ?? '',
-      flashcardDeckIds: lesson.flashcardDeckIds ?? [],
-      estimatedDurationMinutes: lesson.estimatedDurationMinutes.toString(),
-      isPreviewable: lesson.isPreviewable,
-      progressWeight: lesson.progressWeight.toString(),
-      releaseAt: lesson.releaseAt
-        ? new Date(lesson.releaseAt).toISOString().slice(0, 16)
-        : '',
-    });
-    setLessonDialogOpen(true);
+    router.push(
+      `/admin/courses/${courseId}/modules/${moduleId}/lessons/${lesson.id}`
+    );
   };
 
   const buildLessonPayload = () => {
@@ -950,7 +983,10 @@ export default function CourseManagerContent({
       lessonForm.contentType === 'video' &&
       lessonForm.externalResource.trim()
     ) {
-      payload.externalResource = lessonForm.externalResource.trim();
+      payload.externalResource = {
+        provider: 'custom',
+        url: lessonForm.externalResource.trim(),
+      } as any;
     }
 
     return payload;
@@ -1652,22 +1688,34 @@ export default function CourseManagerContent({
                 <Label htmlFor='module-title'>Title</Label>
                 <Input
                   id='module-title'
+                  required
+                  minLength={3}
+                  maxLength={150}
+                  aria-invalid={Boolean(moduleErrors.title) || undefined}
                   value={moduleForm.title}
                   onChange={event =>
                     handleModuleFieldChange('title', event.target.value)
                   }
                 />
+                {moduleErrors.title ? (
+                  <p className='mt-1 text-xs text-red-600'>{moduleErrors.title}</p>
+                ) : null}
               </div>
               <div>
                 <Label htmlFor='module-summary'>Summary</Label>
                 <Textarea
                   id='module-summary'
                   rows={3}
+                  maxLength={300}
+                  aria-invalid={Boolean(moduleErrors.summary) || undefined}
                   value={moduleForm.summary}
                   onChange={event =>
                     handleModuleFieldChange('summary', event.target.value)
                   }
                 />
+                {moduleErrors.summary ? (
+                  <p className='mt-1 text-xs text-red-600'>{moduleErrors.summary}</p>
+                ) : null}
               </div>
               <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
                 <div>
@@ -1676,11 +1724,17 @@ export default function CourseManagerContent({
                     id='module-order'
                     type='number'
                     min={0}
+                    step={1}
+                    inputMode='numeric'
+                    aria-invalid={Boolean(moduleErrors.order) || undefined}
                     value={moduleForm.order}
                     onChange={event =>
                       handleModuleFieldChange('order', event.target.value)
                     }
                   />
+                  {moduleErrors.order ? (
+                    <p className='mt-1 text-xs text-red-600'>{moduleErrors.order}</p>
+                  ) : null}
                 </div>
                 <div>
                   <Label htmlFor='module-duration'>Estimated minutes</Label>
@@ -1688,6 +1742,11 @@ export default function CourseManagerContent({
                     id='module-duration'
                     type='number'
                     min={0}
+                    step={1}
+                    inputMode='numeric'
+                    aria-invalid={
+                      Boolean(moduleErrors.estimatedDurationMinutes) || undefined
+                    }
                     value={moduleForm.estimatedDurationMinutes}
                     onChange={event =>
                       handleModuleFieldChange(
@@ -1696,6 +1755,9 @@ export default function CourseManagerContent({
                       )
                     }
                   />
+                  {moduleErrors.estimatedDurationMinutes ? (
+                    <p className='mt-1 text-xs text-red-600'>{moduleErrors.estimatedDurationMinutes}</p>
+                  ) : null}
                 </div>
               </div>
               <div>
@@ -1713,7 +1775,10 @@ export default function CourseManagerContent({
             <DialogClose asChild>
               <Button variant='outline'>Cancel</Button>
             </DialogClose>
-            <Button onClick={saveModule} disabled={savingModule}>
+            <Button
+              onClick={saveModule}
+              disabled={savingModule || Object.keys(moduleErrors).length > 0}
+            >
               {savingModule
                 ? 'Saving…'
                 : editingModuleId

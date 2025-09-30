@@ -35,9 +35,10 @@ function toObjectId(id: string) {
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
+  ctx: { params: Promise<{ courseId: string; moduleId: string }> }
 ) {
   try {
+    const { courseId, moduleId } = await ctx.params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -51,12 +52,12 @@ export async function GET(
       );
     }
 
-    const courseDoc = await findCourse(params.courseId);
+    const courseDoc = await findCourse(courseId);
     if (!courseDoc) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    const moduleDoc = await findModule(courseDoc._id, params.moduleId);
+    const moduleDoc = await findModule(courseDoc._id, moduleId);
     if (!moduleDoc) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 });
     }
@@ -90,9 +91,10 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
+  ctx: { params: Promise<{ courseId: string; moduleId: string }> }
 ) {
   try {
+    const { courseId, moduleId } = await ctx.params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -106,12 +108,12 @@ export async function POST(
       );
     }
 
-    const courseDoc = await findCourse(params.courseId);
+    const courseDoc = await findCourse(courseId);
     if (!courseDoc) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    const moduleDoc = await findModule(courseDoc._id, params.moduleId);
+    const moduleDoc = await findModule(courseDoc._id, moduleId);
     if (!moduleDoc) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 });
     }

@@ -31,11 +31,12 @@ async function findModule(courseId: Types.ObjectId, moduleId: string) {
 
 export async function GET(
   _: NextRequest,
-  {
-    params,
-  }: { params: { courseId: string; moduleId: string; lessonId: string } }
+  ctx: {
+    params: Promise<{ courseId: string; moduleId: string; lessonId: string }>;
+  }
 ) {
   try {
+    const { courseId, moduleId, lessonId } = await ctx.params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -49,22 +50,22 @@ export async function GET(
       );
     }
 
-    const courseDoc = await findCourse(params.courseId);
+    const courseDoc = await findCourse(courseId);
     if (!courseDoc) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    const moduleDoc = await findModule(courseDoc._id, params.moduleId);
+    const moduleDoc = await findModule(courseDoc._id, moduleId);
     if (!moduleDoc) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 });
     }
 
-    if (!Types.ObjectId.isValid(params.lessonId)) {
+    if (!Types.ObjectId.isValid(lessonId)) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
     }
 
     const lessonDoc = await CourseLessonModel.findOne({
-      _id: new Types.ObjectId(params.lessonId),
+      _id: new Types.ObjectId(lessonId),
       courseId: courseDoc._id,
     }).lean();
 
@@ -87,11 +88,12 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  {
-    params,
-  }: { params: { courseId: string; moduleId: string; lessonId: string } }
+  ctx: {
+    params: Promise<{ courseId: string; moduleId: string; lessonId: string }>;
+  }
 ) {
   try {
+    const { courseId, moduleId, lessonId } = await ctx.params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -105,22 +107,22 @@ export async function PUT(
       );
     }
 
-    const courseDoc = await findCourse(params.courseId);
+    const courseDoc = await findCourse(courseId);
     if (!courseDoc) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    const moduleDoc = await findModule(courseDoc._id, params.moduleId);
+    const moduleDoc = await findModule(courseDoc._id, moduleId);
     if (!moduleDoc) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 });
     }
 
-    if (!Types.ObjectId.isValid(params.lessonId)) {
+    if (!Types.ObjectId.isValid(lessonId)) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
     }
 
     const lessonDoc = await CourseLessonModel.findOne({
-      _id: new Types.ObjectId(params.lessonId),
+      _id: new Types.ObjectId(lessonId),
       courseId: courseDoc._id,
     });
 
@@ -332,9 +334,7 @@ export async function PUT(
       });
     }
 
-    const updatedLesson = await CourseLessonModel.findById(
-      lessonDoc._id
-    ).lean();
+    const updatedLesson = await CourseLessonModel.findById(lessonDoc._id).lean();
 
     return NextResponse.json(
       updatedLesson ? sanitizeLesson(updatedLesson) : sanitizeLesson(lessonDoc)
@@ -357,11 +357,12 @@ export async function PUT(
 
 export async function DELETE(
   _: NextRequest,
-  {
-    params,
-  }: { params: { courseId: string; moduleId: string; lessonId: string } }
+  ctx: {
+    params: Promise<{ courseId: string; moduleId: string; lessonId: string }>;
+  }
 ) {
   try {
+    const { courseId, moduleId, lessonId } = await ctx.params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -375,22 +376,22 @@ export async function DELETE(
       );
     }
 
-    const courseDoc = await findCourse(params.courseId);
+    const courseDoc = await findCourse(courseId);
     if (!courseDoc) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    const moduleDoc = await findModule(courseDoc._id, params.moduleId);
+    const moduleDoc = await findModule(courseDoc._id, moduleId);
     if (!moduleDoc) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 });
     }
 
-    if (!Types.ObjectId.isValid(params.lessonId)) {
+    if (!Types.ObjectId.isValid(lessonId)) {
       return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
     }
 
     const lessonDoc = await CourseLessonModel.findOne({
-      _id: new Types.ObjectId(params.lessonId),
+      _id: new Types.ObjectId(lessonId),
       courseId: courseDoc._id,
     });
 

@@ -21,9 +21,10 @@ const toStringId = (value: any) => value?.toString?.() ?? String(value);
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { courseId: string } }
+  ctx: { params: Promise<{ courseId: string }> }
 ) {
   try {
+    const { courseId: paramCourseId } = await ctx.params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -37,9 +38,9 @@ export async function GET(
       );
     }
 
-    const query = Types.ObjectId.isValid(params.courseId)
-      ? { _id: new Types.ObjectId(params.courseId) }
-      : { slug: params.courseId };
+    const query = Types.ObjectId.isValid(paramCourseId)
+      ? { _id: new Types.ObjectId(paramCourseId) }
+      : { slug: paramCourseId };
 
     const courseDoc = await CourseModel.findOne(query).lean();
     if (!courseDoc) {
@@ -195,9 +196,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  ctx: { params: Promise<{ courseId: string }> }
 ) {
   try {
+    const { courseId: paramCourseId } = await ctx.params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -211,9 +213,9 @@ export async function PUT(
       );
     }
 
-    const query = Types.ObjectId.isValid(params.courseId)
-      ? { _id: new Types.ObjectId(params.courseId) }
-      : { slug: params.courseId };
+    const query = Types.ObjectId.isValid(paramCourseId)
+      ? { _id: new Types.ObjectId(paramCourseId) }
+      : { slug: paramCourseId };
 
     const courseDoc = await CourseModel.findOne(query);
     if (!courseDoc) {
@@ -363,9 +365,10 @@ export async function PUT(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { courseId: string } }
+  ctx: { params: Promise<{ courseId: string }> }
 ) {
   try {
+    const { courseId: paramCourseId } = await ctx.params;
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -379,28 +382,28 @@ export async function DELETE(
       );
     }
 
-    const query = Types.ObjectId.isValid(params.courseId)
-      ? { _id: new Types.ObjectId(params.courseId) }
-      : { slug: params.courseId };
+    const query = Types.ObjectId.isValid(paramCourseId)
+      ? { _id: new Types.ObjectId(paramCourseId) }
+      : { slug: paramCourseId };
 
     const courseDoc = await CourseModel.findOne(query);
     if (!courseDoc) {
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    const courseId = courseDoc._id;
+  const courseObjectId = courseDoc._id;
 
     await Promise.all([
-      CourseLessonModel.deleteMany({ courseId }),
-      CourseModuleModel.deleteMany({ courseId }),
+      CourseLessonModel.deleteMany({ courseId: courseObjectId }),
+      CourseModuleModel.deleteMany({ courseId: courseObjectId }),
     ]);
 
     await FlashcardDeckModel.updateMany(
-      { 'linkTargets.courseId': courseId },
-      { $pull: { linkTargets: { courseId } } }
+      { 'linkTargets.courseId': courseObjectId },
+      { $pull: { linkTargets: { courseId: courseObjectId } } }
     );
 
-    await CourseModel.deleteOne({ _id: courseId });
+    await CourseModel.deleteOne({ _id: courseObjectId });
 
     return NextResponse.json({ success: true });
   } catch (error) {
