@@ -39,7 +39,6 @@ import {
   Plus,
 } from 'lucide-react';
 import Link from 'next/link';
-import { CourseManagerDialog } from './CourseManagerDialog';
 import { useDebounce } from '@/hooks/use-debounce';
 import { slugify } from '@/lib/slug';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
@@ -69,6 +68,8 @@ interface CoursesResponse {
   courses: AdminCourseSummary[];
   stats: Record<string, number>;
   total: number;
+  page: number;
+  pageSize: number;
 }
 
 interface CreateCourseForm {
@@ -150,10 +151,13 @@ function formatMinutes(minutes?: number | null) {
 
 const CoursesManagement = () => {
   const [status, setStatus] = useState('all');
+  const [visibility, setVisibility] = useState<'all' | 'public' | 'unlisted'>('all');
   const [searchInput, setSearchInput] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
   const [isNewCourseDialogOpen, setIsNewCourseDialogOpen] = useState(false);
   const [step, setStep] = useState(1);
+  const [page, setPage] = useState(1);
+  const pageSize = 24;
   const [newCourse, setNewCourse] = useState({
     title: '',
     slug: '',
@@ -196,12 +200,17 @@ const CoursesManagement = () => {
     if (status !== 'all') {
       params.set('status', status);
     }
+    if (visibility !== 'all') {
+      params.set('visibility', visibility);
+    }
     if (activeSearch) {
       params.set('search', activeSearch);
     }
+    params.set('page', String(page));
+    params.set('limit', String(pageSize));
     const qs = params.toString();
     return `/api/admin/courses${qs ? `?${qs}` : ''}`;
-  }, [status, activeSearch]);
+  }, [status, visibility, activeSearch, page]);
 
   const { data, error, isLoading, mutate } = useSWR<CoursesResponse>(
     query,
@@ -213,17 +222,26 @@ const CoursesManagement = () => {
 
   const handleStatusChange = (value: string) => {
     setStatus(value);
+    setPage(1);
+  };
+
+  const handleVisibilityChange = (value: 'all' | 'public' | 'unlisted') => {
+    setVisibility(value);
+    setPage(1);
   };
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setActiveSearch(searchInput.trim());
+    setPage(1);
   };
 
   const handleClearFilters = () => {
     setStatus('all');
+    setVisibility('all');
     setSearchInput('');
     setActiveSearch('');
+    setPage(1);
     mutate();
   };
 
@@ -291,7 +309,7 @@ const CoursesManagement = () => {
     }
     let cancelled = false;
     setIsCheckingSlug(true);
-    fetch(`/api/admin/courses/check-slug?slug=${encodeURIComponent(val)}`)
+  fetch(`/api/admin/courses/check-slug?slug=${encodeURIComponent(val)}`)
       .then(r => (r.ok ? r.json() : Promise.reject(new Error('Failed'))))
       .then((data: { isAvailable: boolean }) => {
         if (!cancelled) {
@@ -467,9 +485,11 @@ const CoursesManagement = () => {
           >
             Reset filters
           </Button>
-          <Button onClick={() => setIsNewCourseDialogOpen(true)}>
-            <Plus className='mr-2 h-4 w-4' /> New course
-          </Button>
+          <Link href='/admin/courses/create'>
+            <Button>
+              <Plus className='mr-2 h-4 w-4' /> New course
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -505,10 +525,23 @@ const CoursesManagement = () => {
               />
               <Button type='submit'>Search</Button>
             </form>
-            <div className='text-sm text-gray-500 dark:text-gray-400'>
-              Showing {data?.total ?? 0} course
-              {(data?.total ?? 0) === 1 ? '' : 's'}
+            <div className='flex items-center gap-3'>
+              <div className='text-sm text-gray-600 dark:text-gray-300'>Visibility</div>
+              <Select value={visibility} onValueChange={v => handleVisibilityChange(v as any)}>
+                <SelectTrigger className='w-[140px]'>
+                  <SelectValue placeholder='Visibility' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value='all'>All</SelectItem>
+                  <SelectItem value='public'>Public</SelectItem>
+                  <SelectItem value='unlisted'>Unlisted</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
+          </div>
+
+          <div className='mb-4 text-sm text-gray-500 dark:text-gray-400'>
+            Showing page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1} · {data?.total ?? 0} total
           </div>
 
           {isLoading ? (
@@ -547,6 +580,7 @@ const CoursesManagement = () => {
               </CardContent>
             </Card>
           ) : (
+            <>
             <div className='grid gap-4 md:grid-cols-2'>
               {data?.courses.map(course => (
                 <Card
@@ -637,313 +671,33 @@ const CoursesManagement = () => {
                 </Card>
               ))}
             </div>
+            <div className='mt-6 flex items-center justify-center gap-3'>
+              <Button
+                variant='outline'
+                size='sm'
+                disabled={(data?.page ?? page) <= 1 || isLoading}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+              <span className='text-sm text-gray-600 dark:text-gray-300'>
+                Page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1}
+              </span>
+              <Button
+                variant='outline'
+                size='sm'
+                disabled={isLoading || ((data?.page ?? page) >= (data?.pageSize && data?.total ? Math.ceil((data.total) / (data.pageSize)) : 1))}
+                onClick={() => setPage(p => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+            </>
           )}
         </TabsContent>
       </Tabs>
 
-      <Dialog
-        open={isNewCourseDialogOpen}
-        onOpenChange={open => {
-          if (!open) {
-            setStep(1); // Reset step when dialog closes
-          }
-          setIsNewCourseDialogOpen(open);
-        }}
-      >
-        <DialogContent className='sm:max-w-2xl'>
-          <DialogHeader>
-            <DialogTitle>Create a new course (Step {step} of 4)</DialogTitle>
-            <DialogDescription>
-              Enter the details of the new course. You can add modules and lessons
-              after creation.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogBody>
-            {step === 1 && (
-              <div className='space-y-4'>
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='title'>Title</Label>
-                    <Input
-                      id='title'
-                      name='title'
-                      value={newCourse.title}
-                      onChange={handleInputChange}
-                      placeholder='e.g. Introduction to Next.js'
-                    />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='slug'>Slug</Label>
-                    <Input
-                      id='slug'
-                      name='slug'
-                      value={newCourse.slug}
-                      onChange={handleInputChange}
-                      placeholder='e.g. nextjs-intro'
-                    />
-                    <div className='flex items-center gap-2 text-xs pt-1 min-h-[20px]'>
-                      {!newCourse.slug ? (
-                        <span className='text-muted-foreground'>Auto-generated from title</span>
-                      ) : isCheckingSlug ? (
-                        <span className='flex items-center gap-1 text-muted-foreground'>
-                          <Loader2 className='h-3 w-3 animate-spin' /> Checking availability…
-                        </span>
-                      ) : !isSlugFormatValid ? (
-                        <span className='flex items-center gap-1 text-red-600 dark:text-red-400'>
-                          <XCircle className='h-3 w-3' /> Invalid format
-                        </span>
-                      ) : isSlugAvailable === false ? (
-                        <span className='flex items-center gap-1 text-red-600 dark:text-red-400'>
-                          <XCircle className='h-3 w-3' /> Slug is taken
-                        </span>
-                      ) : isSlugAvailable === true ? (
-                        <span className='flex items-center gap-1 text-emerald-600 dark:text-emerald-400'>
-                          <CheckCircle2 className='h-3 w-3' /> Available
-                        </span>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='subtitle'>Subtitle</Label>
-                  <Input
-                    id='subtitle'
-                    name='subtitle'
-                    value={newCourse.subtitle}
-                    onChange={handleInputChange}
-                    placeholder='A brief, catchy subtitle'
-                  />
-                </div>
-                <div className='space-y-2'>
-                  <Label htmlFor='summary'>Summary</Label>
-                  <Textarea
-                    id='summary'
-                    name='summary'
-                    value={newCourse.summary}
-                    onChange={handleInputChange}
-                    placeholder='A short summary of the course content.'
-                    rows={4}
-                  />
-                </div>
-              </div>
-            )}
-            {step === 2 && (
-              <div className='space-y-4'>
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                  <div className='space-y-2'>
-                    <Label>Difficulty</Label>
-                    <Select
-                      name='difficulty'
-                      value={newCourse.difficulty}
-                      onValueChange={value =>
-                        setNewCourse(prev => ({ ...prev, difficulty: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select difficulty' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='beginner'>Beginner</SelectItem>
-                        <SelectItem value='intermediate'>Intermediate</SelectItem>
-                        <SelectItem value='advanced'>Advanced</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className='space-y-2'>
-                    <Label>Status</Label>
-                    <Select
-                      name='status'
-                      value={newCourse.status}
-                      onValueChange={value =>
-                        setNewCourse(prev => ({ ...prev, status: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select status' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='draft'>Draft</SelectItem>
-                        <SelectItem value='published'>Published</SelectItem>
-                        <SelectItem value='archived'>Archived</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className='space-y-2'>
-                    <Label>Visibility</Label>
-                    <Select
-                      name='visibility'
-                      value={newCourse.visibility}
-                      onValueChange={value =>
-                        setNewCourse(prev => ({ ...prev, visibility: value }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder='Select visibility' />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value='public'>Public</SelectItem>
-                        <SelectItem value='unlisted'>Unlisted</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='estimatedDurationMinutes'>
-                      Estimated minutes
-                    </Label>
-                    <Input
-                      id='estimatedDurationMinutes'
-                      name='estimatedDurationMinutes'
-                      value={newCourse.estimatedDurationMinutes}
-                      onChange={handleInputChange}
-                      placeholder='e.g. 120'
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-            {step === 3 && (
-              <div className='space-y-4'>
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='categories'>Categories</Label>
-                    <Input
-                      id='categories'
-                      name='categories'
-                      value={newCourse.categories}
-                      onChange={handleInputChange}
-                      placeholder='Comma separated (e.g. web,apis,backend)'
-                    />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='tags'>Tags</Label>
-                    <Input
-                      id='tags'
-                      name='tags'
-                      value={newCourse.tags}
-                      onChange={handleInputChange}
-                      placeholder='Comma separated tags'
-                    />
-                  </div>
-                </div>
-                <div className='flex items-center justify-between rounded-md border p-4'>
-                  <div>
-                    <Label htmlFor='isFeatured'>Feature this course</Label>
-                    <p className='text-sm text-muted-foreground'>
-                      Featured courses are highlighted in marketing sections.
-                    </p>
-                  </div>
-                  <Switch
-                    id='isFeatured'
-                    checked={newCourse.isFeatured}
-                    onCheckedChange={checked =>
-                      setNewCourse(prev => ({ ...prev, isFeatured: checked }))
-                    }
-                  />
-                </div>
-              </div>
-            )}
-            {step === 4 && (
-              <div className='space-y-4'>
-                <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
-                  <div className='space-y-2'>
-                    <Label htmlFor='heroImage'>Hero image URL or shortcode</Label>
-                    <Input
-                      id='heroImage'
-                      name='heroImage'
-                      value={newCourse.heroImage}
-                      onChange={handleInputChange}
-                      placeholder='https:// or asset://'
-                    />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='heroLottieId'>Hero lottie asset ID</Label>
-                    <Input
-                      id='heroLottieId'
-                      name='heroLottieId'
-                      value={newCourse.heroLottieId}
-                      onChange={handleInputChange}
-                      placeholder='Optional ObjectId for animated hero'
-                    />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='prerequisiteCourseIds'>
-                      Prerequisite course IDs
-                    </Label>
-                    <Input
-                      id='prerequisiteCourseIds'
-                      name='prerequisiteCourseIds'
-                      value={newCourse.prerequisiteCourseIds}
-                      onChange={handleInputChange}
-                      placeholder='Comma separated ObjectIds'
-                    />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='prerequisiteBlogSlugs'>
-                      Prerequisite blog slugs
-                    </Label>
-                    <Input
-                      id='prerequisiteBlogSlugs'
-                      name='prerequisiteBlogSlugs'
-                      value={newCourse.prerequisiteBlogSlugs}
-                      onChange={handleInputChange}
-                      placeholder='Comma separated slugs'
-                    />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='recommendedBlogSlugs'>
-                      Recommended blog slugs
-                    </Label>
-                    <Input
-                      id='recommendedBlogSlugs'
-                      name='recommendedBlogSlugs'
-                      value={newCourse.recommendedBlogSlugs}
-                      onChange={handleInputChange}
-                      placeholder='Comma separated slugs'
-                    />
-                  </div>
-                  <div className='space-y-2'>
-                    <Label htmlFor='recommendedBookIds'>
-                      Recommended book IDs
-                    </Label>
-                    <Input
-                      id='recommendedBookIds'
-                      name='recommendedBookIds'
-                      value={newCourse.recommendedBookIds}
-                      onChange={handleInputChange}
-                      placeholder='Comma separated ObjectIds'
-                    />
-                  </div>
-                </div>
-              </div>
-            )}
-          </DialogBody>
-          <DialogFooter>
-            <div className='flex w-full justify-between'>
-              <DialogClose asChild>
-                <Button variant='outline'>Cancel</Button>
-              </DialogClose>
-              <div className='flex gap-2'>
-                {step > 1 && (
-                  <Button variant='outline' onClick={() => setStep(step - 1)}>
-                    Back
-                  </Button>
-                )}
-                {step < 4 ? (
-                  <Button onClick={() => setStep(step + 1)}>Next</Button>
-                ) : (
-                  <Button
-                    onClick={handleCreateCourse}
-                    disabled={isCreating}
-                    className='sm:w-auto'
-                  >
-                    {isCreating ? 'Creating...' : 'Create Course'}
-                  </Button>
-                )}
-              </div>
-            </div>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      {/* Creation moved to dedicated page */}
 
       {/* Dialog-based manager deprecated in favor of dedicated page */}
     </div>

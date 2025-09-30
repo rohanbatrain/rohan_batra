@@ -101,26 +101,15 @@ export function ProjectCard({
         {/* Title Row */}
         <div className='flex items-start justify-between mb-3'>
           <div>
-            <div className='flex items-center gap-2 mb-1'>
-              {/* Primary category slot (render invisible placeholder when missing) */}
-              {primaryCategory ? (
+            <div className='flex items-center mb-1'>
+              {primaryCategory && (
                 <span className='inline-flex items-center text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-200 dark:border-gray-600'>
                   {primaryCategory}
                 </span>
-              ) : (
-                <span className='inline-flex items-center justify-center min-w-[3.5rem] text-[10px] px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 invisible'>
-                  &nbsp;
-                </span>
               )}
-
-              {/* Forked slot (render invisible placeholder when not forked) */}
-              {project.tags?.includes('forked') ? (
-                <span className='inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800'>
+              {project.tags?.includes('forked') && (
+                <span className={'inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 ' + (primaryCategory ? 'ml-2' : '')}>
                   <GitFork className='w-3 h-3' /> Forked
-                </span>
-              ) : (
-                <span className='inline-flex items-center justify-center min-w-[3.5rem] text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 invisible'>
-                  &nbsp;
                 </span>
               )}
             </div>

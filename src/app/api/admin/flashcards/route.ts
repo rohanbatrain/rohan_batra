@@ -128,9 +128,10 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const visibility = searchParams.get('visibility');
     const search = searchParams.get('search');
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
     const limit = Math.min(
-      parseInt(searchParams.get('limit') || '100', 10),
-      200
+      Math.max(parseInt(searchParams.get('limit') || '24', 10), 1),
+      100
     );
 
     const filter: Record<string, unknown> = {};
@@ -155,8 +156,11 @@ export async function GET(request: NextRequest) {
       filter.createdBy = currentUser._id;
     }
 
+    const totalCount = await FlashcardDeckModel.countDocuments(filter);
+    const skip = (page - 1) * limit;
     const decks = await FlashcardDeckModel.find(filter)
       .sort({ updatedAt: -1 })
+      .skip(skip)
       .limit(limit)
       .lean();
 
@@ -171,7 +175,9 @@ export async function GET(request: NextRequest) {
         acc[doc._id] = doc.count;
         return acc;
       }, {}),
-      total: decks.length,
+      total: totalCount,
+      page,
+      pageSize: limit,
     });
   } catch (error) {
     console.error('Error fetching flashcard decks:', error);

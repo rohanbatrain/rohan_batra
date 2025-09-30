@@ -55,6 +55,17 @@ export const skillsData: SkillDef[] = [
     projectTags: ['security', 'auth', 'jwt'],
   },
   {
+    slug: 'competitive-programming',
+    title: 'Competitive Programming',
+    description:
+      'Data structures & algorithms, problem-solving, contests (LeetCode, Codeforces, GfG)',
+    Icon: Code,
+    color: 'text-orange-600',
+    category: 'backend',
+    blogTags: ['competitive programming', 'dsa', 'algorithms', 'leetcode', 'codeforces'],
+    projectTags: ['competitive programming', 'dsa', 'algorithms', 'data structures'],
+  },
+  {
     slug: 'full-stack-developer',
     title: 'Full Stack Developer',
     description: 'End-to-end web development with Flask, MongoDB, and Flutter',

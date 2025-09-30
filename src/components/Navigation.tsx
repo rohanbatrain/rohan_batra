@@ -14,6 +14,7 @@ import {
   Code,
   FileText,
   LogIn,
+  ChevronDown,
 } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
@@ -67,7 +68,7 @@ export function Navigation({
 
   const isActiveRoute = (href: string) => {
     if (href === '/') return pathname === '/';
-    return pathname.startsWith(href);
+    return Boolean(pathname && pathname.startsWith(href));
   };
 
   return (
@@ -110,7 +111,42 @@ export function Navigation({
             >
               {navigationItems.map(item => {
                 const isActive = isActiveRoute(item.href);
-                return (
+                const hasChildren = Array.isArray((item as any).children) && (item as any).children.length;
+                return hasChildren ? (
+                  <div key={item.name} className='relative group'>
+                    <button
+                      className={`flex items-center gap-1 relative px-3 py-2 text-sm font-medium transition-colors duration-200 ${
+                        isActive
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400'
+                      }`}
+                    >
+                      {item.name}
+                      <ChevronDown className='h-4 w-4' />
+                      {isActive && (
+                        <motion.div
+                          layoutId='activeTab'
+                          className='absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400'
+                          initial={false}
+                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        />
+                      )}
+                    </button>
+                    <div className='absolute left-0 mt-2 w-56 rounded-md border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 shadow-lg opacity-0 scale-95 group-hover:opacity-100 group-hover:scale-100 transition origin-top min-w-max z-50'>
+                      <div className='py-1'>
+                        {(item as any).children.map((child: any) => (
+                          <Link
+                            key={child.name}
+                            href={child.href}
+                            className='block px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          >
+                            {child.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
                   <Link
                     key={item.name}
                     href={item.href}
@@ -126,11 +162,7 @@ export function Navigation({
                         layoutId='activeTab'
                         className='absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400'
                         initial={false}
-                        transition={{
-                          type: 'spring',
-                          stiffness: 400,
-                          damping: 30,
-                        }}
+                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
                       />
                     )}
                   </Link>
@@ -234,6 +266,7 @@ export function Navigation({
                 {navigationItems.map((item, index) => {
                   const isActive = isActiveRoute(item.href);
                   const Icon = item.icon;
+                  const hasChildren = Array.isArray((item as any).children) && (item as any).children.length;
                   return (
                     <motion.div
                       key={item.name}
@@ -241,17 +274,37 @@ export function Navigation({
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 0.2, delay: index * 0.1 }}
                     >
-                      <Link
-                        href={item.href}
-                        className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
-                          isActive
-                            ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
-                        }`}
-                      >
-                        <Icon className='h-5 w-5' />
-                        <span>{item.name}</span>
-                      </Link>
+                      {!hasChildren ? (
+                        <Link
+                          href={item.href}
+                          className={`flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium transition-colors ${
+                            isActive
+                              ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          }`}
+                        >
+                          <Icon className='h-5 w-5' />
+                          <span>{item.name}</span>
+                        </Link>
+                      ) : (
+                        <div>
+                          <div className='flex items-center space-x-3 px-4 py-3 rounded-lg text-base font-medium text-gray-700 dark:text-gray-300'>
+                            <Icon className='h-5 w-5' />
+                            <span>{item.name}</span>
+                          </div>
+                          <div className='pl-10 space-y-1'>
+                            {(item as any).children.map((child: any) => (
+                              <Link
+                                key={child.name}
+                                href={child.href}
+                                className='block px-4 py-2 rounded-lg text-base text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
+                              >
+                                {child.name}
+                              </Link>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                     </motion.div>
                   );
                 })}

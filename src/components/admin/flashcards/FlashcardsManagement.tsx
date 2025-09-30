@@ -15,13 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+// creation dialog removed in favor of dedicated page
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -70,6 +64,8 @@ interface FlashcardsResponse {
   decks: FlashcardDeck[];
   stats: Record<string, number>;
   total: number;
+  page: number;
+  pageSize: number;
 }
 
 const fetcher = (url: string) =>
@@ -132,7 +128,6 @@ export default function FlashcardsManagement() {
   const [visibility, setVisibility] = useState<'all' | 'public' | 'unlisted' | 'private'>('all');
   const [searchInput, setSearchInput] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
-  const [createOpen, setCreateOpen] = useState(false);
   const [form, setForm] = useState<CreateDeckForm>(defaultForm);
   const { toast } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
@@ -140,6 +135,8 @@ export default function FlashcardsManagement() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isBulkProcessing, setIsBulkProcessing] = useState(false);
 
+  const [page, setPage] = useState(1);
+  const pageSize = 24;
   const query = useMemo(() => {
     const params = new URLSearchParams();
     if (status !== 'all') {
@@ -151,9 +148,11 @@ export default function FlashcardsManagement() {
     if (activeSearch) {
       params.set('search', activeSearch);
     }
+    params.set('page', String(page));
+    params.set('limit', String(pageSize));
     const qs = params.toString();
     return `/api/admin/flashcards${qs ? `?${qs}` : ''}`;
-  }, [status, visibility, activeSearch]);
+  }, [status, visibility, activeSearch, page]);
 
   const { data, error, isLoading, mutate } = useSWR<FlashcardsResponse>(
     query,
@@ -176,6 +175,7 @@ export default function FlashcardsManagement() {
     setVisibility('all');
     setSearchInput('');
     setActiveSearch('');
+    setPage(1);
     mutate();
   };
 
@@ -227,8 +227,7 @@ export default function FlashcardsManagement() {
         title: 'Deck created',
         description: 'Flashcard deck saved successfully.',
       });
-      setCreateOpen(false);
-      setForm(defaultForm);
+  setForm(defaultForm);
       const created = await response.json().catch(() => null);
       mutate();
       if (created?.id) {
@@ -306,10 +305,17 @@ export default function FlashcardsManagement() {
     if (!ok) return;
     try {
       setIsBulkProcessing(true);
-      await Promise.all(
-        selectedIds.map(id => fetch(`/api/admin/flashcards/${id}`, { method: 'DELETE' }))
-      );
-      toast({ title: 'Deleted', description: `${selectedIds.length} deck(s) deleted` });
+      const res = await fetch('/api/admin/flashcards/bulk', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds }),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || 'Bulk delete failed');
+      }
+      const { deleted } = await res.json().catch(() => ({ deleted: selectedIds.length }));
+      toast({ title: 'Deleted', description: `${deleted} deck(s) deleted` });
       setSelectedIds([]);
       mutate();
     } catch (err) {
@@ -342,9 +348,11 @@ export default function FlashcardsManagement() {
           >
             Reset filters
           </Button>
-          <Button onClick={() => setCreateOpen(true)}>
-            <Plus className='mr-2 h-4 w-4' /> New deck
-          </Button>
+          <Link href='/admin/flashcards/create'>
+            <Button>
+              <Plus className='mr-2 h-4 w-4' /> New deck
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -396,7 +404,7 @@ export default function FlashcardsManagement() {
                 </Select>
               </div>
               <div className='text-sm text-gray-500 dark:text-gray-400'>
-                Showing {data?.total ?? 0} deck{(data?.total ?? 0) === 1 ? '' : 's'}
+                Showing page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1} &middot; {data?.total ?? 0} total
               </div>
             </div>
           </div>
@@ -431,9 +439,11 @@ export default function FlashcardsManagement() {
                 <p className='text-gray-500 dark:text-gray-400'>
                   No flashcard decks found. Create one to get started.
                 </p>
-                <Button onClick={() => setCreateOpen(true)}>
-                  <Plus className='mr-2 h-4 w-4' /> Create deck
-                </Button>
+                <Link href='/admin/flashcards/create'>
+                  <Button>
+                    <Plus className='mr-2 h-4 w-4' /> Create deck
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ) : (
@@ -596,17 +606,34 @@ export default function FlashcardsManagement() {
                 </Card>
               ))}
             </div>
+            <div className='mt-6 flex items-center justify-center gap-3'>
+              <Button
+                variant='outline'
+                size='sm'
+                disabled={(data?.page ?? page) <= 1 || isLoading}
+                onClick={() => setPage(p => Math.max(1, p - 1))}
+              >
+                Previous
+              </Button>
+              <span className='text-sm text-gray-600 dark:text-gray-300'>
+                Page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1}
+              </span>
+              <Button
+                variant='outline'
+                size='sm'
+                disabled={isLoading || ((data?.page ?? page) >= (data?.pageSize && data?.total ? Math.ceil((data.total) / (data.pageSize)) : 1))}
+                onClick={() => setPage(p => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
             </>
           )}
         </TabsContent>
       </Tabs>
 
-      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className='max-w-lg'>
-          <DialogHeader>
-            <DialogTitle>Create flashcard deck</DialogTitle>
-          </DialogHeader>
-
+      {/* Create deck form removed: use dedicated page */}
+      {/*
           <div className='space-y-4'>
             <div className='space-y-2'>
               <label className='text-sm font-medium text-gray-700 dark:text-gray-200'>
@@ -748,18 +775,9 @@ export default function FlashcardsManagement() {
             </div>
           </div>
 
-          <DialogFooter className='mt-6'>
-            <Button variant='outline' onClick={() => setCreateOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleCreateDeck}>
-              <Plus className='mr-2 h-4 w-4' /> Create deck
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          */}
 
-      {/* Dialog-based manager removed in favor of dedicated page */}
+      {/* Creation moved to dedicated page */}
 
       {ConfirmDialog}
     </div>

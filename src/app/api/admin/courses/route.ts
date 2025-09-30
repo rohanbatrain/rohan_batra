@@ -138,8 +138,9 @@ export async function GET(request: NextRequest) {
     const visibility = searchParams.get('visibility');
     const difficulty = searchParams.get('difficulty');
     const search = searchParams.get('search');
+    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
     const limit = Math.min(
-      parseInt(searchParams.get('limit') || '50', 10),
+      Math.max(parseInt(searchParams.get('limit') || '24', 10), 1),
       100
     );
 
@@ -168,8 +169,11 @@ export async function GET(request: NextRequest) {
       ];
     }
 
+    const totalCount = await CourseModel.countDocuments(filter);
+    const skip = (page - 1) * limit;
     const courses = await CourseModel.find(filter)
       .sort({ updatedAt: -1 })
+      .skip(skip)
       .limit(limit)
       .lean();
 
@@ -240,7 +244,9 @@ export async function GET(request: NextRequest) {
         },
         {}
       ),
-      total: result.length,
+      total: totalCount,
+      page,
+      pageSize: limit,
     });
   } catch (error) {
     console.error('Error fetching admin courses:', error);
@@ -307,6 +313,16 @@ export async function POST(request: NextRequest) {
       .filter(id => Types.ObjectId.isValid(id))
       .map(id => new Types.ObjectId(id));
 
+    if (parsed.status === 'published') {
+      // Guardrail: prevent publishing empty courses (no lessons) at creation
+      // Frontend also guides users, but we enforce here as a safety net.
+      // New courses start with lessonCount=0, so block publish on create.
+      return NextResponse.json(
+        { error: 'Cannot publish a course with zero lessons. Create modules/lessons first.' },
+        { status: 400 }
+      );
+    }
+
     const course = new CourseModel({
       slug,
       title: parsed.title,
@@ -348,7 +364,7 @@ export async function POST(request: NextRequest) {
         : undefined,
       structureVersion: 1,
       createdBy: currentUser?._id,
-      publishedAt: parsed.status === 'published' ? new Date() : undefined,
+      publishedAt: undefined,
     });
 
     await course.save();
