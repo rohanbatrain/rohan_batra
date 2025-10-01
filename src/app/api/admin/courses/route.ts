@@ -39,7 +39,8 @@ export const CourseInputSchema = z.object({
   slug: slugSchema.optional().or(z.literal('')).optional(),
   subtitle: z.string().max(200).optional().or(z.literal('')),
   summary: z.string().min(50).max(400),
-  heroImage: z.string().url().optional().or(z.literal('')),
+  // Accept raw URLs or shortcodes; we'll resolve server-side
+  heroImage: z.string().optional().or(z.literal('')),
   heroLottieId: z.string().optional().or(z.literal('')),
   difficulty: z
     .enum(['beginner', 'intermediate', 'advanced'])
@@ -66,9 +67,11 @@ export const CourseInputSchema = z.object({
     .object({
       title: z.string().max(70).optional().or(z.literal('')),
       description: z.string().max(160).optional().or(z.literal('')),
-      image: z.string().url().optional().or(z.literal('')),
+  // Accept raw URLs or shortcodes; we'll resolve server-side
+  image: z.string().optional().or(z.literal('')),
     })
-    .optional(),
+    .optional()
+    .nullable(),
 });
 
 export const sanitizeCourse = (

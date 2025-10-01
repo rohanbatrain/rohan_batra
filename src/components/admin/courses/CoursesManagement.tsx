@@ -37,11 +37,17 @@ import {
   BookOpen,
   AlertCircle,
   Plus,
+  Trash2,
+  Copy,
+  Archive,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import Link from 'next/link';
 import { useDebounce } from '@/hooks/use-debounce';
 import { slugify } from '@/lib/slug';
 import { CheckCircle2, XCircle, Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface AdminCourseSummary {
   id: string;
@@ -127,7 +133,7 @@ const statusTabs = [
 
 const statusColors: Record<string, string> = {
   draft:
-    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-200',
+    'bg-yellow-100 text-gray-900 dark:bg-yellow-900/50 dark:text-yellow-100',
   published:
     'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200',
   archived:
@@ -135,10 +141,10 @@ const statusColors: Record<string, string> = {
 };
 
 const difficultyColors: Record<string, string> = {
-  beginner: 'bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200',
+  beginner: 'bg-blue-100 text-gray-900 dark:bg-blue-900/50 dark:text-blue-100',
   intermediate:
-    'bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-200',
-  advanced: 'bg-rose-100 text-rose-700 dark:bg-rose-900/50 dark:text-rose-200',
+    'bg-purple-100 text-gray-900 dark:bg-purple-900/50 dark:text-purple-100',
+  advanced: 'bg-rose-100 text-gray-900 dark:bg-rose-900/50 dark:text-rose-100',
 };
 
 function formatMinutes(minutes?: number | null) {
@@ -180,6 +186,10 @@ const CoursesManagement = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [managerOpen, setManagerOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
+  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [isBulkArchiving, setIsBulkArchiving] = useState(false);
+  const [isBulkPublishing, setIsBulkPublishing] = useState(false);
   const { toast } = useToast();
 
   // Slug helpers
@@ -465,6 +475,238 @@ const CoursesManagement = () => {
     }
   };
 
+  const handleSelectAll = () => {
+    if (!data?.courses) return;
+    if (selectedCourses.size === data.courses.length) {
+      setSelectedCourses(new Set());
+    } else {
+      setSelectedCourses(new Set(data.courses.map(c => c.id)));
+    }
+  };
+
+  const handleSelectCourse = (courseId: string) => {
+    const newSelected = new Set(selectedCourses);
+    if (newSelected.has(courseId)) {
+      newSelected.delete(courseId);
+    } else {
+      newSelected.add(courseId);
+    }
+    setSelectedCourses(newSelected);
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedCourses.size === 0) return;
+    
+    if (!confirm(`Are you sure you want to delete ${selectedCourses.size} course(s)? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      setIsBulkDeleting(true);
+      const deletePromises = Array.from(selectedCourses).map(courseId =>
+        fetch(`/api/admin/courses/${courseId}`, { method: 'DELETE' })
+      );
+      
+      const results = await Promise.allSettled(deletePromises);
+      const succeeded = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+
+      toast({
+        title: 'Bulk delete completed',
+        description: `Successfully deleted ${succeeded} course(s).${failed > 0 ? ` Failed: ${failed}` : ''}`,
+        variant: failed > 0 ? 'destructive' : 'default',
+      });
+
+      setSelectedCourses(new Set());
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Bulk delete failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  };
+
+  const handleBulkArchive = async () => {
+    if (selectedCourses.size === 0) return;
+
+    try {
+      setIsBulkArchiving(true);
+      const updatePromises = Array.from(selectedCourses).map(courseId =>
+        fetch(`/api/admin/courses/${courseId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'archived' }),
+        })
+      );
+
+      const results = await Promise.allSettled(updatePromises);
+      const succeeded = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+
+      toast({
+        title: 'Bulk archive completed',
+        description: `Successfully archived ${succeeded} course(s).${failed > 0 ? ` Failed: ${failed}` : ''}`,
+        variant: failed > 0 ? 'destructive' : 'default',
+      });
+
+      setSelectedCourses(new Set());
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Bulk archive failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkArchiving(false);
+    }
+  };
+
+  const handleBulkPublish = async () => {
+    if (selectedCourses.size === 0) return;
+
+    try {
+      setIsBulkPublishing(true);
+      const updatePromises = Array.from(selectedCourses).map(courseId =>
+        fetch(`/api/admin/courses/${courseId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'published' }),
+        })
+      );
+
+      const results = await Promise.allSettled(updatePromises);
+      const succeeded = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+
+      toast({
+        title: 'Bulk publish completed',
+        description: `Successfully published ${succeeded} course(s).${failed > 0 ? ` Failed: ${failed}` : ''}`,
+        variant: failed > 0 ? 'destructive' : 'default',
+      });
+
+      setSelectedCourses(new Set());
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Bulk publish failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkPublishing(false);
+    }
+  };
+
+  const handleBulkUnpublish = async () => {
+    if (selectedCourses.size === 0) return;
+
+    try {
+      setIsBulkPublishing(true);
+      const updatePromises = Array.from(selectedCourses).map(courseId =>
+        fetch(`/api/admin/courses/${courseId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'draft' }),
+        })
+      );
+
+      const results = await Promise.allSettled(updatePromises);
+      const succeeded = results.filter(r => r.status === 'fulfilled').length;
+      const failed = results.filter(r => r.status === 'rejected').length;
+
+      toast({
+        title: 'Bulk unpublish completed',
+        description: `Successfully unpublished ${succeeded} course(s).${failed > 0 ? ` Failed: ${failed}` : ''}`,
+        variant: failed > 0 ? 'destructive' : 'default',
+      });
+
+      setSelectedCourses(new Set());
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Bulk unpublish failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkPublishing(false);
+    }
+  };
+
+  const handleDeleteCourse = async (courseId: string, courseTitle: string) => {
+    if (!confirm(`Are you sure you want to delete "${courseTitle}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/admin/courses/${courseId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete course');
+      }
+
+      toast({
+        title: 'Course deleted',
+        description: `"${courseTitle}" has been deleted successfully.`,
+      });
+
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Delete failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDuplicateCourse = async (courseId: string, courseTitle: string) => {
+    try {
+      const response = await fetch(`/api/admin/courses/${courseId}`);
+      if (!response.ok) throw new Error('Failed to fetch course');
+      
+      const originalCourse = await response.json();
+      
+      const newCourseData = {
+        ...originalCourse,
+        title: `${originalCourse.title} (Copy)`,
+        slug: `${originalCourse.slug}-copy-${Date.now()}`,
+        status: 'draft',
+        isFeatured: false,
+      };
+
+      const createResponse = await fetch('/api/admin/courses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newCourseData),
+      });
+
+      if (!createResponse.ok) {
+        throw new Error('Failed to duplicate course');
+      }
+
+      toast({
+        title: 'Course duplicated',
+        description: `Created a copy of "${courseTitle}".`,
+      });
+
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Duplication failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <div className='space-y-6'>
       <div className='flex flex-col gap-4 md:flex-row md:items-center md:justify-between'>
@@ -544,6 +786,78 @@ const CoursesManagement = () => {
             Showing page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1} · {data?.total ?? 0} total
           </div>
 
+          {/* Bulk Actions Toolbar */}
+          {selectedCourses.size > 0 && (
+            <div className='mb-4 flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50 px-4 py-3 dark:border-blue-800 dark:bg-blue-950/30'>
+              <div className='flex items-center gap-3'>
+                <span className='text-sm font-medium text-blue-900 dark:text-blue-100'>
+                  {selectedCourses.size} course(s) selected
+                </span>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() => setSelectedCourses(new Set())}
+                >
+                  Clear selection
+                </Button>
+              </div>
+              <div className='flex items-center gap-2'>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={handleBulkPublish}
+                  disabled={isBulkPublishing || isBulkArchiving || isBulkDeleting}
+                >
+                  {isBulkPublishing ? (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  ) : (
+                    <Eye className='mr-2 h-4 w-4' />
+                  )}
+                  Publish
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={handleBulkUnpublish}
+                  disabled={isBulkPublishing || isBulkArchiving || isBulkDeleting}
+                >
+                  {isBulkPublishing ? (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  ) : (
+                    <EyeOff className='mr-2 h-4 w-4' />
+                  )}
+                  Unpublish
+                </Button>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={handleBulkArchive}
+                  disabled={isBulkArchiving || isBulkPublishing || isBulkDeleting}
+                >
+                  {isBulkArchiving ? (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  ) : (
+                    <Archive className='mr-2 h-4 w-4' />
+                  )}
+                  Archive
+                </Button>
+                <Button
+                  size='sm'
+                  variant='destructive'
+                  onClick={handleBulkDelete}
+                  disabled={isBulkDeleting || isBulkArchiving || isBulkPublishing}
+                >
+                  {isBulkDeleting ? (
+                    <Loader2 className='mr-2 h-4 w-4 animate-spin' />
+                  ) : (
+                    <Trash2 className='mr-2 h-4 w-4' />
+                  )}
+                  Delete
+                </Button>
+              </div>
+            </div>
+          )}
+
           {isLoading ? (
             <div className='grid gap-4 md:grid-cols-2'>
               {[1, 2, 3, 4].map(key => (
@@ -581,6 +895,19 @@ const CoursesManagement = () => {
             </Card>
           ) : (
             <>
+            {/* Select All Checkbox */}
+            {data && data.courses.length > 0 && (
+              <div className='mb-4 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-gray-600 dark:bg-gray-800'>
+                <Checkbox
+                  checked={data.courses.length > 0 && selectedCourses.size === data.courses.length}
+                  onCheckedChange={handleSelectAll}
+                  id='select-all'
+                />
+                <Label htmlFor='select-all' className='cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-100'>
+                  Select all courses on this page
+                </Label>
+              </div>
+            )}
             <div className='grid gap-4 md:grid-cols-2'>
               {data?.courses.map(course => (
                 <Card
@@ -588,8 +915,20 @@ const CoursesManagement = () => {
                   className='border border-gray-200 dark:border-gray-800 shadow-sm'
                 >
                   <CardHeader className='space-y-2'>
-                    <div className='flex flex-wrap items-center justify-between gap-2'>
-                      <CardTitle className='text-xl'>{course.title}</CardTitle>
+                    <div className='flex flex-wrap items-start justify-between gap-2'>
+                      <div className='flex items-start gap-3 flex-1'>
+                        <Checkbox
+                          checked={selectedCourses.has(course.id)}
+                          onCheckedChange={() => handleSelectCourse(course.id)}
+                          id={`course-${course.id}`}
+                          className='mt-1'
+                        />
+                        <div className='flex-1'>
+                          <Label htmlFor={`course-${course.id}`} className='cursor-pointer'>
+                            <CardTitle className='text-xl'>{course.title}</CardTitle>
+                          </Label>
+                        </div>
+                      </div>
                       <div className='flex items-center gap-2'>
                         <Link href={`/admin/courses/${course.id}`}>
                           <Button size='sm' variant='outline'>Manage</Button>
@@ -629,7 +968,7 @@ const CoursesManagement = () => {
                   </CardHeader>
                   <CardContent className='space-y-4'>
                     <div className='space-y-2'>
-                      <div className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>
+                      <div className='text-xs uppercase tracking-wide text-gray-600 dark:text-gray-300 font-semibold'>
                         Flashcard decks
                       </div>
                       {course.flashcardDecks.length > 0 ? (
@@ -645,12 +984,12 @@ const CoursesManagement = () => {
                           ))}
                         </div>
                       ) : (
-                        <p className='text-sm text-gray-500 dark:text-gray-400 italic'>
+                        <p className='text-sm text-gray-600 dark:text-gray-300 italic'>
                           No flashcard decks linked yet.
                         </p>
                       )}
                     </div>
-                    <div className='flex items-center justify-between border-t border-dashed pt-3 text-sm text-gray-500 dark:text-gray-400'>
+                    <div className='flex items-center justify-between border-t border-dashed pt-3 text-sm text-gray-600 dark:text-gray-300'>
                       <span>
                         Last updated{' '}
                         {new Date(course.updatedAt).toLocaleDateString()}
@@ -659,13 +998,34 @@ const CoursesManagement = () => {
                         <Link
                           href={`/courses/${course.slug}`}
                           target='_blank'
-                          className='text-blue-600 dark:text-blue-300 hover:underline'
+                          className='text-blue-600 dark:text-blue-400 hover:underline'
                         >
                           View public page
                         </Link>
                       ) : (
-                        <span className='italic text-muted-foreground'>Public page available after publishing</span>
+                        <span className='italic text-gray-500 dark:text-gray-400'>Public page available after publishing</span>
                       )}
+                    </div>
+                    {/* Quick Actions */}
+                    <div className='flex items-center gap-2 border-t border-dashed pt-3'>
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => handleDuplicateCourse(course.id, course.title)}
+                        className='flex-1'
+                      >
+                        <Copy className='mr-2 h-3 w-3' />
+                        Duplicate
+                      </Button>
+                      <Button
+                        size='sm'
+                        variant='outline'
+                        onClick={() => handleDeleteCourse(course.id, course.title)}
+                        className='flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30'
+                      >
+                        <Trash2 className='mr-2 h-3 w-3' />
+                        Delete
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>

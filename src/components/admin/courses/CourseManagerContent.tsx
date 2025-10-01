@@ -664,17 +664,15 @@ export default function CourseManagerContent({
       }
 
       if (
-        courseForm.seoTitle ||
-        courseForm.seoDescription ||
-        courseForm.seoImage
+        courseForm.seoTitle.trim() ||
+        courseForm.seoDescription.trim() ||
+        courseForm.seoImage.trim()
       ) {
         payload.seo = {
           title: courseForm.seoTitle.trim() || undefined,
           description: courseForm.seoDescription.trim() || undefined,
           image: courseForm.seoImage.trim() || undefined,
         };
-      } else {
-        payload.seo = null;
       }
 
       if (courseForm.releaseAt) {
@@ -682,8 +680,6 @@ export default function CourseManagerContent({
           publishAt: new Date(courseForm.releaseAt).toISOString(),
           timezone: courseForm.releaseTimezone || undefined,
         };
-      } else {
-        payload.releaseSchedule = null;
       }
 
       const response = await fetch(`/api/admin/courses/${courseId}`, {

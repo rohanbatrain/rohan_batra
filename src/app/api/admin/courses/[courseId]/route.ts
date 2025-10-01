@@ -308,6 +308,20 @@ export async function PUT(
     }
 
     if (parsed.status) {
+      // Prevent publishing empty courses: must have at least one lesson
+      if (
+        parsed.status === 'published' &&
+        (typeof courseDoc.lessonCount !== 'number' || courseDoc.lessonCount <= 0)
+      ) {
+        return NextResponse.json(
+          {
+            error:
+              'Cannot publish a course with zero lessons. Create modules/lessons first.',
+          },
+          { status: 400 }
+        );
+      }
+
       courseDoc.status = parsed.status;
       if (parsed.status === 'published' && !courseDoc.publishedAt) {
         courseDoc.publishedAt = new Date();

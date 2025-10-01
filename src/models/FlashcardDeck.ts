@@ -153,7 +153,6 @@ const FlashcardDeckSchema = new Schema<IFlashcardDeck>(
   }
 );
 
-FlashcardDeckSchema.index({ slug: 1 }, { unique: true });
 FlashcardDeckSchema.index({ status: 1, visibility: 1 });
 FlashcardDeckSchema.index({ createdBy: 1 });
 

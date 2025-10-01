@@ -42,7 +42,7 @@ const CurriculumLessonSchema = z
   .object({
     lessonId: objectIdSchema.optional(),
     title: z.string().min(3).max(200),
-    contentType: z.enum(['blog', 'standalone', 'video', 'quiz']),
+  contentType: z.enum(['blog', 'standalone', 'video', 'quiz', 'flashcards']),
     blogSlug: slugSchema.optional().nullable(),
     standaloneContent: z.string().min(1).optional().nullable(),
     standaloneFormat: z.enum(['mdx', 'novelsh']).optional(),

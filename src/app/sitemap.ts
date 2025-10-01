@@ -4,6 +4,7 @@ import { getProjectsWithPagination } from '@/lib/portfolio-service';
 import { BlogPostWithAuthor } from '@/types/blog-post';
 import { Project } from '@/types/project';
 import connectToDatabase from '@/lib/mongodb';
+import Course from '@/models/Course';
 import { listPublishedBooks, listPublishedChapters } from '@/lib/book-service';
 import Character from '@/models/Character';
 import CharacterJournal from '@/models/CharacterJournal';
@@ -100,7 +101,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
       .filter(Boolean) as MetadataRoute.Sitemap;
 
-    // Books and chapters (public only)
+  // Books and chapters (public only)
     const bookPages: MetadataRoute.Sitemap = [];
     const { books } = await listPublishedBooks({ page: 1, limit: 100 });
     for (const b of books as any[]) {
@@ -122,6 +123,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       }
     }
 
+    // Courses (public + published)
+    const courses = await Course.find({ status: 'published', visibility: 'public' })
+      .select('slug updatedAt publishedAt createdAt')
+      .lean();
+    const coursePages = courses.map((c: any) => ({
+      url: `${baseUrl}/courses/${c.slug}`,
+      lastModified: new Date(c.updatedAt || c.publishedAt || c.createdAt),
+      changeFrequency: 'weekly' as const,
+      priority: 0.6,
+    }));
+
     return [
       ...staticPages,
       ...blogPages,
@@ -129,6 +141,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       ...characterPages,
       ...journalPages,
       ...bookPages,
+      {
+        url: `${baseUrl}/courses`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      },
+      ...coursePages,
     ];
   } catch (error) {
     console.error('Error generating sitemap:', error);

@@ -1,0 +1,127 @@
+openapi: 3.0.3
+info:
+  title: Public Courses (server-rendered shapes)
+  version: 0.1.0
+  description: Internal shapes used by server-rendered pages for courses index and detail.
+servers: []
+paths:
+  /courses:
+    get:
+      summary: Courses index (server-rendered)
+      parameters:
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: difficulty
+          schema:
+            oneOf:
+              - type: string
+              - type: array
+                items: { type: string }
+          description: beginner|intermediate|advanced
+        - in: query
+          name: tags
+          schema: { type: string }
+          description: comma-delimited or repeatable
+        - in: query
+          name: sort
+          schema: { type: string, enum: [newest, az] }
+        - in: query
+          name: page
+          schema: { type: integer, minimum: 1, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, minimum: 1, maximum: 48, default: 24 }
+      responses:
+        '200':
+          description: List of courses for rendering
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CourseListItem'
+                  page:
+                    type: integer
+                  total:
+                    type: integer
+  /courses/{slug}:
+    get:
+      summary: Course detail (server-rendered)
+      parameters:
+        - in: path
+          name: slug
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Course detail for rendering
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CourseDetail'
+        '404':
+          description: Not found or not public/published
+components:
+  schemas:
+    CourseListItem:
+      type: object
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        summary: { type: string }
+        heroImage: { type: string, nullable: true }
+        difficulty: { type: string, enum: [beginner, intermediate, advanced] }
+        tags:
+          type: array
+          items: { type: string }
+        estimatedDurationMinutes: { type: integer, nullable: true }
+        lessonCount: { type: integer, nullable: true }
+        updatedAt: { type: string, format: date-time }
+    CourseDetail:
+      type: object
+      properties:
+        id: { type: string }
+        slug: { type: string }
+        title: { type: string }
+        subtitle: { type: string }
+        summary: { type: string }
+        heroImage: { type: string, nullable: true }
+        difficulty: { type: string, enum: [beginner, intermediate, advanced] }
+        tags:
+          type: array
+          items: { type: string }
+        estimatedDurationMinutes: { type: integer, nullable: true }
+        lessonCount: { type: integer, nullable: true }
+        updatedAt: { type: string, format: date-time }
+        modules:
+          type: array
+          items:
+            $ref: '#/components/schemas/Module'
+    Module:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        order: { type: integer }
+        summary: { type: string, nullable: true }
+        estimatedDurationMinutes: { type: integer, nullable: true }
+        lessons:
+          type: array
+          items:
+            $ref: '#/components/schemas/Lesson'
+    Lesson:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        contentType: { type: string, enum: [blog, standalone, video, quiz, flashcards, other] }
+        estimatedMinutes: { type: integer, nullable: true }
+        isPreviewable: { type: boolean }
+        blogSlug: { type: string, nullable: true }
