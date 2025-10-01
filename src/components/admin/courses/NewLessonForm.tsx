@@ -64,6 +64,7 @@ type LessonFormState = {
   isPreviewable: boolean;
   progressWeight: string;
   releaseAt: string;
+  parentLessonId: string; // empty string = none
 };
 
 const defaultLessonForm: LessonFormState = {
@@ -80,6 +81,7 @@ const defaultLessonForm: LessonFormState = {
   isPreviewable: false,
   progressWeight: '1',
   releaseAt: '',
+  parentLessonId: '',
 };
 
 export default function NewLessonForm({ courseId, moduleId }: { courseId: string; moduleId: string }) {
@@ -95,6 +97,12 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
   const module = useMemo(() => {
     return data?.modules?.find(m => m.id === moduleId) ?? null;
   }, [data?.modules, moduleId]);
+
+  type LessonListItem = { id: string; title: string; parentLessonId?: string | null };
+  const { data: moduleLessons } = useSWR<{ lessons: LessonListItem[] }>(
+    `/api/admin/courses/${courseId}/modules/${moduleId}/lessons`,
+    fetcher
+  );
 
   const deckOptions = useMemo(() => data?.decks ?? [], [data?.decks]);
 
@@ -140,7 +148,8 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
     if (lessonForm.quizId.trim()) payload.quizId = lessonForm.quizId.trim();
     if (lessonForm.releaseAt) payload.releaseAt = new Date(lessonForm.releaseAt).toISOString();
     if (lessonForm.contentType === 'standalone') payload.standaloneFormat = lessonForm.standaloneFormat;
-    if (lessonForm.contentType === 'video' && lessonForm.externalResource.trim()) payload.externalResource = lessonForm.externalResource.trim();
+    if (lessonForm.contentType === 'video' && lessonForm.externalResource.trim()) payload.externalResource = { provider: 'custom', url: lessonForm.externalResource.trim() };
+    if (lessonForm.parentLessonId) payload.parentLessonId = lessonForm.parentLessonId;
     return payload;
   };
 
@@ -239,6 +248,20 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
         </div>
       ) : (
         <section className='space-y-4'>
+          <div>
+            <Label htmlFor='parent-lesson'>Parent lesson</Label>
+            <Select value={lessonForm.parentLessonId} onValueChange={v => handleField('parentLessonId', v)}>
+              <SelectTrigger>
+                <SelectValue placeholder='None (top-level lesson)' />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value=''>None</SelectItem>
+                {(moduleLessons?.lessons ?? []).filter(l => !l.parentLessonId).map(l => (
+                  <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div>
             <Label htmlFor='lesson-title'>Title</Label>
             <Input id='lesson-title' value={lessonForm.title} onChange={e => handleTitle(e.target.value)} />

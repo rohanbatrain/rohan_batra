@@ -139,10 +139,57 @@ export async function PUT(
     );
 
     const body = await request.json();
-    const parsed = LessonUpdateSchema.parse(body);
+  const parsed = LessonUpdateSchema.parse(body);
 
     if (parsed.title !== undefined) {
       lessonDoc.title = parsed.title;
+    }
+    // Handle parentLessonId updates: allow null to clear, enforce same-module and no self-parent
+    if (parsed.parentLessonId !== undefined) {
+      if (!parsed.parentLessonId) {
+        lessonDoc.parentLessonId = undefined;
+      } else {
+        if (!Types.ObjectId.isValid(parsed.parentLessonId)) {
+          return NextResponse.json(
+            { error: 'Invalid parent lesson' },
+            { status: 400 }
+          );
+        }
+        if (parsed.parentLessonId === lessonDoc._id.toString()) {
+          return NextResponse.json(
+            { error: 'A lesson cannot be its own parent' },
+            { status: 400 }
+          );
+        }
+        const parent = await CourseLessonModel.findOne({
+          _id: new Types.ObjectId(parsed.parentLessonId),
+          courseId: courseDoc._id,
+        }).lean();
+        if (!parent) {
+          return NextResponse.json(
+            { error: 'Parent lesson not found' },
+            { status: 404 }
+          );
+        }
+        if (parent.moduleId.toString() !== lessonDoc.moduleId.toString()) {
+          return NextResponse.json(
+            { error: 'Parent lesson must be in the same module' },
+            { status: 400 }
+          );
+        }
+        // Cycle prevention: walk up ancestors to ensure we never hit the current lesson
+        let cursor: any | null = parent;
+        while (cursor && cursor.parentLessonId) {
+          if (cursor.parentLessonId.toString() === lessonDoc._id.toString()) {
+            return NextResponse.json(
+              { error: 'Invalid parent: would create a cycle' },
+              { status: 400 }
+            );
+          }
+          cursor = await CourseLessonModel.findById(cursor.parentLessonId).lean();
+        }
+        lessonDoc.parentLessonId = new Types.ObjectId(parsed.parentLessonId);
+      }
     }
 
     if (parsed.slug !== undefined) {
@@ -259,6 +306,27 @@ export async function PUT(
       }
     }
 
+    if (parsed.childOrder !== undefined) {
+      const ids = (parsed.childOrder || [])
+        .filter((id: string) => Types.ObjectId.isValid(id))
+        .map((id: string) => new Types.ObjectId(id));
+      if (ids.length > 0) {
+        // Ensure all children exist in same course/module and are children of this lesson
+        const children = await CourseLessonModel.find({
+          _id: { $in: ids },
+          courseId: courseDoc._id,
+          moduleId: lessonDoc.moduleId,
+          parentLessonId: lessonDoc._id,
+        }).select(['_id']);
+        const existingIds = new Set(children.map(c => c._id.toString()));
+        lessonDoc.childOrder = ids.filter((id: Types.ObjectId) =>
+          existingIds.has(id.toString())
+        );
+      } else {
+        lessonDoc.childOrder = [];
+      }
+    }
+
     if (parsed.releaseAt !== undefined) {
       lessonDoc.releaseAt = parsed.releaseAt
         ? new Date(parsed.releaseAt)
@@ -312,6 +380,8 @@ export async function PUT(
       await nextModuleDoc.save();
 
       lessonDoc.moduleId = nextModuleDoc._id;
+      // When moving modules, clear parent to avoid cross-module linkage
+      lessonDoc.parentLessonId = undefined;
     }
 
     await lessonDoc.save();

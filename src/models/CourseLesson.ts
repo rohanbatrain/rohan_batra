@@ -23,6 +23,8 @@ export interface ICourseLesson
   };
   prerequisiteLessonIds: mongoose.Types.ObjectId[];
   flashcardDeckIds?: mongoose.Types.ObjectId[];
+  parentLessonId?: mongoose.Types.ObjectId | null;
+  childOrder?: mongoose.Types.ObjectId[];
 }
 
 const externalResourceSchema = new Schema(
@@ -124,6 +126,17 @@ const CourseLessonSchema = new Schema<ICourseLesson>(
       type: assetsSchema,
       default: undefined,
     },
+    parentLessonId: {
+      type: Schema.Types.ObjectId,
+      ref: 'CourseLesson',
+      default: null,
+      index: true,
+    },
+    childOrder: {
+      type: [Schema.Types.ObjectId],
+      ref: 'CourseLesson',
+      default: [],
+    },
     estimatedDurationMinutes: {
       type: Number,
       required: true,
@@ -160,6 +173,20 @@ const CourseLessonSchema = new Schema<ICourseLesson>(
         if (json._id) {
           json.id = json._id.toString();
           delete json._id;
+        }
+        if (json.parentLessonId && typeof json.parentLessonId !== 'string') {
+          try {
+            (json as any).parentLessonId = (json as any).parentLessonId.toString();
+          } catch {}
+        }
+        if (Array.isArray((json as any).childOrder)) {
+          (json as any).childOrder = (json as any).childOrder.map((id: any) => {
+            try {
+              return id.toString();
+            } catch {
+              return id;
+            }
+          });
         }
         delete json.__v;
         return json;

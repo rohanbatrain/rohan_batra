@@ -41,6 +41,7 @@ import { slugify } from '@/lib/slug';
 import { GripVertical } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CourseDetailResponse {
   course: CourseDetail;
@@ -259,6 +260,8 @@ interface SortableModuleCardProps {
     activeId: string,
     overId?: string
   ) => void;
+  onToggleSelect: (lessonId: string, selected: boolean) => void;
+  selectedIds: Set<string>;
 }
 
 function SortableModuleCard({
@@ -270,6 +273,8 @@ function SortableModuleCard({
   onEditLesson,
   onDeleteLesson,
   onLessonReorder,
+  onToggleSelect,
+  selectedIds,
 }: SortableModuleCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: module.id });
@@ -369,6 +374,8 @@ function SortableModuleCard({
                   deckLookup={deckLookup}
                   onEdit={() => onEditLesson(module.id, lesson)}
                   onDelete={() => onDeleteLesson(module.id, lesson)}
+                  selected={selectedIds.has(lesson.id)}
+                  onToggle={checked => onToggleSelect(lesson.id, checked)}
                 />
               ))}
             </SortableContext>
@@ -388,6 +395,8 @@ interface SortableLessonRowProps {
   deckLookup: Map<string, DeckOption>;
   onEdit: () => void;
   onDelete: () => void;
+  selected: boolean;
+  onToggle: (checked: boolean) => void;
 }
 
 function SortableLessonRow({
@@ -395,6 +404,8 @@ function SortableLessonRow({
   deckLookup,
   onEdit,
   onDelete,
+  selected,
+  onToggle,
 }: SortableLessonRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: lesson.id });
@@ -420,6 +431,7 @@ function SortableLessonRow({
           >
             <GripVertical className='h-4 w-4' />
           </button>
+          <Checkbox checked={selected} onCheckedChange={v => onToggle(Boolean(v))} aria-label='Select lesson for bulk action' />
           <div>
             <div className='font-medium'>{lesson.title}</div>
             <div className='text-xs text-muted-foreground'>
@@ -475,6 +487,8 @@ export default function CourseManagerContent({
   const [lessonModuleId, setLessonModuleId] = useState<string | null>(null);
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [lessonSlugEdited, setLessonSlugEdited] = useState(false);
+  const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
+  const [bulkParentByModule, setBulkParentByModule] = useState<Record<string, string>>({});
 
   const query = useMemo(() => {
     if (!courseId) {
@@ -1133,6 +1147,33 @@ export default function CourseManagerContent({
     }
   };
 
+  const bulkAssignParent = async (moduleId: string) => {
+    if (!courseId) return;
+    const ids = Array.from(selectedLessons);
+    if (ids.length === 0) {
+      toast({ title: 'No lessons selected', description: 'Select lessons to assign a parent.', variant: 'destructive' });
+      return;
+    }
+    const parentId = bulkParentByModule[moduleId] || '';
+    try {
+      const response = await fetch(`/api/admin/courses/${courseId}/modules/${moduleId}/lessons/bulk-parent`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lessonIds: ids, parentLessonId: parentId || null }),
+      });
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        throw new Error(payload.error || 'Failed to set parent');
+      }
+      toast({ title: 'Parent updated', description: 'Selected lessons updated.' });
+      setSelectedLessons(new Set());
+      await mutate();
+      onChanged?.();
+    } catch (err) {
+      toast({ title: 'Unable to set parent', description: err instanceof Error ? err.message : 'Unknown error', variant: 'destructive' });
+    }
+  };
+
   const persistModuleOrder = async (orderedModules: ModuleDetail[]) => {
     if (!courseId) return;
     try {
@@ -1271,6 +1312,14 @@ export default function CourseManagerContent({
                 onEditLesson={openEditLesson}
                 onDeleteLesson={deleteLesson}
                 onLessonReorder={handleLessonReorder}
+                onToggleSelect={(id, checked) => {
+                  setSelectedLessons(prev => {
+                    const next = new Set(prev);
+                    if (checked) next.add(id); else next.delete(id);
+                    return next;
+                  });
+                }}
+                selectedIds={selectedLessons}
               />
             ))}
           </div>
@@ -1658,12 +1707,37 @@ export default function CourseManagerContent({
           <TabsContent value='modules' className='space-y-6'>
             <div className='flex items-center justify-between'>
               <h2 className='text-lg font-semibold'>Modules</h2>
-              <Button size='sm' onClick={openCreateModule}>
-                Add module
-              </Button>
+              <div className='flex items-center gap-2'>
+                <Button size='sm' onClick={openCreateModule}>Add module</Button>
+              </div>
             </div>
 
             {renderModules()}
+
+            {/* Bulk set parent controls per module */}
+            {moduleList.map(module => (
+              <div key={`bulk-${module.id}`} className='flex flex-wrap items-center gap-2 rounded-md border border-dashed border-gray-300 p-3 dark:border-gray-700'>
+                <div className='text-sm font-medium'>Bulk set parent in “{module.title}”</div>
+                <Select
+                  value={bulkParentByModule[module.id] ?? ''}
+                  onValueChange={v => setBulkParentByModule(prev => ({ ...prev, [module.id]: v }))}
+                >
+                  <SelectTrigger className='w-56'>
+                    <SelectValue placeholder='None (top-level)' />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value=''>None</SelectItem>
+                    {module.lessons
+                      .filter(l => !('parentLessonId' in l) || (l as any).parentLessonId == null)
+                      .map(l => (
+                        <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <Button size='sm' variant='outline' onClick={() => bulkAssignParent(module.id)}>Apply to selected</Button>
+                <span className='ml-auto text-xs text-muted-foreground'>{selectedLessons.size} selected</span>
+              </div>
+            ))}
           </TabsContent>
         </Tabs>
       ) : null}

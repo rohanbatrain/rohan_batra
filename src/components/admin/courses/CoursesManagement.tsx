@@ -144,7 +144,7 @@ const difficultyColors: Record<string, string> = {
   beginner: 'bg-blue-100 text-gray-900 dark:bg-blue-900/50 dark:text-blue-100',
   intermediate:
     'bg-purple-100 text-gray-900 dark:bg-purple-900/50 dark:text-purple-100',
-  advanced: 'bg-rose-100 text-gray-900 dark:bg-rose-900/50 dark:text-rose-100',
+  advanced: 'bg-rose-100 text-gray-900 dark:bg-rose-900/70 dark:text-rose-100',
 };
 
 function formatMinutes(minutes?: number | null) {

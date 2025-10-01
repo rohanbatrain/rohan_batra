@@ -1,0 +1,53 @@
+<svg width="1600" height="1200" viewBox="0 0 1600 1200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g1" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#E3F2FF"/>
+      <stop offset="50%" stop-color="#ECE9FF"/>
+      <stop offset="100%" stop-color="#FDE7F3"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#5B8CFF"/>
+      <stop offset="100%" stop-color="#A855F7"/>
+    </linearGradient>
+    <filter id="blur1" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="80"/>
+    </filter>
+  </defs>
+  <rect width="1600" height="1200" fill="url(#g1)"/>
+  <circle cx="250" cy="200" r="180" fill="#C7D2FE" opacity="0.35" filter="url(#blur1)"/>
+  <circle cx="1450" cy="280" r="220" fill="#FBCFE8" opacity="0.35" filter="url(#blur1)"/>
+  <circle cx="800" cy="1050" r="240" fill="#93C5FD" opacity="0.25" filter="url(#blur1)"/>
+  <g opacity="0.1">
+    <path d="M0 200 H1600" stroke="#1F2937"/>
+    <path d="M0 400 H1600" stroke="#1F2937"/>
+    <path d="M0 600 H1600" stroke="#1F2937"/>
+    <path d="M0 800 H1600" stroke="#1F2937"/>
+    <path d="M0 1000 H1600" stroke="#1F2937"/>
+    <path d="M200 0 V1200" stroke="#1F2937"/>
+    <path d="M400 0 V1200" stroke="#1F2937"/>
+    <path d="M600 0 V1200" stroke="#1F2937"/>
+    <path d="M800 0 V1200" stroke="#1F2937"/>
+    <path d="M1000 0 V1200" stroke="#1F2937"/>
+    <path d="M1200 0 V1200" stroke="#1F2937"/>
+    <path d="M1400 0 V1200" stroke="#1F2937"/>
+  </g>
+  <g transform="translate(520,340)">
+    <rect x="0" y="0" rx="20" ry="20" width="560" height="360" fill="#ffffff" opacity="0.9" stroke="#E5E7EB"/>
+    <rect x="40" y="60" rx="12" ry="12" width="480" height="40" fill="#EEF2FF"/>
+    <rect x="40" y="120" rx="12" ry="12" width="420" height="40" fill="#F1F5F9"/>
+    <rect x="40" y="180" rx="12" ry="12" width="380" height="40" fill="#F1F5F9"/>
+    <rect x="40" y="240" rx="12" ry="12" width="340" height="40" fill="#F1F5F9"/>
+    <circle cx="80" cy="40" r="8" fill="#60A5FA"/>
+    <circle cx="104" cy="40" r="8" fill="#A78BFA"/>
+    <circle cx="128" cy="40" r="8" fill="#F472B6"/>
+  </g>
+  <g transform="translate(1120,220)">
+    <rect x="-40" y="-40" rx="32" ry="32" width="320" height="220" fill="url(#g1)" stroke="#E5E7EB"/>
+    <g transform="translate(56,28)">
+      <rect x="0" y="0" width="56" height="72" rx="8" fill="#60A5FA"/>
+      <rect x="24" y="-16" width="56" height="72" rx="8" fill="#34D399"/>
+      <rect x="48" y="-32" width="56" height="72" rx="8" fill="#F59E0B"/>
+    </g>
+  </g>
+  
+</svg>

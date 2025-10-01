@@ -24,12 +24,44 @@ export function buildOrderedOutline(modules: any[], lessons: any[]) {
     if (arr) arr.push(l);
   }
   return modules.map((m: any) => {
-    const ordered = Array.isArray(m.lessonIds) && m.lessonIds.length
+    const all = (lessonsByModule.get(String(m._id)) || []) as any[];
+    // Top-level lessons (no parent)
+    const top = all.filter(l => !l.parentLessonId);
+    const orderedTop = Array.isArray(m.lessonIds) && m.lessonIds.length
       ? (m.lessonIds as any[])
-          .map((id: any) => (lessonsByModule.get(String(m._id)) || []).find(l => String(l._id) === String(id)))
+          .map((id: any) => top.find(l => String(l._id) === String(id)))
           .filter(Boolean)
-      : (lessonsByModule.get(String(m._id)) || []).sort((a: any, b: any) => a.title.localeCompare(b.title));
-    return { ...m, lessons: ordered };
+      : top.sort((a: any, b: any) => a.title.localeCompare(b.title));
+    // Attach sub-lessons grouped by parent
+    const childrenMap = new Map<string, any[]>();
+    for (const l of all) {
+      if (l.parentLessonId) {
+        const k = String(l.parentLessonId);
+        if (!childrenMap.has(k)) childrenMap.set(k, []);
+        childrenMap.get(k)!.push(l);
+      }
+    }
+    const withChildren = orderedTop.map((l: any) => {
+      const children = childrenMap.get(String(l._id)) || [];
+      let orderedChildren = children;
+      if (Array.isArray(l.childOrder) && l.childOrder.length) {
+        const idSet = new Set(l.childOrder.map((id: any) => String(id)));
+        const map = new Map(children.map((c: any) => [String(c._id), c]));
+        orderedChildren = l.childOrder
+          .map((id: any) => map.get(String(id)))
+          .filter(Boolean);
+        // Append any remaining children not in childOrder (new ones) alphabetically
+        const remaining = children.filter((c: any) => !idSet.has(String(c._id)));
+        orderedChildren = [
+          ...orderedChildren,
+          ...remaining.sort((a: any, b: any) => a.title.localeCompare(b.title)),
+        ];
+      } else {
+        orderedChildren = children.sort((a: any, b: any) => a.title.localeCompare(b.title));
+      }
+      return { ...l, subLessons: orderedChildren };
+    });
+    return { ...m, lessons: withChildren };
   });
 }
 
@@ -69,7 +101,7 @@ export default async function CoursePublicPage(ctx: PageProps) {
 
   const moduleIds = modules.map((m: any) => m._id);
   const lessons = await CourseLesson.find({ courseId: course._id, moduleId: { $in: moduleIds } })
-    .select('moduleId title contentType blogSlug estimatedDurationMinutes isPreviewable')
+    .select('moduleId title contentType blogSlug estimatedDurationMinutes isPreviewable parentLessonId')
     .lean();
   const outline = buildOrderedOutline(modules as any[], lessons as any[]);
 
@@ -91,6 +123,11 @@ export default async function CoursePublicPage(ctx: PageProps) {
 
   return (
     <main className='min-h-screen bg-gradient-to-b from-background to-muted/20'>
+      <style>{`
+        /* Hide the native disclosure marker so only our custom chevron appears */
+        details > summary::-webkit-details-marker { display: none; }
+        details > summary::marker { content: ''; }
+      `}</style>
       <script
         type='application/ld+json'
         // eslint-disable-next-line react/no-danger
@@ -155,12 +192,23 @@ export default async function CoursePublicPage(ctx: PageProps) {
                   </div>
                   <div className='text-xs text-gray-600 dark:text-gray-400'>Duration</div>
                 </div>
-                <div className='rounded-lg border border-gray-200 bg-white/60 dark:border-gray-700 dark:bg-gray-800/60 p-3 backdrop-blur-sm'>
-                  <div className='text-2xl font-bold text-gray-900 dark:text-white'>
-                    {progress?.percentageComplete ?? 0}%
+                {enrollment && progress ? (
+                  <div className='rounded-lg border border-gray-200 bg-white/60 dark:border-gray-700 dark:bg-gray-800/60 p-3 backdrop-blur-sm'>
+                    <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                      {progress?.percentageComplete ?? 0}%
+                    </div>
+                    <div className='text-xs text-gray-600 dark:text-gray-400'>Complete</div>
                   </div>
-                  <div className='text-xs text-gray-600 dark:text-gray-400'>Complete</div>
-                </div>
+                ) : (
+                  <div className='rounded-lg border border-gray-200 bg-white/60 dark:border-gray-700 dark:bg-gray-800/60 p-3 backdrop-blur-sm'>
+                    <div className='text-2xl font-bold text-gray-900 dark:text-white'>
+                      {course.difficulty
+                        ? `${course.difficulty.charAt(0).toUpperCase()}${course.difficulty.slice(1)}`
+                        : '—'}
+                    </div>
+                    <div className='text-xs text-gray-600 dark:text-gray-400'>Level</div>
+                  </div>
+                )}
               </div>
               
               {/* CTA Section */}
@@ -229,16 +277,18 @@ export default async function CoursePublicPage(ctx: PageProps) {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={course.heroImage}
-                    alt={`${course.title} hero`}
+                    alt={`${course.title} cover`}
                     className='h-full w-full object-cover'
                   />
                 </div>
               ) : (
-                <div className='relative aspect-[4/3] overflow-hidden rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 dark:from-blue-900/30 dark:to-purple-900/30 flex items-center justify-center border border-gray-200 dark:border-gray-700'>
-                  <div className='text-center'>
-                    <div className='text-6xl mb-4'>📚</div>
-                    <p className='text-gray-600 dark:text-gray-400'>Course Image</p>
-                  </div>
+                <div className='relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700'>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src='/course-hero-default.svg'
+                    alt={`${course.title} cover`}
+                    className='h-full w-full object-cover'
+                  />
                 </div>
               )}
             </div>
@@ -283,15 +333,16 @@ export default async function CoursePublicPage(ctx: PageProps) {
         ) : (
           <div className='space-y-4'>
             {outline.map((m: any, i: number) => (
-              <div
+              <details
                 key={String(m._id)}
-                className='group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800'
+                open={i === 0}
+                className='group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 [&>summary::-webkit-details-marker]:hidden'
               >
-                {/* Module Header */}
-                <div className='border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white p-6 dark:border-gray-700 dark:from-gray-800 dark:to-gray-800/50'>
+                {/* Module Header (summary) */}
+                <summary className='cursor-pointer border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white p-6 list-none marker:content-none dark:border-gray-700 dark:from-gray-800 dark:to-gray-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl hover:bg-white/60 dark:hover:bg-gray-800/60 transition-colors'>
                   <div className='flex items-start justify-between gap-4'>
                     <div className='flex-1'>
-                      <div className='mb-2 flex items-center gap-2'>
+                      <div className='mb-2 flex items-center gap-3'>
                         <span className='flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-bold text-white'>
                           {i + 1}
                         </span>
@@ -300,26 +351,39 @@ export default async function CoursePublicPage(ctx: PageProps) {
                         </h3>
                       </div>
                       {m.summary && (
-                        <p className='ml-10 text-sm text-gray-600 dark:text-gray-400'>
+                        <p className='ml-[2.75rem] text-sm text-gray-600 dark:text-gray-400'>
                           {m.summary}
                         </p>
                       )}
                     </div>
-                    <div className='flex flex-col items-end gap-1 text-right'>
-                      <span className='text-sm font-medium text-gray-900 dark:text-white'>
-                        {formatMinutes(m.estimatedDurationMinutes)}
-                      </span>
-                      <span className='text-xs text-gray-500 dark:text-gray-400'>
-                        {m.lessons.length} {m.lessons.length === 1 ? 'lesson' : 'lessons'}
+                    <div className='flex items-center gap-3'>
+                      <div className='flex flex-col items-end gap-1 text-right'>
+                        <span className='text-sm font-medium text-gray-900 dark:text-white'>
+                          {formatMinutes(m.estimatedDurationMinutes)}
+                        </span>
+                        <span className='text-xs text-gray-500 dark:text-gray-400'>
+                          {m.lessons.length} {m.lessons.length === 1 ? 'lesson' : 'lessons'}
+                        </span>
+                      </div>
+                      {/* Single chevron toggle indicator on the right */}
+                      <span aria-hidden className='ml-1 inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-700/30 bg-white/0 text-gray-500 transition-all group-open:text-gray-200 dark:border-gray-500/30 dark:bg-gray-900/20 dark:text-gray-400'>
+                        <svg
+                          className='h-5 w-5 flex-shrink-0 transition-transform duration-200 group-open:rotate-180'
+                          viewBox='0 0 20 20'
+                          fill='currentColor'
+                        >
+                          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.186l3.71-3.955a.75.75 0 111.08 1.04l-4.24 4.52a.75.75 0 01-1.08 0l-4.24-4.52a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+                        </svg>
                       </span>
                     </div>
                   </div>
-                </div>
-                
+                </summary>
+
                 {/* Lessons List */}
                 <ul className='divide-y divide-gray-100 dark:divide-gray-700'>
                   {m.lessons.map((l: any, idx: number) => (
                     <li
+                      id={`lesson-${String(l._id)}`}
                       key={String(l._id)}
                       className='group/lesson flex items-center justify-between gap-4 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50'
                     >
@@ -336,27 +400,101 @@ export default async function CoursePublicPage(ctx: PageProps) {
                             <span>•</span>
                             <span>{formatMinutes(l.estimatedDurationMinutes)}</span>
                           </div>
+                          {Array.isArray(l.subLessons) && l.subLessons.length > 0 && (
+                            <ul className='mt-3 ml-9 space-y-2'>
+                              {l.subLessons.map((s: any, sIdx: number) => (
+                                <li key={String(s._id)} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white/60 p-3 dark:border-gray-700 dark:bg-gray-800/50'>
+                                  <div className='flex items-center gap-2'>
+                                    <span className='flex h-5 w-5 items-center justify-center rounded-md bg-gray-100 text-[10px] font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
+                                      {idx + 1}.{sIdx + 1}
+                                    </span>
+                                    <div>
+                                      <div className='text-sm font-medium text-gray-900 dark:text-white'>{s.title}</div>
+                                      <div className='mt-0.5 flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400'>
+                                        <span className='capitalize'>{s.contentType}</span>
+                                        <span>•</span>
+                                        <span>{formatMinutes(s.estimatedDurationMinutes)}</span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div className='flex items-center gap-2'>
+                                    {enrollment ? (
+                                      <Link
+                                        href={`/courses/${course.slug}#lesson-${String(s._id)}`}
+                                        className='rounded-md border border-gray-300 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                                      >
+                                        Start
+                                      </Link>
+                                    ) : null}
+                                    {s.isPreviewable ? (
+                                      s.contentType === 'blog' && s.blogSlug ? (
+                                        <Link
+                                          href={`/blog/${s.blogSlug}`}
+                                          className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50'
+                                        >
+                                          Preview
+                                        </Link>
+                                      ) : (
+                                        <Link
+                                          href={`/courses/preview/${String(s._id)}`}
+                                          className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50'
+                                        >
+                                          Preview
+                                        </Link>
+                                      )
+                                    ) : (
+                                      <span className='rounded-md bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
+                                        Preview N/A
+                                      </span>
+                                    )}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
                         </div>
                       </div>
                       <div className='flex items-center gap-2'>
-                        {l.isPreviewable && l.contentType === 'blog' && l.blogSlug ? (
+                        {/* Start button for enrolled users (future: route to lesson reader) */}
+                        {enrollment ? (
                           <Link
-                            href={`/blog/${l.blogSlug}`}
-                            className='rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
-                            aria-label={`Preview lesson: ${l.title}`}
+                            href={`/courses/${course.slug}#lesson-${String(l._id)}`}
+                            className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                            aria-label={`Start lesson: ${l.title}`}
                           >
-                            Preview
+                            Start
                           </Link>
-                        ) : l.isPreviewable ? (
+                        ) : null}
+
+                        {/* Preview logic for each content type */}
+                        {l.isPreviewable ? (
+                          l.contentType === 'blog' && l.blogSlug ? (
+                            <Link
+                              href={`/blog/${l.blogSlug}`}
+                              className='rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
+                              aria-label={`Preview blog lesson: ${l.title}`}
+                            >
+                              Preview
+                            </Link>
+                          ) : (
+                            <Link
+                              href={`/courses/preview/${String(l._id)}`}
+                              className='rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
+                              aria-label={`Preview lesson: ${l.title}`}
+                            >
+                              Preview
+                            </Link>
+                          )
+                        ) : (
                           <span className='rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
                             Preview N/A
                           </span>
-                        ) : null}
+                        )}
                       </div>
                     </li>
                   ))}
                 </ul>
-              </div>
+              </details>
             ))}
           </div>
         )}

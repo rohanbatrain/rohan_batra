@@ -40,6 +40,7 @@ type LessonDetail = {
   progressWeight: number;
   releaseAt: string | null;
   updatedAt?: string;
+  parentLessonId?: string | null;
 };
 
 type ModuleDetail = {
@@ -81,6 +82,7 @@ type LessonFormState = {
   isPreviewable: boolean;
   progressWeight: string;
   releaseAt: string;
+  parentLessonId: string; // empty string means none
 };
 
 const defaultLessonForm: LessonFormState = {
@@ -97,6 +99,7 @@ const defaultLessonForm: LessonFormState = {
   isPreviewable: false,
   progressWeight: '1',
   releaseAt: '',
+  parentLessonId: '',
 };
 
 export default function LessonForm({
@@ -132,6 +135,12 @@ export default function LessonForm({
   const [saving, setSaving] = useState(false);
   const [targetModuleId, setTargetModuleId] = useState<string>(moduleId);
 
+  type LessonListItem = { id: string; title: string; parentLessonId?: string | null };
+  const { data: moduleLessons } = useSWR<{ lessons: LessonListItem[] }>(
+    `/api/admin/courses/${courseId}/modules/${targetModuleId}/lessons`,
+    fetcher
+  );
+
   useEffect(() => {
     // Prefill on edit
     if (mode === 'edit' && lessonData) {
@@ -156,6 +165,7 @@ export default function LessonForm({
         releaseAt: lessonData.releaseAt
           ? new Date(lessonData.releaseAt).toISOString().slice(0, 16)
           : '',
+        parentLessonId: lessonData.parentLessonId ?? '',
       });
       setSlugEdited(Boolean(lessonData.slug));
       setTargetModuleId(moduleId);
@@ -209,6 +219,8 @@ export default function LessonForm({
     if (form.contentType === 'video' && form.externalResource.trim()) {
       payload.externalResource = { provider: 'custom', url: form.externalResource.trim() };
     }
+    // Include parentLessonId explicitly: empty string means clear parent
+    payload.parentLessonId = form.parentLessonId ? form.parentLessonId : null;
     // Allow moving lesson between modules on edit
     if (mode === 'edit' && targetModuleId && targetModuleId !== moduleId) {
       payload.moduleId = targetModuleId;
@@ -270,6 +282,11 @@ export default function LessonForm({
   const moduleTitle = useMemo(() => {
     return data?.modules?.find(m => m.id === moduleId)?.title ?? 'Module';
   }, [data?.modules, moduleId]);
+
+  // When changing target module, clear parent selection to avoid cross-module parent
+  useEffect(() => {
+    setForm(prev => ({ ...prev, parentLessonId: '' }));
+  }, [targetModuleId]);
 
   return (
     <div className='space-y-6'>
@@ -346,6 +363,27 @@ export default function LessonForm({
           <div>
             <Label htmlFor='lesson-title'>Title</Label>
             <Input id='lesson-title' value={form.title} onChange={e => handleTitle(e.target.value)} />
+          </div>
+          <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
+            <div>
+              <Label htmlFor='parent-lesson'>Parent lesson</Label>
+              <Select
+                value={form.parentLessonId}
+                onValueChange={v => handleField('parentLessonId', v)}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder='None (top-level lesson)' />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value=''>None</SelectItem>
+                  {(moduleLessons?.lessons ?? [])
+                    .filter(l => l.id !== lessonId && !l.parentLessonId) // only top-level lessons; cannot parent to self
+                    .map(l => (
+                      <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>

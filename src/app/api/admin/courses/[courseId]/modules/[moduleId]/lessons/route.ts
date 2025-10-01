@@ -136,17 +136,17 @@ export async function POST(
     }
 
     const flashcardDeckIds = (parsed.flashcardDeckIds ?? [])
-      .filter(id => Types.ObjectId.isValid(id))
-      .map(id => new Types.ObjectId(id));
+      .filter((id: string) => Types.ObjectId.isValid(id))
+      .map((id: string) => new Types.ObjectId(id));
 
     const prerequisiteLessonIds = (parsed.prerequisiteLessonIds ?? [])
-      .filter(id => Types.ObjectId.isValid(id))
-      .map(id => new Types.ObjectId(id));
+      .filter((id: string) => Types.ObjectId.isValid(id))
+      .map((id: string) => new Types.ObjectId(id));
 
     const lottieIds = parsed.assets?.lottieIds
       ? parsed.assets.lottieIds
-          .filter(id => Types.ObjectId.isValid(id))
-          .map(id => new Types.ObjectId(id))
+          .filter((id: string) => Types.ObjectId.isValid(id))
+          .map((id: string) => new Types.ObjectId(id))
       : undefined;
 
     const imageUrls = parsed.assets?.imageUrls
@@ -168,6 +168,21 @@ export async function POST(
       : undefined;
 
     const releaseAt = parsed.releaseAt ? new Date(parsed.releaseAt) : undefined;
+
+    // Validate parentLessonId if provided (must be in same module, and cannot create cycles)
+    let parentLesson: any | null = null;
+    if (parsed.parentLessonId) {
+      if (!Types.ObjectId.isValid(parsed.parentLessonId)) {
+        return NextResponse.json({ error: 'Invalid parent lesson' }, { status: 400 });
+      }
+      parentLesson = await CourseLessonModel.findOne({ _id: new Types.ObjectId(parsed.parentLessonId), courseId: courseDoc._id }).lean();
+      if (!parentLesson) {
+        return NextResponse.json({ error: 'Parent lesson not found' }, { status: 404 });
+      }
+      if (parentLesson.moduleId.toString() !== moduleDoc._id.toString()) {
+        return NextResponse.json({ error: 'Parent lesson must be in the same module' }, { status: 400 });
+      }
+    }
 
     const lessonDoc = await CourseLessonModel.create({
       courseId: courseDoc._id,
@@ -191,6 +206,12 @@ export async function POST(
       isPreviewable: parsed.isPreviewable ?? false,
       progressWeight: parsed.progressWeight ?? 1,
       prerequisiteLessonIds,
+      parentLessonId: parentLesson ? parentLesson._id : undefined,
+      childOrder: Array.isArray(parsed.childOrder)
+        ? parsed.childOrder
+            .filter((id: string) => Types.ObjectId.isValid(id))
+            .map((id: string) => new Types.ObjectId(id))
+        : [],
       releaseAt,
     });
 
