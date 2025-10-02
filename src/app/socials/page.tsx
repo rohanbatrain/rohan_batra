@@ -99,23 +99,66 @@ export default function SocialsPage() {
   const [brands, setBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
-    const fetchBrands = async () => {
+    let isMounted = true;
+
+    const fetchBrands = async (attempt = 1) => {
+      const maxRetries = 3;
+      const backoffDelay = Math.min(1000 * Math.pow(2, attempt - 1), 5000);
+
       try {
         const response = await fetch('/api/public/brands');
-        if (!response.ok) throw new Error('Failed to fetch brands');
+        
+        if (!response.ok) {
+          if (response.status === 404) {
+            throw new Error('No brands found');
+          } else if (response.status >= 500) {
+            throw new Error('Server error. Please try again later.');
+          } else {
+            throw new Error(`Failed to fetch brands (${response.status})`);
+          }
+        }
+
         const data = await response.json();
-        setBrands(data.brands || []);
+        
+        // Validate response structure
+        if (!data || typeof data !== 'object') {
+          throw new Error('Invalid response format');
+        }
+        
+        const brandsData = data.brands || [];
+        
+        if (!Array.isArray(brandsData)) {
+          throw new Error('Invalid brands data format');
+        }
+
+        if (isMounted) {
+          setBrands(brandsData);
+          setError(null);
+          setLoading(false);
+        }
       } catch (err) {
-        console.error('Error fetching brands:', err);
-        setError('Failed to load social profiles');
-      } finally {
-        setLoading(false);
+        console.error(`Error fetching brands (attempt ${attempt}):`, err);
+        
+        if (attempt < maxRetries && isMounted) {
+          // Retry with exponential backoff
+          setRetryCount(attempt);
+          setTimeout(() => fetchBrands(attempt + 1), backoffDelay);
+        } else if (isMounted) {
+          const errorMessage = err instanceof Error ? err.message : 'Failed to load brands';
+          setError(errorMessage);
+          setLoading(false);
+        }
       }
     };
 
     fetchBrands();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   if (loading) {
@@ -141,9 +184,24 @@ export default function SocialsPage() {
             <h1 className='text-4xl font-bold text-gray-900 dark:text-white mb-4'>
               Connect With Me
             </h1>
-            <p className='text-xl text-gray-600 dark:text-gray-400'>
-              {error || 'No social profiles available at the moment.'}
-            </p>
+            <div className="max-w-md mx-auto bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+              <p className='text-xl text-gray-600 dark:text-gray-400 mb-4'>
+                {error || 'No social profiles available at the moment.'}
+              </p>
+              {retryCount > 0 && retryCount < 3 && (
+                <p className="text-sm text-red-500 dark:text-red-300 mb-4">
+                  Retrying... (Attempt {retryCount} of 3)
+                </p>
+              )}
+              {error && (
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                  Reload Page
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

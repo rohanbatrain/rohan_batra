@@ -4,6 +4,12 @@ import { z } from 'zod';
 import connectToDatabase from '@/lib/mongodb';
 import BrandModel from '@/models/Brand';
 import UserModel from '@/models/User';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  rateLimitPresets,
+  createRateLimitResponse,
+} from '@/lib/rate-limit';
 
 // Helper function to check authorization
 async function getAuthorizedUser(userId: string) {
@@ -17,6 +23,18 @@ async function getAuthorizedUser(userId: string) {
 
   return { authorized: true as const, currentUser, userRole };
 }
+
+// Safe URL validation - only HTTP/HTTPS
+const safeUrl = z.string().url().refine(
+  (url) => url.startsWith('http://') || url.startsWith('https://'),
+  { message: 'Only HTTP/HTTPS URLs are allowed' }
+);
+
+// HTTPS-only URL validation
+const httpsUrl = z.string().url().refine(
+  (url) => url.startsWith('https://'),
+  { message: 'Only HTTPS URLs are allowed' }
+);
 
 // Validation schema
 const createBrandSchema = z.object({
@@ -40,7 +58,7 @@ const createBrandSchema = z.object({
     .object({
       followers: z.number().min(0).optional(),
       totalPosts: z.number().min(0).optional(),
-      websiteUrl: z.string().url().optional(),
+      websiteUrl: httpsUrl.optional(),
     })
     .optional(),
 });
@@ -48,6 +66,14 @@ const createBrandSchema = z.object({
 // GET /api/admin/brands - List all brands
 export async function GET(request: NextRequest) {
   try {
+    // Apply rate limiting
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = checkRateLimit(identifier, rateLimitPresets.admin);
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -90,6 +116,17 @@ export async function GET(request: NextRequest) {
 // POST /api/admin/brands - Create new brand
 export async function POST(request: NextRequest) {
   try {
+    // Apply stricter rate limiting for create operations
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = checkRateLimit(identifier, {
+      max: 20, // 20 creates per minute
+      windowMs: 60 * 1000,
+    });
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -106,9 +143,25 @@ export async function POST(request: NextRequest) {
 
     await connectToDatabase();
 
-    // If setting as primary, unset other primary brands
+    // Check for duplicate slug if provided
+    if (parsed.slug) {
+      const existingSlug = await BrandModel.exists({ slug: parsed.slug });
+      if (existingSlug) {
+        return NextResponse.json(
+          { error: 'A brand with this slug already exists' },
+          { status: 409 }
+        );
+      }
+    }
+
+    // If setting as primary, unset other primary brands in a transaction-like way
     if (parsed.isPrimary) {
-      await BrandModel.updateMany({ isPrimary: true }, { isPrimary: false });
+      // Use findOneAndUpdate with isPrimary check to prevent race condition
+      const existingPrimary = await BrandModel.findOne({ isPrimary: true });
+      if (existingPrimary) {
+        existingPrimary.isPrimary = false;
+        await existingPrimary.save();
+      }
     }
 
     const brand = await BrandModel.create(parsed);
@@ -136,7 +189,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
     }
 
+    // Handle duplicate key errors from MongoDB
+    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
+      const duplicateField = (error as any).keyPattern ? Object.keys((error as any).keyPattern)[0] : 'field';
+      return NextResponse.json(
+        { error: `A brand with this ${duplicateField} already exists` },
+        { status: 409 }
+      );
+    }
+
     console.error('Error creating brand:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create brand' }, { status: 500 });
   }
 }

@@ -110,17 +110,65 @@ const ProjectSchema = new Schema<IProject>(
     demoUrl: {
       type: String,
       trim: true,
-      match: /^https?:\/\/.+/,
+      match: /^https:\/\/.+/,
+      validate: {
+        validator: (url: string | undefined) => {
+          if (!url) return true;
+          try {
+            const parsed = new URL(url);
+            return (
+              parsed.protocol === 'https:' &&
+              !parsed.username &&
+              !parsed.password
+            );
+          } catch {
+            return false;
+          }
+        },
+        message: 'Demo URL must be a valid HTTPS URL without credentials',
+      },
     },
     sourceUrl: {
       type: String,
       trim: true,
-      match: /^https?:\/\/.+/,
+      match: /^https:\/\/.+/,
+      validate: {
+        validator: (url: string | undefined) => {
+          if (!url) return true;
+          try {
+            const parsed = new URL(url);
+            return (
+              parsed.protocol === 'https:' &&
+              !parsed.username &&
+              !parsed.password
+            );
+          } catch {
+            return false;
+          }
+        },
+        message: 'Source URL must be a valid HTTPS URL without credentials',
+      },
     },
     liveUrl: {
       type: String,
       trim: true,
-      match: /^https?:\/\/.+/,
+      match: /^https:\/\/.+/,
+      validate: {
+        validator: (url: string | undefined) => {
+          if (!url) return true;
+          try {
+            const parsed = new URL(url);
+            return (
+              parsed.protocol === 'https:' &&
+              !parsed.username &&
+              !parsed.password
+            );
+          } catch {
+            return false;
+          }
+        },
+        message: 'Live URL must be a valid HTTPS URL without credentials',
+      },
     },
     links: {
       github: String,

@@ -106,7 +106,7 @@ const BrandSchema = new Schema<IBrand>(
       websiteUrl: {
         type: String,
         trim: true,
-        match: /^https?:\/\/.+/,
+        match: /^https:\/\/.+/,
       },
     },
   },

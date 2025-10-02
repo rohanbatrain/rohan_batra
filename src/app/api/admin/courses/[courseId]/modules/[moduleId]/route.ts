@@ -139,6 +139,22 @@ export async function PUT(
     }
 
     if (parsed.order !== undefined) {
+      // Check if the new order conflicts with another module
+      if (parsed.order !== moduleDoc.order) {
+        const conflictingModule = await CourseModuleModel.exists({
+          courseId: courseDoc._id,
+          order: parsed.order,
+          _id: { $ne: moduleDoc._id },
+        });
+
+        if (conflictingModule) {
+          return NextResponse.json(
+            { error: `Module order ${parsed.order} already exists for this course` },
+            { status: 409 }
+          );
+        }
+      }
+      
       moduleDoc.order = parsed.order;
     }
 

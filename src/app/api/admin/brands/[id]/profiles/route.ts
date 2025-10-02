@@ -20,6 +20,45 @@ async function getAuthorizedUser(userId: string) {
   return { authorized: true as const, currentUser, userRole };
 }
 
+// Platform-specific URL validation
+const platformUrlPatterns: Record<string, RegExp> = {
+  instagram: /^https:\/\/(www\.)?instagram\.com\/.+/,
+  twitter: /^https:\/\/(www\.)?(twitter|x)\.com\/.+/,
+  linkedin: /^https:\/\/(www\.)?linkedin\.com\/(in|company)\/.+/,
+  github: /^https:\/\/(www\.)?github\.com\/.+/,
+  youtube: /^https:\/\/(www\.)?(youtube\.com|youtu\.be)\/.+/,
+  tiktok: /^https:\/\/(www\.)?tiktok\.com\/@.+/,
+  facebook: /^https:\/\/(www\.)?facebook\.com\/.+/,
+  threads: /^https:\/\/(www\.)?threads\.net\/@.+/,
+  mastodon: /^https:\/\/.+\/@.+/,
+  bluesky: /^https:\/\/(www\.)?bsky\.app\/profile\/.+/,
+  medium: /^https:\/\/(www\.)?medium\.com\/@.+/,
+  'dev.to': /^https:\/\/(www\.)?dev\.to\/.+/,
+  hashnode: /^https:\/\/.+\.hashnode\.dev/,
+  dribbble: /^https:\/\/(www\.)?dribbble\.com\/.+/,
+  behance: /^https:\/\/(www\.)?behance\.net\/.+/,
+  pinterest: /^https:\/\/(www\.)?pinterest\.com\/.+/,
+  snapchat: /^https:\/\/(www\.)?snapchat\.com\/add\/.+/,
+  reddit: /^https:\/\/(www\.)?reddit\.com\/(u|user)\/.+/,
+  discord: /^https:\/\/(www\.)?discord\.(gg|com)\/.+/,
+  telegram: /^https:\/\/(www\.)?t\.me\/.+/,
+  whatsapp: /^https:\/\/(www\.)?wa\.me\/.+/,
+  spotify: /^https:\/\/(www\.)?open\.spotify\.com\/.+/,
+  twitch: /^https:\/\/(www\.)?twitch\.tv\/.+/,
+  email: /^mailto:.+@.+\..+/,
+  website: /^https:\/\/.+/,
+};
+
+// Safe URL validation function
+function validateProfileUrl(platform: string, url: string): boolean {
+  // For platforms without specific patterns, just check HTTPS
+  if (!platformUrlPatterns[platform]) {
+    return url.startsWith('https://') || (platform === 'email' && url.startsWith('mailto:'));
+  }
+  
+  return platformUrlPatterns[platform].test(url);
+}
+
 // Validation schema
 const createProfileSchema = z.object({
   platform: z.enum([
@@ -69,7 +108,19 @@ const createProfileSchema = z.object({
     })
     .optional(),
   customIcon: z.string().max(50).optional(),
-});
+}).refine(
+  (data) => {
+    // Skip validation for platforms without specific patterns (tinder, bumble, hinge, other)
+    if (['tinder', 'bumble', 'hinge', 'other'].includes(data.platform)) {
+      return data.profileUrl.startsWith('https://');
+    }
+    return validateProfileUrl(data.platform, data.profileUrl);
+  },
+  {
+    message: 'Profile URL does not match the expected format for this platform',
+    path: ['profileUrl'],
+  }
+);
 
 // GET /api/admin/brands/[id]/profiles - List profiles for brand
 export async function GET(
@@ -125,7 +176,7 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error fetching profiles:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch profiles' }, { status: 500 });
   }
 }
 
@@ -208,6 +259,6 @@ export async function POST(
     }
 
     console.error('Error creating profile:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create profile' }, { status: 500 });
   }
 }

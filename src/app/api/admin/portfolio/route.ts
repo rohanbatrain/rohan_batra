@@ -6,6 +6,12 @@ import User from '@/models/User';
 import { z } from 'zod';
 import { featureFlags, FeatureFlagContext } from '@/lib/feature-flags';
 import { projectCircuitBreaker } from '@/lib/circuit-breaker';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  rateLimitPresets,
+  createRateLimitResponse,
+} from '@/lib/rate-limit';
 
 // Enhanced validation schema with conditional fields
 const ProjectCreateSchema = z.object({
@@ -173,6 +179,13 @@ const BulkActionSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = checkRateLimit(identifier, rateLimitPresets.admin);
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -355,6 +368,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = checkRateLimit(identifier, {
+      max: 20,
+      windowMs: 60000,
+    });
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -379,6 +402,64 @@ export async function POST(request: NextRequest) {
     // Handle bulk actions
     if (body.action && body.projectIds) {
       const bulkData = BulkActionSchema.parse(body);
+
+      // Limit bulk action size
+      if (bulkData.projectIds.length > 100) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Bulk actions limited to 100 projects at a time' 
+          },
+          { status: 400 }
+        );
+      }
+
+      // Validate all IDs are valid ObjectIds
+      const invalidIds = bulkData.projectIds.filter(
+        id => !id.match(/^[0-9a-fA-F]{24}$/)
+      );
+      if (invalidIds.length > 0) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Invalid project IDs provided',
+            invalidIds 
+          },
+          { status: 400 }
+        );
+      }
+
+      // Verify projects exist
+      const existingProjects = await Project.find({
+        _id: { $in: bulkData.projectIds },
+      }).select('_id featured status');
+
+      if (existingProjects.length !== bulkData.projectIds.length) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Some project IDs do not exist',
+            found: existingProjects.length,
+            requested: bulkData.projectIds.length,
+          },
+          { status: 404 }
+        );
+      }
+
+      // For delete action, check if any projects are featured
+      if (bulkData.action === 'delete') {
+        const featuredProjects = existingProjects.filter(p => p.featured);
+        if (featuredProjects.length > 0) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: 'Cannot bulk delete featured projects. Unfeature them first.',
+              featuredProjectIds: featuredProjects.map(p => p._id.toString()),
+            },
+            { status: 400 }
+          );
+        }
+      }
 
       const updateData: Record<string, unknown> = {};
       const currentTime = new Date();
@@ -431,10 +512,18 @@ export async function POST(request: NextRequest) {
         .replace(/^-|-$/g, '');
     }
 
-    // Check for duplicate slug
+    // Check for duplicate slug and add numeric suffix if needed
     const existingProject = await Project.findOne({ slug: validatedData.slug });
     if (existingProject) {
-      validatedData.slug = `${validatedData.slug}-${Date.now()}`;
+      let suffix = 2;
+      let candidateSlug = `${validatedData.slug}-${suffix}`;
+      
+      while (await Project.exists({ slug: candidateSlug })) {
+        suffix++;
+        candidateSlug = `${validatedData.slug}-${suffix}`;
+      }
+      
+      validatedData.slug = candidateSlug;
     }
 
     // Create the project with proper field mapping

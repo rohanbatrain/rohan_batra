@@ -123,22 +123,40 @@ export async function POST(
       .filter(id => Types.ObjectId.isValid(id))
       .map(id => new Types.ObjectId(id));
 
-    const existingModules = await CourseModuleModel.find({
-      courseId: courseDoc._id,
-    })
-      .sort({ order: -1 })
-      .limit(1)
-      .lean();
-
-    const defaultOrder = existingModules.length
-      ? existingModules[0].order + 1
-      : 0;
+    // Use atomic operation to get next module order (prevents race conditions)
+    let order: number;
+    if (parsed.order !== undefined) {
+      // User provided explicit order
+      order = parsed.order;
+      
+      // Check for conflicts
+      const existingModule = await CourseModuleModel.exists({
+        courseId: courseDoc._id,
+        order,
+      });
+      
+      if (existingModule) {
+        return NextResponse.json(
+          { error: `Module order ${order} already exists for this course` },
+          { status: 409 }
+        );
+      }
+    } else {
+      // Auto-assign order atomically
+      const updated = await CourseModel.findByIdAndUpdate(
+        courseDoc._id,
+        { $inc: { _nextModuleOrder: 1 } },
+        { new: true, select: '_nextModuleOrder' }
+      );
+      
+      order = (updated?._nextModuleOrder ?? 1) - 1;
+    }
 
     const moduleDoc = await CourseModuleModel.create({
       courseId: courseDoc._id,
       title: parsed.title,
       summary: parsed.summary?.trim() || undefined,
-      order: parsed.order ?? defaultOrder,
+      order,
       estimatedDurationMinutes:
         parsed.estimatedDurationMinutes === null
           ? undefined

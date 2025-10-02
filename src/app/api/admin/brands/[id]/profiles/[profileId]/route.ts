@@ -19,6 +19,45 @@ async function getAuthorizedUser(userId: string) {
   return { authorized: true as const, currentUser, userRole };
 }
 
+// Platform-specific URL validation
+const platformUrlPatterns: Record<string, RegExp> = {
+  instagram: /^https:\/\/(www\.)?instagram\.com\/.+/,
+  twitter: /^https:\/\/(www\.)?(twitter|x)\.com\/.+/,
+  linkedin: /^https:\/\/(www\.)?linkedin\.com\/(in|company)\/.+/,
+  github: /^https:\/\/(www\.)?github\.com\/.+/,
+  youtube: /^https:\/\/(www\.)?(youtube\.com|youtu\.be)\/.+/,
+  tiktok: /^https:\/\/(www\.)?tiktok\.com\/@.+/,
+  facebook: /^https:\/\/(www\.)?facebook\.com\/.+/,
+  threads: /^https:\/\/(www\.)?threads\.net\/@.+/,
+  mastodon: /^https:\/\/.+\/@.+/,
+  bluesky: /^https:\/\/(www\.)?bsky\.app\/profile\/.+/,
+  medium: /^https:\/\/(www\.)?medium\.com\/@.+/,
+  'dev.to': /^https:\/\/(www\.)?dev\.to\/.+/,
+  hashnode: /^https:\/\/.+\.hashnode\.dev/,
+  dribbble: /^https:\/\/(www\.)?dribbble\.com\/.+/,
+  behance: /^https:\/\/(www\.)?behance\.net\/.+/,
+  pinterest: /^https:\/\/(www\.)?pinterest\.com\/.+/,
+  snapchat: /^https:\/\/(www\.)?snapchat\.com\/add\/.+/,
+  reddit: /^https:\/\/(www\.)?reddit\.com\/(u|user)\/.+/,
+  discord: /^https:\/\/(www\.)?discord\.(gg|com)\/.+/,
+  telegram: /^https:\/\/(www\.)?t\.me\/.+/,
+  whatsapp: /^https:\/\/(www\.)?wa\.me\/.+/,
+  spotify: /^https:\/\/(www\.)?open\.spotify\.com\/.+/,
+  twitch: /^https:\/\/(www\.)?twitch\.tv\/.+/,
+  email: /^mailto:.+@.+\..+/,
+  website: /^https:\/\/.+/,
+};
+
+// Safe URL validation function
+function validateProfileUrl(platform: string, url: string): boolean {
+  // For platforms without specific patterns, just check HTTPS
+  if (!platformUrlPatterns[platform]) {
+    return url.startsWith('https://') || (platform === 'email' && url.startsWith('mailto:'));
+  }
+  
+  return platformUrlPatterns[platform].test(url);
+}
+
 // Validation schema
 const updateProfileSchema = z.object({
   platform: z
@@ -70,7 +109,22 @@ const updateProfileSchema = z.object({
     })
     .optional(),
   customIcon: z.string().max(50).optional(),
-});
+}).refine(
+  (data) => {
+    // Only validate if both platform and profileUrl are provided
+    if (data.platform && data.profileUrl) {
+      if (['tinder', 'bumble', 'hinge', 'other'].includes(data.platform)) {
+        return data.profileUrl.startsWith('https://');
+      }
+      return validateProfileUrl(data.platform, data.profileUrl);
+    }
+    return true;
+  },
+  {
+    message: 'Profile URL does not match the expected format for this platform',
+    path: ['profileUrl'],
+  }
+);
 
 // PUT /api/admin/brands/[id]/profiles/[profileId] - Update profile
 export async function PUT(
@@ -137,7 +191,7 @@ export async function PUT(
     }
 
     console.error('Error updating profile:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
   }
 }
 
@@ -184,6 +238,6 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Error deleting profile:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete profile' }, { status: 500 });
   }
 }

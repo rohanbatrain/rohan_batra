@@ -9,6 +9,7 @@ import FlashcardDeckModel from '@/models/FlashcardDeck';
 import { CourseInputSchema, getAuthorizedUser, sanitizeCourse } from '../route';
 import { resolveAssetShortcodes } from '@/lib/assets/resolve-shortcodes';
 import { syncDeckLinkTargets } from '@/lib/flashcards/sync-link-targets';
+import { createAuditLog, getChangedFields } from '@/lib/audit-log';
 
 const CourseUpdateSchema = CourseInputSchema.partial().extend({
   slug: z
@@ -222,6 +223,15 @@ export async function PUT(
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
+    // Capture before state for audit log
+    const beforeState = {
+      slug: courseDoc.slug,
+      title: courseDoc.title,
+      status: courseDoc.status,
+      visibility: courseDoc.visibility,
+      isFeatured: courseDoc.isFeatured,
+    };
+
     const prevDeckIds = (courseDoc.flashcardDeckIds ?? []).map(
       id => new Types.ObjectId(id)
     );
@@ -359,6 +369,27 @@ export async function PUT(
     }
 
     await courseDoc.save();
+
+    // Create audit log for course update
+    const afterState = {
+      slug: courseDoc.slug,
+      title: courseDoc.title,
+      status: courseDoc.status,
+      visibility: courseDoc.visibility,
+      isFeatured: courseDoc.isFeatured,
+    };
+
+    const changes = getChangedFields(beforeState, afterState);
+
+    if (changes.fields.length > 0) {
+      await createAuditLog({
+        userId,
+        action: 'update',
+        resource: 'course',
+        resourceId: courseDoc._id.toString(),
+        changes,
+      }, request);
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

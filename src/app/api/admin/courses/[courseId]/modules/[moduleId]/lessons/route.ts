@@ -62,6 +62,14 @@ export async function GET(
       return NextResponse.json({ error: 'Module not found' }, { status: 404 });
     }
 
+    // Validate that module belongs to course (security check)
+    if (moduleDoc.courseId.toString() !== courseDoc._id.toString()) {
+      return NextResponse.json(
+        { error: 'Module does not belong to this course' },
+        { status: 400 }
+      );
+    }
+
     const lessons = await CourseLessonModel.find({
       moduleId: moduleDoc._id,
     }).lean();
@@ -116,6 +124,14 @@ export async function POST(
     const moduleDoc = await findModule(courseDoc._id, moduleId);
     if (!moduleDoc) {
       return NextResponse.json({ error: 'Module not found' }, { status: 404 });
+    }
+
+    // Validate that module belongs to course (security check)
+    if (moduleDoc.courseId.toString() !== courseDoc._id.toString()) {
+      return NextResponse.json(
+        { error: 'Module does not belong to this course' },
+        { status: 400 }
+      );
     }
 
     const body = await request.json();

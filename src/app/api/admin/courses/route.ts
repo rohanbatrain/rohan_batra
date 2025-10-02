@@ -12,6 +12,13 @@ import { uniqueSlug } from '@/lib/slug';
 import { slugSchema } from '@/lib/validators/courses';
 import { resolveAssetShortcodes } from '@/lib/assets/resolve-shortcodes';
 import { syncDeckLinkTargets } from '@/lib/flashcards/sync-link-targets';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  rateLimitPresets,
+  createRateLimitResponse,
+} from '@/lib/rate-limit';
+import { createAuditLog } from '@/lib/audit-log';
 
 interface AdminCourseSummary {
   id: string;
@@ -120,6 +127,13 @@ export async function getAuthorizedUser(userId: string) {
 
 export async function GET(request: NextRequest) {
   try {
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = checkRateLimit(identifier, rateLimitPresets.admin);
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -262,6 +276,16 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = checkRateLimit(identifier, {
+      max: 20,
+      windowMs: 60000,
+    });
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -371,6 +395,23 @@ export async function POST(request: NextRequest) {
     });
 
     await course.save();
+
+    // Create audit log for course creation
+    await createAuditLog({
+      userId,
+      action: 'create',
+      resource: 'course',
+      resourceId: course._id.toString(),
+      changes: {
+        after: {
+          slug: course.slug,
+          title: course.title,
+          status: course.status,
+          visibility: course.visibility,
+        },
+        fields: ['slug', 'title', 'status', 'visibility'],
+      },
+    }, request);
 
     if (flashcardDeckIds.length > 0) {
       await syncDeckLinkTargets([], flashcardDeckIds, {

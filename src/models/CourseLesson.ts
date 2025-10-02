@@ -39,6 +39,37 @@ const externalResourceSchema = new Schema(
       required: true,
       trim: true,
       match: /^https?:\/\//i,
+      validate: {
+        validator: function (this: any, url: string) {
+          const provider = this.parent()?.provider || this.provider;
+          
+          switch (provider) {
+            case 'youtube':
+              return (
+                /^https:\/\/(www\.)?youtube\.com\/watch\?v=[\w-]+/.test(url) ||
+                /^https:\/\/youtu\.be\/[\w-]+/.test(url)
+              );
+            case 'vimeo':
+              return /^https:\/\/(www\.)?vimeo\.com\/\d+/.test(url);
+            case 'loom':
+              return /^https:\/\/(www\.)?loom\.com\/share\/[\w-]+/.test(url);
+            case 'custom':
+              try {
+                const parsed = new URL(url);
+                return (
+                  parsed.protocol === 'https:' &&
+                  !parsed.username &&
+                  !parsed.password
+                );
+              } catch {
+                return false;
+              }
+            default:
+              return false;
+          }
+        },
+        message: 'Invalid URL format for the specified provider',
+      },
     },
     durationSeconds: {
       type: Number,

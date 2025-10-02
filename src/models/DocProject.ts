@@ -221,10 +221,11 @@ const DocProjectSchema = new Schema<IDocProject>(
   }
 );
 
-// Indexes
+// Indexes for query optimization
+DocProjectSchema.index({ slug: 1 }, { unique: true }); // Standalone slug index
 DocProjectSchema.index({ status: 1, visibility: 1 });
 DocProjectSchema.index({ createdBy: 1, status: 1 });
-DocProjectSchema.index({ slug: 1, status: 1 });
+DocProjectSchema.index({ slug: 1, status: 1 }); // Compound for specific queries
 
 // Pre-save hook to auto-generate slug if needed
 DocProjectSchema.pre<IDocProject>('save', function (next) {

@@ -263,12 +263,24 @@ BlogPostSchema.index({ status: 1, tags: 1 });
 BlogPostSchema.index({ status: 1, featured: 1, publishedAt: -1 });
 
 // Pre-save middleware to auto-generate slug from title if not provided
-BlogPostSchema.pre<IBlogPost>('save', function (next) {
+BlogPostSchema.pre<IBlogPost>('save', async function (next) {
   if (this.isModified('title') && !this.slug) {
-    this.slug = this.title
+    // Import uniqueSlug dynamically to avoid circular dependencies
+    const { uniqueSlug } = await import('@/lib/slug');
+    
+    const baseSlug = this.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
+
+    this.slug = await uniqueSlug(baseSlug, async candidate => {
+      const BlogPostModel = (await import('./BlogPost')).default;
+      const exists = await BlogPostModel.exists({
+        slug: candidate,
+        _id: { $ne: this._id },
+      });
+      return Boolean(exists);
+    });
   }
 
   // Set publishedAt when status changes to published

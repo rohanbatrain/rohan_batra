@@ -16,6 +16,7 @@ export interface ICourse
   prerequisiteCourseIds: mongoose.Types.ObjectId[];
   recommendedBookIds: mongoose.Types.ObjectId[];
   flashcardDeckIds: mongoose.Types.ObjectId[];
+  _nextModuleOrder?: number;
 }
 
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -146,6 +147,11 @@ const CourseSchema = new Schema<ICourse>(
       type: Number,
       default: 1,
       min: 1,
+    },
+    _nextModuleOrder: {
+      type: Number,
+      default: 0,
+      select: false, // Don't include in queries by default
     },
     createdBy: {
       type: Schema.Types.ObjectId,
