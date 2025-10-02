@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import {
@@ -15,10 +16,18 @@ import {
   FileText,
   Home,
   User,
+  Instagram,
 } from 'lucide-react';
 import { useCurrentYear } from '@/hooks/use-client-safe';
 
-const socialLinks = [
+interface SocialProfile {
+  platform: string;
+  username: string;
+  profileUrl: string;
+}
+
+// Default fallback links (if API fails)
+const defaultSocialLinks = [
   {
     name: 'GitHub',
     href: 'https://github.com/rohanbatrain',
@@ -73,9 +82,70 @@ const contactInfo = [
   },
 ];
 
+// Platform icon mapping
+const getPlatformIcon = (platform: string) => {
+  const iconMap: Record<string, any> = {
+    instagram: Instagram,
+    twitter: Twitter,
+    linkedin: Linkedin,
+    github: Github,
+    email: Mail,
+  };
+  return iconMap[platform.toLowerCase()] || ExternalLink;
+};
+
+// Platform color mapping
+const getPlatformColor = (platform: string) => {
+  const colorMap: Record<string, string> = {
+    instagram: 'hover:text-pink-600',
+    twitter: 'hover:text-blue-400',
+    linkedin: 'hover:text-blue-600',
+    github: 'hover:text-gray-900 dark:hover:text-white',
+    email: 'hover:text-red-500',
+  };
+  return colorMap[platform.toLowerCase()] || 'hover:text-blue-600';
+};
+
 export function Footer() {
-  // Use hook to safely get current year without hydration mismatches
   const currentYear = useCurrentYear();
+  const [socialLinks, setSocialLinks] = useState(defaultSocialLinks);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPrimaryBrandProfiles = async () => {
+      try {
+        const response = await fetch('/api/public/brands');
+        if (!response.ok) throw new Error('Failed to fetch brands');
+        
+        const data = await response.json();
+        const primaryBrand = data.brands?.find((brand: any) => brand.isPrimary);
+        
+        if (primaryBrand && primaryBrand.profiles?.length > 0) {
+          // Convert profiles to footer social links format
+          const dynamicLinks = primaryBrand.profiles.map((profile: SocialProfile) => {
+            const Icon = getPlatformIcon(profile.platform);
+            const color = getPlatformColor(profile.platform);
+            
+            return {
+              name: profile.platform.charAt(0).toUpperCase() + profile.platform.slice(1),
+              href: profile.profileUrl,
+              icon: Icon,
+              color: color,
+            };
+          });
+          
+          setSocialLinks(dynamicLinks);
+        }
+      } catch (error) {
+        console.error('Error fetching social profiles:', error);
+        // Keep default fallback links
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPrimaryBrandProfiles();
+  }, []);
 
   return (
     <footer className='bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700'>

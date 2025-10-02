@@ -15,6 +15,8 @@ import {
   FileText,
   LogIn,
   ChevronDown,
+  BookOpen,
+  Share2,
 } from 'lucide-react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 
@@ -27,6 +29,8 @@ const navigationItems = [
   { name: 'Home', href: '/', icon: Home },
   { name: 'Portfolio', href: '/portfolio', icon: Code },
   { name: 'Blog', href: '/blog', icon: FileText },
+  { name: 'Docs', href: '/docs', icon: BookOpen },
+  { name: 'Socials', href: '/socials', icon: Share2 },
   { name: 'About', href: '/about', icon: User },
 ];
 
