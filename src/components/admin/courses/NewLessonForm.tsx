@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import useSWR from 'swr';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -81,11 +81,12 @@ const defaultLessonForm: LessonFormState = {
   isPreviewable: false,
   progressWeight: '1',
   releaseAt: '',
-  parentLessonId: '',
+  parentLessonId: '__none__',
 };
 
 export default function NewLessonForm({ courseId, moduleId }: { courseId: string; moduleId: string }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { toast } = useToast();
 
   const { data, error, isLoading } = useSWR<CourseDetailResponse>(
@@ -98,7 +99,7 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
     return data?.modules?.find(m => m.id === moduleId) ?? null;
   }, [data?.modules, moduleId]);
 
-  type LessonListItem = { id: string; title: string; parentLessonId?: string | null };
+  type LessonListItem = { id: string; title: string; slug: string; parentLessonId?: string | null };
   const { data: moduleLessons } = useSWR<{ lessons: LessonListItem[] }>(
     `/api/admin/courses/${courseId}/modules/${moduleId}/lessons`,
     fetcher
@@ -114,6 +115,31 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
     setLessonForm(prev => ({ ...prev, estimatedDurationMinutes: prev.estimatedDurationMinutes || '15' }));
   }, []);
 
+  // Auto-select parent lesson from URL query parameter
+  useEffect(() => {
+    const parentId = searchParams?.get('parentId');
+    if (parentId) {
+      setLessonForm(prev => ({ ...prev, parentLessonId: parentId }));
+    }
+  }, [searchParams]);
+
+  // Update slug when parent lesson changes (for nested slugs)
+  useEffect(() => {
+    if (!slugEdited && lessonForm.title && lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__') {
+      const parentLesson = moduleLessons?.lessons?.find(l => l.id === lessonForm.parentLessonId);
+      if (parentLesson) {
+        const baseSlug = slugify(lessonForm.title);
+        // Use parent's slug, or generate one from parent's title if missing
+        const parentSlug = parentLesson.slug || slugify(parentLesson.title);
+        setLessonForm(prev => ({ ...prev, slug: `${parentSlug}/${baseSlug}` }));
+      }
+    } else if (!slugEdited && lessonForm.title && lessonForm.parentLessonId === '__none__') {
+      // Reset to base slug if parent is removed
+      const baseSlug = slugify(lessonForm.title);
+      setLessonForm(prev => ({ ...prev, slug: baseSlug }));
+    }
+  }, [lessonForm.parentLessonId, moduleLessons, lessonForm.title, slugEdited]);
+
   const handleField = <K extends keyof LessonFormState>(key: K, value: LessonFormState[K]) => {
     setLessonForm(prev => ({ ...prev, [key]: value }));
   };
@@ -121,7 +147,20 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
   const handleTitle = (value: string) => {
     handleField('title', value);
     if (!slugEdited) {
-      handleField('slug', slugify(value));
+      const baseSlug = slugify(value);
+      // If a parent lesson is selected, prefix the slug with parent's slug
+      if (lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__') {
+        const parentLesson = moduleLessons?.lessons?.find(l => l.id === lessonForm.parentLessonId);
+        if (parentLesson) {
+          // Use parent's slug, or generate one from parent's title if missing
+          const parentSlug = parentLesson.slug || slugify(parentLesson.title);
+          handleField('slug', `${parentSlug}/${baseSlug}`);
+        } else {
+          handleField('slug', baseSlug);
+        }
+      } else {
+        handleField('slug', baseSlug);
+      }
     }
   };
 
@@ -149,7 +188,7 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
     if (lessonForm.releaseAt) payload.releaseAt = new Date(lessonForm.releaseAt).toISOString();
     if (lessonForm.contentType === 'standalone') payload.standaloneFormat = lessonForm.standaloneFormat;
     if (lessonForm.contentType === 'video' && lessonForm.externalResource.trim()) payload.externalResource = { provider: 'custom', url: lessonForm.externalResource.trim() };
-    if (lessonForm.parentLessonId) payload.parentLessonId = lessonForm.parentLessonId;
+    if (lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__') payload.parentLessonId = lessonForm.parentLessonId;
     return payload;
   };
 
@@ -248,14 +287,27 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
         </div>
       ) : (
         <section className='space-y-4'>
+          {lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__' && (
+            <div className='rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/60'>
+              <div className='flex items-start gap-3'>
+                <span className='text-blue-600 dark:text-blue-400'>ℹ️</span>
+                <div className='text-sm'>
+                  <p className='font-medium text-blue-900 dark:text-blue-200'>Creating sub-lesson</p>
+                  <p className='mt-1 text-blue-700 dark:text-blue-300'>
+                    This lesson will be created as a child of: <strong>{moduleLessons?.lessons?.find(l => l.id === lessonForm.parentLessonId)?.title ?? 'Selected parent'}</strong>
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
           <div>
             <Label htmlFor='parent-lesson'>Parent lesson</Label>
             <Select value={lessonForm.parentLessonId} onValueChange={v => handleField('parentLessonId', v)}>
               <SelectTrigger>
-                <SelectValue placeholder='None (top-level lesson)' />
+                <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value=''>None</SelectItem>
+                <SelectItem value='__none__'>None (top-level lesson)</SelectItem>
                 {(moduleLessons?.lessons ?? []).filter(l => !l.parentLessonId).map(l => (
                   <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
                 ))}
@@ -270,6 +322,11 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
             <div>
               <Label htmlFor='lesson-slug'>Slug</Label>
               <Input id='lesson-slug' value={lessonForm.slug} onChange={e => handleSlug(e.target.value)} placeholder='auto-generated-if-blank' />
+              {lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__' && lessonForm.slug.includes('/') && (
+                <p className='mt-1 text-xs text-green-600 dark:text-green-400'>
+                  ✓ Nested slug: <span className='font-mono'>{lessonForm.slug}</span>
+                </p>
+              )}
             </div>
             <div>
               <Label>Content type</Label>

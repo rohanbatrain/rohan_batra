@@ -11,6 +11,8 @@ import connectToDatabase from '@/lib/mongodb';
 import SiteSetting from '@/models/SiteSetting';
 import HeroSection from '@/components/home/HeroSection';
 import SkillsSection from '@/components/home/SkillsSection';
+import ExperienceSection from '@/components/experience/ExperienceSection';
+import { ExperienceService } from '@/lib/services/experience-service';
 
 async function getFeaturedBlogPosts() {
   try {
@@ -39,9 +41,10 @@ async function getFeaturedProjects() {
 }
 
 export default async function Home() {
-  const [blogPosts, projects] = await Promise.all([
+  const [blogPosts, projects, experiences] = await Promise.all([
     getFeaturedBlogPosts(),
     getFeaturedProjects(),
+    ExperienceService.getPublished(3),
   ]);
   // Read admin toggle for trending fallback (defaults to true)
   await connectToDatabase();
@@ -64,6 +67,13 @@ export default async function Home() {
     <div className='min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800'>
       <HeroSection />
     <SkillsSection />
+
+      {/* Professional Experience */}
+      {experiences.length > 0 && (
+        <div className='bg-white dark:bg-gray-800'>
+          <ExperienceSection experiences={experiences} limit={3} />
+        </div>
+      )}
 
       {/* Featured Projects */}
       {projects.length > 0 && (

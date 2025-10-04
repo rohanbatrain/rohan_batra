@@ -12,6 +12,7 @@ const BlogPostCreateSchema = z.object({
   title: z.string().min(1).max(200),
   content: z.string().min(1),
   markdown: z.string().optional(),
+  contentFormat: z.enum(['rich-html', 'mdx']).optional(),
   excerpt: z.string().min(1).max(300),
   slug: z.string().min(1).max(100),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
@@ -232,6 +233,7 @@ export async function GET(request: NextRequest) {
         title: post.title,
         slug: post.slug,
         excerpt: post.excerpt,
+        contentFormat: post.contentType === 'markdown' ? 'mdx' : 'rich-html',
         status: post.status,
         categories: post.categories,
         tags: post.tags,
@@ -449,13 +451,20 @@ export async function POST(request: NextRequest) {
       }
 
       // Create the blog post with progressive feature support
+      // Map contentFormat to contentType
+      const contentType = filteredData.contentFormat === 'mdx'
+        ? 'markdown'
+        : filteredData.markdown
+        ? 'markdown'
+        : 'rich-text';
+
       const postData: any = {
         title: filteredData.title,
         slug: filteredData.slug,
         excerpt: filteredData.excerpt,
         content: filteredData.content,
         markdown: filteredData.markdown || undefined,
-        contentType: filteredData.markdown ? 'markdown' : 'html',
+        contentType,
         category: filteredData.category,
         tags: filteredData.tags,
         status: filteredData.status,
@@ -500,6 +509,8 @@ export async function POST(request: NextRequest) {
         title: newPost.title,
         slug: newPost.slug,
         excerpt: newPost.excerpt,
+        content: newPost.content,
+        contentFormat: newPost.contentType === 'markdown' ? 'mdx' : 'rich-html',
         status: newPost.status,
         category: newPost.category,
         tags: newPost.tags,

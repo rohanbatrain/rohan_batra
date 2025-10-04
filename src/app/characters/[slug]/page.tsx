@@ -3,6 +3,7 @@ import Character from '@/models/Character';
 import JournalVolume from '@/models/JournalVolume';
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import ContentRenderer from '@/components/ContentRenderer';
 
 interface Params {
   params: Promise<{ slug: string }>;
@@ -33,17 +34,21 @@ export default async function CharacterPublicPage({ params }: Params) {
         <p className='text-muted-foreground'>{character.fullName}</p>
       )}
       {character.age != null && <p className='mt-2'>Age: {character.age}</p>}
-      <section
+      
+      <ContentRenderer 
+        content={character.description || ''} 
+        format={character.descriptionFormat}
         className='prose dark:prose-invert mt-6'
-        dangerouslySetInnerHTML={{ __html: character.description || '' }}
       />
-      <section
+      <ContentRenderer 
+        content={character.personality || ''} 
+        format={character.personalityFormat}
         className='prose dark:prose-invert mt-6'
-        dangerouslySetInnerHTML={{ __html: character.personality || '' }}
       />
-      <section
+      <ContentRenderer 
+        content={character.background || ''} 
+        format={character.backgroundFormat}
         className='prose dark:prose-invert mt-6'
-        dangerouslySetInnerHTML={{ __html: character.background || '' }}
       />
 
       <h2 className='text-2xl font-semibold mt-10 mb-4'>Journals</h2>

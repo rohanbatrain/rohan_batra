@@ -56,7 +56,21 @@ export async function PATCH(
         : undefined;
     }
 
-    // TODO: handle quizAttempts aggregation if needed later
+    // Handle quiz attempts if provided
+    if (parsed.quizAttempts !== undefined && Array.isArray(parsed.quizAttempts)) {
+      // Merge new quiz attempts with existing ones
+      const existingAttempts = progress.quizAttempts || [];
+      const newAttempts = parsed.quizAttempts.map((attempt: any) => ({
+        lessonId: new Types.ObjectId(attempt.lessonId),
+        score: attempt.score,
+        totalQuestions: attempt.totalQuestions,
+        passed: attempt.passed,
+        attemptedAt: attempt.attemptedAt ? new Date(attempt.attemptedAt) : new Date(),
+      }));
+      
+      // Combine and deduplicate by lessonId + attemptedAt
+      progress.quizAttempts = [...existingAttempts, ...newAttempts] as any;
+    }
 
     const recomputed = await recomputeProgress(
       course._id,

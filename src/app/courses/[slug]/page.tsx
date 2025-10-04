@@ -385,112 +385,137 @@ export default async function CoursePublicPage(ctx: PageProps) {
                     <li
                       id={`lesson-${String(l._id)}`}
                       key={String(l._id)}
-                      className='group/lesson flex items-center justify-between gap-4 p-4 transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/50'
+                      className='group/lesson transition-colors'
                     >
-                      <div className='flex flex-1 items-center gap-3'>
-                        <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
-                          {idx + 1}
-                        </span>
-                        <div className='flex-1'>
-                          <div className='font-medium text-gray-900 dark:text-white'>
-                            {l.title}
+                      {/* Parent Lesson */}
+                      <div className='flex items-center justify-between gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50'>
+                        <div className='flex flex-1 items-center gap-3'>
+                          <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
+                            {idx + 1}
+                          </span>
+                          <div className='flex-1'>
+                            <div className='font-medium text-gray-900 dark:text-white'>
+                              {l.title}
+                            </div>
+                            <div className='mt-0.5 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                              <span className='capitalize'>{l.contentType}</span>
+                              <span>•</span>
+                              <span>{formatMinutes(l.estimatedDurationMinutes)}</span>
+                              {Array.isArray(l.subLessons) && l.subLessons.length > 0 && (
+                                <>
+                                  <span>•</span>
+                                  <span className='text-blue-600 dark:text-blue-400'>
+                                    {l.subLessons.length} sub-lesson{l.subLessons.length !== 1 ? 's' : ''}
+                                  </span>
+                                </>
+                              )}
+                            </div>
                           </div>
-                          <div className='mt-0.5 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
-                            <span className='capitalize'>{l.contentType}</span>
-                            <span>•</span>
-                            <span>{formatMinutes(l.estimatedDurationMinutes)}</span>
-                          </div>
-                          {Array.isArray(l.subLessons) && l.subLessons.length > 0 && (
-                            <ul className='mt-3 ml-9 space-y-2'>
-                              {l.subLessons.map((s: any, sIdx: number) => (
-                                <li key={String(s._id)} className='flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-white/60 p-3 dark:border-gray-700 dark:bg-gray-800/50'>
-                                  <div className='flex items-center gap-2'>
-                                    <span className='flex h-5 w-5 items-center justify-center rounded-md bg-gray-100 text-[10px] font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
-                                      {idx + 1}.{sIdx + 1}
-                                    </span>
-                                    <div>
-                                      <div className='text-sm font-medium text-gray-900 dark:text-white'>{s.title}</div>
-                                      <div className='mt-0.5 flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400'>
-                                        <span className='capitalize'>{s.contentType}</span>
-                                        <span>•</span>
-                                        <span>{formatMinutes(s.estimatedDurationMinutes)}</span>
-                                      </div>
-                                    </div>
-                                  </div>
-                                  <div className='flex items-center gap-2'>
-                                    {enrollment ? (
-                                      <Link
-                                        href={`/courses/${course.slug}#lesson-${String(s._id)}`}
-                                        className='rounded-md border border-gray-300 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                                      >
-                                        Start
-                                      </Link>
-                                    ) : null}
-                                    {s.isPreviewable ? (
-                                      s.contentType === 'blog' && s.blogSlug ? (
-                                        <Link
-                                          href={`/blog/${s.blogSlug}`}
-                                          className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50'
-                                        >
-                                          Preview
-                                        </Link>
-                                      ) : (
-                                        <Link
-                                          href={`/courses/preview/${String(s._id)}`}
-                                          className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50'
-                                        >
-                                          Preview
-                                        </Link>
-                                      )
-                                    ) : (
-                                      <span className='rounded-md bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
-                                        Preview N/A
-                                      </span>
-                                    )}
-                                  </div>
-                                </li>
-                              ))}
-                            </ul>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                          {/* Start button for enrolled users */}
+                          {enrollment ? (
+                            <Link
+                              href={`/courses/${course.slug}#lesson-${String(l._id)}`}
+                              className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                              aria-label={`Start lesson: ${l.title}`}
+                            >
+                              Start
+                            </Link>
+                          ) : null}
+
+                          {/* Preview logic */}
+                          {l.isPreviewable ? (
+                            l.contentType === 'blog' && l.blogSlug ? (
+                              <Link
+                                href={`/blog/${l.blogSlug}`}
+                                className='rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
+                                aria-label={`Preview blog lesson: ${l.title}`}
+                              >
+                                Preview
+                              </Link>
+                            ) : (
+                              <Link
+                                href={`/courses/preview/${String(l._id)}`}
+                                className='rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
+                                aria-label={`Preview lesson: ${l.title}`}
+                              >
+                                Preview
+                              </Link>
+                            )
+                          ) : (
+                            <span className='rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
+                              Preview N/A
+                            </span>
                           )}
                         </div>
                       </div>
-                      <div className='flex items-center gap-2'>
-                        {/* Start button for enrolled users (future: route to lesson reader) */}
-                        {enrollment ? (
-                          <Link
-                            href={`/courses/${course.slug}#lesson-${String(l._id)}`}
-                            className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-                            aria-label={`Start lesson: ${l.title}`}
-                          >
-                            Start
-                          </Link>
-                        ) : null}
-
-                        {/* Preview logic for each content type */}
-                        {l.isPreviewable ? (
-                          l.contentType === 'blog' && l.blogSlug ? (
-                            <Link
-                              href={`/blog/${l.blogSlug}`}
-                              className='rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
-                              aria-label={`Preview blog lesson: ${l.title}`}
-                            >
-                              Preview
-                            </Link>
-                          ) : (
-                            <Link
-                              href={`/courses/preview/${String(l._id)}`}
-                              className='rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
-                              aria-label={`Preview lesson: ${l.title}`}
-                            >
-                              Preview
-                            </Link>
-                          )
-                        ) : (
-                          <span className='rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
-                            Preview N/A
-                          </span>
-                        )}
-                      </div>
+                      
+                      {/* Sub-Lessons */}
+                      {Array.isArray(l.subLessons) && l.subLessons.length > 0 && (
+                        <div className='border-t border-gray-100 bg-gradient-to-r from-blue-50/30 to-purple-50/30 dark:border-gray-700 dark:from-blue-950/10 dark:to-purple-950/10'>
+                          <ul className='divide-y divide-gray-100 dark:divide-gray-700'>
+                            {l.subLessons.map((s: any, sIdx: number) => (
+                              <li 
+                                key={String(s._id)} 
+                                id={`lesson-${String(s._id)}`}
+                                className='group/sublesson flex items-center justify-between gap-3 p-4 pl-14 hover:bg-white/60 dark:hover:bg-gray-800/40 transition-colors'
+                              >
+                                <div className='flex flex-1 items-center gap-3'>
+                                  <span className='text-gray-400 dark:text-gray-600'>└─</span>
+                                  <span className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-blue-100 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'>
+                                    {idx + 1}.{sIdx + 1}
+                                  </span>
+                                  <div className='flex-1'>
+                                    <div className='text-sm font-medium text-gray-900 dark:text-white'>
+                                      {s.title}
+                                    </div>
+                                    <div className='mt-0.5 flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400'>
+                                      <span className='capitalize'>{s.contentType}</span>
+                                      <span>•</span>
+                                      <span>{formatMinutes(s.estimatedDurationMinutes)}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className='flex items-center gap-2'>
+                                  {enrollment ? (
+                                    <Link
+                                      href={`/courses/${course.slug}#lesson-${String(s._id)}`}
+                                      className='rounded-md border border-gray-300 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors'
+                                      aria-label={`Start sub-lesson: ${s.title}`}
+                                    >
+                                      Start
+                                    </Link>
+                                  ) : null}
+                                  {s.isPreviewable ? (
+                                    s.contentType === 'blog' && s.blogSlug ? (
+                                      <Link
+                                        href={`/blog/${s.blogSlug}`}
+                                        className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
+                                        aria-label={`Preview sub-lesson: ${s.title}`}
+                                      >
+                                        Preview
+                                      </Link>
+                                    ) : (
+                                      <Link
+                                        href={`/courses/preview/${String(s._id)}`}
+                                        className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
+                                        aria-label={`Preview sub-lesson: ${s.title}`}
+                                      >
+                                        Preview
+                                      </Link>
+                                    )
+                                  ) : (
+                                    <span className='rounded-md bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
+                                      Preview N/A
+                                    </span>
+                                  )}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
                     </li>
                   ))}
                 </ul>

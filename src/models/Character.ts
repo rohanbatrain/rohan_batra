@@ -10,9 +10,12 @@ export interface ICharacter extends Document {
   birthdate?: Date | null;
   age?: number;
   description: string; // Rich HTML content
+  descriptionFormat?: 'rich-html' | 'mdx';
   physicalDescription?: string;
   personality: string;
+  personalityFormat?: 'rich-html' | 'mdx';
   background: string;
+  backgroundFormat?: 'rich-html' | 'mdx';
   goals?: string;
   conflicts?: string;
   relationships: Array<{
@@ -83,6 +86,11 @@ const CharacterSchema = new Schema<ICharacter>(
       type: String,
       required: true,
     },
+    descriptionFormat: {
+      type: String,
+      enum: ['rich-html', 'mdx'],
+      default: 'rich-html',
+    },
     physicalDescription: {
       type: String,
       trim: true,
@@ -91,9 +99,19 @@ const CharacterSchema = new Schema<ICharacter>(
       type: String,
       required: true,
     },
+    personalityFormat: {
+      type: String,
+      enum: ['rich-html', 'mdx'],
+      default: 'rich-html',
+    },
     background: {
       type: String,
       required: true,
+    },
+    backgroundFormat: {
+      type: String,
+      enum: ['rich-html', 'mdx'],
+      default: 'rich-html',
     },
     goals: {
       type: String,

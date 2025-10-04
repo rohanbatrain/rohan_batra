@@ -1,0 +1,149 @@
+openapi: 3.0.3
+info:
+  title: Experience Public API
+  description: Public read-only API for viewing published professional experiences
+  version: 1.0.0
+servers:
+  - url: /api/experience
+    description: Public experience endpoints
+
+paths:
+  /:
+    get:
+      summary: List published experiences
+      description: Retrieve all published experience entries, sorted by display order and start date
+      operationId: listPublicExperiences
+      tags:
+        - Public
+      parameters:
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of experiences to return (for homepage use limit=3)
+        - in: query
+          name: employmentType
+          schema:
+            type: string
+            enum: [Full-time, Part-time, Self-employed, Freelance, Contract, Internship, Apprenticeship, Seasonal]
+          description: Filter by employment type (optional)
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  experiences:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PublicExperience'
+                  totalYears:
+                    type: number
+                    format: float
+                    description: Total years of professional experience
+                    example: 5.5
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    PublicExperience:
+      type: object
+      required:
+        - _id
+        - title
+        - company
+        - employmentType
+        - startDate
+        - isCurrent
+        - location
+        - description
+        - descriptionFormat
+        - skills
+        - displayOrder
+      properties:
+        _id:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          example: '507f1f77bcf86cd799439011'
+        title:
+          type: string
+          example: 'Technical Head'
+        company:
+          type: string
+          example: 'Google Developer Groups UPES'
+        companyWebsite:
+          type: string
+          format: uri
+          example: 'https://gdgupes.tech'
+        companyLogo:
+          type: string
+          format: uri
+          description: URL to company logo (may be direct URL or Asset URL)
+          example: 'https://res.cloudinary.com/example/image/upload/v1234/logo.png'
+        employmentType:
+          type: string
+          enum: [Full-time, Part-time, Self-employed, Freelance, Contract, Internship, Apprenticeship, Seasonal]
+          example: 'Part-time'
+        startDate:
+          type: string
+          format: date-time
+          example: '2023-08-01T00:00:00.000Z'
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        isCurrent:
+          type: boolean
+          example: true
+        location:
+          type: string
+          example: 'Dehradun, India'
+        description:
+          type: string
+          description: Full description in HTML or Markdown depending on descriptionFormat
+          example: '<p>Leading technical initiatives and mentoring 50+ developers...</p>'
+        descriptionFormat:
+          type: string
+          enum: [rich-text, markdown]
+          example: 'rich-text'
+        skills:
+          type: array
+          items:
+            type: string
+          example: ['Leadership', 'JavaScript', 'Event Management']
+        displayOrder:
+          type: integer
+          example: 1
+        duration:
+          type: string
+          description: Human-readable duration (computed)
+          example: '1 yr 5 mos'
+        dateRange:
+          type: string
+          description: Formatted date range (computed)
+          example: 'Aug 2023 - Present · 1 yr 5 mos'
+    
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+  
+  responses:
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'Internal server error'

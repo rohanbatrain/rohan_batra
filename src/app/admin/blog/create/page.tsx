@@ -6,6 +6,7 @@ import Link from 'next/link';
 import RemoteLinkPicker, {
   AssetLinkItem,
 } from '@/components/ui/RemoteLinkPicker';
+import ContentEditor from '@/components/admin/ContentEditor';
 
 export default function CreateBlogPostPage() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function CreateBlogPostPage() {
     slug: '',
     excerpt: '',
     content: '',
+    contentFormat: 'rich-html' as 'rich-html' | 'mdx',
     category: 'General', // Provide default value since it's required
     tags: '',
     status: 'draft' as 'draft' | 'published' | 'archived',
@@ -151,21 +153,19 @@ export default function CreateBlogPostPage() {
           </div>
 
           {/* Content */}
-          <div>
-            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              Content *
-            </label>
-            <textarea
-              value={formData.content}
-              onChange={e =>
-                setFormData(prev => ({ ...prev, content: e.target.value }))
-              }
-              required
-              rows={12}
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-              placeholder='Write your blog post content here...'
-            />
-          </div>
+          <ContentEditor
+            value={formData.content}
+            onChange={(value: string) =>
+              setFormData(prev => ({ ...prev, content: value }))
+            }
+            onFormatChange={(format: 'rich-html' | 'mdx') =>
+              setFormData(prev => ({ ...prev, contentFormat: format }))
+            }
+            label='Content'
+            placeholder='Write your blog post content here...'
+            rows={12}
+            showPreview={true}
+          />
 
           {/* Category and Tags */}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

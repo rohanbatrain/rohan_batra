@@ -8,6 +8,7 @@ import { z } from 'zod';
 const BlogPostUpdateSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   content: z.string().min(1).optional(),
+  contentFormat: z.enum(['rich-html', 'mdx']).optional(),
   excerpt: z.string().max(500).optional(),
   slug: z.string().min(1).max(100).optional(),
   category: z.string().optional(),
@@ -56,10 +57,11 @@ export async function GET(
 
     const response = {
       success: true,
-      post: {
+      data: {
         _id: post._id,
         title: post.title,
         content: post.content,
+        contentFormat: post.contentType === 'markdown' ? 'mdx' : 'rich-html',
         excerpt: post.excerpt,
         slug: post.slug,
         status: post.status,
@@ -168,6 +170,14 @@ export async function PUT(
       validatedData.status && validatedData.status !== existingPost.status;
     const updateData: Record<string, unknown> = { ...validatedData };
 
+    // Map contentFormat to contentType if provided
+    if (validatedData.contentFormat) {
+      updateData.contentType = validatedData.contentFormat === 'mdx'
+        ? 'markdown'
+        : 'rich-text';
+      delete updateData.contentFormat; // Remove contentFormat as it's not in the schema
+    }
+
     if (statusChanged) {
       if (
         validatedData.status === 'published' &&
@@ -222,6 +232,7 @@ export async function PUT(
         _id: updatedPost._id,
         title: updatedPost.title,
         content: updatedPost.content,
+        contentFormat: updatedPost.contentType === 'markdown' ? 'mdx' : 'rich-html',
         excerpt: updatedPost.excerpt,
         slug: updatedPost.slug,
         status: updatedPost.status,

@@ -92,6 +92,11 @@ const UserSchema = new Schema<IUser>(
         type: String,
         default: 'en',
       },
+      editor: {
+        type: String,
+        enum: ['rich-html', 'mdx'],
+        default: 'rich-html',
+      },
     },
     adminNotes: {
       type: String,

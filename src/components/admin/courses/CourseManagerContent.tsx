@@ -121,6 +121,7 @@ interface LessonDetail {
   progressWeight: number;
   releaseAt: string | null;
   updatedAt: string;
+  parentLessonId?: string | null;
 }
 
 export interface CourseManagerContentProps {
@@ -252,7 +253,7 @@ interface SortableModuleCardProps {
   deckLookup: Map<string, DeckOption>;
   onEdit: (module: ModuleDetail) => void;
   onDelete: (module: ModuleDetail) => void;
-  onCreateLesson: (moduleId: string) => void;
+  onCreateLesson: (moduleId: string, parentLessonId?: string) => void;
   onEditLesson: (moduleId: string, lesson: LessonDetail) => void;
   onDeleteLesson: (moduleId: string, lesson: LessonDetail) => void;
   onLessonReorder: (
@@ -367,17 +368,47 @@ function SortableModuleCard({
               items={module.lessons.map(lesson => lesson.id)}
               strategy={verticalListSortingStrategy}
             >
-              {module.lessons.map(lesson => (
-                <SortableLessonRow
-                  key={lesson.id}
-                  lesson={lesson}
-                  deckLookup={deckLookup}
-                  onEdit={() => onEditLesson(module.id, lesson)}
-                  onDelete={() => onDeleteLesson(module.id, lesson)}
-                  selected={selectedIds.has(lesson.id)}
-                  onToggle={checked => onToggleSelect(lesson.id, checked)}
-                />
-              ))}
+              {module.lessons
+                .filter(lesson => !lesson.parentLessonId) // Show only top-level lessons
+                .map(lesson => {
+                  // Find child lessons for this parent
+                  const childLessons = module.lessons.filter(
+                    child => child.parentLessonId === lesson.id
+                  );
+                  
+                  return (
+                    <div key={lesson.id} className='space-y-2'>
+                      <SortableLessonRow
+                        lesson={lesson}
+                        deckLookup={deckLookup}
+                        onEdit={() => onEditLesson(module.id, lesson)}
+                        onDelete={() => onDeleteLesson(module.id, lesson)}
+                        selected={selectedIds.has(lesson.id)}
+                        onToggle={checked => onToggleSelect(lesson.id, checked)}
+                        onAddChild={() => onCreateLesson(module.id, lesson.id)}
+                        hasChildren={childLessons.length > 0}
+                      />
+                      
+                      {/* Render child lessons with indentation and separate drag context */}
+                      {childLessons.length > 0 && (
+                        <div className='ml-8 space-y-2 border-l-2 border-muted pl-4'>
+                          {childLessons.map(childLesson => (
+                            <SortableLessonRow
+                              key={childLesson.id}
+                              lesson={childLesson}
+                              deckLookup={deckLookup}
+                              onEdit={() => onEditLesson(module.id, childLesson)}
+                              onDelete={() => onDeleteLesson(module.id, childLesson)}
+                              selected={selectedIds.has(childLesson.id)}
+                              onToggle={checked => onToggleSelect(childLesson.id, checked)}
+                              isChild={true}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
             </SortableContext>
           </DndContext>
         </div>
@@ -397,6 +428,9 @@ interface SortableLessonRowProps {
   onDelete: () => void;
   selected: boolean;
   onToggle: (checked: boolean) => void;
+  isChild?: boolean;
+  onAddChild?: () => void;
+  hasChildren?: boolean;
 }
 
 function SortableLessonRow({
@@ -406,6 +440,9 @@ function SortableLessonRow({
   onDelete,
   selected,
   onToggle,
+  isChild = false,
+  onAddChild,
+  hasChildren = false,
 }: SortableLessonRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: lesson.id });
@@ -418,7 +455,11 @@ function SortableLessonRow({
     <div
       ref={setNodeRef}
       style={style}
-      className='flex flex-col gap-3 rounded-md border border-muted bg-background p-3 shadow-sm transition hover:border-primary/50 dark:border-muted/40 dark:bg-muted/20'
+      className={`flex flex-col gap-3 rounded-md border p-3 shadow-sm transition ${
+        isChild
+          ? 'border-muted/60 bg-muted/10 hover:border-primary/30 dark:bg-muted/10'
+          : 'border-muted bg-background hover:border-primary/50 dark:border-muted/40 dark:bg-muted/20'
+      }`}
     >
       <div className='flex flex-col gap-3 md:flex-row md:items-center md:justify-between'>
         <div className='flex items-start gap-3'>
@@ -427,13 +468,16 @@ function SortableLessonRow({
             className='mt-1 rounded-md border border-dashed border-transparent p-1 text-muted-foreground transition hover:border-border hover:text-foreground'
             {...attributes}
             {...listeners}
-            aria-label='Drag to reorder lesson'
+            aria-label={isChild ? 'Drag to reorder sub-lesson' : 'Drag to reorder lesson'}
           >
             <GripVertical className='h-4 w-4' />
           </button>
           <Checkbox checked={selected} onCheckedChange={v => onToggle(Boolean(v))} aria-label='Select lesson for bulk action' />
           <div>
-            <div className='font-medium'>{lesson.title}</div>
+            <div className={`font-medium ${isChild ? 'text-sm' : ''}`}>
+              {isChild && <span className='mr-2 text-muted-foreground'>└─</span>}
+              {lesson.title}
+            </div>
             <div className='text-xs text-muted-foreground'>
               {lesson.slug ?? '—'} • {lesson.contentType} •{' '}
               {lesson.estimatedDurationMinutes} min
@@ -449,7 +493,12 @@ function SortableLessonRow({
             ) : null}
           </div>
         </div>
-        <div className='flex items-center gap-2'>
+        <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
+          {!isChild && onAddChild && (
+            <Button size='sm' variant='ghost' onClick={onAddChild} className='text-xs'>
+              <span className='mr-1'>+</span> Add sub-lesson
+            </Button>
+          )}
           <Button size='sm' variant='outline' onClick={onEdit}>
             Edit
           </Button>
@@ -485,6 +534,7 @@ export default function CourseManagerContent({
   const [moduleDialogOpen, setModuleDialogOpen] = useState(false);
   const [lessonDialogOpen, setLessonDialogOpen] = useState(false);
   const [lessonModuleId, setLessonModuleId] = useState<string | null>(null);
+  const [lessonParentId, setLessonParentId] = useState<string | null>(null);
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [lessonSlugEdited, setLessonSlugEdited] = useState(false);
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
@@ -943,9 +993,14 @@ export default function CourseManagerContent({
     }
   };
 
-  const openCreateLesson = (moduleId: string) => {
+  const openCreateLesson = (moduleId: string, parentLessonId?: string) => {
     // Navigate to the dedicated page for creating a lesson
-    router.push(`/admin/courses/${courseId}/modules/${moduleId}/lessons/new`);
+    const url = `/admin/courses/${courseId}/modules/${moduleId}/lessons/new`;
+    if (parentLessonId) {
+      router.push(`${url}?parentId=${parentLessonId}`);
+    } else {
+      router.push(url);
+    }
   };
 
   const openEditLesson = (moduleId: string, lesson: LessonDetail) => {
@@ -1154,12 +1209,13 @@ export default function CourseManagerContent({
       toast({ title: 'No lessons selected', description: 'Select lessons to assign a parent.', variant: 'destructive' });
       return;
     }
-    const parentId = bulkParentByModule[moduleId] || '';
+    const parentId = bulkParentByModule[moduleId] || '__none__';
+    const actualParentId = parentId === '__none__' ? null : parentId;
     try {
       const response = await fetch(`/api/admin/courses/${courseId}/modules/${moduleId}/lessons/bulk-parent`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonIds: ids, parentLessonId: parentId || null }),
+        body: JSON.stringify({ lessonIds: ids, parentLessonId: actualParentId }),
       });
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
@@ -1719,14 +1775,14 @@ export default function CourseManagerContent({
               <div key={`bulk-${module.id}`} className='flex flex-wrap items-center gap-2 rounded-md border border-dashed border-gray-300 p-3 dark:border-gray-700'>
                 <div className='text-sm font-medium'>Bulk set parent in “{module.title}”</div>
                 <Select
-                  value={bulkParentByModule[module.id] ?? ''}
+                  value={bulkParentByModule[module.id] ?? '__none__'}
                   onValueChange={v => setBulkParentByModule(prev => ({ ...prev, [module.id]: v }))}
                 >
                   <SelectTrigger className='w-56'>
                     <SelectValue placeholder='None (top-level)' />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value=''>None</SelectItem>
+                    <SelectItem value='__none__'>None</SelectItem>
                     {module.lessons
                       .filter(l => !('parentLessonId' in l) || (l as any).parentLessonId == null)
                       .map(l => (

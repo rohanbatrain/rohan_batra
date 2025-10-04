@@ -99,7 +99,7 @@ const defaultLessonForm: LessonFormState = {
   isPreviewable: false,
   progressWeight: '1',
   releaseAt: '',
-  parentLessonId: '',
+  parentLessonId: '__none__',
 };
 
 export default function LessonForm({
@@ -135,7 +135,7 @@ export default function LessonForm({
   const [saving, setSaving] = useState(false);
   const [targetModuleId, setTargetModuleId] = useState<string>(moduleId);
 
-  type LessonListItem = { id: string; title: string; parentLessonId?: string | null };
+  type LessonListItem = { id: string; title: string; slug: string; parentLessonId?: string | null };
   const { data: moduleLessons } = useSWR<{ lessons: LessonListItem[] }>(
     `/api/admin/courses/${courseId}/modules/${targetModuleId}/lessons`,
     fetcher
@@ -165,12 +165,29 @@ export default function LessonForm({
         releaseAt: lessonData.releaseAt
           ? new Date(lessonData.releaseAt).toISOString().slice(0, 16)
           : '',
-        parentLessonId: lessonData.parentLessonId ?? '',
+        parentLessonId: lessonData.parentLessonId ?? '__none__',
       });
       setSlugEdited(Boolean(lessonData.slug));
       setTargetModuleId(moduleId);
     }
   }, [lessonData, mode, moduleId]);
+
+  // Update slug when parent lesson changes (for nested slugs)
+  useEffect(() => {
+    if (!slugEdited && form.title && form.parentLessonId && form.parentLessonId !== '__none__') {
+      const parentLesson = moduleLessons?.lessons?.find(l => l.id === form.parentLessonId);
+      if (parentLesson) {
+        const baseSlug = slugify(form.title);
+        // Use parent's slug, or generate one from parent's title if missing
+        const parentSlug = parentLesson.slug || slugify(parentLesson.title);
+        setForm(prev => ({ ...prev, slug: `${parentSlug}/${baseSlug}` }));
+      }
+    } else if (!slugEdited && form.title && form.parentLessonId === '__none__') {
+      // Reset to base slug if parent is removed
+      const baseSlug = slugify(form.title);
+      setForm(prev => ({ ...prev, slug: baseSlug }));
+    }
+  }, [form.parentLessonId, moduleLessons, form.title, slugEdited]);
 
   const handleField = <K extends keyof LessonFormState>(key: K, value: LessonFormState[K]) => {
     setForm(prev => ({ ...prev, [key]: value }));
@@ -178,7 +195,22 @@ export default function LessonForm({
 
   const handleTitle = (value: string) => {
     handleField('title', value);
-    if (!slugEdited) handleField('slug', slugify(value));
+    if (!slugEdited) {
+      const baseSlug = slugify(value);
+      // If a parent lesson is selected, prefix the slug with parent's slug
+      if (form.parentLessonId && form.parentLessonId !== '__none__') {
+        const parentLesson = moduleLessons?.lessons?.find(l => l.id === form.parentLessonId);
+        if (parentLesson) {
+          // Use parent's slug, or generate one from parent's title if missing
+          const parentSlug = parentLesson.slug || slugify(parentLesson.title);
+          handleField('slug', `${parentSlug}/${baseSlug}`);
+        } else {
+          handleField('slug', baseSlug);
+        }
+      } else {
+        handleField('slug', baseSlug);
+      }
+    }
   };
   const handleSlug = (value: string) => {
     setSlugEdited(true);
@@ -219,8 +251,8 @@ export default function LessonForm({
     if (form.contentType === 'video' && form.externalResource.trim()) {
       payload.externalResource = { provider: 'custom', url: form.externalResource.trim() };
     }
-    // Include parentLessonId explicitly: empty string means clear parent
-    payload.parentLessonId = form.parentLessonId ? form.parentLessonId : null;
+    // Include parentLessonId explicitly: __none__ means clear parent
+    payload.parentLessonId = form.parentLessonId && form.parentLessonId !== '__none__' ? form.parentLessonId : null;
     // Allow moving lesson between modules on edit
     if (mode === 'edit' && targetModuleId && targetModuleId !== moduleId) {
       payload.moduleId = targetModuleId;
@@ -375,7 +407,7 @@ export default function LessonForm({
                   <SelectValue placeholder='None (top-level lesson)' />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value=''>None</SelectItem>
+                  <SelectItem value='__none__'>None</SelectItem>
                   {(moduleLessons?.lessons ?? [])
                     .filter(l => l.id !== lessonId && !l.parentLessonId) // only top-level lessons; cannot parent to self
                     .map(l => (

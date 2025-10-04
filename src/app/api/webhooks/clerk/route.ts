@@ -3,6 +3,11 @@ import { headers } from 'next/headers';
 import { Webhook } from 'svix';
 import connectToDatabase from '@/lib/mongodb';
 import User from '@/models/User';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  createRateLimitResponse,
+} from '@/lib/rate-limit';
 
 type ClerkEmailAddress = {
   id: string;
@@ -28,6 +33,18 @@ type ClerkSessionPayload = {
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
+  // Apply rate limiting - webhooks should be limited to prevent replay attacks
+  const identifier = getClientIdentifier(req);
+  const rateLimitResult = checkRateLimit(identifier, {
+    max: 10, // 10 webhooks per minute per IP
+    windowMs: 60000,
+  });
+
+  if (!rateLimitResult.success) {
+    console.warn('[CLERK WEBHOOK] Rate limit exceeded for:', identifier);
+    return createRateLimitResponse(rateLimitResult);
+  }
+
   const headerList = await headers();
   const svixId = headerList.get('svix-id');
   const svixTimestamp = headerList.get('svix-timestamp');
@@ -59,6 +76,12 @@ export async function POST(req: NextRequest) {
       'svix-signature': svixSignature,
     }) as { type: string; data: unknown };
   } catch (err) {
+    // Log failed verification attempts for security monitoring
+    console.error('[CLERK WEBHOOK] Signature verification failed:', {
+      identifier,
+      svixId,
+      error: err instanceof Error ? err.message : 'Unknown error',
+    });
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
   }
 
@@ -92,6 +115,16 @@ export async function POST(req: NextRequest) {
               loginCount: 0,
               isActive: true,
               createdAt: new Date(),
+              preferences: {
+                editor: 'rich-html',
+                theme: 'auto',
+                language: 'en',
+                notifications: {
+                  email: true,
+                  browser: true,
+                  mobile: false,
+                },
+              },
             },
           },
           { new: true, upsert: true }

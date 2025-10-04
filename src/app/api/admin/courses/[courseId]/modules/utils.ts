@@ -1,6 +1,8 @@
 import { z } from 'zod';
 
-const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
+// Updated regex to support nested slugs with forward slashes
+// Matches: "slug", "parent-slug/child-slug", "parent/child/grandchild"
+const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*(?:\/[a-z0-9]+(?:-[a-z0-9]+)*)*$/;
 
 export const ModuleInputSchema = z.object({
   title: z.string().min(3).max(150),

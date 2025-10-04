@@ -1,13 +1,13 @@
 import { Metadata } from 'next';
-import LessonForm from '@/components/admin/courses/LessonForm';
+import NewLessonForm from '@/components/admin/courses/NewLessonForm';
 
 export const metadata: Metadata = {
   title: 'Add Lesson | Admin',
 };
 
-type PageParams = { params: { courseId: string; moduleId: string } };
+type PageParams = { params: Promise<{ courseId: string; moduleId: string }> };
 
-export default function NewLessonPage({ params }: PageParams) {
-  const { courseId, moduleId } = params;
-  return <LessonForm courseId={courseId} moduleId={moduleId} mode='create' />;
+export default async function NewLessonPage({ params }: PageParams) {
+  const { courseId, moduleId } = await params;
+  return <NewLessonForm courseId={courseId} moduleId={moduleId} />;
 }

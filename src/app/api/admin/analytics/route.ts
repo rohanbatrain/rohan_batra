@@ -12,9 +12,25 @@ import Chapter from '@/models/Chapter';
 import Character from '@/models/Character';
 import CharacterJournal from '@/models/CharacterJournal';
 import { getRedisClient } from '@/lib/redis';
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  createRateLimitResponse,
+} from '@/lib/rate-limit';
 
 export async function GET(request: NextRequest) {
   try {
+    // Apply rate limiting to prevent CPU exhaustion from expensive queries
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = checkRateLimit(identifier, {
+      max: 20, // 20 analytics requests per minute
+      windowMs: 60000,
+    });
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -38,6 +54,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const timeframe = searchParams.get('timeframe') || '30d';
     const includeCache = searchParams.get('includeCache') === 'true';
+
+    // Validate timeframe to prevent injection
+    const validTimeframes = ['7d', '30d', '90d', '1y'];
+    if (!validTimeframes.includes(timeframe)) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid timeframe. Must be one of: 7d, 30d, 90d, 1y' },
+        { status: 400 }
+      );
+    }
 
     // Calculate date range
     const now = new Date();
@@ -367,7 +392,6 @@ export async function GET(request: NextRequest) {
       {
         success: false,
         error: 'Failed to fetch analytics',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );
@@ -377,6 +401,17 @@ export async function GET(request: NextRequest) {
 // POST endpoint for recording custom analytics events
 export async function POST(request: NextRequest) {
   try {
+    // Apply strict rate limiting for POST operations
+    const identifier = getClientIdentifier(request);
+    const rateLimitResult = checkRateLimit(identifier, {
+      max: 10, // 10 event records per minute
+      windowMs: 60000,
+    });
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { userId } = await auth();
 
     if (!userId) {
@@ -407,6 +442,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Validate event name to prevent injection
+    if (typeof event !== 'string' || event.length > 100) {
+      return NextResponse.json(
+        { success: false, error: 'Event name must be a string (max 100 chars)' },
+        { status: 400 }
+      );
+    }
+
+    // Validate category
+    if (category && (typeof category !== 'string' || category.length > 50)) {
+      return NextResponse.json(
+        { success: false, error: 'Category must be a string (max 50 chars)' },
+        { status: 400 }
+      );
+    }
+
     // Store custom analytics event in Redis with TTL
     try {
       const redis = getRedisClient();
@@ -419,6 +470,18 @@ export async function POST(request: NextRequest) {
           userId: currentUser._id,
           timestamp: new Date().toISOString(),
         };
+
+        // Check current count to prevent unlimited growth
+        const currentCount = await redis.get(`${eventKey}:count`);
+        const count = currentCount ? parseInt(currentCount) : 0;
+
+        // Limit to 10,000 events per event type
+        if (count >= 10000) {
+          return NextResponse.json(
+            { success: false, error: 'Event storage limit reached for this event type' },
+            { status: 429 }
+          );
+        }
 
         // Store event with 90-day TTL
         await redis.setex(
@@ -446,7 +509,6 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Failed to record analytics event',
-        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

@@ -8,8 +8,12 @@ import CourseModuleModel from '@/models/CourseModule';
 import CourseLessonModel from '@/models/CourseLesson';
 import FlashcardDeckModel from '@/models/FlashcardDeck';
 import UserModel from '@/models/User';
+import { createAuditLog } from '@/lib/audit-log';
 
-const BulkDeleteSchema = z.object({ ids: z.array(z.string()).min(1) });
+// Limit bulk operations to 100 items maximum
+const BulkDeleteSchema = z.object({ 
+  ids: z.array(z.string()).min(1).max(100, 'Maximum 100 items can be deleted at once')
+});
 
 async function assertEditorOrAdmin(userId: string) {
   await connectToDatabase();
@@ -25,6 +29,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const { userId } = await auth();
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    
     const authz = await assertEditorOrAdmin(userId);
     if (!authz.ok) return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
 
@@ -37,11 +42,30 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Collect all course ids found
-    const courses = await CourseModel.find({ _id: { $in: objectIds } }).select(['_id']).lean();
+    const courses = await CourseModel.find({ _id: { $in: objectIds } }).select(['_id', 'title']).lean();
     const courseIds = courses.map(c => c._id);
+    
     if (courseIds.length === 0) {
       return NextResponse.json({ deleted: 0 });
     }
+
+    // Create audit log before deletion
+    await createAuditLog(
+      {
+        userId,
+        action: 'delete',
+        resource: 'Course',
+        resourceId: 'bulk',
+        changes: {
+          before: {
+            courseIds: courseIds.map(id => id.toString()),
+            courseTitles: courses.map((c: any) => c.title),
+            count: courseIds.length,
+          },
+        },
+      },
+      request
+    );
 
     await Promise.all([
       CourseLessonModel.deleteMany({ courseId: { $in: courseIds } }),

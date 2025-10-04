@@ -5,6 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import RemoteLinkPicker, {
   AssetLinkItem,
 } from '@/components/ui/RemoteLinkPicker';
+import ContentEditor from '@/components/admin/ContentEditor';
 
 interface BlogPost {
   _id: string;
@@ -12,6 +13,7 @@ interface BlogPost {
   slug: string;
   excerpt: string;
   content: string;
+  contentFormat?: 'rich-html' | 'mdx';
   category: string;
   tags: string[];
   status: 'draft' | 'published' | 'archived';
@@ -24,7 +26,7 @@ interface BlogPost {
 export default function EditBlogPostPage() {
   const router = useRouter();
   const params = useParams();
-  const postId = params.id as string;
+  const postId = params?.id as string;
 
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
@@ -33,6 +35,7 @@ export default function EditBlogPostPage() {
     slug: '',
     excerpt: '',
     content: '',
+    contentFormat: 'rich-html' as 'rich-html' | 'mdx',
     category: '',
     tags: '',
     status: 'draft' as 'draft' | 'published' | 'archived',
@@ -60,6 +63,7 @@ export default function EditBlogPostPage() {
         slug: post.slug,
         excerpt: post.excerpt || '',
         content: post.content,
+        contentFormat: post.contentFormat || 'rich-html',
         category: post.category || '',
         tags: post.tags.join(', '),
         status: post.status,
@@ -227,21 +231,19 @@ export default function EditBlogPostPage() {
           </div>
 
           {/* Content */}
-          <div>
-            <label className='block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2'>
-              Content *
-            </label>
-            <textarea
-              value={formData.content}
-              onChange={e =>
-                setFormData(prev => ({ ...prev, content: e.target.value }))
-              }
-              required
-              rows={12}
-              className='w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
-              placeholder='Write your blog post content here...'
-            />
-          </div>
+          <ContentEditor
+            value={formData.content}
+            onChange={(value: string) =>
+              setFormData(prev => ({ ...prev, content: value }))
+            }
+            onFormatChange={(format: 'rich-html' | 'mdx') =>
+              setFormData(prev => ({ ...prev, contentFormat: format }))
+            }
+            label='Content'
+            placeholder='Write your blog post content here...'
+            rows={12}
+            showPreview={true}
+          />
 
           {/* Category and Tags */}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>

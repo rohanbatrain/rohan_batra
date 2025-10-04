@@ -29,6 +29,7 @@ import RemoteLinkPicker, {
 } from '@/components/ui/RemoteLinkPicker';
 import { useToast } from '@/hooks/use-toast';
 import { Label } from '@/components/ui/label';
+import ContentEditor from '@/components/admin/ContentEditor';
 import {
   Dialog,
   DialogContent,
@@ -610,29 +611,44 @@ export default function AdminCharacterDetail({
 
         <Card className='p-4 space-y-3'>
           <h2 className='font-medium'>Details</h2>
-          <Textarea
-            placeholder='Description (Rich HTML)'
-            rows={5}
+          <ContentEditor
             value={form.description || ''}
-            onChange={e =>
-              setForm((f: any) => ({ ...f, description: e.target.value }))
+            onChange={(value: string) =>
+              setForm((f: any) => ({ ...f, description: value }))
             }
+            onFormatChange={(format: 'rich-html' | 'mdx') =>
+              setForm((f: any) => ({ ...f, descriptionFormat: format }))
+            }
+            label='Description'
+            placeholder='Describe the character...'
+            rows={8}
+            showPreview={true}
           />
-          <Textarea
-            placeholder='Personality (Rich HTML)'
-            rows={5}
+          <ContentEditor
             value={form.personality || ''}
-            onChange={e =>
-              setForm((f: any) => ({ ...f, personality: e.target.value }))
+            onChange={(value: string) =>
+              setForm((f: any) => ({ ...f, personality: value }))
             }
+            onFormatChange={(format: 'rich-html' | 'mdx') =>
+              setForm((f: any) => ({ ...f, personalityFormat: format }))
+            }
+            label='Personality'
+            placeholder='Describe their personality traits...'
+            rows={8}
+            showPreview={true}
           />
-          <Textarea
-            placeholder='Background (Rich HTML)'
-            rows={5}
+          <ContentEditor
             value={form.background || ''}
-            onChange={e =>
-              setForm((f: any) => ({ ...f, background: e.target.value }))
+            onChange={(value: string) =>
+              setForm((f: any) => ({ ...f, background: value }))
             }
+            onFormatChange={(format: 'rich-html' | 'mdx') =>
+              setForm((f: any) => ({ ...f, backgroundFormat: format }))
+            }
+            label='Background'
+            placeholder='Describe their history and background...'
+            rows={8}
+            showPreview={true}
           />
         </Card>
       </div>

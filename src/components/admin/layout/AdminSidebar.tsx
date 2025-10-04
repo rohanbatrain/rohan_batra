@@ -79,6 +79,7 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       items: [
         { name: 'Blog Posts', href: '/admin/blog', icon: FileText, roles: ['editor', 'admin'] },
         { name: 'Portfolio', href: '/admin/portfolio', icon: Briefcase, roles: ['editor', 'admin'] },
+        { name: 'Experience', href: '/admin/experience', icon: Briefcase, roles: ['editor', 'admin'] },
         { name: 'Documentation', href: '/admin/docs', icon: BookOpen, roles: ['editor', 'admin'] },
         { name: 'Courses', href: '/admin/courses', icon: GraduationCap, roles: ['editor', 'admin'] },
         { name: 'Books', href: '/admin/books', icon: Book, roles: ['editor', 'admin'] },

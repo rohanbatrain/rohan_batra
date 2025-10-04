@@ -22,6 +22,8 @@ import { DatePickerInput } from '@/components/ui/DatePickerInput';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
+import ContentEditor from '@/components/admin/ContentEditor';
+import { Controller } from 'react-hook-form';
 
 const FormSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100, 'Max 100 characters'),
@@ -48,8 +50,11 @@ const FormSchema = z.object({
   ),
   tags: z.array(z.string()).optional(),
   description: z.string().optional(),
+  descriptionFormat: z.enum(['rich-html', 'mdx']).optional(),
   personality: z.string().optional(),
+  personalityFormat: z.enum(['rich-html', 'mdx']).optional(),
   background: z.string().optional(),
+  backgroundFormat: z.enum(['rich-html', 'mdx']).optional(),
   physicalDescription: z.string().optional(),
   goals: z.string().optional(),
   conflicts: z.string().optional(),
@@ -106,6 +111,7 @@ export default function NewCharacterPage() {
     trigger,
     getValues,
     getFieldState,
+    control,
   } = useForm<FormValues>({
     resolver: zodResolver(FormSchema) as any,
     defaultValues: {
@@ -560,18 +566,51 @@ export default function NewCharacterPage() {
 
         <Card className='p-4 space-y-3'>
           <h2 className='font-medium'>Details</h2>
-          <div className='space-y-1'>
-            <Label>Description (Rich HTML)</Label>
-            <Textarea rows={5} {...register('description')} />
-          </div>
-          <div className='space-y-1'>
-            <Label>Personality (Rich HTML)</Label>
-            <Textarea rows={5} {...register('personality')} />
-          </div>
-          <div className='space-y-1'>
-            <Label>Background (Rich HTML)</Label>
-            <Textarea rows={5} {...register('background')} />
-          </div>
+          <Controller
+            name='description'
+            control={control}
+            render={({ field }) => (
+              <ContentEditor
+                value={field.value || ''}
+                onChange={field.onChange}
+                onFormatChange={(format: 'rich-html' | 'mdx') => setValue('descriptionFormat', format)}
+                label='Description'
+                placeholder='Describe your character...'
+                rows={8}
+                showPreview={true}
+              />
+            )}
+          />
+          <Controller
+            name='personality'
+            control={control}
+            render={({ field }) => (
+              <ContentEditor
+                value={field.value || ''}
+                onChange={field.onChange}
+                onFormatChange={(format: 'rich-html' | 'mdx') => setValue('personalityFormat', format)}
+                label='Personality'
+                placeholder='Describe their personality traits...'
+                rows={8}
+                showPreview={true}
+              />
+            )}
+          />
+          <Controller
+            name='background'
+            control={control}
+            render={({ field }) => (
+              <ContentEditor
+                value={field.value || ''}
+                onChange={field.onChange}
+                onFormatChange={(format: 'rich-html' | 'mdx') => setValue('backgroundFormat', format)}
+                label='Background'
+                placeholder='Describe their history and background...'
+                rows={8}
+                showPreview={true}
+              />
+            )}
+          />
           <div className='space-y-1'>
             <Label>Physical Description</Label>
             <Textarea rows={3} {...register('physicalDescription')} />

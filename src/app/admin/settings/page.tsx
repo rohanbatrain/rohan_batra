@@ -74,6 +74,8 @@ export default function SettingsPage() {
     cloudinary?: { configured: boolean };
     googleDrive?: { configured: boolean; enabled: boolean };
   } | null>(null);
+  const [userEditorPreference, setUserEditorPreference] = useState<'rich-html' | 'mdx' | null>(null);
+  const [preferencesLoading, setPreferencesLoading] = useState(true);
 
   const fetchSettings = useCallback(async () => {
     try {
@@ -111,6 +113,34 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchSettings();
   }, [fetchSettings]);
+
+  // Fetch user's editor preference
+  useEffect(() => {
+    (async () => {
+      try {
+        setPreferencesLoading(true);
+        const res = await fetch('/api/user/preferences', { credentials: 'include' });
+        if (res.ok) {
+          const json = await res.json();
+          console.log('Fetched user preferences:', json);
+          if (json.preferences?.editor) {
+            console.log('Setting editor preference to:', json.preferences.editor);
+            setUserEditorPreference(json.preferences.editor);
+          } else {
+            setUserEditorPreference('rich-html'); // Default if not set
+          }
+        } else {
+          console.error('Failed to fetch preferences:', res.status, await res.text());
+          setUserEditorPreference('rich-html'); // Default on error
+        }
+      } catch (error) {
+        console.error('Failed to fetch user preferences:', error);
+        setUserEditorPreference('rich-html'); // Default on error
+      } finally {
+        setPreferencesLoading(false);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -355,6 +385,87 @@ export default function SettingsPage() {
           <p className='text-gray-600 mt-2'>Only the essential controls.</p>
         </div>
       </div>
+
+      {/* User Preferences Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle>User Preferences</CardTitle>
+        </CardHeader>
+        <CardContent className='space-y-4'>
+          <div className='flex items-start justify-between gap-4'>
+            <div>
+              <h3 className='font-medium'>Content Editor Type</h3>
+              <p className='text-sm text-gray-600'>
+                Choose between Rich HTML or MDX (Markdown) editor for content fields
+              </p>
+            </div>
+            <div className='min-w-[200px]'>
+              {preferencesLoading ? (
+                <div className='text-sm text-muted-foreground'>Loading...</div>
+              ) : (
+                <>
+                  <Select
+                    value={userEditorPreference || 'rich-html'}
+                    onValueChange={async editorType => {
+                      try {
+                        console.log('Saving editor preference:', editorType);
+                        const response = await fetch('/api/user/preferences', {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          credentials: 'include',
+                          body: JSON.stringify({ editor: editorType }),
+                        });
+                        if (!response.ok) {
+                          const errorText = await response.text();
+                          console.error('Failed to save preference:', response.status, errorText);
+                          throw new Error('Failed to save preference');
+                        }
+                        const result = await response.json();
+                        console.log('Save response:', result);
+                        setUserEditorPreference(editorType as 'rich-html' | 'mdx');
+                        toast({
+                          title: 'Editor preference saved',
+                          description: `Now using ${editorType === 'mdx' ? 'MDX' : 'Rich HTML'} editor`,
+                        });
+                      } catch (error) {
+                        console.error('Error saving preference:', error);
+                        toast({
+                          title: 'Error',
+                          description: 'Failed to save editor preference',
+                          variant: 'destructive',
+                        });
+                      }
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='rich-html'>
+                        <div className='flex items-center gap-2'>
+                          <span>🎨</span>
+                          <span>Rich HTML</span>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value='mdx'>
+                        <div className='flex items-center gap-2'>
+                          <span>📝</span>
+                          <span>MDX (Markdown)</span>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className='text-xs text-gray-500 mt-2'>
+                    {userEditorPreference === 'mdx'
+                      ? 'MDX: Write with Markdown syntax, use React components'
+                      : 'Rich HTML: Traditional HTML editor with full control'}
+                  </p>
+                </>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Simple feature toggles */}
       <div className='grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'>

@@ -1,0 +1,597 @@
+openapi: 3.0.3
+info:
+  title: Experience Admin API
+  description: Admin API for managing professional experience entries
+  version: 1.0.0
+servers:
+  - url: /api/admin/experience
+    description: Admin experience management endpoints
+
+paths:
+  /:
+    get:
+      summary: List all experiences (admin)
+      description: Retrieve paginated list of all experience entries with optional filtering
+      operationId: listExperiences
+      tags:
+        - Admin
+      security:
+        - clerkAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number for pagination
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+            default: 20
+          description: Number of items per page
+        - in: query
+          name: published
+          schema:
+            type: boolean
+          description: Filter by published status
+        - in: query
+          name: search
+          schema:
+            type: string
+          description: Search in title, company, or location
+        - in: query
+          name: employmentType
+          schema:
+            type: string
+            enum: [Full-time, Part-time, Self-employed, Freelance, Contract, Internship, Apprenticeship, Seasonal]
+          description: Filter by employment type
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+            enum: [displayOrder, startDate, createdAt]
+            default: displayOrder
+          description: Field to sort by
+        - in: query
+          name: sortOrder
+          schema:
+            type: string
+            enum: [asc, desc]
+            default: asc
+          description: Sort order
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  experiences:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Experience'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    
+    post:
+      summary: Create new experience
+      description: Create a new professional experience entry
+      operationId: createExperience
+      tags:
+        - Admin
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExperienceCreate'
+      responses:
+        '201':
+          description: Experience created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  experience:
+                    $ref: '#/components/schemas/Experience'
+                  message:
+                    type: string
+                    example: Experience created successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /{id}:
+    get:
+      summary: Get experience by ID
+      description: Retrieve a single experience entry by ID
+      operationId: getExperienceById
+      tags:
+        - Admin
+      security:
+        - clerkAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the experience
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  experience:
+                    $ref: '#/components/schemas/Experience'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    
+    put:
+      summary: Update experience
+      description: Update an existing experience entry
+      operationId: updateExperience
+      tags:
+        - Admin
+      security:
+        - clerkAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the experience
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExperienceUpdate'
+      responses:
+        '200':
+          description: Experience updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  experience:
+                    $ref: '#/components/schemas/Experience'
+                  message:
+                    type: string
+                    example: Experience updated successfully
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    
+    delete:
+      summary: Delete experience
+      description: Delete an experience entry
+      operationId: deleteExperience
+      tags:
+        - Admin
+      security:
+        - clerkAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            pattern: '^[0-9a-fA-F]{24}$'
+          description: MongoDB ObjectId of the experience
+      responses:
+        '200':
+          description: Experience deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Experience deleted successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+  /reorder:
+    post:
+      summary: Batch update display order
+      description: Update displayOrder for multiple experiences (drag-and-drop)
+      operationId: reorderExperiences
+      tags:
+        - Admin
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - updates
+              properties:
+                updates:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                      - id
+                      - displayOrder
+                    properties:
+                      id:
+                        type: string
+                        pattern: '^[0-9a-fA-F]{24}$'
+                      displayOrder:
+                        type: integer
+                        minimum: 0
+      responses:
+        '200':
+          description: Display order updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Display order updated successfully
+                  updated:
+                    type: integer
+                    description: Number of experiences updated
+        '400':
+          $ref: '#/components/responses/ValidationError'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+
+components:
+  schemas:
+    Experience:
+      type: object
+      required:
+        - _id
+        - title
+        - company
+        - employmentType
+        - startDate
+        - isCurrent
+        - location
+        - description
+        - descriptionFormat
+        - skills
+        - displayOrder
+        - published
+        - createdAt
+        - updatedAt
+      properties:
+        _id:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          example: '507f1f77bcf86cd799439011'
+        title:
+          type: string
+          maxLength: 200
+          example: 'Technical Head'
+        company:
+          type: string
+          maxLength: 200
+          example: 'Google Developer Groups UPES'
+        companyWebsite:
+          type: string
+          format: uri
+          example: 'https://gdgupes.tech'
+        companyLogo:
+          type: string
+          format: uri
+          example: 'https://example.com/logo.png'
+        companyLogoAsset:
+          type: string
+          pattern: '^[0-9a-fA-F]{24}$'
+          description: Reference to Asset document
+        employmentType:
+          type: string
+          enum: [Full-time, Part-time, Self-employed, Freelance, Contract, Internship, Apprenticeship, Seasonal]
+          example: 'Part-time'
+        startDate:
+          type: string
+          format: date-time
+          example: '2023-08-01T00:00:00.000Z'
+        endDate:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2024-08-31T00:00:00.000Z'
+        isCurrent:
+          type: boolean
+          example: true
+        location:
+          type: string
+          maxLength: 200
+          example: 'Dehradun, India'
+        description:
+          type: string
+          maxLength: 5000
+          example: '<p>Leading technical initiatives...</p>'
+        descriptionFormat:
+          type: string
+          enum: [rich-text, markdown]
+          default: rich-text
+        skills:
+          type: array
+          items:
+            type: string
+            maxLength: 50
+          maxItems: 20
+          example: ['Leadership', 'JavaScript', 'Event Management']
+        displayOrder:
+          type: integer
+          minimum: 0
+          example: 1
+        published:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    
+    ExperienceCreate:
+      type: object
+      required:
+        - title
+        - company
+        - employmentType
+        - startDate
+        - location
+        - description
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        company:
+          type: string
+          minLength: 1
+          maxLength: 200
+        companyWebsite:
+          type: string
+          format: uri
+        companyLogo:
+          type: string
+          format: uri
+        employmentType:
+          type: string
+          enum: [Full-time, Part-time, Self-employed, Freelance, Contract, Internship, Apprenticeship, Seasonal]
+        startDate:
+          type: string
+          format: date
+          description: 'YYYY-MM-DD format'
+        endDate:
+          type: string
+          format: date
+          description: 'YYYY-MM-DD format, omit if current'
+        isCurrent:
+          type: boolean
+          default: false
+        location:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 10
+          maxLength: 5000
+        descriptionFormat:
+          type: string
+          enum: [rich-text, markdown]
+          default: rich-text
+        skills:
+          type: array
+          items:
+            type: string
+            maxLength: 50
+          maxItems: 20
+          default: []
+        displayOrder:
+          type: integer
+          minimum: 0
+          default: 0
+        published:
+          type: boolean
+          default: false
+    
+    ExperienceUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+        company:
+          type: string
+          minLength: 1
+          maxLength: 200
+        companyWebsite:
+          type: string
+          format: uri
+        companyLogo:
+          type: string
+          format: uri
+        employmentType:
+          type: string
+          enum: [Full-time, Part-time, Self-employed, Freelance, Contract, Internship, Apprenticeship, Seasonal]
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+          nullable: true
+        isCurrent:
+          type: boolean
+        location:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          minLength: 10
+          maxLength: 5000
+        descriptionFormat:
+          type: string
+          enum: [rich-text, markdown]
+        skills:
+          type: array
+          items:
+            type: string
+            maxLength: 50
+          maxItems: 20
+        displayOrder:
+          type: integer
+          minimum: 0
+        published:
+          type: boolean
+    
+    Pagination:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - totalPages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        limit:
+          type: integer
+          minimum: 1
+          example: 20
+        total:
+          type: integer
+          minimum: 0
+          example: 42
+        totalPages:
+          type: integer
+          minimum: 0
+          example: 3
+    
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: 'Validation failed'
+        details:
+          type: object
+          additionalProperties: true
+  
+  responses:
+    Unauthorized:
+      description: Authentication required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'Unauthorized'
+    
+    Forbidden:
+      description: Admin access required
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'Forbidden - Admin access required'
+    
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'Experience not found'
+    
+    ValidationError:
+      description: Invalid request data
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'Validation failed'
+            details:
+              title: 'Title is required'
+              startDate: 'Start date cannot be in the future'
+    
+    InternalError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: 'Internal server error'
+  
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk authentication token

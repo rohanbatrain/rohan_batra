@@ -17,10 +17,16 @@ import {
   User,
 } from 'lucide-react';
 import { BlogPostWithAuthor } from '@/types/blog-post';
+import dynamic from 'next/dynamic';
+
+const MDXPreview = dynamic(() => import('@/components/admin/mdx-preview'), {
+  ssr: false,
+  loading: () => <div className='text-sm text-muted-foreground p-4'>Loading content...</div>,
+});
 // Note: Novel rich editor removed. JSON content will be rendered safely.
 
 interface BlogPostClientProps {
-  post: BlogPostWithAuthor;
+  post: BlogPostWithAuthor & { contentFormat?: 'rich-html' | 'mdx' };
 }
 
 export default function BlogPostClient({ post }: BlogPostClientProps) {
@@ -324,7 +330,16 @@ export default function BlogPostClient({ post }: BlogPostClientProps) {
         )}
 
         {/* Content */}
-        {isJsonContent ? (
+        {post.contentFormat === 'mdx' ? (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className='prose prose-lg dark:prose-invert max-w-none'
+          >
+            <MDXPreview content={post.content} />
+          </motion.div>
+        ) : isJsonContent ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

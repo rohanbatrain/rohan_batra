@@ -5,10 +5,11 @@ export const metadata: Metadata = {
   title: 'Manage Course | Admin',
 };
 
-export default function ManageCoursePage({
+export default async function ManageCoursePage({
   params,
 }: {
-  params: { courseId: string };
+  params: Promise<{ courseId: string }>;
 }) {
-  return <CourseManagerContent courseId={params.courseId} />;
+  const { courseId } = await params;
+  return <CourseManagerContent courseId={courseId} />;
 }
