@@ -6,10 +6,11 @@ export const metadata: Metadata = {
   description: 'Edit flashcard deck details and cards.',
 };
 
-export default function AdminDeckManagerPage({
+export default async function AdminDeckManagerPage({
   params,
 }: {
-  params: { deckId: string };
+  params: Promise<{ deckId: string }>;
 }) {
-  return <DeckManagerContent deckId={params.deckId} />;
+  const { deckId } = await params;
+  return <DeckManagerContent deckId={deckId} />;
 }

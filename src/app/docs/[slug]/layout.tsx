@@ -8,10 +8,11 @@ import DocsHeader from '@/components/docs/docs-header';
 
 interface DocsLayoutProps {
   children: React.ReactNode;
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata({ params }: DocsLayoutProps): Promise<Metadata> {
+export async function generateMetadata(props: DocsLayoutProps): Promise<Metadata> {
+  const params = await props.params;
   await connectDB();
   const project: any = await DocProject.findOne({ slug: params.slug, status: 'published' }).lean();
 
@@ -32,7 +33,9 @@ export async function generateMetadata({ params }: DocsLayoutProps): Promise<Met
   };
 }
 
-export default async function DocsLayout({ children, params }: DocsLayoutProps) {
+export default async function DocsLayout(props: DocsLayoutProps) {
+  const params = await props.params;
+  const { children } = props;
   await connectDB();
   
   const project: any = await DocProject.findOne({ slug: params.slug, status: 'published' }).lean();

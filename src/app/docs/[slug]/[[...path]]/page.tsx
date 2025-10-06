@@ -13,10 +13,11 @@ import DocBreadcrumbs from '@/components/docs/docs-breadcrumbs';
 import BackToTop from '@/components/docs/back-to-top';
 
 interface DocPageProps {
-  params: { slug: string; path?: string[] };
+  params: Promise<{ slug: string; path?: string[] }>;
 }
 
-export async function generateMetadata({ params }: DocPageProps): Promise<Metadata> {
+export async function generateMetadata(props: DocPageProps): Promise<Metadata> {
+  const params = await props.params;
   await connectDB();
   const project: any = await DocProject.findOne({ slug: params.slug }).lean();
   
@@ -50,7 +51,8 @@ export async function generateMetadata({ params }: DocPageProps): Promise<Metada
   };
 }
 
-export default async function DocPageView({ params }: DocPageProps) {
+export default async function DocPageView(props: DocPageProps) {
+  const params = await props.params;
   await connectDB();
   
   const project: any = await DocProject.findOne({ slug: params.slug, status: 'published' }).lean();

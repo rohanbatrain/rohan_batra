@@ -9,10 +9,11 @@ export const metadata: Metadata = {
 export default async function BooksPage({
   searchParams,
 }: {
-  searchParams?: { genre?: string; page?: string };
+  searchParams?: Promise<{ genre?: string; page?: string }>;
 }) {
-  const genre = searchParams?.genre;
-  const page = Number(searchParams?.page || 1);
+  const params = await searchParams;
+  const genre = params?.genre;
+  const page = Number(params?.page || 1);
   const { books, pagination } = await listPublishedBooks({
     genre,
     page,

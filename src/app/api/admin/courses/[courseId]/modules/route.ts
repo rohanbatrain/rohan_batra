@@ -11,8 +11,9 @@ import { ModuleInputSchema, sanitizeLesson, sanitizeModule } from './utils';
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { courseId: string } }
+  props: { params: Promise<{ courseId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -92,8 +93,9 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { courseId: string } }
+  props: { params: Promise<{ courseId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {

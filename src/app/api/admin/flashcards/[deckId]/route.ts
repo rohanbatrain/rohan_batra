@@ -13,7 +13,7 @@ import {
   FlashcardDeckInputSchema,
   LinkTargetSchema,
   sanitizeDeck,
-} from '../route';
+} from '../schemas';
 import { resolveAssetShortcodes } from '@/lib/assets/resolve-shortcodes';
 
 const FlashcardDeckUpdateSchema = FlashcardDeckInputSchema.partial().extend({
@@ -87,8 +87,9 @@ export async function assertEditorOrAdmin(userId: string) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { deckId: string } }
+  props: { params: Promise<{ deckId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -133,8 +134,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { deckId: string } }
+  props: { params: Promise<{ deckId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -255,8 +257,9 @@ export async function PUT(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { deckId: string } }
+  props: { params: Promise<{ deckId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {

@@ -81,8 +81,9 @@ function sanitizeCard(card: any) {
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { deckId: string; cardId: string } }
+  props: { params: Promise<{ deckId: string; cardId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -214,8 +215,9 @@ export async function PUT(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { deckId: string; cardId: string } }
+  props: { params: Promise<{ deckId: string; cardId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {

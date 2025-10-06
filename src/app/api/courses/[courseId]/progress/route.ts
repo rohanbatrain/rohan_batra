@@ -92,3 +92,69 @@ export async function PATCH(
 }
 
 export const dynamic = 'force-dynamic';
+
+export async function GET(
+  req: NextRequest,
+  ctx: { params: Promise<{ courseId: string }> }
+) {
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    await connectToDatabase();
+    const { courseId } = await ctx.params;
+    
+    const query = Types.ObjectId.isValid(courseId)
+      ? { _id: new Types.ObjectId(courseId) }
+      : { slug: courseId };
+
+    const course = await CourseModel.findOne(query);
+    if (!course) {
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+    }
+
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
+    if (!userDoc || !userDoc._id) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
+    const enrollment = await CourseEnrollmentModel.findOne({
+      courseId: course._id,
+      userId: userDoc._id,
+    }).lean();
+
+    if (!enrollment) {
+      return NextResponse.json({ error: 'Not enrolled' }, { status: 403 });
+    }
+
+    const progress = await CourseProgressModel.findOne({
+      enrollmentId: enrollment._id,
+    }).lean();
+
+    if (!progress) {
+      return NextResponse.json({
+        completedLessonIds: [],
+        percentageComplete: 0,
+        timeSpentSeconds: 0,
+      });
+    }
+
+    return NextResponse.json({
+      completedLessonIds: progress.completedLessonIds.map((id: any) =>
+        id.toString()
+      ),
+      percentageComplete: progress.percentageComplete,
+      timeSpentSeconds: progress.timeSpentSeconds,
+      currentLessonId: progress.currentLessonId?.toString(),
+    });
+  } catch (error) {
+    console.error('Error fetching progress:', error);
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
+}
+

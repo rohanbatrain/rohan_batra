@@ -76,8 +76,9 @@ function sanitizeCard(card: any) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { deckId: string } }
+  props: { params: Promise<{ deckId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -132,8 +133,9 @@ export async function GET(
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { deckId: string } }
+  props: { params: Promise<{ deckId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {

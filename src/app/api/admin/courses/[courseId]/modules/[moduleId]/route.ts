@@ -24,8 +24,9 @@ function toObjectId(id: string) {
 
 export async function GET(
   _: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
+  props: { params: Promise<{ courseId: string; moduleId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -89,8 +90,9 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
+  props: { params: Promise<{ courseId: string; moduleId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {
@@ -232,8 +234,9 @@ export async function PUT(
 
 export async function DELETE(
   _: NextRequest,
-  { params }: { params: { courseId: string; moduleId: string } }
+  props: { params: Promise<{ courseId: string; moduleId: string }> }
 ) {
+  const params = await props.params;
   try {
     const { userId } = await auth();
     if (!userId) {

@@ -241,14 +241,137 @@ const childLessons = module.lessons
 4. **Animation**: Smooth transition when expanding/collapsing
 5. **Keyboard Navigation**: Arrow keys to expand/collapse
 
+---
+
+## Consumer-Facing Collapsible UI (Course Page)
+
+### Overview
+Implemented collapsible UI for parent lessons with sub-lessons on the student course page (`/courses/[slug]`), matching the module collapse pattern.
+
+### Implementation Details
+
+#### File: `src/app/courses/[slug]/page.tsx`
+
+**Structure**:
+- Lessons with sub-lessons use `<details>` element (native HTML collapsible)
+- Lessons without sub-lessons use standard `<div>` layout
+- Default state: **open** (sub-lessons visible)
+
+**Key Features**:
+```tsx
+{Array.isArray(l.subLessons) && l.subLessons.length > 0 ? (
+  <details className='group/details' open>
+    <summary className='flex cursor-pointer items-center justify-between gap-4...'>
+      {/* Parent lesson info: completion status, title, metadata */}
+      {/* Start/Review button for enrolled users */}
+      {/* Preview button for non-enrolled users */}
+      
+      {/* Rotating chevron icon */}
+      <svg className='...transition-transform duration-200 group-open/details:rotate-180'>
+        {/* Down chevron (▼) */}
+      </svg>
+    </summary>
+    
+    {/* Collapsible sub-lessons list */}
+    <div className='border-t border-gray-100 bg-gradient-to-r...'>
+      <ul className='divide-y...'>
+        {l.subLessons.map((s) => (
+          <li>
+            {/* Sub-lesson with tree symbol (└─), completion status, buttons */}
+          </li>
+        ))}
+      </ul>
+    </div>
+  </details>
+) : (
+  /* Regular lesson without sub-lessons */
+  <div className='flex items-center justify-between...'>
+    {/* Standard lesson layout */}
+  </div>
+)}
+```
+
+### Consumer UX Benefits
+
+**Before**:
+- All sub-lessons always visible
+- Long course outlines difficult to scan
+- No way to collapse completed sections
+
+**After**:
+- ✅ Sub-lessons collapsible by clicking parent lesson
+- ✅ Chevron rotates (▼ → ►) to indicate state
+- ✅ Opens by default so nothing hidden
+- ✅ Cleaner course outline for courses with many sub-lessons
+- ✅ Users can collapse to focus on remaining work
+
+### Visual Indicators
+
+- **Chevron Down** (▼): Sub-lessons visible/expanded
+- **Chevron Rotated** (►): Sub-lessons hidden/collapsed (180° rotation)
+- **Hover Effect**: Summary has hover background (`hover:bg-gray-50 dark:hover:bg-gray-800/50`)
+- **Cursor**: Pointer on summary to show interactivity
+- **Click Prevention**: Buttons have `onClick={(e) => e.stopPropagation()}` so Start/Review/Preview don't trigger collapse
+
+### Accessibility
+
+- ✅ Native `<details>` element provides keyboard navigation (Enter/Space)
+- ✅ `aria-label` on Start/Review/Preview buttons
+- ✅ Semantic HTML for screen readers
+- ✅ High contrast mode compatible
+- ✅ Focus visible on summary when keyboard navigating
+
+### Technical Notes
+
+**Chevron Animation**:
+```tsx
+<svg className='h-5 w-5 flex-shrink-0 text-gray-400 transition-transform duration-200 group-open/details:rotate-180'>
+```
+- Uses Tailwind's `group-open/details` variant
+- `transition-transform duration-200` for smooth rotation
+- Rotates 180° when details element opens
+
+**Stop Propagation for Buttons**:
+```tsx
+<Link
+  href={`/courses/${course.slug}/lesson/${String(l._id)}`}
+  onClick={(e) => e.stopPropagation()}
+  // ...
+>
+  Start
+</Link>
+```
+- Prevents summary click event when clicking buttons
+- Allows navigating to lessons without collapsing
+
+### Consistency with Admin UI
+
+Both admin and consumer UIs now have collapsible sub-lessons:
+
+| Feature | Admin (Course Manager) | Consumer (Course Page) |
+|---------|------------------------|------------------------|
+| Collapse Mechanism | Custom state + chevron button | Native `<details>` element |
+| Default State | Expanded | Expanded (`open` attribute) |
+| Icon | ChevronRight/ChevronDown (Lucide) | SVG chevron path |
+| Styling | Card-based, drag-and-drop | List-based, read-only |
+| Purpose | Edit and organize | View and navigate |
+
+---
+
 ## Related Files
 
-- `/src/components/admin/courses/CourseManagerContent.tsx` - Main implementation
+**Admin UI**:
+- `/src/components/admin/courses/CourseManagerContent.tsx` - Admin collapsible implementation
 - `/src/components/admin/courses/NewLessonForm.tsx` - Sub-lesson creation
 - `/src/components/admin/courses/LessonForm.tsx` - Sub-lesson editing
+
+**Consumer UI**:
+- `/src/app/courses/[slug]/page.tsx` - Course page collapsible implementation
+- `/src/app/courses/[slug]/lesson/[lessonId]/page.tsx` - Lesson viewer
 
 ## Documentation References
 
 - `SUBLESSONS_IMPLEMENTATION_COMPLETE.md` - Full sub-lesson feature
 - `SUBLESSONS_VISUAL_GUIDE.md` - Visual hierarchy documentation
 - `SUBLESSONS_UI_FLOW.md` - User flow for creating sub-lessons
+- `SUBLESSONS_CONSUMER_VIEW.md` - Consumer-facing features
