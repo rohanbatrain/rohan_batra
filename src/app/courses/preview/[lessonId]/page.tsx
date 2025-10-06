@@ -1,6 +1,8 @@
 import connectToDatabase from '@/lib/mongodb';
 import CourseLesson from '@/models/CourseLesson';
 import Course from '@/models/Course';
+import CourseEnrollment from '@/models/CourseEnrollment';
+import User from '@/models/User';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { MDXRemote } from 'next-mdx-remote/rsc';
@@ -10,15 +12,38 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrettyCode from 'rehype-pretty-code';
 import { MDXComponents, mdxProseBase } from '@/components/mdx/MDXComponents';
 import { remarkStripTitleH1 } from '@/lib/mdx/plugins/remarkStripTitleH1';
+import { auth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
 export default async function LessonPreviewPage({ params }: { params: Promise<{ lessonId: string }> }) {
   const { lessonId } = await params;
   await connectToDatabase();
+  
   const lesson = await CourseLesson.findById(lessonId).lean();
-  if (!lesson || !lesson.isPreviewable) return notFound();
+  if (!lesson) return notFound();
+  
   const course = await Course.findById(lesson.courseId).select('slug title').lean();
+  
+  // Check if user is enrolled
+  const { userId } = await auth();
+  let isEnrolled = false;
+  
+  if (userId) {
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
+    if (userDoc && userDoc._id) {
+      const enrollment = await CourseEnrollment.findOne({
+        courseId: lesson.courseId,
+        userId: userDoc._id
+      }).lean();
+      isEnrolled = !!enrollment;
+    }
+  }
+  
+  // Allow access if: enrolled OR lesson is previewable
+  if (!isEnrolled && !lesson.isPreviewable) {
+    return notFound();
+  }
 
   function toEmbedUrl(provider?: string, url?: string) {
     if (!url) return undefined;

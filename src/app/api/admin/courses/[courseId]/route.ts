@@ -102,6 +102,7 @@ export async function GET(
             toStringId
           ),
           releaseAt: lesson.releaseAt ?? null,
+          parentLessonId: lesson.parentLessonId ? lesson.parentLessonId.toString() : null,
           createdAt: lesson.createdAt,
           updatedAt: lesson.updatedAt,
         })),

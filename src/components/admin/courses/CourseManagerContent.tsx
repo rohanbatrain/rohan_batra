@@ -38,7 +38,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { DeckMultiSelect, type DeckOption } from './DeckMultiSelect';
 import { slugify } from '@/lib/slug';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, ChevronRight, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -121,6 +121,7 @@ interface LessonDetail {
   progressWeight: number;
   releaseAt: string | null;
   updatedAt: string;
+  createdAt: string;
   parentLessonId?: string | null;
 }
 
@@ -263,6 +264,8 @@ interface SortableModuleCardProps {
   ) => void;
   onToggleSelect: (lessonId: string, selected: boolean) => void;
   selectedIds: Set<string>;
+  collapsedLessons: Set<string>;
+  onToggleLessonCollapse: (lessonId: string) => void;
 }
 
 function SortableModuleCard({
@@ -276,6 +279,8 @@ function SortableModuleCard({
   onLessonReorder,
   onToggleSelect,
   selectedIds,
+  collapsedLessons,
+  onToggleLessonCollapse,
 }: SortableModuleCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: module.id });
@@ -371,10 +376,9 @@ function SortableModuleCard({
               {module.lessons
                 .filter(lesson => !lesson.parentLessonId) // Show only top-level lessons
                 .map(lesson => {
-                  // Find child lessons for this parent
-                  const childLessons = module.lessons.filter(
-                    child => child.parentLessonId === lesson.id
-                  );
+                  // Find child lessons for this parent (maintain backend order)
+                  const childLessons = module.lessons
+                    .filter(child => child.parentLessonId === lesson.id);
                   
                   return (
                     <div key={lesson.id} className='space-y-2'>
@@ -387,10 +391,13 @@ function SortableModuleCard({
                         onToggle={checked => onToggleSelect(lesson.id, checked)}
                         onAddChild={() => onCreateLesson(module.id, lesson.id)}
                         hasChildren={childLessons.length > 0}
+                        isCollapsed={collapsedLessons.has(lesson.id)}
+                        onToggleCollapse={() => onToggleLessonCollapse(lesson.id)}
+                        childCount={childLessons.length}
                       />
                       
-                      {/* Render child lessons with indentation and separate drag context */}
-                      {childLessons.length > 0 && (
+                      {/* Render child lessons with indentation only when not collapsed */}
+                      {childLessons.length > 0 && !collapsedLessons.has(lesson.id) && (
                         <div className='ml-8 space-y-2 border-l-2 border-muted pl-4'>
                           {childLessons.map(childLesson => (
                             <SortableLessonRow
@@ -431,6 +438,9 @@ interface SortableLessonRowProps {
   isChild?: boolean;
   onAddChild?: () => void;
   hasChildren?: boolean;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+  childCount?: number;
 }
 
 function SortableLessonRow({
@@ -443,6 +453,9 @@ function SortableLessonRow({
   isChild = false,
   onAddChild,
   hasChildren = false,
+  isCollapsed = false,
+  onToggleCollapse,
+  childCount = 0,
 }: SortableLessonRowProps) {
   const { attributes, listeners, setNodeRef, transform, transition } =
     useSortable({ id: lesson.id });
@@ -473,10 +486,29 @@ function SortableLessonRow({
             <GripVertical className='h-4 w-4' />
           </button>
           <Checkbox checked={selected} onCheckedChange={v => onToggle(Boolean(v))} aria-label='Select lesson for bulk action' />
-          <div>
-            <div className={`font-medium ${isChild ? 'text-sm' : ''}`}>
-              {isChild && <span className='mr-2 text-muted-foreground'>└─</span>}
-              {lesson.title}
+          <div className='flex-1'>
+            <div className={`flex items-center gap-2 font-medium ${isChild ? 'text-sm' : ''}`}>
+              {hasChildren && !isChild && onToggleCollapse && (
+                <button
+                  type='button'
+                  onClick={onToggleCollapse}
+                  className='rounded p-0.5 hover:bg-muted transition'
+                  aria-label={isCollapsed ? 'Expand sub-lessons' : 'Collapse sub-lessons'}
+                >
+                  {isCollapsed ? (
+                    <ChevronRight className='h-4 w-4 text-muted-foreground' />
+                  ) : (
+                    <ChevronDown className='h-4 w-4 text-muted-foreground' />
+                  )}
+                </button>
+              )}
+              {isChild && <span className='text-muted-foreground'>└─</span>}
+              <span>{lesson.title}</span>
+              {hasChildren && !isChild && childCount > 0 && (
+                <Badge variant='secondary' className='text-xs'>
+                  {childCount} sub-lesson{childCount === 1 ? '' : 's'}
+                </Badge>
+              )}
             </div>
             <div className='text-xs text-muted-foreground'>
               {lesson.slug ?? '—'} • {lesson.contentType} •{' '}
@@ -539,6 +571,7 @@ export default function CourseManagerContent({
   const [lessonSlugEdited, setLessonSlugEdited] = useState(false);
   const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
   const [bulkParentByModule, setBulkParentByModule] = useState<Record<string, string>>({});
+  const [collapsedLessons, setCollapsedLessons] = useState<Set<string>>(new Set());
 
   const query = useMemo(() => {
     if (!courseId) {
@@ -1341,6 +1374,18 @@ export default function CourseManagerContent({
     await persistLessonOrder(moduleId, reorderedLessons);
   };
 
+  const toggleLessonCollapse = (lessonId: string) => {
+    setCollapsedLessons(prev => {
+      const next = new Set(prev);
+      if (next.has(lessonId)) {
+        next.delete(lessonId);
+      } else {
+        next.add(lessonId);
+      }
+      return next;
+    });
+  };
+
   const renderModules = () => {
     if (!moduleList.length) {
       return (
@@ -1376,6 +1421,8 @@ export default function CourseManagerContent({
                   });
                 }}
                 selectedIds={selectedLessons}
+                collapsedLessons={collapsedLessons}
+                onToggleLessonCollapse={toggleLessonCollapse}
               />
             ))}
           </div>

@@ -413,19 +413,19 @@ export default async function CoursePublicPage(ctx: PageProps) {
                           </div>
                         </div>
                         <div className='flex items-center gap-2'>
-                          {/* Start button for enrolled users */}
+                          {/* Start button for enrolled users - links to lesson viewer */}
                           {enrollment ? (
                             <Link
-                              href={`/courses/${course.slug}#lesson-${String(l._id)}`}
-                              className='rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
+                              href={`/courses/${course.slug}/lesson/${String(l._id)}`}
+                              className='rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors'
                               aria-label={`Start lesson: ${l.title}`}
                             >
                               Start
                             </Link>
                           ) : null}
 
-                          {/* Preview logic */}
-                          {l.isPreviewable ? (
+                          {/* Preview button - only show for NON-enrolled users */}
+                          {!enrollment && l.isPreviewable ? (
                             l.contentType === 'blog' && l.blogSlug ? (
                               <Link
                                 href={`/blog/${l.blogSlug}`}
@@ -443,11 +443,11 @@ export default async function CoursePublicPage(ctx: PageProps) {
                                 Preview
                               </Link>
                             )
-                          ) : (
+                          ) : !enrollment ? (
                             <span className='rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
                               Preview N/A
                             </span>
-                          )}
+                          ) : null}
                         </div>
                       </div>
                       
@@ -478,16 +478,19 @@ export default async function CoursePublicPage(ctx: PageProps) {
                                   </div>
                                 </div>
                                 <div className='flex items-center gap-2'>
+                                  {/* Start button for enrolled users */}
                                   {enrollment ? (
                                     <Link
-                                      href={`/courses/${course.slug}#lesson-${String(s._id)}`}
-                                      className='rounded-md border border-gray-300 bg-white px-2.5 py-1 text-[11px] font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-colors'
+                                      href={`/courses/${course.slug}/lesson/${String(s._id)}`}
+                                      className='rounded-md border border-blue-600 bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors'
                                       aria-label={`Start sub-lesson: ${s.title}`}
                                     >
                                       Start
                                     </Link>
                                   ) : null}
-                                  {s.isPreviewable ? (
+                                  
+                                  {/* Preview button - only show for NON-enrolled users */}
+                                  {!enrollment && s.isPreviewable ? (
                                     s.contentType === 'blog' && s.blogSlug ? (
                                       <Link
                                         href={`/blog/${s.blogSlug}`}
@@ -505,11 +508,11 @@ export default async function CoursePublicPage(ctx: PageProps) {
                                         Preview
                                       </Link>
                                     )
-                                  ) : (
+                                  ) : !enrollment ? (
                                     <span className='rounded-md bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
                                       Preview N/A
                                     </span>
-                                  )}
+                                  ) : null}
                                 </div>
                               </li>
                             ))}

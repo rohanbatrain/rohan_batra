@@ -31,10 +31,9 @@ export async function POST(
 
   const existing = await CourseEnrollmentModel.findOne({ courseId: course._id, userId: userDoc._id });
     if (existing) {
-      // idempotent
-      const { pathname } = new URL(req.url);
-      // redirect back to course page if slug, otherwise to /courses
-      const backTo = pathname.includes('/courses/') ? pathname.replace('/api/courses/', '/courses/').replace('/enroll', '') : `/courses/${course.slug}`;
+      // idempotent - already enrolled, redirect back
+      const url = new URL(req.url);
+      const backTo = new URL(`/courses/${course.slug}`, url.origin);
       return NextResponse.redirect(backTo);
     }
 
@@ -56,8 +55,8 @@ export async function POST(
       lastUpdatedAt: new Date(),
     } as any);
 
-  const { pathname } = new URL(req.url);
-  const backTo = pathname.includes('/courses/') ? pathname.replace('/api/courses/', '/courses/').replace('/enroll', '') : `/courses/${course.slug}`;
+  const url = new URL(req.url);
+  const backTo = new URL(`/courses/${course.slug}`, url.origin);
   return NextResponse.redirect(backTo);
   } catch (err) {
     console.error('[enroll] error:', err);
