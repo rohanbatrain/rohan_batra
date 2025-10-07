@@ -115,19 +115,24 @@ try {
 
 ## ⏸️ Blocked/Pending Work
 
-### T025 - Lesson Page Integration ⏸️ BLOCKED
+### T025 - Lesson Page Integration ⏸️ DEFERRED
 
 **Issue**: Lesson page file exists but is **empty** (0 bytes)
 - File: `/src/app/courses/[slug]/lesson/[lessonId]/page.tsx`
 - No alternative lesson pages found
 - Cannot integrate into empty file
 
-**Options**:
-1. ✅ **Skip for now** - Continue to testing tasks, revisit when lesson viewer implemented
-2. Create basic lesson page with graph integration
-3. Wait for lesson page implementation
+**Solution Created**: 
+✅ **New Feature Spec** - `015-lesson-flashcard-integration`
+- Comprehensive lesson page implementation plan
+- Includes knowledge graph integration in T009
+- Includes flashcard review (primary user request)
+- Estimated: 8-12 hours to complete
 
-**Decision**: Defer T025 until lesson page is implemented
+**Decision**: 
+- Defer T025 (knowledge graph integration in lesson page)
+- Will be completed as part of Feature 015 (T009)
+- Continue with knowledge graph testing tasks (T026-T035)
 
 ### Pending Tasks (14 remaining)
 
