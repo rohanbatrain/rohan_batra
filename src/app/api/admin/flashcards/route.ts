@@ -122,18 +122,21 @@ export async function POST(request: NextRequest) {
       return Boolean(existing);
     });
 
-    const linkTargets = parsed.linkTargets?.map(target => ({
-      scope: target.scope,
-      courseId: target.courseId
-        ? new Types.ObjectId(target.courseId)
-        : undefined,
-      moduleId: target.moduleId
-        ? new Types.ObjectId(target.moduleId)
-        : undefined,
-      lessonId: target.lessonId
-        ? new Types.ObjectId(target.lessonId)
-        : undefined,
-    }));
+    // Only process linkTargets if they exist and are not empty
+    const linkTargets = parsed.linkTargets && parsed.linkTargets.length > 0
+      ? parsed.linkTargets.map(target => ({
+          scope: target.scope,
+          courseId: target.courseId
+            ? new Types.ObjectId(target.courseId)
+            : undefined,
+          moduleId: target.moduleId
+            ? new Types.ObjectId(target.moduleId)
+            : undefined,
+          lessonId: target.lessonId
+            ? new Types.ObjectId(target.lessonId)
+            : undefined,
+        }))
+      : undefined;
 
     const coverImageRaw = parsed.coverImage
       ? await resolveAssetShortcodes(parsed.coverImage)
