@@ -74,8 +74,8 @@ export const CourseInputSchema = z.object({
     .object({
       title: z.string().max(70).optional().or(z.literal('')),
       description: z.string().max(160).optional().or(z.literal('')),
-  // Accept raw URLs or shortcodes; we'll resolve server-side
-  image: z.string().optional().or(z.literal('')),
+      // Accept raw URLs or shortcodes; we'll resolve server-side
+      image: z.string().optional().or(z.literal('')),
     })
     .optional()
     .nullable(),
@@ -345,7 +345,10 @@ export async function POST(request: NextRequest) {
       // Frontend also guides users, but we enforce here as a safety net.
       // New courses start with lessonCount=0, so block publish on create.
       return NextResponse.json(
-        { error: 'Cannot publish a course with zero lessons. Create modules/lessons first.' },
+        {
+          error:
+            'Cannot publish a course with zero lessons. Create modules/lessons first.',
+        },
         { status: 400 }
       );
     }
@@ -397,21 +400,24 @@ export async function POST(request: NextRequest) {
     await course.save();
 
     // Create audit log for course creation
-    await createAuditLog({
-      userId,
-      action: 'create',
-      resource: 'course',
-      resourceId: course._id.toString(),
-      changes: {
-        after: {
-          slug: course.slug,
-          title: course.title,
-          status: course.status,
-          visibility: course.visibility,
+    await createAuditLog(
+      {
+        userId,
+        action: 'create',
+        resource: 'course',
+        resourceId: course._id.toString(),
+        changes: {
+          after: {
+            slug: course.slug,
+            title: course.title,
+            status: course.status,
+            visibility: course.visibility,
+          },
+          fields: ['slug', 'title', 'status', 'visibility'],
         },
-        fields: ['slug', 'title', 'status', 'visibility'],
       },
-    }, request);
+      request
+    );
 
     if (flashcardDeckIds.length > 0) {
       await syncDeckLinkTargets([], flashcardDeckIds, {

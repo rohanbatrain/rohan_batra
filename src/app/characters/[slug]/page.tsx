@@ -34,19 +34,19 @@ export default async function CharacterPublicPage({ params }: Params) {
         <p className='text-muted-foreground'>{character.fullName}</p>
       )}
       {character.age != null && <p className='mt-2'>Age: {character.age}</p>}
-      
-      <ContentRenderer 
-        content={character.description || ''} 
+
+      <ContentRenderer
+        content={character.description || ''}
         format={character.descriptionFormat}
         className='prose dark:prose-invert mt-6'
       />
-      <ContentRenderer 
-        content={character.personality || ''} 
+      <ContentRenderer
+        content={character.personality || ''}
         format={character.personalityFormat}
         className='prose dark:prose-invert mt-6'
       />
-      <ContentRenderer 
-        content={character.background || ''} 
+      <ContentRenderer
+        content={character.background || ''}
         format={character.backgroundFormat}
         className='prose dark:prose-invert mt-6'
       />

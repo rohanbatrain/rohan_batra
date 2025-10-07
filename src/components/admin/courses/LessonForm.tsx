@@ -8,10 +8,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DeckMultiSelect, type DeckOption } from '@/components/admin/courses/DeckMultiSelect';
+import {
+  DeckMultiSelect,
+  type DeckOption,
+} from '@/components/admin/courses/DeckMultiSelect';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/slug';
 const slugRegex = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -135,7 +144,12 @@ export default function LessonForm({
   const [saving, setSaving] = useState(false);
   const [targetModuleId, setTargetModuleId] = useState<string>(moduleId);
 
-  type LessonListItem = { id: string; title: string; slug: string; parentLessonId?: string | null };
+  type LessonListItem = {
+    id: string;
+    title: string;
+    slug: string;
+    parentLessonId?: string | null;
+  };
   const { data: moduleLessons } = useSWR<{ lessons: LessonListItem[] }>(
     `/api/admin/courses/${courseId}/modules/${targetModuleId}/lessons`,
     fetcher
@@ -174,22 +188,36 @@ export default function LessonForm({
 
   // Update slug when parent lesson changes (for nested slugs)
   useEffect(() => {
-    if (!slugEdited && form.title && form.parentLessonId && form.parentLessonId !== '__none__') {
-      const parentLesson = moduleLessons?.lessons?.find(l => l.id === form.parentLessonId);
+    if (
+      !slugEdited &&
+      form.title &&
+      form.parentLessonId &&
+      form.parentLessonId !== '__none__'
+    ) {
+      const parentLesson = moduleLessons?.lessons?.find(
+        l => l.id === form.parentLessonId
+      );
       if (parentLesson) {
         const baseSlug = slugify(form.title);
         // Use parent's slug, or generate one from parent's title if missing
         const parentSlug = parentLesson.slug || slugify(parentLesson.title);
         setForm(prev => ({ ...prev, slug: `${parentSlug}/${baseSlug}` }));
       }
-    } else if (!slugEdited && form.title && form.parentLessonId === '__none__') {
+    } else if (
+      !slugEdited &&
+      form.title &&
+      form.parentLessonId === '__none__'
+    ) {
       // Reset to base slug if parent is removed
       const baseSlug = slugify(form.title);
       setForm(prev => ({ ...prev, slug: baseSlug }));
     }
   }, [form.parentLessonId, moduleLessons, form.title, slugEdited]);
 
-  const handleField = <K extends keyof LessonFormState>(key: K, value: LessonFormState[K]) => {
+  const handleField = <K extends keyof LessonFormState>(
+    key: K,
+    value: LessonFormState[K]
+  ) => {
     setForm(prev => ({ ...prev, [key]: value }));
   };
 
@@ -199,7 +227,9 @@ export default function LessonForm({
       const baseSlug = slugify(value);
       // If a parent lesson is selected, prefix the slug with parent's slug
       if (form.parentLessonId && form.parentLessonId !== '__none__') {
-        const parentLesson = moduleLessons?.lessons?.find(l => l.id === form.parentLessonId);
+        const parentLesson = moduleLessons?.lessons?.find(
+          l => l.id === form.parentLessonId
+        );
         if (parentLesson) {
           // Use parent's slug, or generate one from parent's title if missing
           const parentSlug = parentLesson.slug || slugify(parentLesson.title);
@@ -224,12 +254,18 @@ export default function LessonForm({
     if (!title) return 'Lesson title is required.';
     if (title.length < 3) return 'Title must be at least 3 characters.';
     if (title.length > 200) return 'Title must be 200 characters or fewer.';
-    if (form.slug.trim() && !slugRegex.test(form.slug.trim())) return 'Slug must be lowercase letters, numbers, and dashes only.';
-    if (form.contentType === 'blog' && !form.blogSlug.trim()) return 'Blog lessons must reference a blog slug.';
-    if (form.contentType === 'standalone' && !form.standaloneContent.trim()) return 'Standalone lessons require content.';
-    if (form.contentType === 'flashcards' && form.flashcardDeckIds.length === 0) return 'Flashcard lessons need at least one deck.';
-    if (form.contentType === 'video' && !form.externalResource.trim()) return 'Provide a URL for the video lesson.';
-    if (Number(form.estimatedDurationMinutes) <= 0) return 'Estimated duration must be greater than zero.';
+    if (form.slug.trim() && !slugRegex.test(form.slug.trim()))
+      return 'Slug must be lowercase letters, numbers, and dashes only.';
+    if (form.contentType === 'blog' && !form.blogSlug.trim())
+      return 'Blog lessons must reference a blog slug.';
+    if (form.contentType === 'standalone' && !form.standaloneContent.trim())
+      return 'Standalone lessons require content.';
+    if (form.contentType === 'flashcards' && form.flashcardDeckIds.length === 0)
+      return 'Flashcard lessons need at least one deck.';
+    if (form.contentType === 'video' && !form.externalResource.trim())
+      return 'Provide a URL for the video lesson.';
+    if (Number(form.estimatedDurationMinutes) <= 0)
+      return 'Estimated duration must be greater than zero.';
     return null;
   };
 
@@ -242,17 +278,26 @@ export default function LessonForm({
       isPreviewable: form.isPreviewable,
       progressWeight: Number(form.progressWeight) || 1,
     };
-  if (form.slug.trim()) payload.slug = slugify(form.slug.trim());
+    if (form.slug.trim()) payload.slug = slugify(form.slug.trim());
     if (form.blogSlug.trim()) payload.blogSlug = form.blogSlug.trim();
-    if (form.standaloneContent.trim()) payload.standaloneContent = form.standaloneContent.trim();
+    if (form.standaloneContent.trim())
+      payload.standaloneContent = form.standaloneContent.trim();
     if (form.quizId.trim()) payload.quizId = form.quizId.trim();
-    if (form.releaseAt) payload.releaseAt = new Date(form.releaseAt).toISOString();
-    if (form.contentType === 'standalone') payload.standaloneFormat = form.standaloneFormat;
+    if (form.releaseAt)
+      payload.releaseAt = new Date(form.releaseAt).toISOString();
+    if (form.contentType === 'standalone')
+      payload.standaloneFormat = form.standaloneFormat;
     if (form.contentType === 'video' && form.externalResource.trim()) {
-      payload.externalResource = { provider: 'custom', url: form.externalResource.trim() };
+      payload.externalResource = {
+        provider: 'custom',
+        url: form.externalResource.trim(),
+      };
     }
     // Include parentLessonId explicitly: __none__ means clear parent
-    payload.parentLessonId = form.parentLessonId && form.parentLessonId !== '__none__' ? form.parentLessonId : null;
+    payload.parentLessonId =
+      form.parentLessonId && form.parentLessonId !== '__none__'
+        ? form.parentLessonId
+        : null;
     // Allow moving lesson between modules on edit
     if (mode === 'edit' && targetModuleId && targetModuleId !== moduleId) {
       payload.moduleId = targetModuleId;
@@ -263,45 +308,66 @@ export default function LessonForm({
   const onSave = async () => {
     const validation = validate();
     if (validation) {
-      toast({ title: 'Fix validation errors', description: validation, variant: 'destructive' });
+      toast({
+        title: 'Fix validation errors',
+        description: validation,
+        variant: 'destructive',
+      });
       return;
     }
     try {
       setSaving(true);
       if (mode === 'create') {
-        const res = await fetch(`/api/admin/courses/${courseId}/modules/${moduleId}/lessons`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(buildPayload()),
-        });
+        const res = await fetch(
+          `/api/admin/courses/${courseId}/modules/${moduleId}/lessons`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(buildPayload()),
+          }
+        );
         if (!res.ok) {
           const payload = await res.json().catch(() => ({}));
           const details = Array.isArray(payload.details)
             ? payload.details.map((d: any) => d.message).join('\n')
             : undefined;
-          throw new Error(details || payload.error || 'Failed to create lesson');
+          throw new Error(
+            details || payload.error || 'Failed to create lesson'
+          );
         }
-        toast({ title: 'Lesson created', description: 'Lesson added to module.' });
-      } else {
-        const res = await fetch(`/api/admin/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(buildPayload()),
+        toast({
+          title: 'Lesson created',
+          description: 'Lesson added to module.',
         });
+      } else {
+        const res = await fetch(
+          `/api/admin/courses/${courseId}/modules/${moduleId}/lessons/${lessonId}`,
+          {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(buildPayload()),
+          }
+        );
         if (!res.ok) {
           const payload = await res.json().catch(() => ({}));
           const details = Array.isArray(payload.details)
             ? payload.details.map((d: any) => d.message).join('\n')
             : undefined;
-          throw new Error(details || payload.error || 'Failed to update lesson');
+          throw new Error(
+            details || payload.error || 'Failed to update lesson'
+          );
         }
         toast({ title: 'Lesson updated', description: 'Changes saved.' });
       }
       router.push(`/admin/courses/${courseId}`);
     } catch (err) {
       toast({
-        title: mode === 'create' ? 'Unable to save lesson' : 'Unable to update lesson',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
+        title:
+          mode === 'create'
+            ? 'Unable to save lesson'
+            : 'Unable to update lesson',
+        description:
+          err instanceof Error ? err.message : 'Unknown error occurred',
         variant: 'destructive',
       });
     } finally {
@@ -326,15 +392,22 @@ export default function LessonForm({
       <nav aria-label='Breadcrumb'>
         <ol className='flex flex-wrap items-center gap-1 text-sm text-muted-foreground'>
           <li>
-            <Link href='/admin' className='hover:underline'>Admin</Link>
+            <Link href='/admin' className='hover:underline'>
+              Admin
+            </Link>
             <span className='mx-1'>/</span>
           </li>
           <li>
-            <Link href='/admin/courses' className='hover:underline'>Courses</Link>
+            <Link href='/admin/courses' className='hover:underline'>
+              Courses
+            </Link>
             <span className='mx-1'>/</span>
           </li>
           <li>
-            <Link href={`/admin/courses/${courseId}`} className='hover:underline'>
+            <Link
+              href={`/admin/courses/${courseId}`}
+              className='hover:underline'
+            >
               {data?.course?.title ?? 'Course'}
             </Link>
             <span className='mx-1'>/</span>
@@ -343,23 +416,34 @@ export default function LessonForm({
             {moduleTitle}
             <span className='mx-1'>/</span>
           </li>
-          <li className='text-foreground font-medium'>{mode === 'edit' ? 'Edit lesson' : 'New lesson'}</li>
+          <li className='text-foreground font-medium'>
+            {mode === 'edit' ? 'Edit lesson' : 'New lesson'}
+          </li>
         </ol>
       </nav>
 
       <div className='flex items-center justify-between'>
         <div className='space-y-1'>
-          <h1 className='text-2xl font-semibold'>{mode === 'edit' ? 'Edit lesson' : 'Add lesson'}</h1>
+          <h1 className='text-2xl font-semibold'>
+            {mode === 'edit' ? 'Edit lesson' : 'Add lesson'}
+          </h1>
           {data?.summary ? (
             <div className='text-sm text-muted-foreground'>
-              {data.summary.title} • {data.summary.moduleCount} modules • {data.summary.lessonCount} lessons
+              {data.summary.title} • {data.summary.moduleCount} modules •{' '}
+              {data.summary.lessonCount} lessons
             </div>
           ) : null}
         </div>
         <div className='flex items-center gap-2'>
-          <Button variant='outline' onClick={cancel}>Cancel</Button>
+          <Button variant='outline' onClick={cancel}>
+            Cancel
+          </Button>
           <Button onClick={onSave} disabled={saving || isLoading}>
-            {saving ? 'Saving…' : mode === 'edit' ? 'Save changes' : 'Create lesson'}
+            {saving
+              ? 'Saving…'
+              : mode === 'edit'
+                ? 'Save changes'
+                : 'Create lesson'}
           </Button>
         </div>
       </div>
@@ -379,13 +463,18 @@ export default function LessonForm({
           {mode === 'edit' ? (
             <div>
               <Label>Module</Label>
-              <Select value={targetModuleId} onValueChange={v => setTargetModuleId(v)}>
+              <Select
+                value={targetModuleId}
+                onValueChange={v => setTargetModuleId(v)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder='Select module' />
                 </SelectTrigger>
                 <SelectContent>
                   {(data?.modules ?? []).map(m => (
-                    <SelectItem key={m.id} value={m.id}>{m.title}</SelectItem>
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.title}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -394,7 +483,11 @@ export default function LessonForm({
 
           <div>
             <Label htmlFor='lesson-title'>Title</Label>
-            <Input id='lesson-title' value={form.title} onChange={e => handleTitle(e.target.value)} />
+            <Input
+              id='lesson-title'
+              value={form.title}
+              onChange={e => handleTitle(e.target.value)}
+            />
           </div>
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>
@@ -411,7 +504,9 @@ export default function LessonForm({
                   {(moduleLessons?.lessons ?? [])
                     .filter(l => l.id !== lessonId && !l.parentLessonId) // only top-level lessons; cannot parent to self
                     .map(l => (
-                      <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
+                      <SelectItem key={l.id} value={l.id}>
+                        {l.title}
+                      </SelectItem>
                     ))}
                 </SelectContent>
               </Select>
@@ -420,13 +515,23 @@ export default function LessonForm({
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>
               <Label htmlFor='lesson-slug'>Slug</Label>
-              <Input id='lesson-slug' value={form.slug} onChange={e => handleSlug(e.target.value)} placeholder='auto-generated-if-blank' />
+              <Input
+                id='lesson-slug'
+                value={form.slug}
+                onChange={e => handleSlug(e.target.value)}
+                placeholder='auto-generated-if-blank'
+              />
             </div>
             <div>
               <Label>Content type</Label>
               <Select
                 value={form.contentType}
-                onValueChange={value => handleField('contentType', value as LessonFormState['contentType'])}
+                onValueChange={value =>
+                  handleField(
+                    'contentType',
+                    value as LessonFormState['contentType']
+                  )
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select type' />
@@ -445,7 +550,12 @@ export default function LessonForm({
           {form.contentType === 'blog' ? (
             <div>
               <Label htmlFor='lesson-blog-slug'>Blog slug</Label>
-              <Input id='lesson-blog-slug' value={form.blogSlug} onChange={e => handleField('blogSlug', e.target.value)} placeholder='my-blog-post' />
+              <Input
+                id='lesson-blog-slug'
+                value={form.blogSlug}
+                onChange={e => handleField('blogSlug', e.target.value)}
+                placeholder='my-blog-post'
+              />
             </div>
           ) : null}
 
@@ -455,7 +565,12 @@ export default function LessonForm({
                 <Label htmlFor='lesson-standalone-format'>Content format</Label>
                 <Select
                   value={form.standaloneFormat}
-                  onValueChange={value => handleField('standaloneFormat', value as LessonFormState['standaloneFormat'])}
+                  onValueChange={value =>
+                    handleField(
+                      'standaloneFormat',
+                      value as LessonFormState['standaloneFormat']
+                    )
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder='Select format' />
@@ -467,8 +582,17 @@ export default function LessonForm({
                 </Select>
               </div>
               <div>
-                <Label htmlFor='lesson-standalone-content'>Standalone content (supports shortcodes)</Label>
-                <Textarea id='lesson-standalone-content' rows={6} value={form.standaloneContent} onChange={e => handleField('standaloneContent', e.target.value)} />
+                <Label htmlFor='lesson-standalone-content'>
+                  Standalone content (supports shortcodes)
+                </Label>
+                <Textarea
+                  id='lesson-standalone-content'
+                  rows={6}
+                  value={form.standaloneContent}
+                  onChange={e =>
+                    handleField('standaloneContent', e.target.value)
+                  }
+                />
               </div>
             </div>
           ) : null}
@@ -476,44 +600,83 @@ export default function LessonForm({
           {form.contentType === 'video' ? (
             <div>
               <Label htmlFor='lesson-video-url'>Video URL</Label>
-              <Input id='lesson-video-url' value={form.externalResource} onChange={e => handleField('externalResource', e.target.value)} placeholder='https://…' />
+              <Input
+                id='lesson-video-url'
+                value={form.externalResource}
+                onChange={e => handleField('externalResource', e.target.value)}
+                placeholder='https://…'
+              />
             </div>
           ) : null}
 
           {form.contentType === 'quiz' ? (
             <div>
               <Label htmlFor='lesson-quiz-id'>Quiz ID</Label>
-              <Input id='lesson-quiz-id' value={form.quizId} onChange={e => handleField('quizId', e.target.value)} />
+              <Input
+                id='lesson-quiz-id'
+                value={form.quizId}
+                onChange={e => handleField('quizId', e.target.value)}
+              />
             </div>
           ) : null}
 
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>
               <Label htmlFor='lesson-duration'>Estimated minutes</Label>
-              <Input id='lesson-duration' type='number' min={1} value={form.estimatedDurationMinutes} onChange={e => handleField('estimatedDurationMinutes', e.target.value)} />
+              <Input
+                id='lesson-duration'
+                type='number'
+                min={1}
+                value={form.estimatedDurationMinutes}
+                onChange={e =>
+                  handleField('estimatedDurationMinutes', e.target.value)
+                }
+              />
             </div>
             <div>
               <Label htmlFor='lesson-progress-weight'>Progress weight</Label>
-              <Input id='lesson-progress-weight' type='number' min={0} value={form.progressWeight} onChange={e => handleField('progressWeight', e.target.value)} />
+              <Input
+                id='lesson-progress-weight'
+                type='number'
+                min={0}
+                value={form.progressWeight}
+                onChange={e => handleField('progressWeight', e.target.value)}
+              />
             </div>
           </div>
 
           <div>
             <Label>Flashcard decks</Label>
-            <DeckMultiSelect options={deckOptions} value={form.flashcardDeckIds} onChange={ids => handleDecks(ids)} placeholder='No decks linked to this lesson yet.' helperText='Flashcard lessons require at least one deck.' />
+            <DeckMultiSelect
+              options={deckOptions}
+              value={form.flashcardDeckIds}
+              onChange={ids => handleDecks(ids)}
+              placeholder='No decks linked to this lesson yet.'
+              helperText='Flashcard lessons require at least one deck.'
+            />
           </div>
 
           <div className='flex items-center justify-between rounded-md border border-dashed border-gray-300 px-3 py-2 dark:border-gray-700'>
             <div>
               <Label className='text-sm font-medium'>Previewable</Label>
-              <p className='text-xs text-muted-foreground'>Allow learners to preview this lesson without enrolling.</p>
+              <p className='text-xs text-muted-foreground'>
+                Allow learners to preview this lesson without enrolling.
+              </p>
             </div>
-            <Switch checked={form.isPreviewable} onCheckedChange={checked => handleField('isPreviewable', checked)} />
+            <Switch
+              checked={form.isPreviewable}
+              onCheckedChange={checked => handleField('isPreviewable', checked)}
+            />
           </div>
 
           <div>
             <Label htmlFor='lesson-release-at'>Release at</Label>
-            <Input id='lesson-release-at' type='datetime-local' value={form.releaseAt} onChange={e => handleField('releaseAt', e.target.value)} />
+            <Input
+              id='lesson-release-at'
+              type='datetime-local'
+              value={form.releaseAt}
+              onChange={e => handleField('releaseAt', e.target.value)}
+            />
           </div>
         </section>
       )}

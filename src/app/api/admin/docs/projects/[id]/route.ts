@@ -10,33 +10,42 @@ import UserModel from '@/models/User';
 
 const DocProjectUpdateSchema = z.object({
   title: z.string().min(3).max(200).optional(),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   description: z.string().min(10).max(500).optional(),
   logoUrl: z.string().url().optional().or(z.literal('')),
   projectId: z.string().optional().nullable(),
   status: z.enum(['draft', 'published', 'archived']).optional(),
   visibility: z.enum(['public', 'private', 'unlisted']).optional(),
-  config: z.object({
-    theme: z.enum(['light', 'dark', 'system']).optional(),
-    primaryColor: z.string().optional(),
-    sidebarPosition: z.enum(['left', 'right']).optional(),
-    showToc: z.boolean().optional(),
-    showBreadcrumbs: z.boolean().optional(),
-    showLastUpdated: z.boolean().optional(),
-    showContributors: z.boolean().optional(),
-  }).optional(),
-  externalLinks: z.object({
-    github: z.string().url().optional().or(z.literal('')),
-    npm: z.string().url().optional().or(z.literal('')),
-    demo: z.string().url().optional().or(z.literal('')),
-    support: z.string().url().optional().or(z.literal('')),
-  }).optional(),
-  seo: z.object({
-    title: z.string().max(70).optional(),
-    description: z.string().max(160).optional(),
-    image: z.string().url().optional().or(z.literal('')),
-    keywords: z.array(z.string()).optional(),
-  }).optional(),
+  config: z
+    .object({
+      theme: z.enum(['light', 'dark', 'system']).optional(),
+      primaryColor: z.string().optional(),
+      sidebarPosition: z.enum(['left', 'right']).optional(),
+      showToc: z.boolean().optional(),
+      showBreadcrumbs: z.boolean().optional(),
+      showLastUpdated: z.boolean().optional(),
+      showContributors: z.boolean().optional(),
+    })
+    .optional(),
+  externalLinks: z
+    .object({
+      github: z.string().url().optional().or(z.literal('')),
+      npm: z.string().url().optional().or(z.literal('')),
+      demo: z.string().url().optional().or(z.literal('')),
+      support: z.string().url().optional().or(z.literal('')),
+    })
+    .optional(),
+  seo: z
+    .object({
+      title: z.string().max(70).optional(),
+      description: z.string().max(160).optional(),
+      image: z.string().url().optional().or(z.literal('')),
+      keywords: z.array(z.string()).optional(),
+    })
+    .optional(),
 });
 
 async function getAuthorizedUser(userId: string) {
@@ -58,7 +67,7 @@ export async function GET(
   try {
     const { id } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -80,10 +89,7 @@ export async function GET(
 
     const project: any = await DocProjectModel.findById(id).lean();
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
     // Get sections and pages for this project
@@ -168,7 +174,7 @@ export async function PUT(
   try {
     const { id } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -190,10 +196,7 @@ export async function PUT(
 
     const project = await DocProjectModel.findById(id);
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -230,7 +233,10 @@ export async function PUT(
     if (parsed.visibility) project.visibility = parsed.visibility;
     if (parsed.config) project.config = { ...project.config, ...parsed.config };
     if (parsed.externalLinks) {
-      project.externalLinks = { ...project.externalLinks, ...parsed.externalLinks };
+      project.externalLinks = {
+        ...project.externalLinks,
+        ...parsed.externalLinks,
+      };
     }
     if (parsed.seo) {
       project.seo = { ...project.seo, ...parsed.seo };
@@ -262,7 +268,7 @@ export async function DELETE(
   try {
     const { id } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -284,10 +290,7 @@ export async function DELETE(
 
     const project = await DocProjectModel.findById(id);
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
     // Delete all sections and pages associated with this project

@@ -10,11 +10,12 @@ export function buildOrderedOutline(modules: any[], lessons: any[]) {
     const all = (lessonsByModule.get(String(m._id)) || []) as any[];
     // Top-level lessons (no parent)
     const top = all.filter(l => !l.parentLessonId);
-    const orderedTop = Array.isArray(m.lessonIds) && m.lessonIds.length
-      ? (m.lessonIds as any[])
-          .map((id: any) => top.find(l => String(l._id) === String(id)))
-          .filter(Boolean)
-      : top.sort((a: any, b: any) => a.title.localeCompare(b.title));
+    const orderedTop =
+      Array.isArray(m.lessonIds) && m.lessonIds.length
+        ? (m.lessonIds as any[])
+            .map((id: any) => top.find(l => String(l._id) === String(id)))
+            .filter(Boolean)
+        : top.sort((a: any, b: any) => a.title.localeCompare(b.title));
     // Attach sub-lessons grouped by parent
     const childrenMap = new Map<string, any[]>();
     for (const l of all) {
@@ -34,13 +35,17 @@ export function buildOrderedOutline(modules: any[], lessons: any[]) {
           .map((id: any) => map.get(String(id)))
           .filter(Boolean);
         // Append any remaining children not in childOrder (new ones) alphabetically
-        const remaining = children.filter((c: any) => !idSet.has(String(c._id)));
+        const remaining = children.filter(
+          (c: any) => !idSet.has(String(c._id))
+        );
         orderedChildren = [
           ...orderedChildren,
           ...remaining.sort((a: any, b: any) => a.title.localeCompare(b.title)),
         ];
       } else {
-        orderedChildren = children.sort((a: any, b: any) => a.title.localeCompare(b.title));
+        orderedChildren = children.sort((a: any, b: any) =>
+          a.title.localeCompare(b.title)
+        );
       }
       return { ...l, subLessons: orderedChildren };
     });

@@ -8,10 +8,19 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { Skeleton } from '@/components/ui/skeleton';
-import { DeckMultiSelect, type DeckOption } from '@/components/admin/courses/DeckMultiSelect';
+import {
+  DeckMultiSelect,
+  type DeckOption,
+} from '@/components/admin/courses/DeckMultiSelect';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/slug';
 
@@ -84,7 +93,13 @@ const defaultLessonForm: LessonFormState = {
   parentLessonId: '__none__',
 };
 
-export default function NewLessonForm({ courseId, moduleId }: { courseId: string; moduleId: string }) {
+export default function NewLessonForm({
+  courseId,
+  moduleId,
+}: {
+  courseId: string;
+  moduleId: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -99,7 +114,12 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
     return data?.modules?.find(m => m.id === moduleId) ?? null;
   }, [data?.modules, moduleId]);
 
-  type LessonListItem = { id: string; title: string; slug: string; parentLessonId?: string | null };
+  type LessonListItem = {
+    id: string;
+    title: string;
+    slug: string;
+    parentLessonId?: string | null;
+  };
   const { data: moduleLessons } = useSWR<{ lessons: LessonListItem[] }>(
     `/api/admin/courses/${courseId}/modules/${moduleId}/lessons`,
     fetcher
@@ -107,12 +127,16 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
 
   const deckOptions = useMemo(() => data?.decks ?? [], [data?.decks]);
 
-  const [lessonForm, setLessonForm] = useState<LessonFormState>(defaultLessonForm);
+  const [lessonForm, setLessonForm] =
+    useState<LessonFormState>(defaultLessonForm);
   const [slugEdited, setSlugEdited] = useState(false);
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    setLessonForm(prev => ({ ...prev, estimatedDurationMinutes: prev.estimatedDurationMinutes || '15' }));
+    setLessonForm(prev => ({
+      ...prev,
+      estimatedDurationMinutes: prev.estimatedDurationMinutes || '15',
+    }));
   }, []);
 
   // Auto-select parent lesson from URL query parameter
@@ -125,22 +149,36 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
 
   // Update slug when parent lesson changes (for nested slugs)
   useEffect(() => {
-    if (!slugEdited && lessonForm.title && lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__') {
-      const parentLesson = moduleLessons?.lessons?.find(l => l.id === lessonForm.parentLessonId);
+    if (
+      !slugEdited &&
+      lessonForm.title &&
+      lessonForm.parentLessonId &&
+      lessonForm.parentLessonId !== '__none__'
+    ) {
+      const parentLesson = moduleLessons?.lessons?.find(
+        l => l.id === lessonForm.parentLessonId
+      );
       if (parentLesson) {
         const baseSlug = slugify(lessonForm.title);
         // Use parent's slug, or generate one from parent's title if missing
         const parentSlug = parentLesson.slug || slugify(parentLesson.title);
         setLessonForm(prev => ({ ...prev, slug: `${parentSlug}/${baseSlug}` }));
       }
-    } else if (!slugEdited && lessonForm.title && lessonForm.parentLessonId === '__none__') {
+    } else if (
+      !slugEdited &&
+      lessonForm.title &&
+      lessonForm.parentLessonId === '__none__'
+    ) {
       // Reset to base slug if parent is removed
       const baseSlug = slugify(lessonForm.title);
       setLessonForm(prev => ({ ...prev, slug: baseSlug }));
     }
   }, [lessonForm.parentLessonId, moduleLessons, lessonForm.title, slugEdited]);
 
-  const handleField = <K extends keyof LessonFormState>(key: K, value: LessonFormState[K]) => {
+  const handleField = <K extends keyof LessonFormState>(
+    key: K,
+    value: LessonFormState[K]
+  ) => {
     setLessonForm(prev => ({ ...prev, [key]: value }));
   };
 
@@ -149,8 +187,13 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
     if (!slugEdited) {
       const baseSlug = slugify(value);
       // If a parent lesson is selected, prefix the slug with parent's slug
-      if (lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__') {
-        const parentLesson = moduleLessons?.lessons?.find(l => l.id === lessonForm.parentLessonId);
+      if (
+        lessonForm.parentLessonId &&
+        lessonForm.parentLessonId !== '__none__'
+      ) {
+        const parentLesson = moduleLessons?.lessons?.find(
+          l => l.id === lessonForm.parentLessonId
+        );
         if (parentLesson) {
           // Use parent's slug, or generate one from parent's title if missing
           const parentSlug = parentLesson.slug || slugify(parentLesson.title);
@@ -176,54 +219,88 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
       title: lessonForm.title.trim(),
       contentType: lessonForm.contentType,
       flashcardDeckIds: lessonForm.flashcardDeckIds,
-      estimatedDurationMinutes: Number(lessonForm.estimatedDurationMinutes) || 15,
+      estimatedDurationMinutes:
+        Number(lessonForm.estimatedDurationMinutes) || 15,
       isPreviewable: lessonForm.isPreviewable,
       progressWeight: Number(lessonForm.progressWeight) || 1,
     };
 
     if (lessonForm.slug.trim()) payload.slug = lessonForm.slug.trim();
-    if (lessonForm.blogSlug.trim()) payload.blogSlug = lessonForm.blogSlug.trim();
-    if (lessonForm.standaloneContent.trim()) payload.standaloneContent = lessonForm.standaloneContent.trim();
+    if (lessonForm.blogSlug.trim())
+      payload.blogSlug = lessonForm.blogSlug.trim();
+    if (lessonForm.standaloneContent.trim())
+      payload.standaloneContent = lessonForm.standaloneContent.trim();
     if (lessonForm.quizId.trim()) payload.quizId = lessonForm.quizId.trim();
-    if (lessonForm.releaseAt) payload.releaseAt = new Date(lessonForm.releaseAt).toISOString();
-    if (lessonForm.contentType === 'standalone') payload.standaloneFormat = lessonForm.standaloneFormat;
-    if (lessonForm.contentType === 'video' && lessonForm.externalResource.trim()) payload.externalResource = { provider: 'custom', url: lessonForm.externalResource.trim() };
-    if (lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__') payload.parentLessonId = lessonForm.parentLessonId;
+    if (lessonForm.releaseAt)
+      payload.releaseAt = new Date(lessonForm.releaseAt).toISOString();
+    if (lessonForm.contentType === 'standalone')
+      payload.standaloneFormat = lessonForm.standaloneFormat;
+    if (
+      lessonForm.contentType === 'video' &&
+      lessonForm.externalResource.trim()
+    )
+      payload.externalResource = {
+        provider: 'custom',
+        url: lessonForm.externalResource.trim(),
+      };
+    if (lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__')
+      payload.parentLessonId = lessonForm.parentLessonId;
     return payload;
   };
 
   const validate = (): string | null => {
     if (!lessonForm.title.trim()) return 'Lesson title is required.';
-    if (lessonForm.contentType === 'blog' && !lessonForm.blogSlug.trim()) return 'Blog lessons must reference a blog slug.';
-    if (lessonForm.contentType === 'flashcards' && lessonForm.flashcardDeckIds.length === 0) return 'Flashcard lessons need at least one deck.';
-    if (lessonForm.contentType === 'video' && !lessonForm.externalResource.trim()) return 'Provide a URL for the video lesson.';
-    if (Number(lessonForm.estimatedDurationMinutes) <= 0) return 'Estimated duration must be greater than zero.';
+    if (lessonForm.contentType === 'blog' && !lessonForm.blogSlug.trim())
+      return 'Blog lessons must reference a blog slug.';
+    if (
+      lessonForm.contentType === 'flashcards' &&
+      lessonForm.flashcardDeckIds.length === 0
+    )
+      return 'Flashcard lessons need at least one deck.';
+    if (
+      lessonForm.contentType === 'video' &&
+      !lessonForm.externalResource.trim()
+    )
+      return 'Provide a URL for the video lesson.';
+    if (Number(lessonForm.estimatedDurationMinutes) <= 0)
+      return 'Estimated duration must be greater than zero.';
     return null;
   };
 
   const save = async () => {
     const validation = validate();
     if (validation) {
-      toast({ title: 'Fix validation errors', description: validation, variant: 'destructive' });
+      toast({
+        title: 'Fix validation errors',
+        description: validation,
+        variant: 'destructive',
+      });
       return;
     }
     try {
       setSaving(true);
-      const response = await fetch(`/api/admin/courses/${courseId}/modules/${moduleId}/lessons`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(buildPayload()),
-      });
+      const response = await fetch(
+        `/api/admin/courses/${courseId}/modules/${moduleId}/lessons`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(buildPayload()),
+        }
+      );
       if (!response.ok) {
         const errorPayload = await response.json().catch(() => ({}));
         throw new Error(errorPayload.error || 'Failed to create lesson');
       }
-      toast({ title: 'Lesson created', description: 'Lesson added to module.' });
+      toast({
+        title: 'Lesson created',
+        description: 'Lesson added to module.',
+      });
       router.push(`/admin/courses/${courseId}`);
     } catch (err) {
       toast({
         title: 'Unable to save lesson',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
+        description:
+          err instanceof Error ? err.message : 'Unknown error occurred',
         variant: 'destructive',
       });
     } finally {
@@ -239,15 +316,22 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
       <nav aria-label='Breadcrumb'>
         <ol className='flex flex-wrap items-center gap-1 text-sm text-muted-foreground'>
           <li>
-            <Link href='/admin' className='hover:underline'>Admin</Link>
+            <Link href='/admin' className='hover:underline'>
+              Admin
+            </Link>
             <span className='mx-1'>/</span>
           </li>
           <li>
-            <Link href='/admin/courses' className='hover:underline'>Courses</Link>
+            <Link href='/admin/courses' className='hover:underline'>
+              Courses
+            </Link>
             <span className='mx-1'>/</span>
           </li>
           <li>
-            <Link href={`/admin/courses/${courseId}`} className='hover:underline'>
+            <Link
+              href={`/admin/courses/${courseId}`}
+              className='hover:underline'
+            >
               {data?.course?.title ?? 'Course'}
             </Link>
             <span className='mx-1'>/</span>
@@ -265,13 +349,18 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
           <h1 className='text-2xl font-semibold'>Add lesson</h1>
           {data?.summary ? (
             <div className='text-sm text-muted-foreground'>
-              {data.summary.title} • {data.summary.moduleCount} modules • {data.summary.lessonCount} lessons
+              {data.summary.title} • {data.summary.moduleCount} modules •{' '}
+              {data.summary.lessonCount} lessons
             </div>
           ) : null}
         </div>
         <div className='flex items-center gap-2'>
-          <Button variant='outline' onClick={cancel}>Cancel</Button>
-          <Button onClick={save} disabled={saving || isLoading}>{saving ? 'Saving…' : 'Create lesson'}</Button>
+          <Button variant='outline' onClick={cancel}>
+            Cancel
+          </Button>
+          <Button onClick={save} disabled={saving || isLoading}>
+            {saving ? 'Saving…' : 'Create lesson'}
+          </Button>
         </div>
       </div>
 
@@ -287,52 +376,86 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
         </div>
       ) : (
         <section className='space-y-4'>
-          {lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__' && (
-            <div className='rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/60'>
-              <div className='flex items-start gap-3'>
-                <span className='text-blue-600 dark:text-blue-400'>ℹ️</span>
-                <div className='text-sm'>
-                  <p className='font-medium text-blue-900 dark:text-blue-200'>Creating sub-lesson</p>
-                  <p className='mt-1 text-blue-700 dark:text-blue-300'>
-                    This lesson will be created as a child of: <strong>{moduleLessons?.lessons?.find(l => l.id === lessonForm.parentLessonId)?.title ?? 'Selected parent'}</strong>
-                  </p>
+          {lessonForm.parentLessonId &&
+            lessonForm.parentLessonId !== '__none__' && (
+              <div className='rounded-md border border-blue-200 bg-blue-50 p-4 dark:border-blue-900 dark:bg-blue-950/60'>
+                <div className='flex items-start gap-3'>
+                  <span className='text-blue-600 dark:text-blue-400'>ℹ️</span>
+                  <div className='text-sm'>
+                    <p className='font-medium text-blue-900 dark:text-blue-200'>
+                      Creating sub-lesson
+                    </p>
+                    <p className='mt-1 text-blue-700 dark:text-blue-300'>
+                      This lesson will be created as a child of:{' '}
+                      <strong>
+                        {moduleLessons?.lessons?.find(
+                          l => l.id === lessonForm.parentLessonId
+                        )?.title ?? 'Selected parent'}
+                      </strong>
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
           <div>
             <Label htmlFor='parent-lesson'>Parent lesson</Label>
-            <Select value={lessonForm.parentLessonId} onValueChange={v => handleField('parentLessonId', v)}>
+            <Select
+              value={lessonForm.parentLessonId}
+              onValueChange={v => handleField('parentLessonId', v)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value='__none__'>None (top-level lesson)</SelectItem>
-                {(moduleLessons?.lessons ?? []).filter(l => !l.parentLessonId).map(l => (
-                  <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
-                ))}
+                <SelectItem value='__none__'>
+                  None (top-level lesson)
+                </SelectItem>
+                {(moduleLessons?.lessons ?? [])
+                  .filter(l => !l.parentLessonId)
+                  .map(l => (
+                    <SelectItem key={l.id} value={l.id}>
+                      {l.title}
+                    </SelectItem>
+                  ))}
               </SelectContent>
             </Select>
           </div>
           <div>
             <Label htmlFor='lesson-title'>Title</Label>
-            <Input id='lesson-title' value={lessonForm.title} onChange={e => handleTitle(e.target.value)} />
+            <Input
+              id='lesson-title'
+              value={lessonForm.title}
+              onChange={e => handleTitle(e.target.value)}
+            />
           </div>
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>
               <Label htmlFor='lesson-slug'>Slug</Label>
-              <Input id='lesson-slug' value={lessonForm.slug} onChange={e => handleSlug(e.target.value)} placeholder='auto-generated-if-blank' />
-              {lessonForm.parentLessonId && lessonForm.parentLessonId !== '__none__' && lessonForm.slug.includes('/') && (
-                <p className='mt-1 text-xs text-green-600 dark:text-green-400'>
-                  ✓ Nested slug: <span className='font-mono'>{lessonForm.slug}</span>
-                </p>
-              )}
+              <Input
+                id='lesson-slug'
+                value={lessonForm.slug}
+                onChange={e => handleSlug(e.target.value)}
+                placeholder='auto-generated-if-blank'
+              />
+              {lessonForm.parentLessonId &&
+                lessonForm.parentLessonId !== '__none__' &&
+                lessonForm.slug.includes('/') && (
+                  <p className='mt-1 text-xs text-green-600 dark:text-green-400'>
+                    ✓ Nested slug:{' '}
+                    <span className='font-mono'>{lessonForm.slug}</span>
+                  </p>
+                )}
             </div>
             <div>
               <Label>Content type</Label>
               <Select
                 value={lessonForm.contentType}
-                onValueChange={value => handleField('contentType', value as LessonFormState['contentType'])}
+                onValueChange={value =>
+                  handleField(
+                    'contentType',
+                    value as LessonFormState['contentType']
+                  )
+                }
               >
                 <SelectTrigger>
                   <SelectValue placeholder='Select type' />
@@ -351,7 +474,12 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
           {lessonForm.contentType === 'blog' ? (
             <div>
               <Label htmlFor='lesson-blog-slug'>Blog slug</Label>
-              <Input id='lesson-blog-slug' value={lessonForm.blogSlug} onChange={e => handleField('blogSlug', e.target.value)} placeholder='my-blog-post' />
+              <Input
+                id='lesson-blog-slug'
+                value={lessonForm.blogSlug}
+                onChange={e => handleField('blogSlug', e.target.value)}
+                placeholder='my-blog-post'
+              />
             </div>
           ) : null}
 
@@ -361,7 +489,12 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
                 <Label htmlFor='lesson-standalone-format'>Content format</Label>
                 <Select
                   value={lessonForm.standaloneFormat}
-                  onValueChange={value => handleField('standaloneFormat', value as LessonFormState['standaloneFormat'])}
+                  onValueChange={value =>
+                    handleField(
+                      'standaloneFormat',
+                      value as LessonFormState['standaloneFormat']
+                    )
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder='Select format' />
@@ -374,8 +507,17 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
                 </Select>
               </div>
               <div>
-                <Label htmlFor='lesson-standalone-content'>Standalone content (supports shortcodes)</Label>
-                <Textarea id='lesson-standalone-content' rows={6} value={lessonForm.standaloneContent} onChange={e => handleField('standaloneContent', e.target.value)} />
+                <Label htmlFor='lesson-standalone-content'>
+                  Standalone content (supports shortcodes)
+                </Label>
+                <Textarea
+                  id='lesson-standalone-content'
+                  rows={6}
+                  value={lessonForm.standaloneContent}
+                  onChange={e =>
+                    handleField('standaloneContent', e.target.value)
+                  }
+                />
               </div>
             </div>
           ) : null}
@@ -383,44 +525,83 @@ export default function NewLessonForm({ courseId, moduleId }: { courseId: string
           {lessonForm.contentType === 'video' ? (
             <div>
               <Label htmlFor='lesson-video-url'>Video URL</Label>
-              <Input id='lesson-video-url' value={lessonForm.externalResource} onChange={e => handleField('externalResource', e.target.value)} placeholder='https://…' />
+              <Input
+                id='lesson-video-url'
+                value={lessonForm.externalResource}
+                onChange={e => handleField('externalResource', e.target.value)}
+                placeholder='https://…'
+              />
             </div>
           ) : null}
 
           {lessonForm.contentType === 'quiz' ? (
             <div>
               <Label htmlFor='lesson-quiz-id'>Quiz ID</Label>
-              <Input id='lesson-quiz-id' value={lessonForm.quizId} onChange={e => handleField('quizId', e.target.value)} />
+              <Input
+                id='lesson-quiz-id'
+                value={lessonForm.quizId}
+                onChange={e => handleField('quizId', e.target.value)}
+              />
             </div>
           ) : null}
 
           <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
             <div>
               <Label htmlFor='lesson-duration'>Estimated minutes</Label>
-              <Input id='lesson-duration' type='number' min={1} value={lessonForm.estimatedDurationMinutes} onChange={e => handleField('estimatedDurationMinutes', e.target.value)} />
+              <Input
+                id='lesson-duration'
+                type='number'
+                min={1}
+                value={lessonForm.estimatedDurationMinutes}
+                onChange={e =>
+                  handleField('estimatedDurationMinutes', e.target.value)
+                }
+              />
             </div>
             <div>
               <Label htmlFor='lesson-progress-weight'>Progress weight</Label>
-              <Input id='lesson-progress-weight' type='number' min={0} value={lessonForm.progressWeight} onChange={e => handleField('progressWeight', e.target.value)} />
+              <Input
+                id='lesson-progress-weight'
+                type='number'
+                min={0}
+                value={lessonForm.progressWeight}
+                onChange={e => handleField('progressWeight', e.target.value)}
+              />
             </div>
           </div>
 
           <div>
             <Label>Flashcard decks</Label>
-            <DeckMultiSelect options={deckOptions} value={lessonForm.flashcardDeckIds} onChange={ids => handleDecks(ids)} placeholder='No decks linked to this lesson yet.' helperText='Flashcard lessons require at least one deck.' />
+            <DeckMultiSelect
+              options={deckOptions}
+              value={lessonForm.flashcardDeckIds}
+              onChange={ids => handleDecks(ids)}
+              placeholder='No decks linked to this lesson yet.'
+              helperText='Flashcard lessons require at least one deck.'
+            />
           </div>
 
           <div className='flex items-center justify-between rounded-md border border-dashed border-gray-300 px-3 py-2 dark:border-gray-700'>
             <div>
               <Label className='text-sm font-medium'>Previewable</Label>
-              <p className='text-xs text-muted-foreground'>Allow learners to preview this lesson without enrolling.</p>
+              <p className='text-xs text-muted-foreground'>
+                Allow learners to preview this lesson without enrolling.
+              </p>
             </div>
-            <Switch checked={lessonForm.isPreviewable} onCheckedChange={checked => handleField('isPreviewable', checked)} />
+            <Switch
+              checked={lessonForm.isPreviewable}
+              onCheckedChange={checked => handleField('isPreviewable', checked)}
+            />
           </div>
 
           <div>
             <Label htmlFor='lesson-release-at'>Release at</Label>
-            <Input id='lesson-release-at' type='datetime-local' value={lessonForm.releaseAt} onChange={e => handleField('releaseAt', e.target.value)} />
+            <Input
+              id='lesson-release-at'
+              type='datetime-local'
+              value={lessonForm.releaseAt}
+              onChange={e => handleField('releaseAt', e.target.value)}
+            />
           </div>
         </section>
       )}

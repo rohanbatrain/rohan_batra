@@ -33,15 +33,20 @@ export async function GET(request: NextRequest) {
           'preferences.editor': user.preferences?.editor || 'rich-html',
           'preferences.theme': user.preferences?.theme || 'auto',
           'preferences.language': user.preferences?.language || 'en',
-          'preferences.notifications.email': user.preferences?.notifications?.email ?? true,
-          'preferences.notifications.browser': user.preferences?.notifications?.browser ?? true,
-          'preferences.notifications.mobile': user.preferences?.notifications?.mobile ?? false,
-        }
+          'preferences.notifications.email':
+            user.preferences?.notifications?.email ?? true,
+          'preferences.notifications.browser':
+            user.preferences?.notifications?.browser ?? true,
+          'preferences.notifications.mobile':
+            user.preferences?.notifications?.mobile ?? false,
+        },
       }
     );
 
     // Fetch updated user
-    const updated = await UserModel.findOne({ clerkId: userId }).select('preferences');
+    const updated = await UserModel.findOne({ clerkId: userId }).select(
+      'preferences'
+    );
 
     console.log('[INIT PREFS] Updated preferences:', updated?.preferences);
 

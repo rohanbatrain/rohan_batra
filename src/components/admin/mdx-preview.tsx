@@ -12,24 +12,45 @@ import CodeCopyButton from '@/components/docs/code-copy-button';
 // Custom MDX components
 const components = {
   h1: (props: any) => (
-    <h1 className='text-4xl font-bold mb-6 mt-8 first:mt-0 pb-2 border-b' {...props} />
+    <h1
+      className='text-4xl font-bold mb-6 mt-8 first:mt-0 pb-2 border-b'
+      {...props}
+    />
   ),
   h2: (props: any) => (
     <h2 className='text-3xl font-semibold mb-4 mt-8 pb-2 border-b' {...props} />
   ),
-  h3: (props: any) => <h3 className='text-2xl font-semibold mb-3 mt-6' {...props} />,
-  h4: (props: any) => <h4 className='text-xl font-semibold mb-2 mt-4' {...props} />,
-  h5: (props: any) => <h5 className='text-lg font-semibold mb-2 mt-3' {...props} />,
-  h6: (props: any) => <h6 className='text-base font-semibold mb-2 mt-3' {...props} />,
+  h3: (props: any) => (
+    <h3 className='text-2xl font-semibold mb-3 mt-6' {...props} />
+  ),
+  h4: (props: any) => (
+    <h4 className='text-xl font-semibold mb-2 mt-4' {...props} />
+  ),
+  h5: (props: any) => (
+    <h5 className='text-lg font-semibold mb-2 mt-3' {...props} />
+  ),
+  h6: (props: any) => (
+    <h6 className='text-base font-semibold mb-2 mt-3' {...props} />
+  ),
   p: (props: any) => <p className='mb-4 leading-7' {...props} />,
   a: (props: any) => (
-    <a className='text-blue-600 hover:text-blue-800 underline underline-offset-2' {...props} />
+    <a
+      className='text-blue-600 hover:text-blue-800 underline underline-offset-2'
+      {...props}
+    />
   ),
-  ul: (props: any) => <ul className='list-disc list-inside mb-4 space-y-2' {...props} />,
-  ol: (props: any) => <ol className='list-decimal list-inside mb-4 space-y-2' {...props} />,
+  ul: (props: any) => (
+    <ul className='list-disc list-inside mb-4 space-y-2' {...props} />
+  ),
+  ol: (props: any) => (
+    <ol className='list-decimal list-inside mb-4 space-y-2' {...props} />
+  ),
   li: (props: any) => <li className='leading-7' {...props} />,
   blockquote: (props: any) => (
-    <blockquote className='border-l-4 border-gray-300 pl-4 italic my-4 text-gray-700' {...props} />
+    <blockquote
+      className='border-l-4 border-gray-300 pl-4 italic my-4 text-gray-700'
+      {...props}
+    />
   ),
   code: (props: any) => {
     const { className, children } = props;
@@ -45,7 +66,8 @@ const components = {
     }
 
     // Extract code content for copy button
-    const codeContent = typeof children === 'string' ? children : String(children);
+    const codeContent =
+      typeof children === 'string' ? children : String(children);
 
     return (
       <div className='relative my-4 group'>
@@ -59,15 +81,29 @@ const components = {
   pre: (props: any) => <div {...props} />, // Wrapper is handled by code component
   table: (props: any) => (
     <div className='overflow-x-auto my-4'>
-      <table className='min-w-full border-collapse border border-gray-300' {...props} />
+      <table
+        className='min-w-full border-collapse border border-gray-300'
+        {...props}
+      />
     </div>
   ),
-  thead: (props: any) => <thead className='bg-gray-100 dark:bg-gray-800' {...props} />,
+  thead: (props: any) => (
+    <thead className='bg-gray-100 dark:bg-gray-800' {...props} />
+  ),
   tbody: (props: any) => <tbody {...props} />,
   tr: (props: any) => <tr className='border-b border-gray-300' {...props} />,
-  th: (props: any) => <th className='border border-gray-300 px-4 py-2 text-left font-semibold' {...props} />,
-  td: (props: any) => <td className='border border-gray-300 px-4 py-2' {...props} />,
-  hr: (props: any) => <hr className='my-8 border-t-2 border-gray-200' {...props} />,
+  th: (props: any) => (
+    <th
+      className='border border-gray-300 px-4 py-2 text-left font-semibold'
+      {...props}
+    />
+  ),
+  td: (props: any) => (
+    <td className='border border-gray-300 px-4 py-2' {...props} />
+  ),
+  hr: (props: any) => (
+    <hr className='my-8 border-t-2 border-gray-200' {...props} />
+  ),
   img: (props: any) => (
     <img className='max-w-full h-auto rounded-lg my-4' alt='' {...props} />
   ),
@@ -113,7 +149,9 @@ const components = {
           {language && <Badge variant='outline'>{language}</Badge>}
         </div>
       )}
-      <pre className={`bg-gray-900 text-gray-100 p-4 overflow-x-auto ${title ? 'rounded-b-lg' : 'rounded-lg'}`}>
+      <pre
+        className={`bg-gray-900 text-gray-100 p-4 overflow-x-auto ${title ? 'rounded-b-lg' : 'rounded-lg'}`}
+      >
         <code className='font-mono text-sm'>{children}</code>
       </pre>
     </div>
@@ -125,7 +163,9 @@ interface MDXPreviewProps {
 }
 
 export default function MDXPreview({ content }: MDXPreviewProps) {
-  const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(null);
+  const [mdxSource, setMdxSource] = useState<MDXRemoteSerializeResult | null>(
+    null
+  );
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -174,7 +214,9 @@ export default function MDXPreview({ content }: MDXPreviewProps) {
       <Alert variant='destructive'>
         <AlertTriangle className='h-4 w-4' />
         <AlertTitle>MDX Parse Error</AlertTitle>
-        <AlertDescription className='font-mono text-sm'>{error}</AlertDescription>
+        <AlertDescription className='font-mono text-sm'>
+          {error}
+        </AlertDescription>
       </Alert>
     );
   }

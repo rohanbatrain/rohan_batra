@@ -1,7 +1,7 @@
 /**
  * Deck Tree Component
  * Displays flashcard decks in hierarchical tree structure
- * 
+ *
  * Features:
  * - Collapsible/expandable nodes
  * - Nested deck visualization
@@ -12,7 +12,13 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronRight, ChevronDown, Folder, FolderOpen, Clock } from 'lucide-react';
+import {
+  ChevronRight,
+  ChevronDown,
+  Folder,
+  FolderOpen,
+  Clock,
+} from 'lucide-react';
 
 export interface DeckNode {
   _id: string;
@@ -44,7 +50,7 @@ export function DeckTree({
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
 
   const toggleNode = (deckId: string) => {
-    setExpandedNodes((prev) => {
+    setExpandedNodes(prev => {
       const next = new Set(prev);
       if (next.has(deckId)) {
         next.delete(deckId);
@@ -61,7 +67,7 @@ export function DeckTree({
     const isSelected = selectedDeckId === deck._id;
 
     return (
-      <div key={deck._id} className="deck-tree-node">
+      <div key={deck._id} className='deck-tree-node'>
         <div
           className={`deck-tree-item ${isSelected ? 'selected' : ''}`}
           style={{ paddingLeft: `${depth * 20 + 8}px` }}
@@ -70,47 +76,47 @@ export function DeckTree({
           {/* Expand/Collapse Button */}
           {hasChildren && (
             <button
-              type="button"
-              className="expand-button"
-              onClick={(e) => {
+              type='button'
+              className='expand-button'
+              onClick={e => {
                 e.stopPropagation();
                 toggleNode(deck._id);
               }}
               aria-label={isExpanded ? 'Collapse' : 'Expand'}
             >
               {isExpanded ? (
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className='w-4 h-4' />
               ) : (
-                <ChevronRight className="w-4 h-4" />
+                <ChevronRight className='w-4 h-4' />
               )}
             </button>
           )}
 
           {/* Folder Icon */}
-          <span className="folder-icon">
+          <span className='folder-icon'>
             {hasChildren ? (
               isExpanded ? (
-                <FolderOpen className="w-4 h-4" />
+                <FolderOpen className='w-4 h-4' />
               ) : (
-                <Folder className="w-4 h-4" />
+                <Folder className='w-4 h-4' />
               )
             ) : (
-              <Folder className="w-4 h-4 text-gray-400" />
+              <Folder className='w-4 h-4 text-gray-400' />
             )}
           </span>
 
           {/* Deck Title */}
-          <span className="deck-title">{deck.title}</span>
+          <span className='deck-title'>{deck.title}</span>
 
           {/* Card Count */}
-          <span className="card-count text-sm text-gray-500">
+          <span className='card-count text-sm text-gray-500'>
             {deck.cardCount} {deck.cardCount === 1 ? 'card' : 'cards'}
           </span>
 
           {/* Due Count (if showing) */}
           {showDueCounts && deck.dueCount > 0 && (
-            <span className="due-count text-sm text-orange-600 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
+            <span className='due-count text-sm text-orange-600 flex items-center gap-1'>
+              <Clock className='w-3 h-3' />
               {deck.dueCount} due
             </span>
           )}
@@ -118,8 +124,8 @@ export function DeckTree({
 
         {/* Render Children */}
         {hasChildren && isExpanded && (
-          <div className="deck-tree-children">
-            {deck.children!.map((child) => renderDeckNode(child, depth + 1))}
+          <div className='deck-tree-children'>
+            {deck.children!.map(child => renderDeckNode(child, depth + 1))}
           </div>
         )}
       </div>
@@ -127,14 +133,14 @@ export function DeckTree({
   };
 
   return (
-    <div className="deck-tree">
+    <div className='deck-tree'>
       {decks.length === 0 ? (
-        <div className="empty-state p-4 text-center text-gray-500">
+        <div className='empty-state p-4 text-center text-gray-500'>
           No decks found. Create your first deck to get started.
         </div>
       ) : (
-        <div className="deck-tree-root">
-          {decks.map((deck) => renderDeckNode(deck))}
+        <div className='deck-tree-root'>
+          {decks.map(deck => renderDeckNode(deck))}
         </div>
       )}
 
@@ -229,24 +235,29 @@ interface DeckBreadcrumbsProps {
   onNavigate?: (deckId: string) => void;
 }
 
-export function DeckBreadcrumbs({ breadcrumbs, onNavigate }: DeckBreadcrumbsProps) {
+export function DeckBreadcrumbs({
+  breadcrumbs,
+  onNavigate,
+}: DeckBreadcrumbsProps) {
   if (breadcrumbs.length === 0) return null;
 
   return (
-    <nav className="deck-breadcrumbs" aria-label="Breadcrumb">
-      <ol className="flex items-center gap-2 text-sm">
+    <nav className='deck-breadcrumbs' aria-label='Breadcrumb'>
+      <ol className='flex items-center gap-2 text-sm'>
         {breadcrumbs.map((crumb, index) => (
-          <li key={crumb._id} className="flex items-center gap-2">
-            {index > 0 && <span className="text-gray-400">/</span>}
+          <li key={crumb._id} className='flex items-center gap-2'>
+            {index > 0 && <span className='text-gray-400'>/</span>}
             <button
-              type="button"
+              type='button'
               className={`breadcrumb-link ${
                 index === breadcrumbs.length - 1
                   ? 'text-gray-900 font-semibold'
                   : 'text-blue-600 hover:text-blue-800'
               }`}
               onClick={() => onNavigate?.(crumb._id)}
-              aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}
+              aria-current={
+                index === breadcrumbs.length - 1 ? 'page' : undefined
+              }
             >
               {crumb.title}
             </button>

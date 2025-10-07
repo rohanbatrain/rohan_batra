@@ -7,11 +7,11 @@ export interface IDocProject extends Document {
   slug: string;
   description: string;
   logoUrl?: string;
-  
+
   // Status
   status: 'draft' | 'published' | 'archived';
   visibility: 'public' | 'private' | 'unlisted';
-  
+
   // Configuration
   config: {
     theme?: 'light' | 'dark' | 'system';
@@ -22,7 +22,7 @@ export interface IDocProject extends Document {
     showLastUpdated?: boolean;
     showContributors?: boolean;
   };
-  
+
   // External links
   externalLinks?: {
     github?: string;
@@ -30,7 +30,7 @@ export interface IDocProject extends Document {
     demo?: string;
     support?: string;
   };
-  
+
   // SEO
   seo?: {
     title?: string;
@@ -38,21 +38,21 @@ export interface IDocProject extends Document {
     image?: string;
     keywords?: string[];
   };
-  
+
   // Analytics
   analytics: {
     totalViews: number;
     totalSearches: number;
     popularPages: Array<{ pageId: mongoose.Types.ObjectId; views: number }>;
   };
-  
+
   // Access control
   accessControl?: {
     requireAuth: boolean;
     allowedRoles?: string[];
     allowedUserIds?: mongoose.Types.ObjectId[];
   };
-  
+
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -205,15 +205,16 @@ const DocProjectSchema = new Schema<IDocProject>(
         if (result.projectId) result.projectId = result.projectId.toString();
         if (result.createdBy) result.createdBy = result.createdBy.toString();
         if (result.analytics?.popularPages) {
-          result.analytics.popularPages = result.analytics.popularPages.map((p: any) => ({
-            pageId: p.pageId.toString(),
-            views: p.views,
-          }));
+          result.analytics.popularPages = result.analytics.popularPages.map(
+            (p: any) => ({
+              pageId: p.pageId.toString(),
+              views: p.views,
+            })
+          );
         }
         if (result.accessControl?.allowedUserIds) {
-          result.accessControl.allowedUserIds = result.accessControl.allowedUserIds.map((id: any) =>
-            id.toString()
-          );
+          result.accessControl.allowedUserIds =
+            result.accessControl.allowedUserIds.map((id: any) => id.toString());
         }
         return result;
       },
@@ -235,12 +236,16 @@ DocProjectSchema.pre<IDocProject>('save', function (next) {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
   }
-  
+
   // Set publishedAt when first published
-  if (this.isModified('status') && this.status === 'published' && !this.publishedAt) {
+  if (
+    this.isModified('status') &&
+    this.status === 'published' &&
+    !this.publishedAt
+  ) {
     this.publishedAt = new Date();
   }
-  
+
   next();
 });
 

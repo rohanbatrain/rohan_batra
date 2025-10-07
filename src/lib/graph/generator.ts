@@ -1,8 +1,8 @@
 /**
  * T011: Graph Generator Core
- * 
+ *
  * Implements buildCourseGraph() and buildLessonGraph() functions.
- * 
+ *
  * @pattern Follows /src/lib/courses/progress.ts structure
  */
 
@@ -25,7 +25,7 @@ import type {
 
 /**
  * Build a complete course knowledge graph
- * 
+ *
  * @param options - Build options (courseId, userId, depth, includeProgress)
  * @returns Complete knowledge graph with nodes, edges, and metadata
  */
@@ -41,7 +41,8 @@ export async function buildCourseGraph(
 
   try {
     // Fetch course structure
-    const { modules, lessons, lessonsById } = await fetchCourseStructure(courseId);
+    const { modules, lessons, lessonsById } =
+      await fetchCourseStructure(courseId);
 
     // Fetch user progress if authenticated and requested
     let completedIds = new Set<string>();
@@ -101,7 +102,10 @@ export async function buildCourseGraph(
       }
 
       // Create prerequisite edges
-      if (lesson.prerequisiteLessonIds && lesson.prerequisiteLessonIds.length > 0) {
+      if (
+        lesson.prerequisiteLessonIds &&
+        lesson.prerequisiteLessonIds.length > 0
+      ) {
         lesson.prerequisiteLessonIds.forEach((prereqId: Types.ObjectId) => {
           edges.push({
             source: prereqId.toString(),
@@ -142,7 +146,7 @@ export async function buildCourseGraph(
 
 /**
  * Build a lesson-centric knowledge graph
- * 
+ *
  * @param options - Build options (lessonId, userId, depth, includeProgress)
  * @returns Lesson-centric knowledge graph
  */
@@ -158,10 +162,8 @@ export async function buildLessonGraph(
 
   try {
     // Fetch lesson with context
-    const { lesson, prerequisites, subLessons, siblings } = await fetchLessonWithContext(
-      lessonId,
-      depth
-    );
+    const { lesson, prerequisites, subLessons, siblings } =
+      await fetchLessonWithContext(lessonId, depth);
 
     if (!lesson) {
       throw new Error(`Lesson not found: ${lessonId}`);
@@ -261,7 +263,7 @@ export async function buildLessonGraph(
 
 /**
  * Check if a lesson is locked (prerequisites not completed)
- * 
+ *
  * @param lesson - Lesson to check
  * @param completedIds - Set of completed lesson IDs
  * @param lessonMap - Map of lesson IDs to lesson data
@@ -272,7 +274,10 @@ function checkIfLocked(
   completedIds: Set<string>,
   lessonMap: Map<string, any>
 ): boolean {
-  if (!lesson.prerequisiteLessonIds || lesson.prerequisiteLessonIds.length === 0) {
+  if (
+    !lesson.prerequisiteLessonIds ||
+    lesson.prerequisiteLessonIds.length === 0
+  ) {
     return false;
   }
 
@@ -284,7 +289,7 @@ function checkIfLocked(
 
 /**
  * Get icon type for content type
- * 
+ *
  * @param contentType - Content type
  * @returns Icon type
  */

@@ -40,12 +40,7 @@ export class ExperienceService {
   ): Promise<ExperienceListResponse> {
     await connectToDatabase();
 
-    const {
-      page = 1,
-      limit = 10,
-      published,
-      search,
-    } = params;
+    const { page = 1, limit = 10, published, search } = params;
 
     const skip = (page - 1) * limit;
 
@@ -75,7 +70,7 @@ export class ExperienceService {
     ]);
 
     // Convert to plain objects and enrich with computed fields
-    const plainExperiences: Experience[] = experiences.map((exp) => ({
+    const plainExperiences: Experience[] = experiences.map(exp => ({
       ...exp,
       _id: exp._id.toString(),
       startDate: exp.startDate,
@@ -111,7 +106,7 @@ export class ExperienceService {
 
     const experiences = await query.exec();
 
-    const plainExperiences: Experience[] = experiences.map((exp) => ({
+    const plainExperiences: Experience[] = experiences.map(exp => ({
       ...exp,
       _id: exp._id.toString(),
       startDate: exp.startDate,
@@ -228,7 +223,7 @@ export class ExperienceService {
     await connectToDatabase();
 
     // Use bulkWrite for efficient batch update
-    const bulkOps = updates.map((update) => ({
+    const bulkOps = updates.map(update => ({
       updateOne: {
         filter: { _id: update.id },
         update: { $set: { displayOrder: update.displayOrder } },

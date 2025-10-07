@@ -406,9 +406,9 @@ export async function POST(request: NextRequest) {
       // Limit bulk action size
       if (bulkData.projectIds.length > 100) {
         return NextResponse.json(
-          { 
-            success: false, 
-            error: 'Bulk actions limited to 100 projects at a time' 
+          {
+            success: false,
+            error: 'Bulk actions limited to 100 projects at a time',
           },
           { status: 400 }
         );
@@ -420,10 +420,10 @@ export async function POST(request: NextRequest) {
       );
       if (invalidIds.length > 0) {
         return NextResponse.json(
-          { 
-            success: false, 
+          {
+            success: false,
             error: 'Invalid project IDs provided',
-            invalidIds 
+            invalidIds,
           },
           { status: 400 }
         );
@@ -453,7 +453,8 @@ export async function POST(request: NextRequest) {
           return NextResponse.json(
             {
               success: false,
-              error: 'Cannot bulk delete featured projects. Unfeature them first.',
+              error:
+                'Cannot bulk delete featured projects. Unfeature them first.',
               featuredProjectIds: featuredProjects.map(p => p._id.toString()),
             },
             { status: 400 }
@@ -517,12 +518,12 @@ export async function POST(request: NextRequest) {
     if (existingProject) {
       let suffix = 2;
       let candidateSlug = `${validatedData.slug}-${suffix}`;
-      
+
       while (await Project.exists({ slug: candidateSlug })) {
         suffix++;
         candidateSlug = `${validatedData.slug}-${suffix}`;
       }
-      
+
       validatedData.slug = candidateSlug;
     }
 

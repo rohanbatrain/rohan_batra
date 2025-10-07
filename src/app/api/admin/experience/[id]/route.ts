@@ -28,12 +28,12 @@ const updateExperienceSchema = z.object({
   startDate: z
     .string()
     .or(z.date())
-    .transform((val) => new Date(val))
+    .transform(val => new Date(val))
     .optional(),
   endDate: z
     .string()
     .or(z.date())
-    .transform((val) => new Date(val))
+    .transform(val => new Date(val))
     .nullable()
     .optional(),
   isCurrent: z.boolean().optional(),

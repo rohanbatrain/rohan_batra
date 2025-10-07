@@ -1,8 +1,8 @@
 /**
  * T012: Redis Cache Layer
- * 
+ *
  * Graph caching functions with hierarchical keys.
- * 
+ *
  * @pattern Follows /src/lib/redis.ts and /src/lib/cache-service.ts patterns
  */
 
@@ -44,7 +44,7 @@ export const GraphCacheKeys = {
 
 /**
  * Get cached graph
- * 
+ *
  * @param key - Cache key
  * @returns Cached graph or null if not found
  */
@@ -67,7 +67,7 @@ export async function getCachedGraph(
 
 /**
  * Set cached graph
- * 
+ *
  * @param key - Cache key
  * @param graph - Graph to cache
  * @param ttl - Time to live in seconds (default: 300 = 5 minutes)
@@ -89,14 +89,16 @@ export async function setCachedGraph(
 /**
  * Invalidate all course graphs for a course
  * Deletes both public and user-specific caches
- * 
+ *
  * @param courseId - Course ID
  */
 export async function invalidateCourseGraph(courseId: string): Promise<void> {
   try {
     const pattern = `graph:course:${courseId}:*`;
     const deletedCount = await cache.delPattern(pattern);
-    console.log(`[Cache INVALIDATE] Course ${courseId}: ${deletedCount} keys deleted`);
+    console.log(
+      `[Cache INVALIDATE] Course ${courseId}: ${deletedCount} keys deleted`
+    );
   } catch (error) {
     console.warn('Error invalidating course graph:', error);
   }
@@ -105,14 +107,16 @@ export async function invalidateCourseGraph(courseId: string): Promise<void> {
 /**
  * Invalidate all lesson graphs for a lesson
  * Deletes all depth variations and user-specific caches
- * 
+ *
  * @param lessonId - Lesson ID
  */
 export async function invalidateLessonGraph(lessonId: string): Promise<void> {
   try {
     const pattern = `graph:lesson:${lessonId}:*`;
     const deletedCount = await cache.delPattern(pattern);
-    console.log(`[Cache INVALIDATE] Lesson ${lessonId}: ${deletedCount} keys deleted`);
+    console.log(
+      `[Cache INVALIDATE] Lesson ${lessonId}: ${deletedCount} keys deleted`
+    );
   } catch (error) {
     console.warn('Error invalidating lesson graph:', error);
   }
@@ -121,7 +125,7 @@ export async function invalidateLessonGraph(lessonId: string): Promise<void> {
 /**
  * Invalidate all user-specific graphs for a user
  * Used when user progress changes
- * 
+ *
  * @param userId - User ID
  * @param courseId - Optional course ID to limit invalidation
  */
@@ -147,7 +151,9 @@ export async function invalidateUserProgress(
       totalDeleted += deletedCount;
     }
 
-    console.log(`[Cache INVALIDATE] User ${userId}: ${totalDeleted} keys deleted`);
+    console.log(
+      `[Cache INVALIDATE] User ${userId}: ${totalDeleted} keys deleted`
+    );
   } catch (error) {
     console.warn('Error invalidating user progress:', error);
   }

@@ -18,7 +18,13 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 
 interface SocialProfile {
   id: string;
@@ -75,7 +81,8 @@ const getPlatformIcon = (platform: string) => {
 // Platform color mapping
 const getPlatformColor = (platform: string) => {
   const colorMap: Record<string, string> = {
-    instagram: 'hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600',
+    instagram:
+      'hover:bg-gradient-to-br hover:from-purple-600 hover:to-pink-600',
     twitter: 'hover:bg-blue-400',
     linkedin: 'hover:bg-blue-700',
     github: 'hover:bg-gray-800',
@@ -110,7 +117,7 @@ export default function SocialsPage() {
 
       try {
         const response = await fetch('/api/public/brands');
-        
+
         if (!response.ok) {
           if (response.status === 404) {
             throw new Error('No brands found');
@@ -122,14 +129,14 @@ export default function SocialsPage() {
         }
 
         const data = await response.json();
-        
+
         // Validate response structure
         if (!data || typeof data !== 'object') {
           throw new Error('Invalid response format');
         }
-        
+
         const brandsData = data.brands || [];
-        
+
         if (!Array.isArray(brandsData)) {
           throw new Error('Invalid brands data format');
         }
@@ -141,13 +148,14 @@ export default function SocialsPage() {
         }
       } catch (err) {
         console.error(`Error fetching brands (attempt ${attempt}):`, err);
-        
+
         if (attempt < maxRetries && isMounted) {
           // Retry with exponential backoff
           setRetryCount(attempt);
           setTimeout(() => fetchBrands(attempt + 1), backoffDelay);
         } else if (isMounted) {
-          const errorMessage = err instanceof Error ? err.message : 'Failed to load brands';
+          const errorMessage =
+            err instanceof Error ? err.message : 'Failed to load brands';
           setError(errorMessage);
           setLoading(false);
         }
@@ -184,19 +192,19 @@ export default function SocialsPage() {
             <h1 className='text-4xl font-bold text-gray-900 dark:text-white mb-4'>
               Connect With Me
             </h1>
-            <div className="max-w-md mx-auto bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+            <div className='max-w-md mx-auto bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-6'>
               <p className='text-xl text-gray-600 dark:text-gray-400 mb-4'>
                 {error || 'No social profiles available at the moment.'}
               </p>
               {retryCount > 0 && retryCount < 3 && (
-                <p className="text-sm text-red-500 dark:text-red-300 mb-4">
+                <p className='text-sm text-red-500 dark:text-red-300 mb-4'>
                   Retrying... (Attempt {retryCount} of 3)
                 </p>
               )}
               {error && (
                 <button
                   onClick={() => window.location.reload()}
-                  className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                  className='px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors'
                 >
                   Reload Page
                 </button>
@@ -222,7 +230,8 @@ export default function SocialsPage() {
             Connect With Me 🌐
           </h1>
           <p className='text-xl text-gray-600 dark:text-gray-400 max-w-2xl mx-auto'>
-            Find me across different platforms and stay connected with my work, creativity, and journey.
+            Find me across different platforms and stay connected with my work,
+            creativity, and journey.
           </p>
         </motion.div>
 
@@ -265,27 +274,29 @@ export default function SocialsPage() {
                         )}
                       </div>
                     </div>
-                    <Badge
-                      variant='outline'
-                      className='capitalize'
-                    >
+                    <Badge variant='outline' className='capitalize'>
                       {brand.type}
                     </Badge>
                   </div>
 
                   {/* Brand Metadata */}
-                  {(brand.metadata?.followers || brand.metadata?.totalPosts) && (
+                  {(brand.metadata?.followers ||
+                    brand.metadata?.totalPosts) && (
                     <div className='flex gap-4 mt-4 text-sm text-gray-600 dark:text-gray-400'>
                       {brand.metadata.followers && (
                         <div className='flex items-center gap-1'>
                           <Users className='h-4 w-4' />
-                          <span>{formatCount(brand.metadata.followers)} followers</span>
+                          <span>
+                            {formatCount(brand.metadata.followers)} followers
+                          </span>
                         </div>
                       )}
                       {brand.metadata.totalPosts && (
                         <div className='flex items-center gap-1'>
                           <ImageIcon className='h-4 w-4' />
-                          <span>{formatCount(brand.metadata.totalPosts)} posts</span>
+                          <span>
+                            {formatCount(brand.metadata.totalPosts)} posts
+                          </span>
                         </div>
                       )}
                     </div>
@@ -298,7 +309,9 @@ export default function SocialsPage() {
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'>
                       {brand.profiles.map((profile, profileIndex) => {
                         const Icon = getPlatformIcon(profile.platform);
-                        const platformColor = getPlatformColor(profile.platform);
+                        const platformColor = getPlatformColor(
+                          profile.platform
+                        );
 
                         return (
                           <motion.a
@@ -328,7 +341,8 @@ export default function SocialsPage() {
                                 </p>
                                 {profile.stats?.followers && (
                                   <p className='text-xs mt-1 opacity-75'>
-                                    {formatCount(profile.stats.followers)} followers
+                                    {formatCount(profile.stats.followers)}{' '}
+                                    followers
                                   </p>
                                 )}
                               </div>

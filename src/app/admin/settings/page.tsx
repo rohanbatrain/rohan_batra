@@ -74,7 +74,9 @@ export default function SettingsPage() {
     cloudinary?: { configured: boolean };
     googleDrive?: { configured: boolean; enabled: boolean };
   } | null>(null);
-  const [userEditorPreference, setUserEditorPreference] = useState<'rich-html' | 'mdx' | null>(null);
+  const [userEditorPreference, setUserEditorPreference] = useState<
+    'rich-html' | 'mdx' | null
+  >(null);
   const [preferencesLoading, setPreferencesLoading] = useState(true);
 
   const fetchSettings = useCallback(async () => {
@@ -119,18 +121,27 @@ export default function SettingsPage() {
     (async () => {
       try {
         setPreferencesLoading(true);
-        const res = await fetch('/api/user/preferences', { credentials: 'include' });
+        const res = await fetch('/api/user/preferences', {
+          credentials: 'include',
+        });
         if (res.ok) {
           const json = await res.json();
           console.log('Fetched user preferences:', json);
           if (json.preferences?.editor) {
-            console.log('Setting editor preference to:', json.preferences.editor);
+            console.log(
+              'Setting editor preference to:',
+              json.preferences.editor
+            );
             setUserEditorPreference(json.preferences.editor);
           } else {
             setUserEditorPreference('rich-html'); // Default if not set
           }
         } else {
-          console.error('Failed to fetch preferences:', res.status, await res.text());
+          console.error(
+            'Failed to fetch preferences:',
+            res.status,
+            await res.text()
+          );
           setUserEditorPreference('rich-html'); // Default on error
         }
       } catch (error) {
@@ -396,7 +407,8 @@ export default function SettingsPage() {
             <div>
               <h3 className='font-medium'>Content Editor Type</h3>
               <p className='text-sm text-gray-600'>
-                Choose between Rich HTML or MDX (Markdown) editor for content fields
+                Choose between Rich HTML or MDX (Markdown) editor for content
+                fields
               </p>
             </div>
             <div className='min-w-[200px]'>
@@ -417,12 +429,18 @@ export default function SettingsPage() {
                         });
                         if (!response.ok) {
                           const errorText = await response.text();
-                          console.error('Failed to save preference:', response.status, errorText);
+                          console.error(
+                            'Failed to save preference:',
+                            response.status,
+                            errorText
+                          );
                           throw new Error('Failed to save preference');
                         }
                         const result = await response.json();
                         console.log('Save response:', result);
-                        setUserEditorPreference(editorType as 'rich-html' | 'mdx');
+                        setUserEditorPreference(
+                          editorType as 'rich-html' | 'mdx'
+                        );
                         toast({
                           title: 'Editor preference saved',
                           description: `Now using ${editorType === 'mdx' ? 'MDX' : 'Rich HTML'} editor`,
@@ -474,7 +492,9 @@ export default function SettingsPage() {
           <CardContent className='p-6 flex items-start justify-between'>
             <div>
               <h3 className='font-medium'>Skill Tags Panel</h3>
-              <p className='text-sm text-gray-600'>Show the Tags card on skill pages.</p>
+              <p className='text-sm text-gray-600'>
+                Show the Tags card on skill pages.
+              </p>
             </div>
             <Switch
               checked={Boolean(

@@ -101,12 +101,12 @@ experienceSchema.pre('save', function (next) {
   if (this.endDate && this.startDate && this.endDate < this.startDate) {
     next(new Error('End date must be after start date'));
   }
-  
+
   // If isCurrent is true, endDate should be null
   if (this.isCurrent && this.endDate) {
     this.endDate = null;
   }
-  
+
   next();
 });
 

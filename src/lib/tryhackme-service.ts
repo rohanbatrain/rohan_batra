@@ -2,9 +2,16 @@ import connectToDatabase from '@/lib/mongodb';
 import TryHackMeBadgeModel from '@/models/TryHackMeBadge';
 import TryHackMeRoomModel from '@/models/TryHackMeRoom';
 import TryHackMeProfileModel from '@/models/TryHackMeProfile';
-import { TryHackMeBadge, TryHackMeProfile, TryHackMeRoom, TryHackMeSummary } from '@/types/tryhackme';
+import {
+  TryHackMeBadge,
+  TryHackMeProfile,
+  TryHackMeRoom,
+  TryHackMeSummary,
+} from '@/types/tryhackme';
 
-export async function getTryHackMeSummary(limit = 6): Promise<TryHackMeSummary> {
+export async function getTryHackMeSummary(
+  limit = 6
+): Promise<TryHackMeSummary> {
   await connectToDatabase();
   const [profileDoc, roomDocs, badgeDocs] = await Promise.all([
     TryHackMeProfileModel.findOne({}).sort({ updatedAt: -1 }).lean().exec(),

@@ -43,7 +43,9 @@ export default function FlashcardReviewer({
   const [isFlipped, setIsFlipped] = useState(false);
   const [showHint, setShowHint] = useState(false);
   const [reviewedCards, setReviewedCards] = useState<Set<number>>(new Set());
-  const [difficulty, setDifficulty] = useState<Record<number, 'easy' | 'medium' | 'hard'>>({});
+  const [difficulty, setDifficulty] = useState<
+    Record<number, 'easy' | 'medium' | 'hard'>
+  >({});
   const [isShuffled, setIsShuffled] = useState(false);
   const [studyMode, setStudyMode] = useState<StudyMode>('all');
   const [showSettings, setShowSettings] = useState(false);
@@ -55,7 +57,9 @@ export default function FlashcardReviewer({
 
     // Filter by study mode
     if (studyMode === 'difficult') {
-      filtered = filtered.filter((_, idx) => difficulty[idx] === 'hard' || difficulty[idx] === 'medium');
+      filtered = filtered.filter(
+        (_, idx) => difficulty[idx] === 'hard' || difficulty[idx] === 'medium'
+      );
     } else if (studyMode === 'notReviewed') {
       filtered = filtered.filter((_, idx) => !reviewedCards.has(idx));
     }
@@ -70,11 +74,14 @@ export default function FlashcardReviewer({
 
   const currentCard = displayCards[currentCardIndex];
   const totalCards = displayCards.length;
-  const progress = totalCards > 0 ? Math.round(((currentCardIndex + 1) / totalCards) * 100) : 0;
+  const progress =
+    totalCards > 0
+      ? Math.round(((currentCardIndex + 1) / totalCards) * 100)
+      : 0;
 
   const handleNext = () => {
     if (currentCardIndex < totalCards - 1) {
-      setCurrentCardIndex((i) => i + 1);
+      setCurrentCardIndex(i => i + 1);
       setIsFlipped(false);
       setShowHint(false);
     }
@@ -82,7 +89,7 @@ export default function FlashcardReviewer({
 
   const handlePrevious = () => {
     if (currentCardIndex > 0) {
-      setCurrentCardIndex((i) => i - 1);
+      setCurrentCardIndex(i => i - 1);
       setIsFlipped(false);
       setShowHint(false);
     }
@@ -91,12 +98,12 @@ export default function FlashcardReviewer({
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
     if (!isFlipped) {
-      setReviewedCards((prev) => new Set(prev).add(currentCardIndex));
+      setReviewedCards(prev => new Set(prev).add(currentCardIndex));
     }
   };
 
   const handleDifficulty = (level: 'easy' | 'medium' | 'hard') => {
-    setDifficulty((prev) => ({ ...prev, [currentCardIndex]: level }));
+    setDifficulty(prev => ({ ...prev, [currentCardIndex]: level }));
     if (autoAdvance) {
       setTimeout(handleNext, 300);
     }
@@ -139,7 +146,12 @@ export default function FlashcardReviewer({
       <div className='rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900'>
         <div className='text-center'>
           <div className='mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400'>
-            <svg className='h-10 w-10' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+            <svg
+              className='h-10 w-10'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
               <path
                 strokeLinecap='round'
                 strokeLinejoin='round'
@@ -160,21 +172,27 @@ export default function FlashcardReviewer({
           <div className='mb-6 flex items-center justify-center gap-6'>
             <div className='text-center'>
               <div className='text-2xl font-bold text-green-600 dark:text-green-400'>
-                {Object.values(difficulty).filter((d) => d === 'easy').length}
+                {Object.values(difficulty).filter(d => d === 'easy').length}
               </div>
-              <div className='text-sm text-gray-600 dark:text-gray-400'>Easy</div>
+              <div className='text-sm text-gray-600 dark:text-gray-400'>
+                Easy
+              </div>
             </div>
             <div className='text-center'>
               <div className='text-2xl font-bold text-yellow-600 dark:text-yellow-400'>
-                {Object.values(difficulty).filter((d) => d === 'medium').length}
+                {Object.values(difficulty).filter(d => d === 'medium').length}
               </div>
-              <div className='text-sm text-gray-600 dark:text-gray-400'>Medium</div>
+              <div className='text-sm text-gray-600 dark:text-gray-400'>
+                Medium
+              </div>
             </div>
             <div className='text-center'>
               <div className='text-2xl font-bold text-red-600 dark:text-red-400'>
-                {Object.values(difficulty).filter((d) => d === 'hard').length}
+                {Object.values(difficulty).filter(d => d === 'hard').length}
               </div>
-              <div className='text-sm text-gray-600 dark:text-gray-400'>Hard</div>
+              <div className='text-sm text-gray-600 dark:text-gray-400'>
+                Hard
+              </div>
             </div>
           </div>
 
@@ -185,7 +203,9 @@ export default function FlashcardReviewer({
             >
               Review Again
             </button>
-            {Object.values(difficulty).filter((d) => d === 'hard' || d === 'medium').length > 0 && (
+            {Object.values(difficulty).filter(
+              d => d === 'hard' || d === 'medium'
+            ).length > 0 && (
               <button
                 onClick={() => {
                   setStudyMode('difficult');
@@ -209,13 +229,25 @@ export default function FlashcardReviewer({
       {/* Settings Panel */}
       <div className='rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900'>
         <div className='flex items-center justify-between'>
-          <h3 className='text-sm font-semibold text-gray-900 dark:text-white'>Study Settings</h3>
+          <h3 className='text-sm font-semibold text-gray-900 dark:text-white'>
+            Study Settings
+          </h3>
           <button
             onClick={() => setShowSettings(!showSettings)}
             className='text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors'
           >
-            <svg className={`h-5 w-5 transition-transform ${showSettings ? 'rotate-180' : ''}`} fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M19 9l-7 7-7-7' />
+            <svg
+              className={`h-5 w-5 transition-transform ${showSettings ? 'rotate-180' : ''}`}
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M19 9l-7 7-7-7'
+              />
             </svg>
           </button>
         </div>
@@ -224,7 +256,9 @@ export default function FlashcardReviewer({
           <div className='mt-4 space-y-4'>
             {/* Study Mode */}
             <div>
-              <label className='mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300'>Study Mode</label>
+              <label className='mb-2 block text-xs font-medium text-gray-700 dark:text-gray-300'>
+                Study Mode
+              </label>
               <div className='grid grid-cols-3 gap-2'>
                 <button
                   onClick={() => {
@@ -251,7 +285,11 @@ export default function FlashcardReviewer({
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
                   }`}
-                  disabled={!Object.values(difficulty).some(d => d === 'hard' || d === 'medium')}
+                  disabled={
+                    !Object.values(difficulty).some(
+                      d => d === 'hard' || d === 'medium'
+                    )
+                  }
                 >
                   Difficult
                 </button>
@@ -282,7 +320,10 @@ export default function FlashcardReviewer({
                   onChange={toggleShuffle}
                   className='h-4 w-4 rounded text-blue-600 focus:ring-blue-500'
                 />
-                <label htmlFor='shuffle' className='text-xs text-gray-700 dark:text-gray-300'>
+                <label
+                  htmlFor='shuffle'
+                  className='text-xs text-gray-700 dark:text-gray-300'
+                >
                   🔀 Shuffle cards
                 </label>
               </div>
@@ -292,10 +333,13 @@ export default function FlashcardReviewer({
                   type='checkbox'
                   id='autoAdvance'
                   checked={autoAdvance}
-                  onChange={(e) => setAutoAdvance(e.target.checked)}
+                  onChange={e => setAutoAdvance(e.target.checked)}
                   className='h-4 w-4 rounded text-blue-600 focus:ring-blue-500'
                 />
-                <label htmlFor='autoAdvance' className='text-xs text-gray-700 dark:text-gray-300'>
+                <label
+                  htmlFor='autoAdvance'
+                  className='text-xs text-gray-700 dark:text-gray-300'
+                >
                   ⚡ Auto-advance
                 </label>
               </div>
@@ -348,8 +392,18 @@ export default function FlashcardReviewer({
         {!isFlipped && (
           <div className='absolute right-4 top-4 z-10 flex items-center gap-1 rounded-lg bg-blue-100 px-3 py-1 text-xs font-medium text-blue-700 opacity-0 transition-opacity group-hover:opacity-100 dark:bg-blue-900/30 dark:text-blue-300'>
             <span>Click to flip</span>
-            <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15' />
+            <svg
+              className='h-4 w-4'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15'
+              />
             </svg>
           </div>
         )}
@@ -433,7 +487,7 @@ export default function FlashcardReviewer({
             </div>
           ) : (
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 setShowHint(true);
               }}
@@ -449,21 +503,24 @@ export default function FlashcardReviewer({
       {isFlipped && (
         <div className='rounded-xl border border-gray-200 bg-white p-4 dark:border-gray-700 dark:bg-gray-800'>
           <div className='mb-3 text-center text-sm font-medium text-gray-700 dark:text-gray-300'>
-            How well did you know this? {difficulty[currentCardIndex] && (
-              <span className={`ml-2 text-xs ${
-                difficulty[currentCardIndex] === 'easy'
-                  ? 'text-green-600 dark:text-green-400'
-                  : difficulty[currentCardIndex] === 'medium'
-                    ? 'text-yellow-600 dark:text-yellow-400'
-                    : 'text-red-600 dark:text-red-400'
-              }`}>
+            How well did you know this?{' '}
+            {difficulty[currentCardIndex] && (
+              <span
+                className={`ml-2 text-xs ${
+                  difficulty[currentCardIndex] === 'easy'
+                    ? 'text-green-600 dark:text-green-400'
+                    : difficulty[currentCardIndex] === 'medium'
+                      ? 'text-yellow-600 dark:text-yellow-400'
+                      : 'text-red-600 dark:text-red-400'
+                }`}
+              >
                 ({difficulty[currentCardIndex]})
               </span>
             )}
           </div>
           <div className='grid grid-cols-3 gap-2'>
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 handleDifficulty('easy');
               }}
@@ -477,7 +534,7 @@ export default function FlashcardReviewer({
               <div>Easy</div>
             </button>
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 handleDifficulty('medium');
               }}
@@ -491,7 +548,7 @@ export default function FlashcardReviewer({
               <div>Medium</div>
             </button>
             <button
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 handleDifficulty('hard');
               }}
@@ -525,16 +582,41 @@ export default function FlashcardReviewer({
           >
             {isFlipped ? (
               <>
-                <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M15 12a3 3 0 11-6 0 3 3 0 016 0z' />
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z' />
+                <svg
+                  className='h-4 w-4'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M15 12a3 3 0 11-6 0 3 3 0 016 0z'
+                  />
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z'
+                  />
                 </svg>
                 Show Question
               </>
             ) : (
               <>
-                <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                  <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21' />
+                <svg
+                  className='h-4 w-4'
+                  fill='none'
+                  viewBox='0 0 24 24'
+                  stroke='currentColor'
+                >
+                  <path
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    strokeWidth={2}
+                    d='M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21'
+                  />
                 </svg>
                 Show Answer
               </>
@@ -553,14 +635,22 @@ export default function FlashcardReviewer({
 
       {/* Keyboard Shortcuts */}
       <div className='rounded-lg border border-gray-200 bg-gray-50 p-3 text-center text-xs dark:border-gray-700 dark:bg-gray-800/50'>
-        <span className='mr-3 text-gray-600 dark:text-gray-400'>Keyboard Shortcuts:</span>
-        <kbd className='mx-1 rounded border border-gray-300 bg-white px-2 py-1 font-mono dark:border-gray-600 dark:bg-gray-700'>←</kbd>{' '}
+        <span className='mr-3 text-gray-600 dark:text-gray-400'>
+          Keyboard Shortcuts:
+        </span>
+        <kbd className='mx-1 rounded border border-gray-300 bg-white px-2 py-1 font-mono dark:border-gray-600 dark:bg-gray-700'>
+          ←
+        </kbd>{' '}
         <span className='text-gray-500 dark:text-gray-400'>Previous</span>
         <span className='mx-2 text-gray-300 dark:text-gray-600'>•</span>
-        <kbd className='mx-1 rounded border border-gray-300 bg-white px-2 py-1 font-mono dark:border-gray-600 dark:bg-gray-700'>Space</kbd>{' '}
+        <kbd className='mx-1 rounded border border-gray-300 bg-white px-2 py-1 font-mono dark:border-gray-600 dark:bg-gray-700'>
+          Space
+        </kbd>{' '}
         <span className='text-gray-500 dark:text-gray-400'>Flip</span>
         <span className='mx-2 text-gray-300 dark:text-gray-600'>•</span>
-        <kbd className='mx-1 rounded border border-gray-300 bg-white px-2 py-1 font-mono dark:border-gray-600 dark:bg-gray-700'>→</kbd>{' '}
+        <kbd className='mx-1 rounded border border-gray-300 bg-white px-2 py-1 font-mono dark:border-gray-600 dark:bg-gray-700'>
+          →
+        </kbd>{' '}
         <span className='text-gray-500 dark:text-gray-400'>Next</span>
       </div>
     </div>

@@ -190,14 +190,26 @@ export async function POST(
     let parentLesson: any | null = null;
     if (parsed.parentLessonId) {
       if (!Types.ObjectId.isValid(parsed.parentLessonId)) {
-        return NextResponse.json({ error: 'Invalid parent lesson' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Invalid parent lesson' },
+          { status: 400 }
+        );
       }
-      parentLesson = await CourseLessonModel.findOne({ _id: new Types.ObjectId(parsed.parentLessonId), courseId: courseDoc._id }).lean();
+      parentLesson = await CourseLessonModel.findOne({
+        _id: new Types.ObjectId(parsed.parentLessonId),
+        courseId: courseDoc._id,
+      }).lean();
       if (!parentLesson) {
-        return NextResponse.json({ error: 'Parent lesson not found' }, { status: 404 });
+        return NextResponse.json(
+          { error: 'Parent lesson not found' },
+          { status: 404 }
+        );
       }
       if (parentLesson.moduleId.toString() !== moduleDoc._id.toString()) {
-        return NextResponse.json({ error: 'Parent lesson must be in the same module' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Parent lesson must be in the same module' },
+          { status: 400 }
+        );
       }
     }
 

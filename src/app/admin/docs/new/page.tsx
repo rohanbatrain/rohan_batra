@@ -9,7 +9,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -27,7 +33,10 @@ const docProjectSchema = z.object({
     .string()
     .min(1, 'Slug is required')
     .max(100)
-    .regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
+    .regex(
+      /^[a-z0-9-]+$/,
+      'Slug must contain only lowercase letters, numbers, and hyphens'
+    ),
   description: z.string().max(1000).optional(),
   logoUrl: z.string().url().optional().or(z.literal('')),
   projectId: z.string().optional().or(z.literal('')),
@@ -140,7 +149,7 @@ export default function NewDocProjectPage() {
       }
 
       const result = await response.json();
-      
+
       toast({
         title: 'Success',
         description: 'Documentation project created successfully',
@@ -178,12 +187,18 @@ export default function NewDocProjectPage() {
         <Card>
           <CardHeader>
             <CardTitle>Basic Information</CardTitle>
-            <CardDescription>Essential details about the documentation project</CardDescription>
+            <CardDescription>
+              Essential details about the documentation project
+            </CardDescription>
           </CardHeader>
           <CardContent className='space-y-4'>
             <div className='space-y-2'>
               <Label htmlFor='title'>Title *</Label>
-              <Input id='title' {...register('title')} placeholder='My Project Documentation' />
+              <Input
+                id='title'
+                {...register('title')}
+                placeholder='My Project Documentation'
+              />
               {errors.title && (
                 <p className='text-sm text-red-600'>{errors.title.message}</p>
               )}
@@ -191,7 +206,11 @@ export default function NewDocProjectPage() {
 
             <div className='space-y-2'>
               <Label htmlFor='slug'>URL Slug *</Label>
-              <Input id='slug' {...register('slug')} placeholder='my-project-docs' />
+              <Input
+                id='slug'
+                {...register('slug')}
+                placeholder='my-project-docs'
+              />
               <p className='text-sm text-muted-foreground'>
                 Will be available at /docs/{watch('slug') || 'your-slug'}
               </p>
@@ -209,7 +228,9 @@ export default function NewDocProjectPage() {
                 rows={3}
               />
               {errors.description && (
-                <p className='text-sm text-red-600'>{errors.description.message}</p>
+                <p className='text-sm text-red-600'>
+                  {errors.description.message}
+                </p>
               )}
             </div>
 
@@ -226,7 +247,9 @@ export default function NewDocProjectPage() {
             </div>
 
             <div className='space-y-2'>
-              <Label htmlFor='projectId'>Link to Portfolio Project (Optional)</Label>
+              <Label htmlFor='projectId'>
+                Link to Portfolio Project (Optional)
+              </Label>
               <Input
                 id='projectId'
                 {...register('projectId')}
@@ -243,7 +266,9 @@ export default function NewDocProjectPage() {
         <Card>
           <CardHeader>
             <CardTitle>Status & Visibility</CardTitle>
-            <CardDescription>Control publication status and access</CardDescription>
+            <CardDescription>
+              Control publication status and access
+            </CardDescription>
           </CardHeader>
           <CardContent className='space-y-4'>
             <div className='space-y-2'>
@@ -273,9 +298,15 @@ export default function NewDocProjectPage() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value='public'>Public - Everyone can view</SelectItem>
-                  <SelectItem value='private'>Private - Only authenticated users</SelectItem>
-                  <SelectItem value='unlisted'>Unlisted - Only with direct link</SelectItem>
+                  <SelectItem value='public'>
+                    Public - Everyone can view
+                  </SelectItem>
+                  <SelectItem value='private'>
+                    Private - Only authenticated users
+                  </SelectItem>
+                  <SelectItem value='unlisted'>
+                    Unlisted - Only with direct link
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -286,7 +317,9 @@ export default function NewDocProjectPage() {
         <Card>
           <CardHeader>
             <CardTitle>Theme Configuration</CardTitle>
-            <CardDescription>Customize the appearance of your documentation</CardDescription>
+            <CardDescription>
+              Customize the appearance of your documentation
+            </CardDescription>
           </CardHeader>
           <CardContent className='space-y-4'>
             <div className='grid gap-4 sm:grid-cols-2'>

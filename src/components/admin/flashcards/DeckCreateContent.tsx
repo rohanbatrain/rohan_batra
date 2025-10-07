@@ -6,7 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Folder } from 'lucide-react';
 
@@ -15,7 +21,9 @@ export default function DeckCreateContent() {
   const { toast } = useToast();
   const [creating, setCreating] = useState(false);
   const [loadingDecks, setLoadingDecks] = useState(false);
-  const [availableDecks, setAvailableDecks] = useState<Array<{ id: string; title: string; level: number; path: string }>>([]);
+  const [availableDecks, setAvailableDecks] = useState<
+    Array<{ id: string; title: string; level: number; path: string }>
+  >([]);
   const [form, setForm] = useState({
     title: '',
     subtitle: '',
@@ -39,24 +47,29 @@ export default function DeckCreateContent() {
         const res = await fetch('/api/admin/flashcards?tree=true');
         if (!res.ok) return;
         const data = await res.json();
-        
+
         // Flatten tree for dropdown (exclude decks at max depth)
         const flatten = (nodes: any[], depth = 0): any[] => {
           const MAX_DEPTH = 6;
           return nodes.flatMap(node => {
-            const items = node.level < MAX_DEPTH - 1 ? [{ 
-              id: node.id, 
-              title: node.title, 
-              level: node.level,
-              path: node.path 
-            }] : [];
+            const items =
+              node.level < MAX_DEPTH - 1
+                ? [
+                    {
+                      id: node.id,
+                      title: node.title,
+                      level: node.level,
+                      path: node.path,
+                    },
+                  ]
+                : [];
             if (node.children && node.children.length > 0) {
               items.push(...flatten(node.children, depth + 1));
             }
             return items;
           });
         };
-        
+
         setAvailableDecks(flatten(data.decks || []));
       } catch (err) {
         console.error('Failed to load decks:', err);
@@ -69,7 +82,11 @@ export default function DeckCreateContent() {
 
   const create = async () => {
     if (!form.title.trim()) {
-      toast({ title: 'Title required', description: 'Please provide a deck title.', variant: 'destructive' });
+      toast({
+        title: 'Title required',
+        description: 'Please provide a deck title.',
+        variant: 'destructive',
+      });
       return;
     }
     try {
@@ -81,9 +98,20 @@ export default function DeckCreateContent() {
         coverImage: form.coverImage.trim() || undefined,
         status: form.status,
         visibility: form.visibility,
-        tags: form.tags ? form.tags.split(',').map(s => s.trim()).filter(Boolean) : [],
-        categories: form.categories ? form.categories.split(',').map(s => s.trim()).filter(Boolean) : [],
-        parentDeckId: form.parentDeckId === '__none__' ? null : form.parentDeckId,
+        tags: form.tags
+          ? form.tags
+              .split(',')
+              .map(s => s.trim())
+              .filter(Boolean)
+          : [],
+        categories: form.categories
+          ? form.categories
+              .split(',')
+              .map(s => s.trim())
+              .filter(Boolean)
+          : [],
+        parentDeckId:
+          form.parentDeckId === '__none__' ? null : form.parentDeckId,
       };
       if (form.estimatedReviewMinutes.trim()) {
         const m = Number(form.estimatedReviewMinutes);
@@ -102,7 +130,11 @@ export default function DeckCreateContent() {
       toast({ title: 'Deck created', description: 'Redirecting…' });
       router.push(`/admin/flashcards/${created.id}`);
     } catch (err) {
-      toast({ title: 'Unable to create deck', description: err instanceof Error ? err.message : 'Unknown error', variant: 'destructive' });
+      toast({
+        title: 'Unable to create deck',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
     } finally {
       setCreating(false);
     }
@@ -113,30 +145,48 @@ export default function DeckCreateContent() {
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-3xl font-bold'>Create flashcard deck</h1>
-          <p className='text-sm text-muted-foreground'>After creating, you can add cards and link content.</p>
+          <p className='text-sm text-muted-foreground'>
+            After creating, you can add cards and link content.
+          </p>
         </div>
       </div>
       <div className='rounded-lg border p-4 dark:border-gray-800 space-y-4'>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='title'>Title</Label>
-            <Input id='title' value={form.title} onChange={e => set('title', e.target.value)} />
+            <Input
+              id='title'
+              value={form.title}
+              onChange={e => set('title', e.target.value)}
+            />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='subtitle'>Subtitle</Label>
-            <Input id='subtitle' value={form.subtitle} onChange={e => set('subtitle', e.target.value)} />
+            <Input
+              id='subtitle'
+              value={form.subtitle}
+              onChange={e => set('subtitle', e.target.value)}
+            />
           </div>
         </div>
-        
+
         {/* Parent Deck Selector - NEW */}
         <div className='space-y-2'>
           <Label htmlFor='parentDeck' className='flex items-center gap-2'>
             <Folder className='h-4 w-4' />
             Parent Deck (Optional)
           </Label>
-          <Select value={form.parentDeckId} onValueChange={v => set('parentDeckId', v)} disabled={loadingDecks}>
+          <Select
+            value={form.parentDeckId}
+            onValueChange={v => set('parentDeckId', v)}
+            disabled={loadingDecks}
+          >
             <SelectTrigger id='parentDeck'>
-              <SelectValue placeholder={loadingDecks ? 'Loading decks...' : 'None (top-level deck)'} />
+              <SelectValue
+                placeholder={
+                  loadingDecks ? 'Loading decks...' : 'None (top-level deck)'
+                }
+              />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value='__none__'>None (top-level deck)</SelectItem>
@@ -154,10 +204,15 @@ export default function DeckCreateContent() {
             Organize this deck under another deck (max 6 levels deep)
           </p>
         </div>
-        
+
         <div className='space-y-2'>
           <Label htmlFor='description'>Description</Label>
-          <Textarea id='description' rows={4} value={form.description} onChange={e => set('description', e.target.value)} />
+          <Textarea
+            id='description'
+            rows={4}
+            value={form.description}
+            onChange={e => set('description', e.target.value)}
+          />
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
@@ -175,7 +230,10 @@ export default function DeckCreateContent() {
           </div>
           <div className='space-y-2'>
             <Label>Visibility</Label>
-            <Select value={form.visibility} onValueChange={v => set('visibility', v)}>
+            <Select
+              value={form.visibility}
+              onValueChange={v => set('visibility', v)}
+            >
               <SelectTrigger>
                 <SelectValue placeholder='Select visibility' />
               </SelectTrigger>
@@ -190,26 +248,54 @@ export default function DeckCreateContent() {
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='tags'>Tags</Label>
-            <Input id='tags' value={form.tags} onChange={e => set('tags', e.target.value)} placeholder='Comma separated' />
+            <Input
+              id='tags'
+              value={form.tags}
+              onChange={e => set('tags', e.target.value)}
+              placeholder='Comma separated'
+            />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='categories'>Categories</Label>
-            <Input id='categories' value={form.categories} onChange={e => set('categories', e.target.value)} placeholder='Comma separated' />
+            <Input
+              id='categories'
+              value={form.categories}
+              onChange={e => set('categories', e.target.value)}
+              placeholder='Comma separated'
+            />
           </div>
         </div>
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='minutes'>Est. minutes</Label>
-            <Input id='minutes' type='number' min={0} value={form.estimatedReviewMinutes} onChange={e => set('estimatedReviewMinutes', e.target.value)} />
+            <Input
+              id='minutes'
+              type='number'
+              min={0}
+              value={form.estimatedReviewMinutes}
+              onChange={e => set('estimatedReviewMinutes', e.target.value)}
+            />
           </div>
           <div className='space-y-2'>
             <Label htmlFor='cover'>Cover image URL</Label>
-            <Input id='cover' value={form.coverImage} onChange={e => set('coverImage', e.target.value)} placeholder='https://' />
+            <Input
+              id='cover'
+              value={form.coverImage}
+              onChange={e => set('coverImage', e.target.value)}
+              placeholder='https://'
+            />
           </div>
         </div>
         <div className='flex items-center justify-end gap-2'>
-          <Button variant='outline' onClick={() => router.push('/admin/flashcards')}>Cancel</Button>
-          <Button onClick={create} disabled={creating}>{creating ? 'Creating…' : 'Create deck'}</Button>
+          <Button
+            variant='outline'
+            onClick={() => router.push('/admin/flashcards')}
+          >
+            Cancel
+          </Button>
+          <Button onClick={create} disabled={creating}>
+            {creating ? 'Creating…' : 'Create deck'}
+          </Button>
         </div>
       </div>
     </div>

@@ -2,7 +2,13 @@ import { Metadata } from 'next';
 import Link from 'next/link';
 import connectDB from '@/lib/mongodb';
 import DocProject from '@/models/DocProject';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { BookOpen, ExternalLink, Search, ArrowRight } from 'lucide-react';
@@ -14,7 +20,7 @@ export const metadata: Metadata = {
 
 export default async function DocsHubPage() {
   await connectDB();
-  
+
   const projects: any[] = await DocProject.find({
     status: 'published',
     visibility: { $in: ['public', 'unlisted'] },
@@ -61,7 +67,9 @@ export default async function DocsHubPage() {
           <Card>
             <CardContent className='flex flex-col items-center justify-center py-16'>
               <BookOpen className='h-16 w-16 text-muted-foreground mb-4' />
-              <h3 className='text-lg font-semibold mb-2'>No Documentation Available</h3>
+              <h3 className='text-lg font-semibold mb-2'>
+                No Documentation Available
+              </h3>
               <p className='text-muted-foreground text-center max-w-md'>
                 Documentation projects will appear here once they are published.
               </p>
@@ -73,13 +81,14 @@ export default async function DocsHubPage() {
               <div>
                 <h2 className='text-2xl font-bold'>Available Documentation</h2>
                 <p className='text-muted-foreground'>
-                  {projects.length} {projects.length === 1 ? 'project' : 'projects'} available
+                  {projects.length}{' '}
+                  {projects.length === 1 ? 'project' : 'projects'} available
                 </p>
               </div>
             </div>
 
             <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
-              {projects.map((project) => (
+              {projects.map(project => (
                 <Link
                   key={project._id.toString()}
                   href={`/docs/${project.slug}`}
@@ -114,10 +123,13 @@ export default async function DocsHubPage() {
                           <span>•</span>
                           <span>
                             Updated{' '}
-                            {new Date(project.updatedAt).toLocaleDateString('en-US', {
-                              month: 'short',
-                              day: 'numeric',
-                            })}
+                            {new Date(project.updatedAt).toLocaleDateString(
+                              'en-US',
+                              {
+                                month: 'short',
+                                day: 'numeric',
+                              }
+                            )}
                           </span>
                         </div>
                         <ArrowRight className='h-5 w-5 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all' />
@@ -134,9 +146,12 @@ export default async function DocsHubPage() {
       {/* Call to Action */}
       <section className='border-t bg-muted/30'>
         <div className='container mx-auto max-w-7xl px-6 py-16 text-center'>
-          <h2 className='text-2xl font-bold mb-4'>Looking for something specific?</h2>
+          <h2 className='text-2xl font-bold mb-4'>
+            Looking for something specific?
+          </h2>
           <p className='text-muted-foreground mb-6 max-w-2xl mx-auto'>
-            Can't find the documentation you're looking for? Check out the portfolio or blog for more resources.
+            Can't find the documentation you're looking for? Check out the
+            portfolio or blog for more resources.
           </p>
           <div className='flex gap-4 justify-center'>
             <Button asChild variant='outline'>

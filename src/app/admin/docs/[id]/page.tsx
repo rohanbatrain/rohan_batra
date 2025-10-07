@@ -7,7 +7,13 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -74,14 +80,17 @@ export default function DocProjectDetailPage() {
   const { toast } = useToast();
   const projectId = params?.id as string;
 
-  const { data: projectData, error: projectError, isLoading: projectLoading } = useSWR<{
+  const {
+    data: projectData,
+    error: projectError,
+    isLoading: projectLoading,
+  } = useSWR<{
     project: DocProject;
   }>(`/api/admin/docs/projects/${projectId}`, fetcher);
 
-  const { data: sectionsData, mutate: mutateSections } = useSWR<{ sections: DocSection[] }>(
-    `/api/admin/docs/projects/${projectId}/sections`,
-    fetcher
-  );
+  const { data: sectionsData, mutate: mutateSections } = useSWR<{
+    sections: DocSection[];
+  }>(`/api/admin/docs/projects/${projectId}/sections`, fetcher);
 
   const { data: pagesData, mutate: mutatePages } = useSWR<{ pages: DocPage[] }>(
     `/api/admin/docs/projects/${projectId}/pages`,
@@ -166,13 +175,21 @@ export default function DocProjectDetailPage() {
       {/* Header */}
       <div className='flex items-start justify-between gap-4'>
         <div className='flex items-start gap-4'>
-          <Button variant='ghost' size='icon' onClick={() => router.push('/admin/docs')}>
+          <Button
+            variant='ghost'
+            size='icon'
+            onClick={() => router.push('/admin/docs')}
+          >
             <ArrowLeft className='h-4 w-4' />
           </Button>
           <div className='space-y-2'>
             <div className='flex items-center gap-3'>
               {project.logoUrl && (
-                <img src={project.logoUrl} alt='' className='h-12 w-12 rounded object-cover' />
+                <img
+                  src={project.logoUrl}
+                  alt=''
+                  className='h-12 w-12 rounded object-cover'
+                />
               )}
               <div>
                 <h1 className='text-3xl font-bold'>{project.title}</h1>
@@ -180,7 +197,9 @@ export default function DocProjectDetailPage() {
               </div>
             </div>
             <div className='flex gap-2'>
-              <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
+              <Badge className={getStatusColor(project.status)}>
+                {project.status}
+              </Badge>
               <Badge variant='outline'>{project.visibility}</Badge>
             </div>
           </div>
@@ -196,7 +215,10 @@ export default function DocProjectDetailPage() {
               View Live
             </Button>
           )}
-          <Button variant='outline' onClick={() => router.push(`/admin/docs/${projectId}/edit`)}>
+          <Button
+            variant='outline'
+            onClick={() => router.push(`/admin/docs/${projectId}/edit`)}
+          >
             <Settings className='mr-2 h-4 w-4' />
             Settings
           </Button>
@@ -211,23 +233,33 @@ export default function DocProjectDetailPage() {
       <div className='grid gap-4 md:grid-cols-3'>
         <Card>
           <CardHeader className='pb-3'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>Total Views</CardTitle>
+            <CardTitle className='text-sm font-medium text-muted-foreground'>
+              Total Views
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{project.analytics.totalViews.toLocaleString()}</div>
+            <div className='text-2xl font-bold'>
+              {project.analytics.totalViews.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='pb-3'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>Total Searches</CardTitle>
+            <CardTitle className='text-sm font-medium text-muted-foreground'>
+              Total Searches
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className='text-2xl font-bold'>{project.analytics.totalSearches.toLocaleString()}</div>
+            <div className='text-2xl font-bold'>
+              {project.analytics.totalSearches.toLocaleString()}
+            </div>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className='pb-3'>
-            <CardTitle className='text-sm font-medium text-muted-foreground'>Avg. Time on Page</CardTitle>
+            <CardTitle className='text-sm font-medium text-muted-foreground'>
+              Avg. Time on Page
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className='text-2xl font-bold'>
@@ -264,14 +296,18 @@ export default function DocProjectDetailPage() {
                   <Button
                     size='sm'
                     variant='outline'
-                    onClick={() => router.push(`/admin/docs/${projectId}/sections/new`)}
+                    onClick={() =>
+                      router.push(`/admin/docs/${projectId}/sections/new`)
+                    }
                   >
                     <Plus className='mr-2 h-4 w-4' />
                     Add Section
                   </Button>
                   <Button
                     size='sm'
-                    onClick={() => router.push(`/admin/docs/${projectId}/pages/new`)}
+                    onClick={() =>
+                      router.push(`/admin/docs/${projectId}/pages/new`)
+                    }
                   >
                     <Plus className='mr-2 h-4 w-4' />
                     Add Page
@@ -287,7 +323,11 @@ export default function DocProjectDetailPage() {
                   <p className='text-muted-foreground mb-4'>
                     Start by creating sections to organize your documentation
                   </p>
-                  <Button onClick={() => router.push(`/admin/docs/${projectId}/sections/new`)}>
+                  <Button
+                    onClick={() =>
+                      router.push(`/admin/docs/${projectId}/sections/new`)
+                    }
+                  >
                     <Plus className='mr-2 h-4 w-4' />
                     Create First Section
                   </Button>
@@ -314,7 +354,12 @@ export default function DocProjectDetailPage() {
                     .filter(p => !p.sectionId)
                     .sort((a, b) => a.order - b.order)
                     .map(page => (
-                      <PageTreeItem key={page._id} page={page} projectId={projectId} router={router} />
+                      <PageTreeItem
+                        key={page._id}
+                        page={page}
+                        projectId={projectId}
+                        router={router}
+                      />
                     ))}
                 </div>
               )}
@@ -329,7 +374,9 @@ export default function DocProjectDetailPage() {
                 <CardTitle>All Pages</CardTitle>
                 <Button
                   size='sm'
-                  onClick={() => router.push(`/admin/docs/${projectId}/pages/new`)}
+                  onClick={() =>
+                    router.push(`/admin/docs/${projectId}/pages/new`)
+                  }
                 >
                   <Plus className='mr-2 h-4 w-4' />
                   New Page
@@ -341,8 +388,14 @@ export default function DocProjectDetailPage() {
                 <div className='text-center py-12'>
                   <FileText className='h-16 w-16 text-muted-foreground mx-auto mb-4' />
                   <h3 className='text-lg font-semibold mb-2'>No pages yet</h3>
-                  <p className='text-muted-foreground mb-4'>Create your first documentation page</p>
-                  <Button onClick={() => router.push(`/admin/docs/${projectId}/pages/new`)}>
+                  <p className='text-muted-foreground mb-4'>
+                    Create your first documentation page
+                  </p>
+                  <Button
+                    onClick={() =>
+                      router.push(`/admin/docs/${projectId}/pages/new`)
+                    }
+                  >
                     <Plus className='mr-2 h-4 w-4' />
                     Create First Page
                   </Button>
@@ -358,12 +411,16 @@ export default function DocProjectDetailPage() {
                         <FileText className='h-4 w-4 text-muted-foreground' />
                         <div>
                           <div className='font-medium'>{page.title}</div>
-                          <div className='text-sm text-muted-foreground'>/{page.slug}</div>
+                          <div className='text-sm text-muted-foreground'>
+                            /{page.slug}
+                          </div>
                         </div>
                         <Badge
                           variant='outline'
                           className={
-                            page.status === 'published' ? 'bg-green-50 text-green-700' : ''
+                            page.status === 'published'
+                              ? 'bg-green-50 text-green-700'
+                              : ''
                           }
                         >
                           {page.status}
@@ -377,7 +434,9 @@ export default function DocProjectDetailPage() {
                         <Button
                           size='sm'
                           variant='ghost'
-                          onClick={() => router.push(`/admin/docs/pages/${page._id}/edit`)}
+                          onClick={() =>
+                            router.push(`/admin/docs/pages/${page._id}/edit`)
+                          }
                         >
                           <Edit className='h-4 w-4' />
                         </Button>
@@ -412,7 +471,9 @@ function SectionTreeItem({
   const childSections = allSections
     .filter(s => s.parentSectionId === section._id)
     .sort((a, b) => a.order - b.order);
-  const sectionPages = pages.filter(p => p.sectionId === section._id).sort((a, b) => a.order - b.order);
+  const sectionPages = pages
+    .filter(p => p.sectionId === section._id)
+    .sort((a, b) => a.order - b.order);
   const hasChildren = childSections.length > 0 || sectionPages.length > 0;
 
   return (
@@ -486,9 +547,16 @@ function PageTreeItem({
         <FileText className='h-4 w-4 text-muted-foreground' />
         <div>
           <span className='font-medium'>{page.title}</span>
-          <span className='text-sm text-muted-foreground ml-2'>/{page.slug}</span>
+          <span className='text-sm text-muted-foreground ml-2'>
+            /{page.slug}
+          </span>
         </div>
-        <Badge variant='outline' className={page.status === 'published' ? 'bg-green-50 text-green-700' : ''}>
+        <Badge
+          variant='outline'
+          className={
+            page.status === 'published' ? 'bg-green-50 text-green-700' : ''
+          }
+        >
           {page.status}
         </Badge>
       </div>

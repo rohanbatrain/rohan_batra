@@ -1,9 +1,9 @@
 /**
  * T004: Contract Test - GET /api/courses/:courseId/graph
- * 
+ *
  * Tests the course graph API endpoint contract.
  * Validates response structure for graph nodes, edges, and metadata.
- * 
+ *
  * @pattern Follows /src/test/contract/courses.detail.contract.test.ts
  */
 
@@ -48,7 +48,9 @@ describe('Course Graph API Contract', () => {
       expect(node.id).toBeDefined();
       expect(node.type).toBeDefined();
       expect(node.label).toBeDefined();
-      expect(['course', 'module', 'lesson', 'sublesson', 'topic']).toContain(node.type);
+      expect(['course', 'module', 'lesson', 'sublesson', 'topic']).toContain(
+        node.type
+      );
     });
 
     // Validate edges
@@ -56,7 +58,13 @@ describe('Course Graph API Contract', () => {
       expect(edge.source).toBeDefined();
       expect(edge.target).toBeDefined();
       expect(edge.type).toBeDefined();
-      expect(['contains', 'prerequisite', 'parent-child', 'sibling', 'sequential']).toContain(edge.type);
+      expect([
+        'contains',
+        'prerequisite',
+        'parent-child',
+        'sibling',
+        'sequential',
+      ]).toContain(edge.type);
     });
 
     // Validate metadata

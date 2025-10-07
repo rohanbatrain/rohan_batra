@@ -10,7 +10,10 @@ import { uniqueSlug } from '@/lib/slug';
 
 const SectionInputSchema = z.object({
   title: z.string().min(2).max(150),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   description: z.string().max(300).optional(),
   icon: z.string().optional(),
   parentSectionId: z.string().optional().nullable(),
@@ -40,7 +43,7 @@ export async function GET(
   try {
     const { id: projectId } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -62,10 +65,7 @@ export async function GET(
 
     const project = await DocProjectModel.findById(projectId);
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
     const sections = await DocSectionModel.find({ docProjectId: project._id })
@@ -106,7 +106,7 @@ export async function POST(
   try {
     const { id: projectId } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -128,10 +128,7 @@ export async function POST(
 
     const project = await DocProjectModel.findById(projectId);
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -209,10 +206,7 @@ export async function POST(
 
     await section.save();
 
-    return NextResponse.json(
-      { section: section.toJSON() },
-      { status: 201 }
-    );
+    return NextResponse.json({ section: section.toJSON() }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

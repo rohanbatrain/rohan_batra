@@ -6,4 +6,3 @@ export function CourseManagerDialog() {
 }
 
 export default CourseManagerDialog;
-

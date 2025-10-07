@@ -21,7 +21,9 @@ import dynamic from 'next/dynamic';
 
 const MDXPreview = dynamic(() => import('@/components/admin/mdx-preview'), {
   ssr: false,
-  loading: () => <div className='text-sm text-muted-foreground p-4'>Loading content...</div>,
+  loading: () => (
+    <div className='text-sm text-muted-foreground p-4'>Loading content...</div>
+  ),
 });
 // Note: Novel rich editor removed. JSON content will be rendered safely.
 

@@ -29,7 +29,9 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
-  const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
+  const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(
+    new Set()
+  );
   const [showCorrectness, setShowCorrectness] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState<number | null>(
     quizData.timeLimitSeconds || null
@@ -43,7 +45,7 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
   useEffect(() => {
     if (timeRemaining !== null && timeRemaining > 0 && !isSubmitted) {
       const timer = setTimeout(() => {
-        setTimeRemaining((t) => (t && t > 0 ? t - 1 : 0));
+        setTimeRemaining(t => (t && t > 0 ? t - 1 : 0));
       }, 1000);
       return () => clearTimeout(timer);
     } else if (timeRemaining === 0 && !isSubmitted) {
@@ -57,12 +59,16 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const handleAnswer = (questionId: string, answer: string, isMultiple: boolean) => {
-    setAnswers((prev) => {
+  const handleAnswer = (
+    questionId: string,
+    answer: string,
+    isMultiple: boolean
+  ) => {
+    setAnswers(prev => {
       if (isMultiple) {
         const current = prev[questionId] || [];
         if (current.includes(answer)) {
-          return { ...prev, [questionId]: current.filter((a) => a !== answer) };
+          return { ...prev, [questionId]: current.filter(a => a !== answer) };
         } else {
           return { ...prev, [questionId]: [...current, answer] };
         }
@@ -70,13 +76,13 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
         return { ...prev, [questionId]: [answer] };
       }
     });
-    setAnsweredQuestions((prev) => new Set(prev).add(currentQuestionIndex));
+    setAnsweredQuestions(prev => new Set(prev).add(currentQuestionIndex));
     setShowCorrectness(true);
   };
 
   const handleNext = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex((i) => i + 1);
+      setCurrentQuestionIndex(i => i + 1);
       setShowExplanation(false);
       setShowCorrectness(false);
     }
@@ -84,7 +90,7 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
 
   const handlePrevious = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((i) => i - 1);
+      setCurrentQuestionIndex(i => i - 1);
       setShowExplanation(false);
       setShowCorrectness(answeredQuestions.has(currentQuestionIndex - 1));
     }
@@ -92,13 +98,13 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
 
   const calculateScore = () => {
     let correct = 0;
-    quizData.questions.forEach((q) => {
+    quizData.questions.forEach(q => {
       const userAnswers = answers[q.questionId] || [];
       const correctAnswers = q.correctAnswers;
 
       if (
         userAnswers.length === correctAnswers.length &&
-        userAnswers.every((a) => correctAnswers.includes(a))
+        userAnswers.every(a => correctAnswers.includes(a))
       ) {
         correct++;
       }
@@ -141,11 +147,12 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
   const isCorrect = (questionId: string) => {
     const userAnswers = answers[questionId] || [];
     const correctAnswers =
-      quizData.questions.find((q) => q.questionId === questionId)?.correctAnswers || [];
+      quizData.questions.find(q => q.questionId === questionId)
+        ?.correctAnswers || [];
 
     return (
       userAnswers.length === correctAnswers.length &&
-      userAnswers.every((a) => correctAnswers.includes(a))
+      userAnswers.every(a => correctAnswers.includes(a))
     );
   };
 
@@ -163,7 +170,12 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
             }`}
           >
             {passed ? (
-              <svg className='h-10 w-10' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+              <svg
+                className='h-10 w-10'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -172,7 +184,12 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
                 />
               </svg>
             ) : (
-              <svg className='h-10 w-10' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
+              <svg
+                className='h-10 w-10'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
                 <path
                   strokeLinecap='round'
                   strokeLinejoin='round'
@@ -188,10 +205,12 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
           </h2>
 
           <div className='mb-6'>
-            <div className='text-5xl font-bold text-gray-900 dark:text-white'>{score}%</div>
+            <div className='text-5xl font-bold text-gray-900 dark:text-white'>
+              {score}%
+            </div>
             <div className='text-sm text-gray-600 dark:text-gray-400'>
-              {quizData.questions.filter((q) => isCorrect(q.questionId)).length} out of{' '}
-              {totalQuestions} correct
+              {quizData.questions.filter(q => isCorrect(q.questionId)).length}{' '}
+              out of {totalQuestions} correct
             </div>
             <div className='mt-2 text-sm text-gray-600 dark:text-gray-400'>
               Passing score: {quizData.passingScore}%
@@ -246,14 +265,26 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
       {timeRemaining !== null && !isSubmitted && (
         <div className='mb-6 flex items-center justify-between rounded-lg border border-orange-200 bg-orange-50 p-4 dark:border-orange-800 dark:bg-orange-900/20'>
           <div className='flex items-center gap-2'>
-            <svg className='h-5 w-5 text-orange-600 dark:text-orange-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' />
+            <svg
+              className='h-5 w-5 text-orange-600 dark:text-orange-400'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+              />
             </svg>
             <span className='text-sm font-medium text-orange-900 dark:text-orange-200'>
               Time Remaining
             </span>
           </div>
-          <span className={`text-lg font-bold ${timeRemaining < 60 ? 'text-red-600 dark:text-red-400 animate-pulse' : 'text-orange-900 dark:text-orange-200'}`}>
+          <span
+            className={`text-lg font-bold ${timeRemaining < 60 ? 'text-red-600 dark:text-red-400 animate-pulse' : 'text-orange-900 dark:text-orange-200'}`}
+          >
             {formatTime(timeRemaining)}
           </span>
         </div>
@@ -272,7 +303,9 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
         <div className='h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700'>
           <div
             className='h-full bg-blue-600 transition-all duration-300'
-            style={{ width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%` }}
+            style={{
+              width: `${((currentQuestionIndex + 1) / totalQuestions) * 100}%`,
+            }}
           />
         </div>
       </div>
@@ -287,11 +320,13 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
         {(currentQuestion.type === 'single_choice' ||
           currentQuestion.type === 'multiple_choice') && (
           <div className='space-y-3'>
-            {currentQuestion.options?.map((option) => {
-              const isSelected = (answers[currentQuestion.questionId] || []).includes(
+            {currentQuestion.options?.map(option => {
+              const isSelected = (
+                answers[currentQuestion.questionId] || []
+              ).includes(option.value);
+              const isCorrectOption = currentQuestion.correctAnswers?.includes(
                 option.value
               );
-              const isCorrectOption = currentQuestion.correctAnswers?.includes(option.value);
               const showFeedback = showCorrectness && isSelected;
 
               return (
@@ -308,7 +343,11 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
                   }`}
                 >
                   <input
-                    type={currentQuestion.type === 'single_choice' ? 'radio' : 'checkbox'}
+                    type={
+                      currentQuestion.type === 'single_choice'
+                        ? 'radio'
+                        : 'checkbox'
+                    }
                     name={currentQuestion.questionId}
                     value={option.value}
                     checked={isSelected}
@@ -322,15 +361,37 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
                     className='h-4 w-4 text-blue-600'
                     disabled={reviewMode}
                   />
-                  <span className='flex-1 text-gray-900 dark:text-white'>{option.label}</span>
+                  <span className='flex-1 text-gray-900 dark:text-white'>
+                    {option.label}
+                  </span>
                   {showFeedback && isCorrectOption && (
-                    <svg className='h-5 w-5 text-green-600 dark:text-green-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+                    <svg
+                      className='h-5 w-5 text-green-600 dark:text-green-400'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M5 13l4 4L19 7'
+                      />
                     </svg>
                   )}
                   {showFeedback && !isCorrectOption && (
-                    <svg className='h-5 w-5 text-red-600 dark:text-red-400' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                      <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M6 18L18 6M6 6l12 12' />
+                    <svg
+                      className='h-5 w-5 text-red-600 dark:text-red-400'
+                      fill='none'
+                      viewBox='0 0 24 24'
+                      stroke='currentColor'
+                    >
+                      <path
+                        strokeLinecap='round'
+                        strokeLinejoin='round'
+                        strokeWidth={2}
+                        d='M6 18L18 6M6 6l12 12'
+                      />
                     </svg>
                   )}
                 </label>
@@ -343,8 +404,8 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
         {currentQuestion.type === 'free_text' && (
           <textarea
             value={(answers[currentQuestion.questionId] || [])[0] || ''}
-            onChange={(e) =>
-              setAnswers((prev) => ({
+            onChange={e =>
+              setAnswers(prev => ({
                 ...prev,
                 [currentQuestion.questionId]: [e.target.value],
               }))
@@ -357,62 +418,73 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
       </div>
 
       {/* Explanation (show after answering or in review mode) */}
-      {(showExplanation || (reviewMode && showCorrectness)) && currentQuestion.explanation && (
-        <div className={`mb-6 rounded-lg border p-4 ${
-          showCorrectness && answeredQuestions.has(currentQuestionIndex)
-            ? isCorrect(currentQuestion.questionId)
-              ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
-              : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
-            : 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
-        }`}>
-          <div className='mb-2 flex items-center gap-2'>
-            <svg
-              className={`h-5 w-5 ${
-                showCorrectness && answeredQuestions.has(currentQuestionIndex)
-                  ? isCorrect(currentQuestion.questionId)
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
-                  : 'text-blue-600 dark:text-blue-400'
-              }`}
-              fill='none'
-              viewBox='0 0 24 24'
-              stroke='currentColor'
-            >
-              <path
-                strokeLinecap='round'
-                strokeLinejoin='round'
-                strokeWidth={2}
-                d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
-              />
-            </svg>
-            <span className={`font-semibold ${
+      {(showExplanation || (reviewMode && showCorrectness)) &&
+        currentQuestion.explanation && (
+          <div
+            className={`mb-6 rounded-lg border p-4 ${
               showCorrectness && answeredQuestions.has(currentQuestionIndex)
                 ? isCorrect(currentQuestion.questionId)
-                  ? 'text-green-900 dark:text-green-200'
-                  : 'text-red-900 dark:text-red-200'
-                : 'text-blue-900 dark:text-blue-200'
-            }`}>
-              {showCorrectness && answeredQuestions.has(currentQuestionIndex)
-                ? isCorrect(currentQuestion.questionId) ? 'Correct!' : 'Incorrect'
-                : 'Explanation'}
-            </span>
+                  ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
+                  : 'border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20'
+                : 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
+            }`}
+          >
+            <div className='mb-2 flex items-center gap-2'>
+              <svg
+                className={`h-5 w-5 ${
+                  showCorrectness && answeredQuestions.has(currentQuestionIndex)
+                    ? isCorrect(currentQuestion.questionId)
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                    : 'text-blue-600 dark:text-blue-400'
+                }`}
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'
+                />
+              </svg>
+              <span
+                className={`font-semibold ${
+                  showCorrectness && answeredQuestions.has(currentQuestionIndex)
+                    ? isCorrect(currentQuestion.questionId)
+                      ? 'text-green-900 dark:text-green-200'
+                      : 'text-red-900 dark:text-red-200'
+                    : 'text-blue-900 dark:text-blue-200'
+                }`}
+              >
+                {showCorrectness && answeredQuestions.has(currentQuestionIndex)
+                  ? isCorrect(currentQuestion.questionId)
+                    ? 'Correct!'
+                    : 'Incorrect'
+                  : 'Explanation'}
+              </span>
+            </div>
+            <p
+              className={`text-sm ${
+                showCorrectness && answeredQuestions.has(currentQuestionIndex)
+                  ? isCorrect(currentQuestion.questionId)
+                    ? 'text-green-800 dark:text-green-300'
+                    : 'text-red-800 dark:text-red-300'
+                  : 'text-blue-800 dark:text-blue-300'
+              }`}
+            >
+              {currentQuestion.explanation}
+            </p>
           </div>
-          <p className={`text-sm ${
-            showCorrectness && answeredQuestions.has(currentQuestionIndex)
-              ? isCorrect(currentQuestion.questionId)
-                ? 'text-green-800 dark:text-green-300'
-                : 'text-red-800 dark:text-red-300'
-              : 'text-blue-800 dark:text-blue-300'
-          }`}>
-            {currentQuestion.explanation}
-          </p>
-        </div>
-      )}
+        )}
 
       {/* Question Navigation Grid (in review mode) */}
       {reviewMode && (
         <div className='mb-6 rounded-lg border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-800/50'>
-          <h4 className='mb-3 text-sm font-semibold text-gray-900 dark:text-white'>Question Navigator</h4>
+          <h4 className='mb-3 text-sm font-semibold text-gray-900 dark:text-white'>
+            Question Navigator
+          </h4>
           <div className='grid grid-cols-8 gap-2'>
             {quizData.questions.map((_, index) => {
               const isAnswered = answeredQuestions.has(index);
@@ -456,14 +528,25 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
           {/* Answered indicator */}
           {!reviewMode && answeredQuestions.has(currentQuestionIndex) && (
             <div className='flex items-center gap-1 text-xs text-green-600 dark:text-green-400'>
-              <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+              <svg
+                className='h-4 w-4'
+                fill='none'
+                viewBox='0 0 24 24'
+                stroke='currentColor'
+              >
+                <path
+                  strokeLinecap='round'
+                  strokeLinejoin='round'
+                  strokeWidth={2}
+                  d='M5 13l4 4L19 7'
+                />
               </svg>
               <span>Answered</span>
             </div>
           )}
-          
-          {!reviewMode && isQuestionAnswered(currentQuestion.questionId) &&
+
+          {!reviewMode &&
+            isQuestionAnswered(currentQuestion.questionId) &&
             currentQuestion.explanation &&
             !showExplanation && (
               <button
@@ -507,7 +590,10 @@ export default function QuizTaker({ lessonId, courseId, quizData }: QuizProps) {
       {/* Answer Counter */}
       <div className='mt-4 flex items-center justify-center gap-4 text-sm'>
         <div className='text-gray-600 dark:text-gray-400'>
-          <span className='font-semibold text-gray-900 dark:text-white'>{answeredQuestions.size}</span> of {totalQuestions} answered
+          <span className='font-semibold text-gray-900 dark:text-white'>
+            {answeredQuestions.size}
+          </span>{' '}
+          of {totalQuestions} answered
         </div>
         {!reviewMode && answeredQuestions.size === totalQuestions && (
           <button

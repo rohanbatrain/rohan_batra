@@ -1,7 +1,7 @@
 /**
  * GitHub Sync Service
  * Handles synchronization with canonical "flashcards" repository
- * 
+ *
  * Pattern: Single repo per org, pull-first sync, optional push-back
  */
 
@@ -103,7 +103,8 @@ export class GitHubSyncService {
 
       // Update sync config
       syncConfig.lastSyncAt = new Date();
-      syncConfig.lastSyncStatus = result.errors.length === 0 ? 'success' : 'partial';
+      syncConfig.lastSyncStatus =
+        result.errors.length === 0 ? 'success' : 'partial';
       await syncConfig.save();
 
       result.success = true;
@@ -177,7 +178,8 @@ export class GitHubSyncService {
 
       // Update sync config
       syncConfig.lastSyncAt = new Date();
-      syncConfig.lastSyncStatus = result.errors.length === 0 ? 'success' : 'partial';
+      syncConfig.lastSyncStatus =
+        result.errors.length === 0 ? 'success' : 'partial';
       await syncConfig.save();
 
       result.success = true;
@@ -194,7 +196,7 @@ export class GitHubSyncService {
    * Parse GitHub repo URL
    */
   private parseRepoUrl(url: string): { owner: string; repo: string } {
-    // Support formats: 
+    // Support formats:
     // - https://github.com/owner/repo
     // - git@github.com:owner/repo.git
     // - owner/repo
@@ -247,7 +249,9 @@ export class GitHubSyncService {
           });
 
           if ('content' in file && file.content) {
-            const content = Buffer.from(file.content, 'base64').toString('utf-8');
+            const content = Buffer.from(file.content, 'base64').toString(
+              'utf-8'
+            );
             deckFiles.push({
               path: item.path,
               content,
@@ -283,7 +287,10 @@ export class GitHubSyncService {
     // Parse frontmatter
     const { data: frontmatter, content: body } = matter(file.content);
 
-    const slug = frontmatter.slug || file.path.split('/').pop()?.replace('.md', '') || 'untitled';
+    const slug =
+      frontmatter.slug ||
+      file.path.split('/').pop()?.replace('.md', '') ||
+      'untitled';
     const title = frontmatter.title || slug;
 
     // Find or create deck
@@ -366,7 +373,9 @@ export class GitHubSyncService {
     }
 
     // Update deck card count
-    deck.cardCount = await FlashcardCardModel.countDocuments({ deckId: deck._id });
+    deck.cardCount = await FlashcardCardModel.countDocuments({
+      deckId: deck._id,
+    });
     await deck.save();
 
     return {
@@ -389,7 +398,7 @@ export class GitHubSyncService {
     tags?: string[];
   }> {
     const cards: Array<any> = [];
-    
+
     // Split by ## to find card blocks
     const cardBlocks = content.split(/\n##\s+/).filter(b => b.trim());
 
@@ -400,7 +409,12 @@ export class GitHubSyncService {
       let hint = '';
       let explanation = '';
       let tags: string[] = [];
-      let currentSection: 'prompt' | 'response' | 'hint' | 'explanation' | null = null;
+      let currentSection:
+        | 'prompt'
+        | 'response'
+        | 'hint'
+        | 'explanation'
+        | null = null;
 
       for (const line of lines) {
         const trimmed = line.trim();
@@ -430,7 +444,10 @@ export class GitHubSyncService {
         }
         if (/^Tags:/i.test(trimmed)) {
           const tagString = trimmed.replace(/^Tags:/i, '').trim();
-          tags = tagString.split(',').map((t: string) => t.trim()).filter(Boolean);
+          tags = tagString
+            .split(',')
+            .map((t: string) => t.trim())
+            .filter(Boolean);
           continue;
         }
 
@@ -475,8 +492,9 @@ export class GitHubSyncService {
     const content = this.generateDeckMarkdown(deck, cards);
 
     // Get file path from mapping or generate
-    const filePath = syncConfig.pathMapping?.get(deck._id.toString()) || 
-                     `decks/${deck.slug}.md`;
+    const filePath =
+      syncConfig.pathMapping?.get(deck._id.toString()) ||
+      `decks/${deck.slug}.md`;
 
     try {
       // Check if file exists
@@ -523,7 +541,8 @@ export class GitHubSyncService {
     content += `slug: ${deck.slug}\n`;
     if (deck.description) content += `description: ${deck.description}\n`;
     if (deck.tags?.length) content += `tags: [${deck.tags.join(', ')}]\n`;
-    if (deck.categories?.length) content += `categories: [${deck.categories.join(', ')}]\n`;
+    if (deck.categories?.length)
+      content += `categories: [${deck.categories.join(', ')}]\n`;
     content += `status: ${deck.status}\n`;
     content += `visibility: ${deck.visibility}\n`;
     content += '---\n\n';
@@ -533,19 +552,19 @@ export class GitHubSyncService {
       content += `## Card ${index + 1}\n\n`;
       content += `Q: ${card.prompt?.text || ''}\n\n`;
       content += `A: ${card.response?.text || ''}\n\n`;
-      
+
       if (card.hint) {
         content += `Hint: ${card.hint}\n\n`;
       }
-      
+
       if (card.explanation) {
         content += `Explanation: ${card.explanation}\n\n`;
       }
-      
+
       if (card.tags?.length) {
         content += `Tags: ${card.tags.join(', ')}\n\n`;
       }
-      
+
       content += '---\n\n';
     });
 

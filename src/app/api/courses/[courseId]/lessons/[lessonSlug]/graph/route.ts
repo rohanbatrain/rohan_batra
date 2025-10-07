@@ -1,9 +1,9 @@
 /**
  * T016: Lesson Graph API Endpoint
- * 
+ *
  * GET /api/courses/:courseId/lessons/:lessonSlug/graph
  * Returns lesson-centric knowledge graph
- * 
+ *
  * @pattern Follows /src/app/api/courses/[courseId]/graph/route.ts
  */
 
@@ -16,7 +16,11 @@ import CourseModel from '@/models/Course';
 import CourseLessonModel from '@/models/CourseLesson';
 import User from '@/models/User';
 import { buildLessonGraph } from '@/lib/graph/generator';
-import { getCachedGraph, setCachedGraph, GraphCacheKeys } from '@/lib/graph/cache';
+import {
+  getCachedGraph,
+  setCachedGraph,
+  GraphCacheKeys,
+} from '@/lib/graph/cache';
 
 // Query parameter validation schema
 const QuerySchema = z.object({
@@ -28,7 +32,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/courses/:courseId/lessons/:lessonSlug/graph
- * 
+ *
  * Returns lesson-centric knowledge graph
  */
 export async function GET(
@@ -68,10 +72,7 @@ export async function GET(
     const course = await CourseModel.findOne(courseQuery).lean();
 
     if (!course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
     // 5. Lesson lookup by slug
@@ -83,10 +84,7 @@ export async function GET(
       .lean();
 
     if (!lesson) {
-      return NextResponse.json(
-        { error: 'Lesson not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Lesson not found' }, { status: 404 });
     }
 
     // 6. User lookup if authenticated
@@ -95,7 +93,7 @@ export async function GET(
       const userDoc = (await User.findOne({ clerkId: userId })
         .select('_id')
         .lean()) as { _id: Types.ObjectId } | null;
-      
+
       if (userDoc) {
         userObjectId = userDoc._id;
       }

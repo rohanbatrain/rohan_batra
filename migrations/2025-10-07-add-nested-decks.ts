@@ -1,11 +1,11 @@
 /**
  * Migration: Add nested deck support to existing flashcards
  * Date: 2025-10-07
- * 
+ *
  * This migration adds:
  * 1. parentDeckId, path, level, dueCount to FlashcardDeck
  * 2. scheduling fields to FlashcardCard
- * 
+ *
  * Usage:
  *   ts-node migrations/2025-10-07-add-nested-decks.ts [--dry-run]
  */
@@ -35,7 +35,9 @@ async function connectDatabase() {
   console.log('✅ Connected to MongoDB');
 }
 
-async function migrateDecks(dryRun: boolean): Promise<MigrationStats['decksProcessed']> {
+async function migrateDecks(
+  dryRun: boolean
+): Promise<MigrationStats['decksProcessed']> {
   let processed = 0;
   let updated = 0;
 
@@ -60,7 +62,11 @@ async function migrateDecks(dryRun: boolean): Promise<MigrationStats['decksProce
       processed++;
 
       // Check if deck already has nested fields
-      if (deck.parentDeckId !== undefined && deck.path !== undefined && deck.level !== undefined) {
+      if (
+        deck.parentDeckId !== undefined &&
+        deck.path !== undefined &&
+        deck.level !== undefined
+      ) {
         continue; // Already migrated
       }
 
@@ -93,11 +99,15 @@ async function migrateDecks(dryRun: boolean): Promise<MigrationStats['decksProce
     skip += BATCH_SIZE;
   }
 
-  console.log(`✅ Decks: ${processed} processed, ${updated} ${dryRun ? 'would be' : ''} updated`);
+  console.log(
+    `✅ Decks: ${processed} processed, ${updated} ${dryRun ? 'would be' : ''} updated`
+  );
   return processed;
 }
 
-async function migrateCards(dryRun: boolean): Promise<MigrationStats['cardsProcessed']> {
+async function migrateCards(
+  dryRun: boolean
+): Promise<MigrationStats['cardsProcessed']> {
   let processed = 0;
   let updated = 0;
 
@@ -153,7 +163,9 @@ async function migrateCards(dryRun: boolean): Promise<MigrationStats['cardsProce
     skip += BATCH_SIZE;
   }
 
-  console.log(`✅ Cards: ${processed} processed, ${updated} ${dryRun ? 'would be' : ''} updated`);
+  console.log(
+    `✅ Cards: ${processed} processed, ${updated} ${dryRun ? 'would be' : ''} updated`
+  );
   return processed;
 }
 
@@ -180,7 +192,9 @@ async function verifyMigration(): Promise<boolean> {
   });
 
   if (cardsWithoutScheduling > 0) {
-    console.error(`❌ ${cardsWithoutScheduling} cards still missing scheduling fields`);
+    console.error(
+      `❌ ${cardsWithoutScheduling} cards still missing scheduling fields`
+    );
     return false;
   }
 

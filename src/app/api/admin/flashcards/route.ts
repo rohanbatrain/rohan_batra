@@ -7,7 +7,11 @@ import FlashcardDeckModel from '@/models/FlashcardDeck';
 import UserModel from '@/models/User';
 import { uniqueSlug } from '@/lib/slug';
 import { resolveAssetShortcodes } from '@/lib/assets/resolve-shortcodes';
-import { LinkTargetSchema, FlashcardDeckInputSchema, sanitizeDeck } from './schemas';
+import {
+  LinkTargetSchema,
+  FlashcardDeckInputSchema,
+  sanitizeDeck,
+} from './schemas';
 import { buildDeckTree } from '@/lib/decks/tree';
 
 /**
@@ -35,7 +39,9 @@ export async function GET(request: NextRequest) {
     }
 
     // Get all decks for user
-    const decks = await FlashcardDeckModel.find({ ownerId: user._id }).sort({ createdAt: -1 }).lean();
+    const decks = await FlashcardDeckModel.find({ ownerId: user._id })
+      .sort({ createdAt: -1 })
+      .lean();
 
     // Check if tree mode requested
     const { searchParams } = new URL(request.url);
@@ -49,7 +55,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ decks });
   } catch (error: unknown) {
     console.error('Error fetching flashcard decks:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -73,7 +82,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    
+
     // Extend schema to include parentDeckId
     const ExtendedSchema = FlashcardDeckInputSchema.extend({
       parentDeckId: z.string().optional(),
@@ -84,13 +93,19 @@ export async function POST(request: NextRequest) {
     let parentDeck = null;
     if (parsed.parentDeckId) {
       if (!Types.ObjectId.isValid(parsed.parentDeckId)) {
-        return NextResponse.json({ error: 'Invalid parent deck ID' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Invalid parent deck ID' },
+          { status: 400 }
+        );
       }
 
       parentDeck = await FlashcardDeckModel.findById(parsed.parentDeckId);
 
       if (!parentDeck) {
-        return NextResponse.json({ error: 'Parent deck not found' }, { status: 404 });
+        return NextResponse.json(
+          { error: 'Parent deck not found' },
+          { status: 404 }
+        );
       }
 
       // Check depth limit (max 6 levels, so parent can be at most level 5)

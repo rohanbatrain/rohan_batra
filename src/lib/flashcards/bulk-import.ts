@@ -88,7 +88,9 @@ function parseMarkdownFile(content: string): ParseResult {
   try {
     // Simple frontmatter extraction (replace matter library)
     let body = content;
-    const frontmatterMatch = content.match(/^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/);
+    const frontmatterMatch = content.match(
+      /^---\s*\n([\s\S]*?)\n---\s*\n([\s\S]*)$/
+    );
     if (frontmatterMatch) {
       body = frontmatterMatch[2];
     }
@@ -96,7 +98,9 @@ function parseMarkdownFile(content: string): ParseResult {
     const cards: BulkCardData[] = [];
 
     // Split by --- or ## to find individual cards
-    const cardBlocks = body.split(/(?:^|\n)(?:---|\#{2,})/m).filter((b: string) => b.trim());
+    const cardBlocks = body
+      .split(/(?:^|\n)(?:---|\#{2,})/m)
+      .filter((b: string) => b.trim());
 
     for (const block of cardBlocks) {
       const lines = block.trim().split('\n');
@@ -105,7 +109,12 @@ function parseMarkdownFile(content: string): ParseResult {
       let hint = '';
       let explanation = '';
       let tags: string[] = [];
-      let currentSection: 'prompt' | 'response' | 'hint' | 'explanation' | null = null;
+      let currentSection:
+        | 'prompt'
+        | 'response'
+        | 'hint'
+        | 'explanation'
+        | null = null;
 
       for (const line of lines) {
         const trimmed = line.trim();
@@ -136,7 +145,10 @@ function parseMarkdownFile(content: string): ParseResult {
         }
         if (/^Tags:/i.test(trimmed)) {
           const tagString = trimmed.replace(/^Tags:/i, '').trim();
-          tags = tagString.split(',').map((t: string) => t.trim()).filter(Boolean);
+          tags = tagString
+            .split(',')
+            .map((t: string) => t.trim())
+            .filter(Boolean);
           continue;
         }
 
@@ -241,8 +253,12 @@ function parseCsvFile(content: string): ParseResult {
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
     const cards: BulkCardData[] = [];
 
-    const questionIdx = headers.findIndex(h => h === 'question' || h === 'prompt');
-    const answerIdx = headers.findIndex(h => h === 'answer' || h === 'response');
+    const questionIdx = headers.findIndex(
+      h => h === 'question' || h === 'prompt'
+    );
+    const answerIdx = headers.findIndex(
+      h => h === 'answer' || h === 'response'
+    );
     const hintIdx = headers.indexOf('hint');
     const explanationIdx = headers.indexOf('explanation');
     const tagsIdx = headers.indexOf('tags');
@@ -305,7 +321,7 @@ function parseYamlFile(content: string): ParseResult {
 
     for (const line of lines) {
       const trimmed = line.trim();
-      
+
       // Skip empty or comment lines
       if (!trimmed || trimmed.startsWith('#')) continue;
 
@@ -338,7 +354,10 @@ function parseYamlFile(content: string): ParseResult {
         continue;
       }
       if (trimmed.startsWith('text:')) {
-        const text = trimmed.replace('text:', '').trim().replace(/^["']|["']$/g, '');
+        const text = trimmed
+          .replace('text:', '')
+          .trim()
+          .replace(/^["']|["']$/g, '');
         if (currentField === 'prompt' && currentCard.prompt) {
           currentCard.prompt.text = text;
         } else if (currentField === 'response' && currentCard.response) {
@@ -347,11 +366,17 @@ function parseYamlFile(content: string): ParseResult {
         continue;
       }
       if (trimmed.startsWith('hint:')) {
-        currentCard.hint = trimmed.replace('hint:', '').trim().replace(/^["']|["']$/g, '');
+        currentCard.hint = trimmed
+          .replace('hint:', '')
+          .trim()
+          .replace(/^["']|["']$/g, '');
         continue;
       }
       if (trimmed.startsWith('explanation:')) {
-        currentCard.explanation = trimmed.replace('explanation:', '').trim().replace(/^["']|["']$/g, '');
+        currentCard.explanation = trimmed
+          .replace('explanation:', '')
+          .trim()
+          .replace(/^["']|["']$/g, '');
         continue;
       }
       if (trimmed.startsWith('tags:')) {

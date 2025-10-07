@@ -59,7 +59,10 @@ export async function GET(request: NextRequest) {
     const validTimeframes = ['7d', '30d', '90d', '1y'];
     if (!validTimeframes.includes(timeframe)) {
       return NextResponse.json(
-        { success: false, error: 'Invalid timeframe. Must be one of: 7d, 30d, 90d, 1y' },
+        {
+          success: false,
+          error: 'Invalid timeframe. Must be one of: 7d, 30d, 90d, 1y',
+        },
         { status: 400 }
       );
     }
@@ -445,7 +448,10 @@ export async function POST(request: NextRequest) {
     // Validate event name to prevent injection
     if (typeof event !== 'string' || event.length > 100) {
       return NextResponse.json(
-        { success: false, error: 'Event name must be a string (max 100 chars)' },
+        {
+          success: false,
+          error: 'Event name must be a string (max 100 chars)',
+        },
         { status: 400 }
       );
     }
@@ -478,7 +484,10 @@ export async function POST(request: NextRequest) {
         // Limit to 10,000 events per event type
         if (count >= 10000) {
           return NextResponse.json(
-            { success: false, error: 'Event storage limit reached for this event type' },
+            {
+              success: false,
+              error: 'Event storage limit reached for this event type',
+            },
             { status: 429 }
           );
         }

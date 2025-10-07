@@ -1,8 +1,8 @@
 /**
  * T010: Graph Query Utilities
- * 
+ *
  * Database query functions for fetching course structure.
- * 
+ *
  * @pattern Follows /src/lib/courses/query.ts structure
  */
 
@@ -16,7 +16,7 @@ import type { CourseStructure, LessonContext } from './types';
 
 /**
  * Fetch complete course structure with modules and lessons
- * 
+ *
  * @param courseId - Course ID to fetch
  * @returns Course structure with modules, lessons, and lookup map
  */
@@ -31,12 +31,14 @@ export async function fetchCourseStructure(
 
   // Fetch all lessons for the course
   const lessons = await CourseLessonModel.find({ courseId })
-    .select('_id title slug moduleId order parentLessonId prerequisiteLessonIds contentType duration')
+    .select(
+      '_id title slug moduleId order parentLessonId prerequisiteLessonIds contentType duration'
+    )
     .lean();
 
   // Create a Map for O(1) lesson lookup
   const lessonsById = new Map<string, any>();
-  lessons.forEach((lesson) => {
+  lessons.forEach(lesson => {
     lessonsById.set(lesson._id.toString(), lesson);
   });
 
@@ -49,7 +51,7 @@ export async function fetchCourseStructure(
 
 /**
  * Fetch lesson with related context (prerequisites, sub-lessons, siblings)
- * 
+ *
  * @param lessonId - Lesson ID to fetch
  * @param depth - How deep to fetch prerequisites (recursive)
  * @returns Lesson with context
@@ -60,7 +62,9 @@ export async function fetchLessonWithContext(
 ): Promise<LessonContext> {
   // Fetch the main lesson
   const lesson = await CourseLessonModel.findById(lessonId)
-    .select('_id title slug moduleId courseId order parentLessonId prerequisiteLessonIds contentType duration')
+    .select(
+      '_id title slug moduleId courseId order parentLessonId prerequisiteLessonIds contentType duration'
+    )
     .lean();
 
   if (!lesson) {
@@ -74,12 +78,18 @@ export async function fetchLessonWithContext(
 
   // Fetch prerequisites recursively up to depth
   const prerequisites: any[] = [];
-  if (lesson.prerequisiteLessonIds && lesson.prerequisiteLessonIds.length > 0 && depth > 0) {
+  if (
+    lesson.prerequisiteLessonIds &&
+    lesson.prerequisiteLessonIds.length > 0 &&
+    depth > 0
+  ) {
     const prereqIds = lesson.prerequisiteLessonIds;
     const prereqLessons = await CourseLessonModel.find({
       _id: { $in: prereqIds },
     })
-      .select('_id title slug moduleId order parentLessonId prerequisiteLessonIds contentType duration')
+      .select(
+        '_id title slug moduleId order parentLessonId prerequisiteLessonIds contentType duration'
+      )
       .lean();
 
     prerequisites.push(...prereqLessons);
@@ -87,7 +97,10 @@ export async function fetchLessonWithContext(
     // If depth > 1, fetch prerequisites of prerequisites
     if (depth > 1) {
       for (const prereq of prereqLessons) {
-        if (prereq.prerequisiteLessonIds && prereq.prerequisiteLessonIds.length > 0) {
+        if (
+          prereq.prerequisiteLessonIds &&
+          prereq.prerequisiteLessonIds.length > 0
+        ) {
           const nestedContext = await fetchLessonWithContext(
             prereq._id,
             depth - 1
@@ -126,7 +139,7 @@ export async function fetchLessonWithContext(
 
 /**
  * Fetch user progress for a course
- * 
+ *
  * @param courseId - Course ID
  * @param userId - User ID
  * @returns Set of completed lesson IDs

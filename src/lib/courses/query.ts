@@ -48,7 +48,10 @@ export async function listPublicCourses(params: CourseIndexQuery) {
     visibility: 'public',
   };
   if (params.q) {
-    const regex = new RegExp(params.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+    const regex = new RegExp(
+      params.q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+      'i'
+    );
     filter.$or = [{ title: regex }, { summary: regex }, { subtitle: regex }];
   }
   if (params.difficulty && (params.difficulty as string[]).length) {

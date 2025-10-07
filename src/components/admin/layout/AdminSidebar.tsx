@@ -68,8 +68,18 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       icon: LayoutDashboard,
       roles: ['editor', 'admin'],
       items: [
-        { name: 'Dashboard', href: '/admin', icon: LayoutDashboard, roles: ['editor', 'admin'] },
-        { name: 'Analytics', href: '/admin/analytics', icon: BarChart3, roles: ['admin'] },
+        {
+          name: 'Dashboard',
+          href: '/admin',
+          icon: LayoutDashboard,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Analytics',
+          href: '/admin/analytics',
+          icon: BarChart3,
+          roles: ['admin'],
+        },
       ],
     },
     {
@@ -77,15 +87,60 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       icon: FileText,
       roles: ['editor', 'admin'],
       items: [
-        { name: 'Blog Posts', href: '/admin/blog', icon: FileText, roles: ['editor', 'admin'] },
-        { name: 'Portfolio', href: '/admin/portfolio', icon: Briefcase, roles: ['editor', 'admin'] },
-        { name: 'Experience', href: '/admin/experience', icon: Briefcase, roles: ['editor', 'admin'] },
-        { name: 'Documentation', href: '/admin/docs', icon: BookOpen, roles: ['editor', 'admin'] },
-        { name: 'Courses', href: '/admin/courses', icon: GraduationCap, roles: ['editor', 'admin'] },
-        { name: 'Books', href: '/admin/books', icon: Book, roles: ['editor', 'admin'] },
-        { name: 'Flashcards', href: '/admin/flashcards', icon: Layers, roles: ['editor', 'admin'] },
-        { name: 'Characters', href: '/admin/characters', icon: Users, roles: ['editor', 'admin'] },
-        { name: 'Brands', href: '/admin/brands', icon: Share2, roles: ['editor', 'admin'] },
+        {
+          name: 'Blog Posts',
+          href: '/admin/blog',
+          icon: FileText,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Portfolio',
+          href: '/admin/portfolio',
+          icon: Briefcase,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Experience',
+          href: '/admin/experience',
+          icon: Briefcase,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Documentation',
+          href: '/admin/docs',
+          icon: BookOpen,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Courses',
+          href: '/admin/courses',
+          icon: GraduationCap,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Books',
+          href: '/admin/books',
+          icon: Book,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Flashcards',
+          href: '/admin/flashcards',
+          icon: Layers,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Characters',
+          href: '/admin/characters',
+          icon: Users,
+          roles: ['editor', 'admin'],
+        },
+        {
+          name: 'Brands',
+          href: '/admin/brands',
+          icon: Share2,
+          roles: ['editor', 'admin'],
+        },
       ],
     },
     {
@@ -98,7 +153,12 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
           icon: Shield,
           roles: ['editor', 'admin'],
           items: [
-            { name: 'TryHackMe', href: '/admin/tryhackme', icon: Layers, roles: ['editor', 'admin'] },
+            {
+              name: 'TryHackMe',
+              href: '/admin/tryhackme',
+              icon: Layers,
+              roles: ['editor', 'admin'],
+            },
           ],
         },
       ],
@@ -108,7 +168,12 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       icon: MessageSquare,
       roles: ['editor', 'admin'],
       items: [
-        { name: 'Comments', href: '/admin/comments', icon: MessageSquare, roles: ['editor', 'admin'] },
+        {
+          name: 'Comments',
+          href: '/admin/comments',
+          icon: MessageSquare,
+          roles: ['editor', 'admin'],
+        },
       ],
     },
     {
@@ -116,12 +181,32 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       icon: Settings,
       roles: ['admin'],
       items: [
-        { name: 'Assets', href: '/admin/assets', icon: Image, roles: ['editor', 'admin'] },
+        {
+          name: 'Assets',
+          href: '/admin/assets',
+          icon: Image,
+          roles: ['editor', 'admin'],
+        },
         { name: 'Users', href: '/admin/users', icon: Users, roles: ['admin'] },
-        { name: 'Cache', href: '/admin/cache', icon: Database, roles: ['admin'] },
-        { name: 'Audit Logs', href: '/admin/audit', icon: History, roles: ['admin'] },
+        {
+          name: 'Cache',
+          href: '/admin/cache',
+          icon: Database,
+          roles: ['admin'],
+        },
+        {
+          name: 'Audit Logs',
+          href: '/admin/audit',
+          icon: History,
+          roles: ['admin'],
+        },
         { name: 'Trash', href: '/admin/trash', icon: Trash2, roles: ['admin'] },
-        { name: 'Settings', href: '/admin/settings', icon: Settings, roles: ['admin'] },
+        {
+          name: 'Settings',
+          href: '/admin/settings',
+          icon: Settings,
+          roles: ['admin'],
+        },
       ],
     },
   ];
@@ -134,8 +219,10 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
           ? { ...item, items: filterItemsByRole(item.items, role) }
           : item
       )
-      .filter(item =>
-        item.roles.includes(role) && (item.href || (item.items && item.items.length > 0))
+      .filter(
+        item =>
+          item.roles.includes(role) &&
+          (item.href || (item.items && item.items.length > 0))
       );
 
   const anyItemActive = (items: NavItem[], currentPath: string): boolean => {
@@ -143,7 +230,8 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       if (item.href) {
         return (
           currentPath === item.href ||
-          (item.href !== '/admin' && Boolean(currentPath && currentPath.startsWith(item.href)))
+          (item.href !== '/admin' &&
+            Boolean(currentPath && currentPath.startsWith(item.href)))
         );
       }
       if (item.items && item.items.length > 0) {
@@ -164,12 +252,21 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
   if (unstable) {
     const overview = filteredGroups.find(g => g.name === 'Overview');
     if (overview) {
-      overview.items.splice(1, 0, { name: 'Unstable', href: '/admin/unstable', icon: BarChart3, roles: ['editor', 'admin'] });
+      overview.items.splice(1, 0, {
+        name: 'Unstable',
+        href: '/admin/unstable',
+        icon: BarChart3,
+        roles: ['editor', 'admin'],
+      });
     }
   }
 
-  const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>({});
-  const [openSubGroups, setOpenSubGroups] = React.useState<Record<string, boolean>>({});
+  const [openGroups, setOpenGroups] = React.useState<Record<string, boolean>>(
+    {}
+  );
+  const [openSubGroups, setOpenSubGroups] = React.useState<
+    Record<string, boolean>
+  >({});
   React.useEffect(() => {
     // Auto-open a group if current path is inside it (supports nested items)
     const defaults: Record<string, boolean> = {};
@@ -187,7 +284,6 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
     });
     setOpenGroups(defaults);
     setOpenSubGroups(defaultsSub);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
   const toggleGroup = (name: string) =>
@@ -227,10 +323,13 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
                 <ul className='mt-1 space-y-1'>
                   {group.items.map(item => {
                     const renderItem = (it: NavItem, depth = 1) => {
-                      const padding = depth === 1 ? 'ml-6' : depth === 2 ? 'ml-10' : 'ml-12';
+                      const padding =
+                        depth === 1 ? 'ml-6' : depth === 2 ? 'ml-10' : 'ml-12';
                       const Icon = it.icon;
                       const active = it.href
-                        ? pathname === it.href || (it.href !== '/admin' && Boolean(pathname && pathname.startsWith(it.href)))
+                        ? pathname === it.href ||
+                          (it.href !== '/admin' &&
+                            Boolean(pathname && pathname.startsWith(it.href)))
                         : it.items
                           ? anyItemActive(it.items, pathname || '')
                           : false;
@@ -241,7 +340,9 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
                         return (
                           <li key={it.name}>
                             <button
-                              onClick={() => toggleSubGroup(group.name, it.name)}
+                              onClick={() =>
+                                toggleSubGroup(group.name, it.name)
+                              }
                               className={cn(
                                 `${padding} w-full flex items-center justify-between px-3 py-2 text-sm rounded-md`,
                                 active
@@ -251,7 +352,9 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
                             >
                               <span className='inline-flex items-center gap-2'>
                                 {Icon ? <Icon className='h-4 w-4' /> : null}
-                                <span className='uppercase tracking-wide text-xs'>{it.name}</span>
+                                <span className='uppercase tracking-wide text-xs'>
+                                  {it.name}
+                                </span>
                               </span>
                               {isOpen ? (
                                 <ChevronDown className='h-4 w-4' />
@@ -261,7 +364,9 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
                             </button>
                             {isOpen && (
                               <ul className='mt-1 space-y-1'>
-                                {it.items.map(child => renderItem(child, depth + 1))}
+                                {it.items.map(child =>
+                                  renderItem(child, depth + 1)
+                                )}
                               </ul>
                             )}
                           </li>

@@ -10,7 +10,10 @@ interface CodeCopyButtonProps {
   className?: string;
 }
 
-export default function CodeCopyButton({ code, className }: CodeCopyButtonProps) {
+export default function CodeCopyButton({
+  code,
+  className,
+}: CodeCopyButtonProps) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {

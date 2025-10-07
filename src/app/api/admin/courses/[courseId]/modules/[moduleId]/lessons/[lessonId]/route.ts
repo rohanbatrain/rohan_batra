@@ -139,7 +139,7 @@ export async function PUT(
     );
 
     const body = await request.json();
-  const parsed = LessonUpdateSchema.parse(body);
+    const parsed = LessonUpdateSchema.parse(body);
 
     if (parsed.title !== undefined) {
       lessonDoc.title = parsed.title;
@@ -186,7 +186,9 @@ export async function PUT(
               { status: 400 }
             );
           }
-          cursor = await CourseLessonModel.findById(cursor.parentLessonId).lean();
+          cursor = await CourseLessonModel.findById(
+            cursor.parentLessonId
+          ).lean();
         }
         lessonDoc.parentLessonId = new Types.ObjectId(parsed.parentLessonId);
       }
@@ -404,7 +406,9 @@ export async function PUT(
       });
     }
 
-    const updatedLesson = await CourseLessonModel.findById(lessonDoc._id).lean();
+    const updatedLesson = await CourseLessonModel.findById(
+      lessonDoc._id
+    ).lean();
 
     return NextResponse.json(
       updatedLesson ? sanitizeLesson(updatedLesson) : sanitizeLesson(lessonDoc)

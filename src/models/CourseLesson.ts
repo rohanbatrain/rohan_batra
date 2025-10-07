@@ -42,7 +42,7 @@ const externalResourceSchema = new Schema(
       validate: {
         validator: function (this: any, url: string) {
           const provider = this.parent()?.provider || this.provider;
-          
+
           switch (provider) {
             case 'youtube':
               return (
@@ -207,7 +207,9 @@ const CourseLessonSchema = new Schema<ICourseLesson>(
         }
         if (json.parentLessonId && typeof json.parentLessonId !== 'string') {
           try {
-            (json as any).parentLessonId = (json as any).parentLessonId.toString();
+            (json as any).parentLessonId = (
+              json as any
+            ).parentLessonId.toString();
           } catch {}
         }
         if (Array.isArray((json as any).childOrder)) {

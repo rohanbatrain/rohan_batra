@@ -3,7 +3,12 @@ import { buildOrderedOutline } from '@/app/courses/[slug]/page';
 
 describe('Unit: buildOrderedOutline', () => {
   it('orders lessons by lessonIds when provided, otherwise A–Z', () => {
-    const m1 = { _id: 'm1', title: 'Module 1', order: 0, lessonIds: ['l2', 'l1'] } as any;
+    const m1 = {
+      _id: 'm1',
+      title: 'Module 1',
+      order: 0,
+      lessonIds: ['l2', 'l1'],
+    } as any;
     const m2 = { _id: 'm2', title: 'Module 2', order: 1, lessonIds: [] } as any;
     const lessons = [
       { _id: 'l1', moduleId: 'm1', title: 'Alpha' },

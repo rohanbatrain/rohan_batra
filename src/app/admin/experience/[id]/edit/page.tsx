@@ -33,16 +33,16 @@ export default async function EditExperiencePage({
   }
 
   return (
-    <div className="mx-auto max-w-4xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Edit Experience</h1>
-        <p className="mt-2 text-muted-foreground">
+    <div className='mx-auto max-w-4xl'>
+      <div className='mb-8'>
+        <h1 className='text-3xl font-bold'>Edit Experience</h1>
+        <p className='mt-2 text-muted-foreground'>
           Update professional experience details
         </p>
       </div>
 
-      <div className="rounded-lg border bg-card p-8">
-        <ExperienceForm experience={experience} mode="edit" />
+      <div className='rounded-lg border bg-card p-8'>
+        <ExperienceForm experience={experience} mode='edit' />
       </div>
     </div>
   );

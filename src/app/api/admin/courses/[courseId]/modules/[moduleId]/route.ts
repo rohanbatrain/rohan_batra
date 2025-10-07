@@ -151,12 +151,14 @@ export async function PUT(
 
         if (conflictingModule) {
           return NextResponse.json(
-            { error: `Module order ${parsed.order} already exists for this course` },
+            {
+              error: `Module order ${parsed.order} already exists for this course`,
+            },
             { status: 409 }
           );
         }
       }
-      
+
       moduleDoc.order = parsed.order;
     }
 

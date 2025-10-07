@@ -1,7 +1,7 @@
 /**
  * Spaced Repetition Review Buttons
  * SM-2 algorithm ease level buttons for flashcard review
- * 
+ *
  * Displays: Again, Hard, Good, Easy
  * Shows: Predicted next review intervals
  */
@@ -43,14 +43,17 @@ function formatInterval(days: number): string {
 /**
  * Calculate predicted intervals (simplified for display)
  */
-function calculateDisplayIntervals(currentInterval?: number, easeFactor: number = 2.5): {
+function calculateDisplayIntervals(
+  currentInterval?: number,
+  easeFactor: number = 2.5
+): {
   again: string;
   hard: string;
   good: string;
   easy: string;
 } {
   const current = currentInterval || 1;
-  
+
   return {
     again: '1 day',
     hard: formatInterval(current * 1.2),
@@ -73,7 +76,10 @@ export function ReviewButtons({
 
     const handleKeyPress = (e: KeyboardEvent) => {
       // Only trigger if not typing in input
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLTextAreaElement
+      ) {
         return;
       }
 
@@ -98,76 +104,76 @@ export function ReviewButtons({
   }, [onReview, disabled]);
 
   return (
-    <div className="review-buttons">
-      <div className="buttons-grid">
+    <div className='review-buttons'>
+      <div className='buttons-grid'>
         {/* Again Button */}
         <button
-          type="button"
-          className="review-button again"
+          type='button'
+          className='review-button again'
           onClick={() => onReview('again')}
           disabled={disabled}
-          aria-label="Again - Review soon"
+          aria-label='Again - Review soon'
         >
-          <div className="button-content">
-            <XCircle className="button-icon" />
-            <span className="button-label">Again</span>
-            <span className="button-interval">{displayIntervals.again}</span>
-            {showKeyboardHints && <span className="keyboard-hint">1</span>}
+          <div className='button-content'>
+            <XCircle className='button-icon' />
+            <span className='button-label'>Again</span>
+            <span className='button-interval'>{displayIntervals.again}</span>
+            {showKeyboardHints && <span className='keyboard-hint'>1</span>}
           </div>
         </button>
 
         {/* Hard Button */}
         <button
-          type="button"
-          className="review-button hard"
+          type='button'
+          className='review-button hard'
           onClick={() => onReview('hard')}
           disabled={disabled}
-          aria-label="Hard - Review sooner"
+          aria-label='Hard - Review sooner'
         >
-          <div className="button-content">
-            <AlertCircle className="button-icon" />
-            <span className="button-label">Hard</span>
-            <span className="button-interval">{displayIntervals.hard}</span>
-            {showKeyboardHints && <span className="keyboard-hint">2</span>}
+          <div className='button-content'>
+            <AlertCircle className='button-icon' />
+            <span className='button-label'>Hard</span>
+            <span className='button-interval'>{displayIntervals.hard}</span>
+            {showKeyboardHints && <span className='keyboard-hint'>2</span>}
           </div>
         </button>
 
         {/* Good Button */}
         <button
-          type="button"
-          className="review-button good"
+          type='button'
+          className='review-button good'
           onClick={() => onReview('good')}
           disabled={disabled}
-          aria-label="Good - Standard interval"
+          aria-label='Good - Standard interval'
         >
-          <div className="button-content">
-            <CheckCircle className="button-icon" />
-            <span className="button-label">Good</span>
-            <span className="button-interval">{displayIntervals.good}</span>
-            {showKeyboardHints && <span className="keyboard-hint">3</span>}
+          <div className='button-content'>
+            <CheckCircle className='button-icon' />
+            <span className='button-label'>Good</span>
+            <span className='button-interval'>{displayIntervals.good}</span>
+            {showKeyboardHints && <span className='keyboard-hint'>3</span>}
           </div>
         </button>
 
         {/* Easy Button */}
         <button
-          type="button"
-          className="review-button easy"
+          type='button'
+          className='review-button easy'
           onClick={() => onReview('easy')}
           disabled={disabled}
-          aria-label="Easy - Review much later"
+          aria-label='Easy - Review much later'
         >
-          <div className="button-content">
-            <Zap className="button-icon" />
-            <span className="button-label">Easy</span>
-            <span className="button-interval">{displayIntervals.easy}</span>
-            {showKeyboardHints && <span className="keyboard-hint">4</span>}
+          <div className='button-content'>
+            <Zap className='button-icon' />
+            <span className='button-label'>Easy</span>
+            <span className='button-interval'>{displayIntervals.easy}</span>
+            {showKeyboardHints && <span className='keyboard-hint'>4</span>}
           </div>
         </button>
       </div>
 
       {showKeyboardHints && (
-        <p className="keyboard-hint-text">
-          <Clock className="w-3 h-3" />
+        <p className='keyboard-hint-text'>
+          <Clock className='w-3 h-3' />
           Press 1-4 for quick review
         </p>
       )}
@@ -327,24 +333,28 @@ interface ReviewProgressProps {
   dueCount?: number;
 }
 
-export function ReviewProgress({ current, total, dueCount }: ReviewProgressProps) {
+export function ReviewProgress({
+  current,
+  total,
+  dueCount,
+}: ReviewProgressProps) {
   const percentage = total > 0 ? (current / total) * 100 : 0;
 
   return (
-    <div className="review-progress">
-      <div className="progress-header">
-        <span className="progress-text">
+    <div className='review-progress'>
+      <div className='progress-header'>
+        <span className='progress-text'>
           {current} / {total} cards reviewed
         </span>
         {dueCount !== undefined && dueCount > 0 && (
-          <span className="due-text">{dueCount} due</span>
+          <span className='due-text'>{dueCount} due</span>
         )}
       </div>
-      <div className="progress-bar">
+      <div className='progress-bar'>
         <div
-          className="progress-fill"
+          className='progress-fill'
           style={{ width: `${percentage}%` }}
-          role="progressbar"
+          role='progressbar'
           aria-valuenow={current}
           aria-valuemin={0}
           aria-valuemax={total}

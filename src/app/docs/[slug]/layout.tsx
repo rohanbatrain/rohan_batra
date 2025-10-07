@@ -11,10 +11,15 @@ interface DocsLayoutProps {
   params: Promise<{ slug: string }>;
 }
 
-export async function generateMetadata(props: DocsLayoutProps): Promise<Metadata> {
+export async function generateMetadata(
+  props: DocsLayoutProps
+): Promise<Metadata> {
   const params = await props.params;
   await connectDB();
-  const project: any = await DocProject.findOne({ slug: params.slug, status: 'published' }).lean();
+  const project: any = await DocProject.findOne({
+    slug: params.slug,
+    status: 'published',
+  }).lean();
 
   if (!project) {
     return {
@@ -37,8 +42,11 @@ export default async function DocsLayout(props: DocsLayoutProps) {
   const params = await props.params;
   const { children } = props;
   await connectDB();
-  
-  const project: any = await DocProject.findOne({ slug: params.slug, status: 'published' }).lean();
+
+  const project: any = await DocProject.findOne({
+    slug: params.slug,
+    status: 'published',
+  }).lean();
 
   if (!project) {
     notFound();
@@ -52,20 +60,20 @@ export default async function DocsLayout(props: DocsLayoutProps) {
   return (
     <div className='min-h-screen flex flex-col'>
       <DocsHeader project={project} sections={sections} />
-      
+
       <div className='flex-1 container mx-auto max-w-7xl flex'>
         <aside className='hidden lg:block w-64 flex-shrink-0 border-r sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto'>
           <DocsSidebar project={project} sections={sections} />
         </aside>
 
-        <main className='flex-1 overflow-x-hidden'>
-          {children}
-        </main>
+        <main className='flex-1 overflow-x-hidden'>{children}</main>
       </div>
 
       <footer className='border-t py-8'>
         <div className='container mx-auto max-w-7xl px-6 text-center text-sm text-muted-foreground'>
-          <p>© {new Date().getFullYear()} {project.title}. All rights reserved.</p>
+          <p>
+            © {new Date().getFullYear()} {project.title}. All rights reserved.
+          </p>
         </div>
       </footer>
     </div>

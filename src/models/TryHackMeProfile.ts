@@ -9,7 +9,13 @@ export interface ITryHackMeProfile
 
 const TryHackMeProfileSchema = new Schema<ITryHackMeProfile>(
   {
-    username: { type: String, required: true, trim: true, lowercase: true, unique: true },
+    username: {
+      type: String,
+      required: true,
+      trim: true,
+      lowercase: true,
+      unique: true,
+    },
     displayName: { type: String, trim: true },
     rank: { type: String, trim: true },
     points: { type: Number, default: 0 },

@@ -8,7 +8,9 @@ function nodeText(n: any): string {
 }
 
 export function remarkStripTitleH1(title: string) {
-  const normalized = String(title || '').trim().toLowerCase();
+  const normalized = String(title || '')
+    .trim()
+    .toLowerCase();
   return function stripTitleH1() {
     return (tree: Root) => {
       if (!Array.isArray((tree as any).children)) return;

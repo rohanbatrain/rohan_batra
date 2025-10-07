@@ -1,6 +1,6 @@
 /**
  * T019: Graph Controls Component
- * 
+ *
  * UI controls for graph interaction (depth, zoom, filters).
  */
 
@@ -32,7 +32,7 @@ interface GraphControlsProps {
 
 /**
  * Graph Controls Component
- * 
+ *
  * Provides UI controls for adjusting graph view and layout.
  */
 export function GraphControls({
@@ -43,43 +43,43 @@ export function GraphControls({
   onResetZoom,
 }: GraphControlsProps) {
   return (
-    <div className="flex flex-wrap items-center gap-3 p-3 bg-muted/30 rounded-lg border">
+    <div className='flex flex-wrap items-center gap-3 p-3 bg-muted/30 rounded-lg border'>
       {/* Depth Selector */}
-      <div className="flex items-center gap-2">
-        <label htmlFor="graph-depth" className="text-sm font-medium">
+      <div className='flex items-center gap-2'>
+        <label htmlFor='graph-depth' className='text-sm font-medium'>
           Depth:
         </label>
         <Select
           value={depth.toString()}
-          onValueChange={(value) => onDepthChange(parseInt(value))}
+          onValueChange={value => onDepthChange(parseInt(value))}
         >
-          <SelectTrigger id="graph-depth" className="w-[100px]">
+          <SelectTrigger id='graph-depth' className='w-[100px]'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="1">1 Level</SelectItem>
-            <SelectItem value="2">2 Levels</SelectItem>
-            <SelectItem value="3">3 Levels</SelectItem>
+            <SelectItem value='1'>1 Level</SelectItem>
+            <SelectItem value='2'>2 Levels</SelectItem>
+            <SelectItem value='3'>3 Levels</SelectItem>
           </SelectContent>
         </Select>
       </div>
 
       {/* Divider */}
-      <div className="h-6 w-px bg-border" />
+      <div className='h-6 w-px bg-border' />
 
       {/* Zoom Controls */}
       <TooltipProvider>
-        <div className="flex items-center gap-1">
+        <div className='flex items-center gap-1'>
           {onZoomIn && (
             <TooltipRoot>
               <TooltipTrigger asChild>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={onZoomIn}
-                  aria-label="Zoom in"
+                  aria-label='Zoom in'
                 >
-                  <ZoomIn className="h-4 w-4" />
+                  <ZoomIn className='h-4 w-4' />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -92,12 +92,12 @@ export function GraphControls({
             <TooltipRoot>
               <TooltipTrigger asChild>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={onZoomOut}
-                  aria-label="Zoom out"
+                  aria-label='Zoom out'
                 >
-                  <ZoomOut className="h-4 w-4" />
+                  <ZoomOut className='h-4 w-4' />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -110,12 +110,12 @@ export function GraphControls({
             <TooltipRoot>
               <TooltipTrigger asChild>
                 <Button
-                  variant="outline"
-                  size="sm"
+                  variant='outline'
+                  size='sm'
                   onClick={onResetZoom}
-                  aria-label="Reset zoom"
+                  aria-label='Reset zoom'
                 >
-                  <Maximize className="h-4 w-4" />
+                  <Maximize className='h-4 w-4' />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -127,7 +127,7 @@ export function GraphControls({
       </TooltipProvider>
 
       {/* Help Text */}
-      <div className="ml-auto text-xs text-muted-foreground hidden sm:block">
+      <div className='ml-auto text-xs text-muted-foreground hidden sm:block'>
         Click nodes to navigate · Drag to move · Scroll to zoom
       </div>
     </div>

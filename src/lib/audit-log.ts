@@ -38,10 +38,11 @@ export async function createAuditLog(
     if (request) {
       // Get IP address
       const forwardedFor = request.headers.get('x-forwarded-for');
-      ipAddress = forwardedFor ? forwardedFor.split(',')[0].trim() : 
-                  request.headers.get('x-real-ip') || 
-                  request.headers.get('cf-connecting-ip') || 
-                  undefined;
+      ipAddress = forwardedFor
+        ? forwardedFor.split(',')[0].trim()
+        : request.headers.get('x-real-ip') ||
+          request.headers.get('cf-connecting-ip') ||
+          undefined;
 
       userAgent = request.headers.get('user-agent') || undefined;
       method = request.method;
@@ -49,9 +50,10 @@ export async function createAuditLog(
     }
 
     // Convert resourceId to ObjectId if it's a string
-    const resourceId = typeof data.resourceId === 'string' 
-      ? new Types.ObjectId(data.resourceId) 
-      : data.resourceId;
+    const resourceId =
+      typeof data.resourceId === 'string'
+        ? new Types.ObjectId(data.resourceId)
+        : data.resourceId;
 
     await AuditLogModel.create({
       userId: data.userId,
@@ -112,9 +114,10 @@ export async function getResourceAuditLogs(
   try {
     await connectToDatabase();
 
-    const resourceObjectId = typeof resourceId === 'string' 
-      ? new Types.ObjectId(resourceId) 
-      : resourceId;
+    const resourceObjectId =
+      typeof resourceId === 'string'
+        ? new Types.ObjectId(resourceId)
+        : resourceId;
 
     const logs = await AuditLogModel.find({
       resource,
@@ -134,10 +137,7 @@ export async function getResourceAuditLogs(
 /**
  * Get recent audit logs for a user
  */
-export async function getUserAuditLogs(
-  userId: string,
-  limit = 100
-) {
+export async function getUserAuditLogs(userId: string, limit = 100) {
   try {
     await connectToDatabase();
 

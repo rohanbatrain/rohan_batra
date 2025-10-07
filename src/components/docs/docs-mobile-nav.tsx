@@ -45,7 +45,11 @@ export default function DocMobileNav({ project, sections }: DocMobileNavProps) {
         <SheetHeader>
           <SheetTitle className='flex items-center gap-2'>
             {project.logoUrl ? (
-              <img src={project.logoUrl} alt={project.title} className='h-6 w-6 rounded' />
+              <img
+                src={project.logoUrl}
+                alt={project.title}
+                className='h-6 w-6 rounded'
+              />
             ) : (
               <Home className='h-5 w-5' />
             )}

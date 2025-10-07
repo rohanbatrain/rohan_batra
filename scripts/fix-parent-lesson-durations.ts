@@ -1,10 +1,10 @@
 #!/usr/bin/env tsx
 /**
  * Fix Parent Lesson Durations Script
- * 
+ *
  * This script updates parent lessons that are containers (no content)
  * to have estimatedDurationMinutes = 0 to avoid double-counting.
- * 
+ *
  * Usage:
  *   pnpm tsx scripts/fix-parent-lesson-durations.ts
  */
@@ -21,9 +21,9 @@ import CourseLessonModel from '../src/models/CourseLesson';
 async function hasOwnContent(lesson: any): Promise<boolean> {
   return Boolean(
     lesson.standaloneContent ||
-    lesson.externalResource ||
-    lesson.blogSlug ||
-    lesson.quizId
+      lesson.externalResource ||
+      lesson.blogSlug ||
+      lesson.quizId
   );
 }
 
@@ -94,7 +94,7 @@ async function run() {
 
 run()
   .then(() => process.exit(0))
-  .catch((err) => {
+  .catch(err => {
     console.error('❌ Migration failed:', err);
     process.exit(1);
   });

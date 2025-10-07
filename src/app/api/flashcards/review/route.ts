@@ -38,7 +38,10 @@ export async function POST(request: NextRequest) {
     };
 
     // Calculate next review using SM-2
-    const nextScheduling = calculateNextReview(currentScheduling, parsed.easeLevel as EaseLevel);
+    const nextScheduling = calculateNextReview(
+      currentScheduling,
+      parsed.easeLevel as EaseLevel
+    );
 
     // Update card
     card.scheduling = nextScheduling;

@@ -4,30 +4,30 @@ export interface IDocPage extends Document {
   _id: mongoose.Types.ObjectId;
   docProjectId: mongoose.Types.ObjectId;
   sectionId?: mongoose.Types.ObjectId;
-  
+
   title: string;
   slug: string;
   description?: string;
-  
+
   // Content
   content: string;
   contentFormat: 'mdx' | 'markdown';
-  
+
   // Navigation
   order: number;
   parentPageId?: mongoose.Types.ObjectId;
-  
+
   // Table of Contents
   headings: Array<{
     level: number;
     text: string;
     id: string;
   }>;
-  
+
   // Status
   status: 'draft' | 'published' | 'archived';
   publishedAt?: Date;
-  
+
   // Features
   features: {
     showToc: boolean;
@@ -36,7 +36,7 @@ export interface IDocPage extends Document {
     allowComments: boolean;
     showEditLink: boolean;
   };
-  
+
   // SEO
   seo?: {
     title?: string;
@@ -44,7 +44,7 @@ export interface IDocPage extends Document {
     keywords?: string[];
     ogImage?: string;
   };
-  
+
   // Analytics
   analytics: {
     views: number;
@@ -53,18 +53,18 @@ export interface IDocPage extends Document {
     searchAppearances: number;
     externalReferrals: number;
   };
-  
+
   // Relationships
   relatedPages?: mongoose.Types.ObjectId[];
   prerequisites?: mongoose.Types.ObjectId[];
-  
+
   // Assets
   assets?: {
     images?: string[];
     videos?: string[];
     downloads?: Array<{ label: string; url: string }>;
   };
-  
+
   // Edit History
   lastEditedBy?: mongoose.Types.ObjectId;
   editHistory?: Array<{
@@ -72,7 +72,7 @@ export interface IDocPage extends Document {
     editedAt: Date;
     summary: string;
   }>;
-  
+
   createdBy: mongoose.Types.ObjectId;
   createdAt: Date;
   updatedAt: Date;
@@ -271,16 +271,23 @@ const DocPageSchema = new Schema<IDocPage>(
         result.id = result._id?.toString();
         delete result._id;
         delete result.__v;
-        if (result.docProjectId) result.docProjectId = result.docProjectId.toString();
+        if (result.docProjectId)
+          result.docProjectId = result.docProjectId.toString();
         if (result.sectionId) result.sectionId = result.sectionId.toString();
-        if (result.parentPageId) result.parentPageId = result.parentPageId.toString();
+        if (result.parentPageId)
+          result.parentPageId = result.parentPageId.toString();
         if (result.createdBy) result.createdBy = result.createdBy.toString();
-        if (result.lastEditedBy) result.lastEditedBy = result.lastEditedBy.toString();
+        if (result.lastEditedBy)
+          result.lastEditedBy = result.lastEditedBy.toString();
         if (result.relatedPages) {
-          result.relatedPages = result.relatedPages.map((id: any) => id.toString());
+          result.relatedPages = result.relatedPages.map((id: any) =>
+            id.toString()
+          );
         }
         if (result.prerequisites) {
-          result.prerequisites = result.prerequisites.map((id: any) => id.toString());
+          result.prerequisites = result.prerequisites.map((id: any) =>
+            id.toString()
+          );
         }
         if (result.editHistory) {
           result.editHistory = result.editHistory.map((entry: any) => ({
@@ -305,7 +312,11 @@ DocPageSchema.index({ title: 'text', content: 'text', description: 'text' });
 
 // Pre-save hook to set publishedAt
 DocPageSchema.pre<IDocPage>('save', function (next) {
-  if (this.isModified('status') && this.status === 'published' && !this.publishedAt) {
+  if (
+    this.isModified('status') &&
+    this.status === 'published' &&
+    !this.publishedAt
+  ) {
     this.publishedAt = new Date();
   }
   next();

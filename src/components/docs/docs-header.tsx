@@ -13,7 +13,10 @@ interface DocsHeaderProps {
   sections?: any[];
 }
 
-export default function DocsHeader({ project, sections = [] }: DocsHeaderProps) {
+export default function DocsHeader({
+  project,
+  sections = [],
+}: DocsHeaderProps) {
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const router = useRouter();
@@ -22,7 +25,9 @@ export default function DocsHeader({ project, sections = [] }: DocsHeaderProps) 
     e.preventDefault();
     if (searchQuery.trim()) {
       // Navigate to search results page with query
-      router.push(`/docs/${project.slug}/search?q=${encodeURIComponent(searchQuery.trim())}`);
+      router.push(
+        `/docs/${project.slug}/search?q=${encodeURIComponent(searchQuery.trim())}`
+      );
       setSearchOpen(false);
       setSearchQuery('');
     }
@@ -46,9 +51,16 @@ export default function DocsHeader({ project, sections = [] }: DocsHeaderProps) 
       <div className='container mx-auto max-w-7xl flex h-16 items-center justify-between px-6'>
         <div className='flex items-center gap-4'>
           <DocMobileNav project={project} sections={sections} />
-          <Link href={`/docs/${project.slug}`} className='flex items-center gap-2'>
+          <Link
+            href={`/docs/${project.slug}`}
+            className='flex items-center gap-2'
+          >
             {project.logoUrl ? (
-              <img src={project.logoUrl} alt={project.title} className='h-8 w-8 rounded' />
+              <img
+                src={project.logoUrl}
+                alt={project.title}
+                className='h-8 w-8 rounded'
+              />
             ) : (
               <Book className='h-6 w-6' />
             )}
@@ -72,29 +84,30 @@ export default function DocsHeader({ project, sections = [] }: DocsHeaderProps) 
             </kbd>
           </Button>
 
-          {project.gitIntegration?.enabled && project.gitIntegration?.repoUrl && (
-            <Button
-              variant='ghost'
-              size='sm'
-              asChild
-            >
-              <a href={project.gitIntegration.repoUrl} target='_blank' rel='noopener noreferrer'>
-                <Github className='h-5 w-5' />
-              </a>
-            </Button>
-          )}
+          {project.gitIntegration?.enabled &&
+            project.gitIntegration?.repoUrl && (
+              <Button variant='ghost' size='sm' asChild>
+                <a
+                  href={project.gitIntegration.repoUrl}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                >
+                  <Github className='h-5 w-5' />
+                </a>
+              </Button>
+            )}
         </div>
       </div>
 
       {/* Search Modal */}
       {searchOpen && (
-        <div 
+        <div
           className='fixed inset-0 z-50 bg-black/50 flex items-start justify-center pt-20'
           onClick={() => setSearchOpen(false)}
         >
-          <div 
+          <div
             className='bg-background border rounded-lg shadow-lg w-full max-w-2xl mx-4'
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             <form onSubmit={handleSearch} className='p-4'>
               <div className='flex items-center gap-2'>
@@ -102,7 +115,7 @@ export default function DocsHeader({ project, sections = [] }: DocsHeaderProps) 
                 <input
                   type='text'
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   placeholder={`Search ${project.title} documentation...`}
                   className='flex-1 bg-transparent border-none outline-none text-lg'
                   autoFocus

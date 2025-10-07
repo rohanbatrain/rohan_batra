@@ -5,19 +5,29 @@ import { calculateTotalYears } from '@/lib/utils/experience-utils';
 
 export const metadata: Metadata = {
   title: 'Professional Experience | Rohan Batra',
-  description: 'Explore my professional journey, work experience, and career highlights across various roles in software engineering and development.',
-  keywords: ['professional experience', 'work history', 'career', 'software engineer', 'developer', 'portfolio'],
+  description:
+    'Explore my professional journey, work experience, and career highlights across various roles in software engineering and development.',
+  keywords: [
+    'professional experience',
+    'work history',
+    'career',
+    'software engineer',
+    'developer',
+    'portfolio',
+  ],
   authors: [{ name: 'Rohan Batra' }],
   openGraph: {
     title: 'Professional Experience | Rohan Batra',
-    description: 'Explore my professional journey, work experience, and career highlights across various roles in software engineering and development.',
+    description:
+      'Explore my professional journey, work experience, and career highlights across various roles in software engineering and development.',
     type: 'profile',
     url: '/experience',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Professional Experience | Rohan Batra',
-    description: 'Explore my professional journey, work experience, and career highlights.',
+    description:
+      'Explore my professional journey, work experience, and career highlights.',
     creator: '@rohanbatra',
   },
   alternates: {
@@ -39,11 +49,13 @@ export default async function ExperiencePage() {
       '@type': 'Person',
       name: 'Rohan Batra',
       jobTitle: experiences[0]?.title || 'Software Engineer',
-      worksFor: experiences[0]?.company ? {
-        '@type': 'Organization',
-        name: experiences[0].company,
-      } : undefined,
-      workExperience: experiences.map((exp) => ({
+      worksFor: experiences[0]?.company
+        ? {
+            '@type': 'Organization',
+            name: experiences[0].company,
+          }
+        : undefined,
+      workExperience: experiences.map(exp => ({
         '@type': 'WorkExperience',
         jobTitle: exp.title,
         employer: {
@@ -63,34 +75,34 @@ export default async function ExperiencePage() {
   return (
     <>
       <script
-        type="application/ld+json"
+        type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
       />
-      <div className="min-h-screen bg-background">
-      {/* Hero Section */}
-      <section className="border-b bg-gradient-to-b from-muted/50 to-background py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="mb-4 text-4xl font-bold tracking-tight text-foreground dark:text-white md:text-5xl lg:text-6xl">
-              Professional Experience
-            </h1>
-            <p className="text-lg text-muted-foreground dark:text-gray-400 md:text-xl">
-              {experiences.length > 0
-                ? `${totalYears}+ years of professional experience across ${experiences.length} positions`
-                : 'Building my professional journey'}
-            </p>
+      <div className='min-h-screen bg-background'>
+        {/* Hero Section */}
+        <section className='border-b bg-gradient-to-b from-muted/50 to-background py-16 md:py-24'>
+          <div className='container mx-auto px-4'>
+            <div className='mx-auto max-w-3xl text-center'>
+              <h1 className='mb-4 text-4xl font-bold tracking-tight text-foreground dark:text-white md:text-5xl lg:text-6xl'>
+                Professional Experience
+              </h1>
+              <p className='text-lg text-muted-foreground dark:text-gray-400 md:text-xl'>
+                {experiences.length > 0
+                  ? `${totalYears}+ years of professional experience across ${experiences.length} positions`
+                  : 'Building my professional journey'}
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Timeline Section */}
-      <section className="py-16 md:py-24">
-        <div className="container mx-auto px-4">
-          <div className="mx-auto max-w-4xl">
-            <ExperienceTimeline experiences={experiences} />
+        {/* Timeline Section */}
+        <section className='py-16 md:py-24'>
+          <div className='container mx-auto px-4'>
+            <div className='mx-auto max-w-4xl'>
+              <ExperienceTimeline experiences={experiences} />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
       </div>
     </>
   );

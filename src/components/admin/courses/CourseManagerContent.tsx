@@ -377,9 +377,10 @@ function SortableModuleCard({
                 .filter(lesson => !lesson.parentLessonId) // Show only top-level lessons
                 .map(lesson => {
                   // Find child lessons for this parent (maintain backend order)
-                  const childLessons = module.lessons
-                    .filter(child => child.parentLessonId === lesson.id);
-                  
+                  const childLessons = module.lessons.filter(
+                    child => child.parentLessonId === lesson.id
+                  );
+
                   return (
                     <div key={lesson.id} className='space-y-2'>
                       <SortableLessonRow
@@ -392,27 +393,36 @@ function SortableModuleCard({
                         onAddChild={() => onCreateLesson(module.id, lesson.id)}
                         hasChildren={childLessons.length > 0}
                         isCollapsed={collapsedLessons.has(lesson.id)}
-                        onToggleCollapse={() => onToggleLessonCollapse(lesson.id)}
+                        onToggleCollapse={() =>
+                          onToggleLessonCollapse(lesson.id)
+                        }
                         childCount={childLessons.length}
                       />
-                      
+
                       {/* Render child lessons with indentation only when not collapsed */}
-                      {childLessons.length > 0 && !collapsedLessons.has(lesson.id) && (
-                        <div className='ml-8 space-y-2 border-l-2 border-muted pl-4'>
-                          {childLessons.map(childLesson => (
-                            <SortableLessonRow
-                              key={childLesson.id}
-                              lesson={childLesson}
-                              deckLookup={deckLookup}
-                              onEdit={() => onEditLesson(module.id, childLesson)}
-                              onDelete={() => onDeleteLesson(module.id, childLesson)}
-                              selected={selectedIds.has(childLesson.id)}
-                              onToggle={checked => onToggleSelect(childLesson.id, checked)}
-                              isChild={true}
-                            />
-                          ))}
-                        </div>
-                      )}
+                      {childLessons.length > 0 &&
+                        !collapsedLessons.has(lesson.id) && (
+                          <div className='ml-8 space-y-2 border-l-2 border-muted pl-4'>
+                            {childLessons.map(childLesson => (
+                              <SortableLessonRow
+                                key={childLesson.id}
+                                lesson={childLesson}
+                                deckLookup={deckLookup}
+                                onEdit={() =>
+                                  onEditLesson(module.id, childLesson)
+                                }
+                                onDelete={() =>
+                                  onDeleteLesson(module.id, childLesson)
+                                }
+                                selected={selectedIds.has(childLesson.id)}
+                                onToggle={checked =>
+                                  onToggleSelect(childLesson.id, checked)
+                                }
+                                isChild={true}
+                              />
+                            ))}
+                          </div>
+                        )}
                     </div>
                   );
                 })}
@@ -481,19 +491,29 @@ function SortableLessonRow({
             className='mt-1 rounded-md border border-dashed border-transparent p-1 text-muted-foreground transition hover:border-border hover:text-foreground'
             {...attributes}
             {...listeners}
-            aria-label={isChild ? 'Drag to reorder sub-lesson' : 'Drag to reorder lesson'}
+            aria-label={
+              isChild ? 'Drag to reorder sub-lesson' : 'Drag to reorder lesson'
+            }
           >
             <GripVertical className='h-4 w-4' />
           </button>
-          <Checkbox checked={selected} onCheckedChange={v => onToggle(Boolean(v))} aria-label='Select lesson for bulk action' />
+          <Checkbox
+            checked={selected}
+            onCheckedChange={v => onToggle(Boolean(v))}
+            aria-label='Select lesson for bulk action'
+          />
           <div className='flex-1'>
-            <div className={`flex items-center gap-2 font-medium ${isChild ? 'text-sm' : ''}`}>
+            <div
+              className={`flex items-center gap-2 font-medium ${isChild ? 'text-sm' : ''}`}
+            >
               {hasChildren && !isChild && onToggleCollapse && (
                 <button
                   type='button'
                   onClick={onToggleCollapse}
                   className='rounded p-0.5 hover:bg-muted transition'
-                  aria-label={isCollapsed ? 'Expand sub-lessons' : 'Collapse sub-lessons'}
+                  aria-label={
+                    isCollapsed ? 'Expand sub-lessons' : 'Collapse sub-lessons'
+                  }
                 >
                   {isCollapsed ? (
                     <ChevronRight className='h-4 w-4 text-muted-foreground' />
@@ -527,7 +547,12 @@ function SortableLessonRow({
         </div>
         <div className='flex flex-col gap-2 sm:flex-row sm:items-center'>
           {!isChild && onAddChild && (
-            <Button size='sm' variant='ghost' onClick={onAddChild} className='text-xs'>
+            <Button
+              size='sm'
+              variant='ghost'
+              onClick={onAddChild}
+              className='text-xs'
+            >
               <span className='mr-1'>+</span> Add sub-lesson
             </Button>
           )}
@@ -569,9 +594,15 @@ export default function CourseManagerContent({
   const [lessonParentId, setLessonParentId] = useState<string | null>(null);
   const [editingLessonId, setEditingLessonId] = useState<string | null>(null);
   const [lessonSlugEdited, setLessonSlugEdited] = useState(false);
-  const [selectedLessons, setSelectedLessons] = useState<Set<string>>(new Set());
-  const [bulkParentByModule, setBulkParentByModule] = useState<Record<string, string>>({});
-  const [collapsedLessons, setCollapsedLessons] = useState<Set<string>>(new Set());
+  const [selectedLessons, setSelectedLessons] = useState<Set<string>>(
+    new Set()
+  );
+  const [bulkParentByModule, setBulkParentByModule] = useState<
+    Record<string, string>
+  >({});
+  const [collapsedLessons, setCollapsedLessons] = useState<Set<string>>(
+    new Set()
+  );
 
   const query = useMemo(() => {
     if (!courseId) {
@@ -894,7 +925,8 @@ export default function CourseManagerContent({
     }
 
     if (!isNonNegativeInteger(form.estimatedDurationMinutes)) {
-      errs.estimatedDurationMinutes = 'Estimated minutes must be a whole number ≥ 0';
+      errs.estimatedDurationMinutes =
+        'Estimated minutes must be a whole number ≥ 0';
     }
 
     return errs;
@@ -1239,27 +1271,44 @@ export default function CourseManagerContent({
     if (!courseId) return;
     const ids = Array.from(selectedLessons);
     if (ids.length === 0) {
-      toast({ title: 'No lessons selected', description: 'Select lessons to assign a parent.', variant: 'destructive' });
+      toast({
+        title: 'No lessons selected',
+        description: 'Select lessons to assign a parent.',
+        variant: 'destructive',
+      });
       return;
     }
     const parentId = bulkParentByModule[moduleId] || '__none__';
     const actualParentId = parentId === '__none__' ? null : parentId;
     try {
-      const response = await fetch(`/api/admin/courses/${courseId}/modules/${moduleId}/lessons/bulk-parent`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lessonIds: ids, parentLessonId: actualParentId }),
-      });
+      const response = await fetch(
+        `/api/admin/courses/${courseId}/modules/${moduleId}/lessons/bulk-parent`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lessonIds: ids,
+            parentLessonId: actualParentId,
+          }),
+        }
+      );
       if (!response.ok) {
         const payload = await response.json().catch(() => ({}));
         throw new Error(payload.error || 'Failed to set parent');
       }
-      toast({ title: 'Parent updated', description: 'Selected lessons updated.' });
+      toast({
+        title: 'Parent updated',
+        description: 'Selected lessons updated.',
+      });
       setSelectedLessons(new Set());
       await mutate();
       onChanged?.();
     } catch (err) {
-      toast({ title: 'Unable to set parent', description: err instanceof Error ? err.message : 'Unknown error', variant: 'destructive' });
+      toast({
+        title: 'Unable to set parent',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -1416,7 +1465,8 @@ export default function CourseManagerContent({
                 onToggleSelect={(id, checked) => {
                   setSelectedLessons(prev => {
                     const next = new Set(prev);
-                    if (checked) next.add(id); else next.delete(id);
+                    if (checked) next.add(id);
+                    else next.delete(id);
                     return next;
                   });
                 }}
@@ -1470,7 +1520,11 @@ export default function CourseManagerContent({
           {(error as Error).message}
         </div>
       ) : data ? (
-        <Tabs value={activeTab} onValueChange={setActiveTab} className='space-y-6'>
+        <Tabs
+          value={activeTab}
+          onValueChange={setActiveTab}
+          className='space-y-6'
+        >
           <TabsList>
             <TabsTrigger value='course'>Course details</TabsTrigger>
             <TabsTrigger value='modules'>Modules & lessons</TabsTrigger>
@@ -1540,7 +1594,9 @@ export default function CourseManagerContent({
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value='beginner'>Beginner</SelectItem>
-                        <SelectItem value='intermediate'>Intermediate</SelectItem>
+                        <SelectItem value='intermediate'>
+                          Intermediate
+                        </SelectItem>
                         <SelectItem value='advanced'>Advanced</SelectItem>
                       </SelectContent>
                     </Select>
@@ -1612,7 +1668,10 @@ export default function CourseManagerContent({
                       placeholder='Comma separated'
                       value={courseForm.categories}
                       onChange={event =>
-                        handleCourseFieldChange('categories', event.target.value)
+                        handleCourseFieldChange(
+                          'categories',
+                          event.target.value
+                        )
                       }
                     />
                   </div>
@@ -1629,7 +1688,9 @@ export default function CourseManagerContent({
                   </div>
                 </div>
                 <div>
-                  <Label htmlFor='course-hero-image'>Hero image URL or shortcode</Label>
+                  <Label htmlFor='course-hero-image'>
+                    Hero image URL or shortcode
+                  </Label>
                   <Input
                     id='course-hero-image'
                     value={courseForm.heroImage}
@@ -1639,18 +1700,25 @@ export default function CourseManagerContent({
                   />
                 </div>
                 <div>
-                  <Label htmlFor='course-hero-lottie'>Hero lottie asset ID</Label>
+                  <Label htmlFor='course-hero-lottie'>
+                    Hero lottie asset ID
+                  </Label>
                   <Input
                     id='course-hero-lottie'
                     value={courseForm.heroLottieId}
                     onChange={event =>
-                      handleCourseFieldChange('heroLottieId', event.target.value)
+                      handleCourseFieldChange(
+                        'heroLottieId',
+                        event.target.value
+                      )
                     }
                   />
                 </div>
                 <div className='flex items-center justify-between rounded-md border border-dashed border-gray-300 px-3 py-2 dark:border-gray-700'>
                   <div>
-                    <Label className='text-sm font-medium'>Feature this course</Label>
+                    <Label className='text-sm font-medium'>
+                      Feature this course
+                    </Label>
                     <p className='text-xs text-muted-foreground'>
                       Featured courses appear in promoted sections.
                     </p>
@@ -1668,7 +1736,9 @@ export default function CourseManagerContent({
             <section className='grid grid-cols-1 gap-4 md:grid-cols-2'>
               <div className='space-y-3'>
                 <div>
-                  <Label htmlFor='course-prereq-ids'>Prerequisite course IDs</Label>
+                  <Label htmlFor='course-prereq-ids'>
+                    Prerequisite course IDs
+                  </Label>
                   <Input
                     id='course-prereq-ids'
                     placeholder='Comma separated ObjectIds'
@@ -1682,7 +1752,9 @@ export default function CourseManagerContent({
                   />
                 </div>
                 <div>
-                  <Label htmlFor='course-prereq-blogs'>Prerequisite blog slugs</Label>
+                  <Label htmlFor='course-prereq-blogs'>
+                    Prerequisite blog slugs
+                  </Label>
                   <Input
                     id='course-prereq-blogs'
                     placeholder='Comma separated slugs'
@@ -1708,7 +1780,9 @@ export default function CourseManagerContent({
               </div>
               <div className='space-y-3'>
                 <div>
-                  <Label htmlFor='course-recommended-blogs'>Recommended blog slugs</Label>
+                  <Label htmlFor='course-recommended-blogs'>
+                    Recommended blog slugs
+                  </Label>
                   <Input
                     id='course-recommended-blogs'
                     placeholder='Comma separated slugs'
@@ -1722,7 +1796,9 @@ export default function CourseManagerContent({
                   />
                 </div>
                 <div>
-                  <Label htmlFor='course-recommended-books'>Recommended book IDs</Label>
+                  <Label htmlFor='course-recommended-books'>
+                    Recommended book IDs
+                  </Label>
                   <Input
                     id='course-recommended-books'
                     placeholder='Comma separated ObjectIds'
@@ -1811,7 +1887,9 @@ export default function CourseManagerContent({
             <div className='flex items-center justify-between'>
               <h2 className='text-lg font-semibold'>Modules</h2>
               <div className='flex items-center gap-2'>
-                <Button size='sm' onClick={openCreateModule}>Add module</Button>
+                <Button size='sm' onClick={openCreateModule}>
+                  Add module
+                </Button>
               </div>
             </div>
 
@@ -1819,11 +1897,18 @@ export default function CourseManagerContent({
 
             {/* Bulk set parent controls per module */}
             {moduleList.map(module => (
-              <div key={`bulk-${module.id}`} className='flex flex-wrap items-center gap-2 rounded-md border border-dashed border-gray-300 p-3 dark:border-gray-700'>
-                <div className='text-sm font-medium'>Bulk set parent in “{module.title}”</div>
+              <div
+                key={`bulk-${module.id}`}
+                className='flex flex-wrap items-center gap-2 rounded-md border border-dashed border-gray-300 p-3 dark:border-gray-700'
+              >
+                <div className='text-sm font-medium'>
+                  Bulk set parent in “{module.title}”
+                </div>
                 <Select
                   value={bulkParentByModule[module.id] ?? '__none__'}
-                  onValueChange={v => setBulkParentByModule(prev => ({ ...prev, [module.id]: v }))}
+                  onValueChange={v =>
+                    setBulkParentByModule(prev => ({ ...prev, [module.id]: v }))
+                  }
                 >
                   <SelectTrigger className='w-56'>
                     <SelectValue placeholder='None (top-level)' />
@@ -1831,21 +1916,35 @@ export default function CourseManagerContent({
                   <SelectContent>
                     <SelectItem value='__none__'>None</SelectItem>
                     {module.lessons
-                      .filter(l => !('parentLessonId' in l) || (l as any).parentLessonId == null)
+                      .filter(
+                        l =>
+                          !('parentLessonId' in l) ||
+                          (l as any).parentLessonId == null
+                      )
                       .map(l => (
-                        <SelectItem key={l.id} value={l.id}>{l.title}</SelectItem>
+                        <SelectItem key={l.id} value={l.id}>
+                          {l.title}
+                        </SelectItem>
                       ))}
                   </SelectContent>
                 </Select>
-                <Button size='sm' variant='outline' onClick={() => bulkAssignParent(module.id)}>Apply to selected</Button>
-                <span className='ml-auto text-xs text-muted-foreground'>{selectedLessons.size} selected</span>
+                <Button
+                  size='sm'
+                  variant='outline'
+                  onClick={() => bulkAssignParent(module.id)}
+                >
+                  Apply to selected
+                </Button>
+                <span className='ml-auto text-xs text-muted-foreground'>
+                  {selectedLessons.size} selected
+                </span>
               </div>
             ))}
           </TabsContent>
         </Tabs>
       ) : null}
 
-  {ConfirmDialog}
+      {ConfirmDialog}
 
       {/* Module dialog */}
       <Dialog open={moduleDialogOpen} onOpenChange={setModuleDialogOpen}>
@@ -1871,7 +1970,9 @@ export default function CourseManagerContent({
                   }
                 />
                 {moduleErrors.title ? (
-                  <p className='mt-1 text-xs text-red-600'>{moduleErrors.title}</p>
+                  <p className='mt-1 text-xs text-red-600'>
+                    {moduleErrors.title}
+                  </p>
                 ) : null}
               </div>
               <div>
@@ -1887,7 +1988,9 @@ export default function CourseManagerContent({
                   }
                 />
                 {moduleErrors.summary ? (
-                  <p className='mt-1 text-xs text-red-600'>{moduleErrors.summary}</p>
+                  <p className='mt-1 text-xs text-red-600'>
+                    {moduleErrors.summary}
+                  </p>
                 ) : null}
               </div>
               <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
@@ -1906,7 +2009,9 @@ export default function CourseManagerContent({
                     }
                   />
                   {moduleErrors.order ? (
-                    <p className='mt-1 text-xs text-red-600'>{moduleErrors.order}</p>
+                    <p className='mt-1 text-xs text-red-600'>
+                      {moduleErrors.order}
+                    </p>
                   ) : null}
                 </div>
                 <div>
@@ -1918,7 +2023,8 @@ export default function CourseManagerContent({
                     step={1}
                     inputMode='numeric'
                     aria-invalid={
-                      Boolean(moduleErrors.estimatedDurationMinutes) || undefined
+                      Boolean(moduleErrors.estimatedDurationMinutes) ||
+                      undefined
                     }
                     value={moduleForm.estimatedDurationMinutes}
                     onChange={event =>
@@ -1929,7 +2035,9 @@ export default function CourseManagerContent({
                     }
                   />
                   {moduleErrors.estimatedDurationMinutes ? (
-                    <p className='mt-1 text-xs text-red-600'>{moduleErrors.estimatedDurationMinutes}</p>
+                    <p className='mt-1 text-xs text-red-600'>
+                      {moduleErrors.estimatedDurationMinutes}
+                    </p>
                   ) : null}
                 </div>
               </div>
@@ -1977,7 +2085,9 @@ export default function CourseManagerContent({
                 <Input
                   id='lesson-title'
                   value={lessonForm.title}
-                  onChange={event => handleLessonTitleChange(event.target.value)}
+                  onChange={event =>
+                    handleLessonTitleChange(event.target.value)
+                  }
                 />
               </div>
               <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
@@ -1986,7 +2096,9 @@ export default function CourseManagerContent({
                   <Input
                     id='lesson-slug'
                     value={lessonForm.slug}
-                    onChange={event => handleLessonSlugChange(event.target.value)}
+                    onChange={event =>
+                      handleLessonSlugChange(event.target.value)
+                    }
                     placeholder='auto-generated-if-blank'
                   />
                 </div>
@@ -2030,7 +2142,9 @@ export default function CourseManagerContent({
               {lessonForm.contentType === 'standalone' ? (
                 <div className='space-y-3'>
                   <div>
-                    <Label htmlFor='lesson-standalone-format'>Content format</Label>
+                    <Label htmlFor='lesson-standalone-format'>
+                      Content format
+                    </Label>
                     <Select
                       value={lessonForm.standaloneFormat}
                       onValueChange={value =>
@@ -2075,7 +2189,10 @@ export default function CourseManagerContent({
                     id='lesson-video-url'
                     value={lessonForm.externalResource}
                     onChange={event =>
-                      handleLessonFieldChange('externalResource', event.target.value)
+                      handleLessonFieldChange(
+                        'externalResource',
+                        event.target.value
+                      )
                     }
                     placeholder='https://...'
                   />
@@ -2110,14 +2227,19 @@ export default function CourseManagerContent({
                   />
                 </div>
                 <div>
-                  <Label htmlFor='lesson-progress-weight'>Progress weight</Label>
+                  <Label htmlFor='lesson-progress-weight'>
+                    Progress weight
+                  </Label>
                   <Input
                     id='lesson-progress-weight'
                     type='number'
                     min={0}
                     value={lessonForm.progressWeight}
                     onChange={event =>
-                      handleLessonFieldChange('progressWeight', event.target.value)
+                      handleLessonFieldChange(
+                        'progressWeight',
+                        event.target.value
+                      )
                     }
                   />
                 </div>

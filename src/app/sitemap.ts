@@ -101,7 +101,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       })
       .filter(Boolean) as MetadataRoute.Sitemap;
 
-  // Books and chapters (public only)
+    // Books and chapters (public only)
     const bookPages: MetadataRoute.Sitemap = [];
     const { books } = await listPublishedBooks({ page: 1, limit: 100 });
     for (const b of books as any[]) {
@@ -124,7 +124,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }
 
     // Courses (public + published)
-    const courses = await Course.find({ status: 'published', visibility: 'public' })
+    const courses = await Course.find({
+      status: 'published',
+      visibility: 'public',
+    })
       .select('slug updatedAt publishedAt createdAt')
       .lean();
     const coursePages = courses.map((c: any) => ({

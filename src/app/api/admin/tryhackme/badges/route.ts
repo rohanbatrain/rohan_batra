@@ -25,7 +25,9 @@ const BadgeInputSchema = z.object({
 
 async function assertEditorOrAdmin(userId: string) {
   await connectToDatabase();
-  const currentUser = await UserModel.findOne({ clerkId: userId }).select(['role']).lean();
+  const currentUser = await UserModel.findOne({ clerkId: userId })
+    .select(['role'])
+    .lean();
   const role = (currentUser as any)?.role || 'user';
   return { ok: role === 'editor' || role === 'admin' } as const;
 }
@@ -43,21 +45,31 @@ export async function GET(request: NextRequest) {
   }
 
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  
+  if (!userId)
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
   const authz = await assertEditorOrAdmin(userId);
-  if (!authz.ok) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-  
+  if (!authz.ok)
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
   await connectToDatabase();
   const { searchParams } = new URL(request.url);
   const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
-  const limit = Math.min(Math.max(parseInt(searchParams.get('limit') || '24', 10), 1), 100);
+  const limit = Math.min(
+    Math.max(parseInt(searchParams.get('limit') || '24', 10), 1),
+    100
+  );
   const visibility = searchParams.get('visibility');
   const search = searchParams.get('search');
 
   const filter: any = {};
-  if (visibility && ['public', 'private'].includes(visibility)) filter.visibility = visibility;
-  if (search) filter.$or = [{ title: { $regex: search, $options: 'i' } }, { thmBadgeId: { $regex: search, $options: 'i' } }];
+  if (visibility && ['public', 'private'].includes(visibility))
+    filter.visibility = visibility;
+  if (search)
+    filter.$or = [
+      { title: { $regex: search, $options: 'i' } },
+      { thmBadgeId: { $regex: search, $options: 'i' } },
+    ];
 
   const total = await TryHackMeBadgeModel.countDocuments(filter);
   const docs = await TryHackMeBadgeModel.find(filter)
@@ -88,17 +100,19 @@ export async function POST(request: NextRequest) {
     }
 
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    
+    if (!userId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+
     const authz = await assertEditorOrAdmin(userId);
-    if (!authz.ok) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-    
+    if (!authz.ok)
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+
     await connectToDatabase();
     const body = await request.json();
-    
+
     // Validate input
     const parsed = BadgeInputSchema.parse(body);
-    
+
     const badge = await TryHackMeBadgeModel.create({
       title: parsed.title,
       thmBadgeId: parsed.thmBadgeId,
@@ -110,13 +124,21 @@ export async function POST(request: NextRequest) {
       earnedAt: parsed.earnedAt,
       visibility: parsed.visibility || 'public',
     });
-    
-    return NextResponse.json({ badge: { ...(badge.toJSON() as any), _id: badge._id.toString() } });
+
+    return NextResponse.json({
+      badge: { ...(badge.toJSON() as any), _id: badge._id.toString() },
+    });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.issues }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Validation error', details: error.issues },
+        { status: 400 }
+      );
     }
     console.error('Create badge error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

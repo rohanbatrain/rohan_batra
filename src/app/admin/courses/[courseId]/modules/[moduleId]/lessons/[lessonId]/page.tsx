@@ -5,11 +5,18 @@ export const metadata: Metadata = {
   title: 'Edit Lesson | Admin',
 };
 
-type PageParams = { params: Promise<{ courseId: string; moduleId: string; lessonId: string }> };
+type PageParams = {
+  params: Promise<{ courseId: string; moduleId: string; lessonId: string }>;
+};
 
 export default async function EditLessonPage({ params }: PageParams) {
   const { courseId, moduleId, lessonId } = await params;
   return (
-    <LessonForm courseId={courseId} moduleId={moduleId} mode='edit' lessonId={lessonId} />
+    <LessonForm
+      courseId={courseId}
+      moduleId={moduleId}
+      mode='edit'
+      lessonId={lessonId}
+    />
   );
 }

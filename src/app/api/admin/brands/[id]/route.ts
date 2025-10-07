@@ -21,22 +21,31 @@ async function getAuthorizedUser(userId: string) {
 }
 
 // Safe URL validation - only HTTP/HTTPS
-const safeUrl = z.string().url().refine(
-  (url) => url.startsWith('http://') || url.startsWith('https://'),
-  { message: 'Only HTTP/HTTPS URLs are allowed' }
-);
+const safeUrl = z
+  .string()
+  .url()
+  .refine(url => url.startsWith('http://') || url.startsWith('https://'), {
+    message: 'Only HTTP/HTTPS URLs are allowed',
+  });
 
 // HTTPS-only URL validation
-const httpsUrl = z.string().url().refine(
-  (url) => url.startsWith('https://'),
-  { message: 'Only HTTPS URLs are allowed' }
-);
+const httpsUrl = z
+  .string()
+  .url()
+  .refine(url => url.startsWith('https://'), {
+    message: 'Only HTTPS URLs are allowed',
+  });
 
 // Validation schema
 const updateBrandSchema = z.object({
   name: z.string().min(2).max(50).optional(),
   displayName: z.string().min(2).max(100).optional(),
-  slug: z.string().min(2).max(100).regex(/^[a-z0-9-_]+$/).optional(),
+  slug: z
+    .string()
+    .min(2)
+    .max(100)
+    .regex(/^[a-z0-9-_]+$/)
+    .optional(),
   description: z.string().max(500).optional(),
   type: z.enum(['professional', 'creative', 'personal', 'other']).optional(),
   visibility: z.enum(['public', 'private', 'unlisted']).optional(),
@@ -45,8 +54,14 @@ const updateBrandSchema = z.object({
   order: z.number().min(0).optional(),
   theme: z
     .object({
-      primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-      secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      primaryColor: z
+        .string()
+        .regex(/^#[0-9A-Fa-f]{6}$/)
+        .optional(),
+      secondaryColor: z
+        .string()
+        .regex(/^#[0-9A-Fa-f]{6}$/)
+        .optional(),
       icon: z.string().max(50).optional(),
     })
     .optional(),
@@ -74,7 +89,10 @@ export async function GET(
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     if (!Types.ObjectId.isValid(id)) {
@@ -126,7 +144,10 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error fetching brand:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -145,7 +166,10 @@ export async function PUT(
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     if (!Types.ObjectId.isValid(id)) {
@@ -179,7 +203,10 @@ export async function PUT(
 
     // If setting as primary, unset other primary brands in a transaction-like way
     if (parsed.isPrimary && !existingBrand.isPrimary) {
-      const currentPrimary = await BrandModel.findOne({ isPrimary: true, _id: { $ne: id } });
+      const currentPrimary = await BrandModel.findOne({
+        isPrimary: true,
+        _id: { $ne: id },
+      });
       if (currentPrimary) {
         currentPrimary.isPrimary = false;
         await currentPrimary.save();
@@ -215,12 +242,22 @@ export async function PUT(
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      );
     }
 
     // Handle duplicate key errors
-    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-      const duplicateField = (error as any).keyPattern ? Object.keys((error as any).keyPattern)[0] : 'field';
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 11000
+    ) {
+      const duplicateField = (error as any).keyPattern
+        ? Object.keys((error as any).keyPattern)[0]
+        : 'field';
       return NextResponse.json(
         { error: `A brand with this ${duplicateField} already exists` },
         { status: 409 }
@@ -228,7 +265,10 @@ export async function PUT(
     }
 
     console.error('Error updating brand:', error);
-    return NextResponse.json({ error: 'Failed to update brand' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update brand' },
+      { status: 500 }
+    );
   }
 }
 
@@ -247,7 +287,10 @@ export async function DELETE(
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     if (!Types.ObjectId.isValid(id)) {
@@ -274,6 +317,9 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Error deleting brand:', error);
-    return NextResponse.json({ error: 'Failed to delete brand' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to delete brand' },
+      { status: 500 }
+    );
   }
 }

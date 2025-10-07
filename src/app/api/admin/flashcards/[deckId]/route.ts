@@ -243,7 +243,9 @@ export async function PUT(
           );
         }
 
-        const parentDeck = await FlashcardDeckModel.findById(parsed.parentDeckId);
+        const parentDeck = await FlashcardDeckModel.findById(
+          parsed.parentDeckId
+        );
         if (!parentDeck) {
           return NextResponse.json(
             { error: 'Parent deck not found' },

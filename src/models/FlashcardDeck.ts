@@ -189,7 +189,9 @@ FlashcardDeckSchema.index({ path: 1 });
 FlashcardDeckSchema.pre<IFlashcardDeck>('save', async function (next) {
   if (this.isModified('parentDeckId') || this.isNew) {
     if (this.parentDeckId) {
-      const parent = await (this.constructor as any).findById(this.parentDeckId);
+      const parent = await (this.constructor as any).findById(
+        this.parentDeckId
+      );
       if (parent) {
         this.level = parent.level + 1;
         this.path = `${parent.path}/${this.slug}`;

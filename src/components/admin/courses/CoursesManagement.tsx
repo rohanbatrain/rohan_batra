@@ -157,7 +157,9 @@ function formatMinutes(minutes?: number | null) {
 
 const CoursesManagement = () => {
   const [status, setStatus] = useState('all');
-  const [visibility, setVisibility] = useState<'all' | 'public' | 'unlisted'>('all');
+  const [visibility, setVisibility] = useState<'all' | 'public' | 'unlisted'>(
+    'all'
+  );
   const [searchInput, setSearchInput] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
   const [isNewCourseDialogOpen, setIsNewCourseDialogOpen] = useState(false);
@@ -186,7 +188,9 @@ const CoursesManagement = () => {
   const [isCreating, setIsCreating] = useState(false);
   const [managerOpen, setManagerOpen] = useState(false);
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
-  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
+  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(
+    new Set()
+  );
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [isBulkArchiving, setIsBulkArchiving] = useState(false);
   const [isBulkPublishing, setIsBulkPublishing] = useState(false);
@@ -286,7 +290,7 @@ const CoursesManagement = () => {
   };
 
   const handleInputChange = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = event.target;
     setNewCourse(prev => {
@@ -319,7 +323,7 @@ const CoursesManagement = () => {
     }
     let cancelled = false;
     setIsCheckingSlug(true);
-  fetch(`/api/admin/courses/check-slug?slug=${encodeURIComponent(val)}`)
+    fetch(`/api/admin/courses/check-slug?slug=${encodeURIComponent(val)}`)
       .then(r => (r.ok ? r.json() : Promise.reject(new Error('Failed'))))
       .then((data: { isAvailable: boolean }) => {
         if (!cancelled) {
@@ -360,7 +364,8 @@ const CoursesManagement = () => {
     if (!slugVal) {
       toast({
         title: 'Slug required',
-        description: 'A slug will be auto-generated from the title, but it cannot be empty.',
+        description:
+          'A slug will be auto-generated from the title, but it cannot be empty.',
         variant: 'destructive',
       });
       return;
@@ -496,8 +501,12 @@ const CoursesManagement = () => {
 
   const handleBulkDelete = async () => {
     if (selectedCourses.size === 0) return;
-    
-    if (!confirm(`Are you sure you want to delete ${selectedCourses.size} course(s)? This action cannot be undone.`)) {
+
+    if (
+      !confirm(
+        `Are you sure you want to delete ${selectedCourses.size} course(s)? This action cannot be undone.`
+      )
+    ) {
       return;
     }
 
@@ -506,7 +515,7 @@ const CoursesManagement = () => {
       const deletePromises = Array.from(selectedCourses).map(courseId =>
         fetch(`/api/admin/courses/${courseId}`, { method: 'DELETE' })
       );
-      
+
       const results = await Promise.allSettled(deletePromises);
       const succeeded = results.filter(r => r.status === 'fulfilled').length;
       const failed = results.filter(r => r.status === 'rejected').length;
@@ -639,7 +648,11 @@ const CoursesManagement = () => {
   };
 
   const handleDeleteCourse = async (courseId: string, courseTitle: string) => {
-    if (!confirm(`Are you sure you want to delete "${courseTitle}"? This action cannot be undone.`)) {
+    if (
+      !confirm(
+        `Are you sure you want to delete "${courseTitle}"? This action cannot be undone.`
+      )
+    ) {
       return;
     }
 
@@ -667,13 +680,16 @@ const CoursesManagement = () => {
     }
   };
 
-  const handleDuplicateCourse = async (courseId: string, courseTitle: string) => {
+  const handleDuplicateCourse = async (
+    courseId: string,
+    courseTitle: string
+  ) => {
     try {
       const response = await fetch(`/api/admin/courses/${courseId}`);
       if (!response.ok) throw new Error('Failed to fetch course');
-      
+
       const originalCourse = await response.json();
-      
+
       const newCourseData = {
         ...originalCourse,
         title: `${originalCourse.title} (Copy)`,
@@ -768,8 +784,13 @@ const CoursesManagement = () => {
               <Button type='submit'>Search</Button>
             </form>
             <div className='flex items-center gap-3'>
-              <div className='text-sm text-gray-600 dark:text-gray-300'>Visibility</div>
-              <Select value={visibility} onValueChange={v => handleVisibilityChange(v as any)}>
+              <div className='text-sm text-gray-600 dark:text-gray-300'>
+                Visibility
+              </div>
+              <Select
+                value={visibility}
+                onValueChange={v => handleVisibilityChange(v as any)}
+              >
                 <SelectTrigger className='w-[140px]'>
                   <SelectValue placeholder='Visibility' />
                 </SelectTrigger>
@@ -783,7 +804,11 @@ const CoursesManagement = () => {
           </div>
 
           <div className='mb-4 text-sm text-gray-500 dark:text-gray-400'>
-            Showing page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1} · {data?.total ?? 0} total
+            Showing page {data?.page ?? page} of{' '}
+            {data?.pageSize && data?.total
+              ? Math.max(1, Math.ceil(data.total / data.pageSize))
+              : 1}{' '}
+            · {data?.total ?? 0} total
           </div>
 
           {/* Bulk Actions Toolbar */}
@@ -806,7 +831,9 @@ const CoursesManagement = () => {
                   size='sm'
                   variant='outline'
                   onClick={handleBulkPublish}
-                  disabled={isBulkPublishing || isBulkArchiving || isBulkDeleting}
+                  disabled={
+                    isBulkPublishing || isBulkArchiving || isBulkDeleting
+                  }
                 >
                   {isBulkPublishing ? (
                     <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -819,7 +846,9 @@ const CoursesManagement = () => {
                   size='sm'
                   variant='outline'
                   onClick={handleBulkUnpublish}
-                  disabled={isBulkPublishing || isBulkArchiving || isBulkDeleting}
+                  disabled={
+                    isBulkPublishing || isBulkArchiving || isBulkDeleting
+                  }
                 >
                   {isBulkPublishing ? (
                     <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -832,7 +861,9 @@ const CoursesManagement = () => {
                   size='sm'
                   variant='outline'
                   onClick={handleBulkArchive}
-                  disabled={isBulkArchiving || isBulkPublishing || isBulkDeleting}
+                  disabled={
+                    isBulkArchiving || isBulkPublishing || isBulkDeleting
+                  }
                 >
                   {isBulkArchiving ? (
                     <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -845,7 +876,9 @@ const CoursesManagement = () => {
                   size='sm'
                   variant='destructive'
                   onClick={handleBulkDelete}
-                  disabled={isBulkDeleting || isBulkArchiving || isBulkPublishing}
+                  disabled={
+                    isBulkDeleting || isBulkArchiving || isBulkPublishing
+                  }
                 >
                   {isBulkDeleting ? (
                     <Loader2 className='mr-2 h-4 w-4 animate-spin' />
@@ -895,163 +928,193 @@ const CoursesManagement = () => {
             </Card>
           ) : (
             <>
-            {/* Select All Checkbox */}
-            {data && data.courses.length > 0 && (
-              <div className='mb-4 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-gray-600 dark:bg-gray-800'>
-                <Checkbox
-                  checked={data.courses.length > 0 && selectedCourses.size === data.courses.length}
-                  onCheckedChange={handleSelectAll}
-                  id='select-all'
-                />
-                <Label htmlFor='select-all' className='cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-100'>
-                  Select all courses on this page
-                </Label>
-              </div>
-            )}
-            <div className='grid gap-4 md:grid-cols-2'>
-              {data?.courses.map(course => (
-                <Card
-                  key={course.id}
-                  className='border border-gray-200 dark:border-gray-800 shadow-sm'
-                >
-                  <CardHeader className='space-y-2'>
-                    <div className='flex flex-wrap items-start justify-between gap-2'>
-                      <div className='flex items-start gap-3 flex-1'>
-                        <Checkbox
-                          checked={selectedCourses.has(course.id)}
-                          onCheckedChange={() => handleSelectCourse(course.id)}
-                          id={`course-${course.id}`}
-                          className='mt-1'
-                        />
-                        <div className='flex-1'>
-                          <Label htmlFor={`course-${course.id}`} className='cursor-pointer'>
-                            <CardTitle className='text-xl'>{course.title}</CardTitle>
-                          </Label>
-                        </div>
-                      </div>
-                      <div className='flex items-center gap-2'>
-                        <Link href={`/admin/courses/${course.id}`}>
-                          <Button size='sm' variant='outline'>Manage</Button>
-                        </Link>
-                        <Badge
-                          className={
-                            statusColors[course.status] ??
-                            'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                          }
-                        >
-                          {course.status}
-                        </Badge>
-                        <Badge
-                          className={
-                            difficultyColors[course.difficulty] ??
-                            'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                          }
-                        >
-                          {course.difficulty}
-                        </Badge>
-                      </div>
-                    </div>
-                    <div className='flex flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400'>
-                      <span className='flex items-center gap-1'>
-                        <BookOpen className='h-4 w-4' /> {course.moduleCount}{' '}
-                        module{course.moduleCount === 1 ? '' : 's'}
-                      </span>
-                      <span className='flex items-center gap-1'>
-                        <Layers className='h-4 w-4' /> {course.lessonCount}{' '}
-                        lesson{course.lessonCount === 1 ? '' : 's'}
-                      </span>
-                      <span className='flex items-center gap-1'>
-                        <Timer className='h-4 w-4' />{' '}
-                        {formatMinutes(course.estimatedDurationMinutes)}
-                      </span>
-                    </div>
-                  </CardHeader>
-                  <CardContent className='space-y-4'>
-                    <div className='space-y-2'>
-                      <div className='text-xs uppercase tracking-wide text-gray-600 dark:text-gray-300 font-semibold'>
-                        Flashcard decks
-                      </div>
-                      {course.flashcardDecks.length > 0 ? (
-                        <div className='flex flex-wrap gap-2'>
-                          {course.flashcardDecks.map(deck => (
-                            <Badge
-                              key={deck.id}
-                              variant='secondary'
-                              className='capitalize'
+              {/* Select All Checkbox */}
+              {data && data.courses.length > 0 && (
+                <div className='mb-4 flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 dark:border-gray-600 dark:bg-gray-800'>
+                  <Checkbox
+                    checked={
+                      data.courses.length > 0 &&
+                      selectedCourses.size === data.courses.length
+                    }
+                    onCheckedChange={handleSelectAll}
+                    id='select-all'
+                  />
+                  <Label
+                    htmlFor='select-all'
+                    className='cursor-pointer text-sm font-medium text-gray-900 dark:text-gray-100'
+                  >
+                    Select all courses on this page
+                  </Label>
+                </div>
+              )}
+              <div className='grid gap-4 md:grid-cols-2'>
+                {data?.courses.map(course => (
+                  <Card
+                    key={course.id}
+                    className='border border-gray-200 dark:border-gray-800 shadow-sm'
+                  >
+                    <CardHeader className='space-y-2'>
+                      <div className='flex flex-wrap items-start justify-between gap-2'>
+                        <div className='flex items-start gap-3 flex-1'>
+                          <Checkbox
+                            checked={selectedCourses.has(course.id)}
+                            onCheckedChange={() =>
+                              handleSelectCourse(course.id)
+                            }
+                            id={`course-${course.id}`}
+                            className='mt-1'
+                          />
+                          <div className='flex-1'>
+                            <Label
+                              htmlFor={`course-${course.id}`}
+                              className='cursor-pointer'
                             >
-                              {deck.title}
-                            </Badge>
-                          ))}
+                              <CardTitle className='text-xl'>
+                                {course.title}
+                              </CardTitle>
+                            </Label>
+                          </div>
                         </div>
-                      ) : (
-                        <p className='text-sm text-gray-600 dark:text-gray-300 italic'>
-                          No flashcard decks linked yet.
-                        </p>
-                      )}
-                    </div>
-                    <div className='flex items-center justify-between border-t border-dashed pt-3 text-sm text-gray-600 dark:text-gray-300'>
-                      <span>
-                        Last updated{' '}
-                        {new Date(course.updatedAt).toLocaleDateString()}
-                      </span>
-                      {course.status === 'published' ? (
-                        <Link
-                          href={`/courses/${course.slug}`}
-                          target='_blank'
-                          className='text-blue-600 dark:text-blue-400 hover:underline'
+                        <div className='flex items-center gap-2'>
+                          <Link href={`/admin/courses/${course.id}`}>
+                            <Button size='sm' variant='outline'>
+                              Manage
+                            </Button>
+                          </Link>
+                          <Badge
+                            className={
+                              statusColors[course.status] ??
+                              'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                            }
+                          >
+                            {course.status}
+                          </Badge>
+                          <Badge
+                            className={
+                              difficultyColors[course.difficulty] ??
+                              'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                            }
+                          >
+                            {course.difficulty}
+                          </Badge>
+                        </div>
+                      </div>
+                      <div className='flex flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400'>
+                        <span className='flex items-center gap-1'>
+                          <BookOpen className='h-4 w-4' /> {course.moduleCount}{' '}
+                          module{course.moduleCount === 1 ? '' : 's'}
+                        </span>
+                        <span className='flex items-center gap-1'>
+                          <Layers className='h-4 w-4' /> {course.lessonCount}{' '}
+                          lesson{course.lessonCount === 1 ? '' : 's'}
+                        </span>
+                        <span className='flex items-center gap-1'>
+                          <Timer className='h-4 w-4' />{' '}
+                          {formatMinutes(course.estimatedDurationMinutes)}
+                        </span>
+                      </div>
+                    </CardHeader>
+                    <CardContent className='space-y-4'>
+                      <div className='space-y-2'>
+                        <div className='text-xs uppercase tracking-wide text-gray-600 dark:text-gray-300 font-semibold'>
+                          Flashcard decks
+                        </div>
+                        {course.flashcardDecks.length > 0 ? (
+                          <div className='flex flex-wrap gap-2'>
+                            {course.flashcardDecks.map(deck => (
+                              <Badge
+                                key={deck.id}
+                                variant='secondary'
+                                className='capitalize'
+                              >
+                                {deck.title}
+                              </Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className='text-sm text-gray-600 dark:text-gray-300 italic'>
+                            No flashcard decks linked yet.
+                          </p>
+                        )}
+                      </div>
+                      <div className='flex items-center justify-between border-t border-dashed pt-3 text-sm text-gray-600 dark:text-gray-300'>
+                        <span>
+                          Last updated{' '}
+                          {new Date(course.updatedAt).toLocaleDateString()}
+                        </span>
+                        {course.status === 'published' ? (
+                          <Link
+                            href={`/courses/${course.slug}`}
+                            target='_blank'
+                            className='text-blue-600 dark:text-blue-400 hover:underline'
+                          >
+                            View public page
+                          </Link>
+                        ) : (
+                          <span className='italic text-gray-500 dark:text-gray-400'>
+                            Public page available after publishing
+                          </span>
+                        )}
+                      </div>
+                      {/* Quick Actions */}
+                      <div className='flex items-center gap-2 border-t border-dashed pt-3'>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() =>
+                            handleDuplicateCourse(course.id, course.title)
+                          }
+                          className='flex-1'
                         >
-                          View public page
-                        </Link>
-                      ) : (
-                        <span className='italic text-gray-500 dark:text-gray-400'>Public page available after publishing</span>
-                      )}
-                    </div>
-                    {/* Quick Actions */}
-                    <div className='flex items-center gap-2 border-t border-dashed pt-3'>
-                      <Button
-                        size='sm'
-                        variant='outline'
-                        onClick={() => handleDuplicateCourse(course.id, course.title)}
-                        className='flex-1'
-                      >
-                        <Copy className='mr-2 h-3 w-3' />
-                        Duplicate
-                      </Button>
-                      <Button
-                        size='sm'
-                        variant='outline'
-                        onClick={() => handleDeleteCourse(course.id, course.title)}
-                        className='flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30'
-                      >
-                        <Trash2 className='mr-2 h-3 w-3' />
-                        Delete
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className='mt-6 flex items-center justify-center gap-3'>
-              <Button
-                variant='outline'
-                size='sm'
-                disabled={(data?.page ?? page) <= 1 || isLoading}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className='text-sm text-gray-600 dark:text-gray-300'>
-                Page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1}
-              </span>
-              <Button
-                variant='outline'
-                size='sm'
-                disabled={isLoading || ((data?.page ?? page) >= (data?.pageSize && data?.total ? Math.ceil((data.total) / (data.pageSize)) : 1))}
-                onClick={() => setPage(p => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
+                          <Copy className='mr-2 h-3 w-3' />
+                          Duplicate
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() =>
+                            handleDeleteCourse(course.id, course.title)
+                          }
+                          className='flex-1 text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30'
+                        >
+                          <Trash2 className='mr-2 h-3 w-3' />
+                          Delete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <div className='mt-6 flex items-center justify-center gap-3'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  disabled={(data?.page ?? page) <= 1 || isLoading}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                >
+                  Previous
+                </Button>
+                <span className='text-sm text-gray-600 dark:text-gray-300'>
+                  Page {data?.page ?? page} of{' '}
+                  {data?.pageSize && data?.total
+                    ? Math.max(1, Math.ceil(data.total / data.pageSize))
+                    : 1}
+                </span>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  disabled={
+                    isLoading ||
+                    (data?.page ?? page) >=
+                      (data?.pageSize && data?.total
+                        ? Math.ceil(data.total / data.pageSize)
+                        : 1)
+                  }
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
             </>
           )}
         </TabsContent>

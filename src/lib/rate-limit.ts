@@ -11,14 +11,17 @@ interface RateLimitEntry {
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
 // Cleanup old entries every 10 minutes
-setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of rateLimitStore.entries()) {
-    if (entry.resetTime < now) {
-      rateLimitStore.delete(key);
+setInterval(
+  () => {
+    const now = Date.now();
+    for (const [key, entry] of rateLimitStore.entries()) {
+      if (entry.resetTime < now) {
+        rateLimitStore.delete(key);
+      }
     }
-  }
-}, 10 * 60 * 1000);
+  },
+  10 * 60 * 1000
+);
 
 export interface RateLimitConfig {
   /**
@@ -127,19 +130,19 @@ export const rateLimitPresets = {
     max: 30, // 30 requests
     windowMs: 60 * 1000, // per minute
   },
-  
+
   // Admin API endpoints
   admin: {
     max: 100, // 100 requests
     windowMs: 60 * 1000, // per minute
   },
-  
+
   // Strict rate limit for sensitive operations
   strict: {
     max: 5, // 5 requests
     windowMs: 60 * 1000, // per minute
   },
-  
+
   // Very strict for auth endpoints
   auth: {
     max: 10, // 10 requests

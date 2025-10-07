@@ -11,14 +11,24 @@ interface RelatedContentRailProps {
   viewAllHref?: string;
 }
 
-export default function RelatedContentRail({ title, type, items, viewAllHref }: RelatedContentRailProps) {
+export default function RelatedContentRail({
+  title,
+  type,
+  items,
+  viewAllHref,
+}: RelatedContentRailProps) {
   if (!items || items.length === 0) return null;
   return (
     <section className='mt-10'>
       <div className='flex items-center justify-between mb-6'>
-        <h3 className='text-xl font-semibold text-gray-900 dark:text-white'>{title}</h3>
+        <h3 className='text-xl font-semibold text-gray-900 dark:text-white'>
+          {title}
+        </h3>
         {viewAllHref ? (
-          <Link href={viewAllHref} className='text-blue-600 dark:text-blue-400 hover:underline'>
+          <Link
+            href={viewAllHref}
+            className='text-blue-600 dark:text-blue-400 hover:underline'
+          >
             View all
           </Link>
         ) : null}

@@ -1,9 +1,9 @@
 /**
  * T009: Graph Type Definitions
- * 
+ *
  * TypeScript interfaces for GraphNode, GraphEdge, and KnowledgeGraph.
  * Based on specs/014-course-knowledge-graph/data-model.md
- * 
+ *
  * @pattern Follows /src/types/courses.ts structure
  */
 
@@ -17,7 +17,12 @@ export type NodeType = 'course' | 'module' | 'lesson' | 'sublesson' | 'topic';
 /**
  * Content types for lessons
  */
-export type ContentType = 'blog' | 'standalone' | 'video' | 'quiz' | 'flashcards';
+export type ContentType =
+  | 'blog'
+  | 'standalone'
+  | 'video'
+  | 'quiz'
+  | 'flashcards';
 
 /**
  * Icon types for visual representation
@@ -27,7 +32,12 @@ export type IconType = 'book' | 'file' | 'video' | 'clipboard' | 'cards';
 /**
  * Edge types representing relationships between nodes
  */
-export type EdgeType = 'contains' | 'prerequisite' | 'parent-child' | 'sibling' | 'sequential';
+export type EdgeType =
+  | 'contains'
+  | 'prerequisite'
+  | 'parent-child'
+  | 'sibling'
+  | 'sequential';
 
 /**
  * Graph node representing a course entity

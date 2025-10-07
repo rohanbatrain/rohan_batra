@@ -15,7 +15,7 @@ const SyncRequestSchema = z.object({
 /**
  * POST /api/admin/flashcards/github/sync
  * Trigger GitHub sync (pull decks from repo)
- * 
+ *
  * Note: This is a placeholder for T010
  * Full implementation requires @octokit/rest and gray-matter packages
  */
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
     // TODO: Implement actual sync logic
     // This requires installing @octokit/rest package
     // See src/lib/github/sync-service.ts for full implementation
-    
+
     return NextResponse.json({
       message: 'GitHub sync feature coming soon (T010)',
       syncConfig: {

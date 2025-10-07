@@ -30,7 +30,9 @@ export async function POST(
     await connectToDatabase();
 
     // Get user document
-    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
+      _id: any;
+    } | null;
     if (!userDoc) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -73,7 +75,7 @@ export async function POST(
     // Add to completed if not already there, or remove if unmarking
     const lessonObjectId = lesson._id;
     const isAlreadyCompleted = progress.completedLessonIds.some(
-      (id) => id.toString() === lessonObjectId.toString()
+      id => id.toString() === lessonObjectId.toString()
     );
 
     if (markAsComplete && !isAlreadyCompleted) {
@@ -82,7 +84,7 @@ export async function POST(
 
       // Remove from incomplete if present
       progress.incompleteLessonIds = progress.incompleteLessonIds.filter(
-        (id) => id.toString() !== lessonObjectId.toString()
+        id => id.toString() !== lessonObjectId.toString()
       );
 
       // Update current lesson
@@ -99,12 +101,12 @@ export async function POST(
     } else if (!markAsComplete && isAlreadyCompleted) {
       // Mark as incomplete (unmark)
       progress.completedLessonIds = progress.completedLessonIds.filter(
-        (id) => id.toString() !== lessonObjectId.toString()
+        id => id.toString() !== lessonObjectId.toString()
       );
 
       // Add back to incomplete if not present
       const isInIncomplete = progress.incompleteLessonIds.some(
-        (id) => id.toString() === lessonObjectId.toString()
+        id => id.toString() === lessonObjectId.toString()
       );
       if (!isInIncomplete) {
         progress.incompleteLessonIds.push(lessonObjectId);
@@ -132,7 +134,7 @@ export async function POST(
     return NextResponse.json({
       success: true,
       progress: {
-        completedLessonIds: progress.completedLessonIds.map((id) =>
+        completedLessonIds: progress.completedLessonIds.map(id =>
           id.toString()
         ),
         percentageComplete: progress.percentageComplete,

@@ -8,7 +8,10 @@ import UserModel from '@/models/User';
 
 const PageUpdateSchema = z.object({
   title: z.string().min(2).max(200).optional(),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   description: z.string().max(300).optional(),
   content: z.string().optional(),
   contentFormat: z.enum(['mdx', 'markdown']).optional(),
@@ -16,19 +19,23 @@ const PageUpdateSchema = z.object({
   parentPageId: z.string().optional().nullable(),
   order: z.number().int().min(0).optional(),
   status: z.enum(['draft', 'published', 'archived']).optional(),
-  features: z.object({
-    showToc: z.boolean().optional(),
-    showBreadcrumbs: z.boolean().optional(),
-    showLastUpdated: z.boolean().optional(),
-    allowComments: z.boolean().optional(),
-    showEditLink: z.boolean().optional(),
-  }).optional(),
-  seo: z.object({
-    title: z.string().max(70).optional(),
-    description: z.string().max(160).optional(),
-    keywords: z.array(z.string()).optional(),
-    ogImage: z.string().url().optional(),
-  }).optional(),
+  features: z
+    .object({
+      showToc: z.boolean().optional(),
+      showBreadcrumbs: z.boolean().optional(),
+      showLastUpdated: z.boolean().optional(),
+      allowComments: z.boolean().optional(),
+      showEditLink: z.boolean().optional(),
+    })
+    .optional(),
+  seo: z
+    .object({
+      title: z.string().max(70).optional(),
+      description: z.string().max(160).optional(),
+      keywords: z.array(z.string()).optional(),
+      ogImage: z.string().url().optional(),
+    })
+    .optional(),
   relatedPages: z.array(z.string()).optional(),
   prerequisites: z.array(z.string()).optional(),
 });
@@ -45,7 +52,9 @@ async function getAuthorizedUser(userId: string) {
   return { authorized: true as const, currentUser, userRole };
 }
 
-function extractHeadings(content: string): Array<{ level: number; text: string; id: string }> {
+function extractHeadings(
+  content: string
+): Array<{ level: number; text: string; id: string }> {
   const headings: Array<{ level: number; text: string; id: string }> = [];
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
   let match;
@@ -57,7 +66,7 @@ function extractHeadings(content: string): Array<{ level: number; text: string; 
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
-    
+
     headings.push({ level, text, id });
   }
 
@@ -71,7 +80,7 @@ export async function GET(
   try {
     const { id } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -85,18 +94,12 @@ export async function GET(
     }
 
     if (!Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: 'Invalid page ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
     }
 
     const page: any = await DocPageModel.findById(id).lean();
     if (!page) {
-      return NextResponse.json(
-        { error: 'Page not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     }
 
     const response = {
@@ -146,7 +149,7 @@ export async function PUT(
   try {
     const { id } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -160,18 +163,12 @@ export async function PUT(
     }
 
     if (!Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: 'Invalid page ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
     }
 
     const page = await DocPageModel.findById(id);
     if (!page) {
-      return NextResponse.json(
-        { error: 'Page not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -195,7 +192,8 @@ export async function PUT(
 
     // Update fields
     if (parsed.title) page.title = parsed.title;
-    if (parsed.description !== undefined) page.description = parsed.description?.trim();
+    if (parsed.description !== undefined)
+      page.description = parsed.description?.trim();
     if (parsed.content !== undefined) {
       page.content = parsed.content;
       // Re-extract headings if content changed
@@ -203,14 +201,16 @@ export async function PUT(
     }
     if (parsed.contentFormat) page.contentFormat = parsed.contentFormat;
     if (parsed.sectionId !== undefined) {
-      page.sectionId = parsed.sectionId && Types.ObjectId.isValid(parsed.sectionId)
-        ? new Types.ObjectId(parsed.sectionId)
-        : undefined;
+      page.sectionId =
+        parsed.sectionId && Types.ObjectId.isValid(parsed.sectionId)
+          ? new Types.ObjectId(parsed.sectionId)
+          : undefined;
     }
     if (parsed.parentPageId !== undefined) {
-      page.parentPageId = parsed.parentPageId && Types.ObjectId.isValid(parsed.parentPageId)
-        ? new Types.ObjectId(parsed.parentPageId)
-        : undefined;
+      page.parentPageId =
+        parsed.parentPageId && Types.ObjectId.isValid(parsed.parentPageId)
+          ? new Types.ObjectId(parsed.parentPageId)
+          : undefined;
     }
     if (parsed.order !== undefined) page.order = parsed.order;
     if (parsed.status) page.status = parsed.status;
@@ -268,7 +268,7 @@ export async function DELETE(
   try {
     const { id } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -282,18 +282,12 @@ export async function DELETE(
     }
 
     if (!Types.ObjectId.isValid(id)) {
-      return NextResponse.json(
-        { error: 'Invalid page ID' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Invalid page ID' }, { status: 400 });
     }
 
     const page = await DocPageModel.findById(id);
     if (!page) {
-      return NextResponse.json(
-        { error: 'Page not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     }
 
     await DocPageModel.deleteOne({ _id: page._id });

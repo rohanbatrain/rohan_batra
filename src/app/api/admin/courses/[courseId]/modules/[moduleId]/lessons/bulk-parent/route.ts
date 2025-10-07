@@ -21,7 +21,10 @@ async function findCourse(courseIdOrSlug: string) {
 
 async function findModule(courseId: Types.ObjectId, moduleId: string) {
   if (!Types.ObjectId.isValid(moduleId)) return null;
-  return CourseModuleModel.findOne({ _id: new Types.ObjectId(moduleId), courseId });
+  return CourseModuleModel.findOne({
+    _id: new Types.ObjectId(moduleId),
+    courseId,
+  });
 }
 
 export async function POST(
@@ -31,32 +34,56 @@ export async function POST(
   try {
     const { courseId, moduleId } = await ctx.params;
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const { authorized } = await getAuthorizedUser(userId);
-    if (!authorized) return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+    if (!authorized)
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
 
     const courseDoc = await findCourse(courseId);
-    if (!courseDoc) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+    if (!courseDoc)
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     const moduleDoc = await findModule(courseDoc._id, moduleId);
-    if (!moduleDoc) return NextResponse.json({ error: 'Module not found' }, { status: 404 });
+    if (!moduleDoc)
+      return NextResponse.json({ error: 'Module not found' }, { status: 404 });
 
     const body = await request.json();
     const parsed = BulkSchema.parse(body);
     const ids = parsed.lessonIds
       .filter((id: string) => Types.ObjectId.isValid(id))
       .map((id: string) => new Types.ObjectId(id));
-    if (ids.length === 0) return NextResponse.json({ error: 'No valid lesson IDs' }, { status: 400 });
+    if (ids.length === 0)
+      return NextResponse.json(
+        { error: 'No valid lesson IDs' },
+        { status: 400 }
+      );
 
     let parentId: Types.ObjectId | undefined;
     if (parsed.parentLessonId) {
       if (!Types.ObjectId.isValid(parsed.parentLessonId)) {
-        return NextResponse.json({ error: 'Invalid parent lesson' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Invalid parent lesson' },
+          { status: 400 }
+        );
       }
-      const parent = await CourseLessonModel.findOne({ _id: new Types.ObjectId(parsed.parentLessonId), courseId: courseDoc._id }).lean();
-      if (!parent) return NextResponse.json({ error: 'Parent lesson not found' }, { status: 404 });
+      const parent = await CourseLessonModel.findOne({
+        _id: new Types.ObjectId(parsed.parentLessonId),
+        courseId: courseDoc._id,
+      }).lean();
+      if (!parent)
+        return NextResponse.json(
+          { error: 'Parent lesson not found' },
+          { status: 404 }
+        );
       if (parent.moduleId.toString() !== moduleDoc._id.toString()) {
-        return NextResponse.json({ error: 'Parent lesson must be in the same module' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Parent lesson must be in the same module' },
+          { status: 400 }
+        );
       }
       parentId = new Types.ObjectId(parsed.parentLessonId);
     }
@@ -66,14 +93,26 @@ export async function POST(
       _id: { $in: ids },
       courseId: courseDoc._id,
       moduleId: moduleDoc._id,
-    }).select(['_id']).lean();
+    })
+      .select(['_id'])
+      .lean();
     const allowed = new Set(lessons.map(l => l._id.toString()));
     const safeIds = ids.filter(id => allowed.has(id.toString()));
-    if (safeIds.length === 0) return NextResponse.json({ error: 'No lessons found to update' }, { status: 404 });
+    if (safeIds.length === 0)
+      return NextResponse.json(
+        { error: 'No lessons found to update' },
+        { status: 404 }
+      );
 
     // Prevent self-parent if only one id equals parent
-    if (parentId && safeIds.some(id => id.toString() === parentId!.toString())) {
-      return NextResponse.json({ error: 'A lesson cannot be its own parent' }, { status: 400 });
+    if (
+      parentId &&
+      safeIds.some(id => id.toString() === parentId!.toString())
+    ) {
+      return NextResponse.json(
+        { error: 'A lesson cannot be its own parent' },
+        { status: 400 }
+      );
     }
 
     // Find previous parents of these lessons to clean up childOrder if needed
@@ -126,9 +165,15 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.issues }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Validation error', details: error.issues },
+        { status: 400 }
+      );
     }
     console.error('Bulk parent error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }

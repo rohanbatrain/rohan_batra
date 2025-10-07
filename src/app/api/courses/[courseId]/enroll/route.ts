@@ -14,7 +14,8 @@ export async function POST(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await connectToDatabase();
 
@@ -23,13 +24,24 @@ export async function POST(
       ? { _id: new Types.ObjectId(courseId) }
       : { slug: courseId };
 
-    const course = await CourseModel.findOne({ ...query, status: 'published', visibility: 'public' });
-    if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+    const course = await CourseModel.findOne({
+      ...query,
+      status: 'published',
+      visibility: 'public',
+    });
+    if (!course)
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
 
-  const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
-  if (!userDoc || !userDoc._id) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
+      _id: any;
+    } | null;
+    if (!userDoc || !userDoc._id)
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-  const existing = await CourseEnrollmentModel.findOne({ courseId: course._id, userId: userDoc._id });
+    const existing = await CourseEnrollmentModel.findOne({
+      courseId: course._id,
+      userId: userDoc._id,
+    });
     if (existing) {
       // idempotent - already enrolled, redirect back
       const url = new URL(req.url);
@@ -39,7 +51,7 @@ export async function POST(
 
     const enrollment = await CourseEnrollmentModel.create({
       courseId: course._id,
-  userId: userDoc._id,
+      userId: userDoc._id,
       status: 'in_progress',
       origin: 'self_enroll',
       enrolledAt: new Date(),
@@ -49,15 +61,15 @@ export async function POST(
     const initial = await buildInitialProgress(course._id);
     await CourseProgressModel.create({
       courseId: course._id,
-  userId: userDoc._id,
+      userId: userDoc._id,
       enrollmentId: enrollment._id,
       ...initial,
       lastUpdatedAt: new Date(),
     } as any);
 
-  const url = new URL(req.url);
-  const backTo = new URL(`/courses/${course.slug}`, url.origin);
-  return NextResponse.redirect(backTo);
+    const url = new URL(req.url);
+    const backTo = new URL(`/courses/${course.slug}`, url.origin);
+    return NextResponse.redirect(backTo);
   } catch (err) {
     console.error('[enroll] error:', err);
     return NextResponse.json({ error: 'Failed to enroll' }, { status: 500 });
@@ -70,7 +82,8 @@ export async function DELETE(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await connectToDatabase();
     const { courseId } = await ctx.params;
@@ -79,11 +92,17 @@ export async function DELETE(
       : { slug: courseId };
 
     const course = await CourseModel.findOne(query);
-    if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+    if (!course)
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
 
-  const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
-  if (!userDoc || !userDoc._id) return NextResponse.json({ removed: true });
-  const enrollment = await CourseEnrollmentModel.findOne({ courseId: course._id, userId: userDoc._id });
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
+      _id: any;
+    } | null;
+    if (!userDoc || !userDoc._id) return NextResponse.json({ removed: true });
+    const enrollment = await CourseEnrollmentModel.findOne({
+      courseId: course._id,
+      userId: userDoc._id,
+    });
     if (!enrollment) return NextResponse.json({ removed: true });
 
     await Promise.all([

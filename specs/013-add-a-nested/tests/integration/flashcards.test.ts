@@ -7,10 +7,21 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest';
 import mongoose, { Types } from 'mongoose';
 import FlashcardDeckModel from '@/models/FlashcardDeck';
 import FlashcardCardModel from '@/models/FlashcardCard';
-import { buildDeckTree, validateDeckMove, getDeckBreadcrumbs } from '@/lib/decks/tree';
-import { calculateNextReview, initializeScheduling, isCardDue } from '@/lib/scheduler/sm2';
+import {
+  buildDeckTree,
+  validateDeckMove,
+  getDeckBreadcrumbs,
+} from '@/lib/decks/tree';
+import {
+  calculateNextReview,
+  initializeScheduling,
+  isCardDue,
+} from '@/lib/scheduler/sm2';
 import { parseBulkImportFile } from '@/lib/flashcards/bulk-import';
-import { exportDecksV2, importDecksV2 } from '@/lib/flashcards/export-import-v2';
+import {
+  exportDecksV2,
+  importDecksV2,
+} from '@/lib/flashcards/export-import-v2';
 
 // Note: Requires actual MongoDB connection for integration tests
 // Set MONGODB_URI environment variable
@@ -35,7 +46,7 @@ describe('Nested Decks Integration', () => {
 
   beforeEach(async () => {
     if (mongoose.connection.readyState !== 1) return;
-    
+
     // Clean up test data
     await FlashcardDeckModel.deleteMany({ ownerId });
     await FlashcardCardModel.deleteMany({});
@@ -219,7 +230,9 @@ describe('SM-2 Spaced Repetition', () => {
     expect(next.repetitions).toBe(1);
     expect(next.nextReviewAt).toBeDefined();
     if (next.nextReviewAt && current.nextReviewAt) {
-      expect(next.nextReviewAt.getTime()).toBeGreaterThan(current.nextReviewAt.getTime());
+      expect(next.nextReviewAt.getTime()).toBeGreaterThan(
+        current.nextReviewAt.getTime()
+      );
     }
   });
 
@@ -442,8 +455,8 @@ describe('Export/Import V2', () => {
     const decks = await FlashcardDeckModel.find({ ownerId });
     expect(decks).toHaveLength(2);
 
-    const rootDeck = decks.find((d) => d.slug === 'imported-root');
-    const childDeck = decks.find((d) => d.slug === 'imported-child');
+    const rootDeck = decks.find(d => d.slug === 'imported-root');
+    const childDeck = decks.find(d => d.slug === 'imported-child');
 
     expect(rootDeck).toBeDefined();
     expect(childDeck).toBeDefined();

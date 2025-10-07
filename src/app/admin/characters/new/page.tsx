@@ -573,7 +573,9 @@ export default function NewCharacterPage() {
               <ContentEditor
                 value={field.value || ''}
                 onChange={field.onChange}
-                onFormatChange={(format: 'rich-html' | 'mdx') => setValue('descriptionFormat', format)}
+                onFormatChange={(format: 'rich-html' | 'mdx') =>
+                  setValue('descriptionFormat', format)
+                }
                 label='Description'
                 placeholder='Describe your character...'
                 rows={8}
@@ -588,7 +590,9 @@ export default function NewCharacterPage() {
               <ContentEditor
                 value={field.value || ''}
                 onChange={field.onChange}
-                onFormatChange={(format: 'rich-html' | 'mdx') => setValue('personalityFormat', format)}
+                onFormatChange={(format: 'rich-html' | 'mdx') =>
+                  setValue('personalityFormat', format)
+                }
                 label='Personality'
                 placeholder='Describe their personality traits...'
                 rows={8}
@@ -603,7 +607,9 @@ export default function NewCharacterPage() {
               <ContentEditor
                 value={field.value || ''}
                 onChange={field.onChange}
-                onFormatChange={(format: 'rich-html' | 'mdx') => setValue('backgroundFormat', format)}
+                onFormatChange={(format: 'rich-html' | 'mdx') =>
+                  setValue('backgroundFormat', format)
+                }
                 label='Background'
                 placeholder='Describe their history and background...'
                 rows={8}

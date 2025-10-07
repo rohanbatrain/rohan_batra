@@ -10,7 +10,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -25,7 +31,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 // Dynamic import for MDX preview to avoid SSR issues
 const MDXPreview = dynamic(() => import('@/components/admin/mdx-preview'), {
   ssr: false,
-  loading: () => <div className='p-8 text-center text-muted-foreground'>Loading preview...</div>,
+  loading: () => (
+    <div className='p-8 text-center text-muted-foreground'>
+      Loading preview...
+    </div>
+  ),
 });
 
 const pageSchema = z.object({
@@ -34,7 +44,10 @@ const pageSchema = z.object({
     .string()
     .min(1, 'Slug is required')
     .max(100)
-    .regex(/^[a-z0-9-/]+$/, 'Slug must contain only lowercase letters, numbers, hyphens, and slashes'),
+    .regex(
+      /^[a-z0-9-/]+$/,
+      'Slug must contain only lowercase letters, numbers, hyphens, and slashes'
+    ),
   content: z.string().min(1, 'Content is required'),
   excerpt: z.string().max(500).optional().or(z.literal('')),
   sectionId: z.string().optional().or(z.literal('')),
@@ -56,12 +69,18 @@ interface DocEditorProps {
   initialData?: Partial<FormData>;
 }
 
-export default function DocEditor({ projectId, pageId, initialData }: DocEditorProps) {
+export default function DocEditor({
+  projectId,
+  pageId,
+  initialData,
+}: DocEditorProps) {
   const router = useRouter();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [previewMode, setPreviewMode] = useState<'split' | 'preview' | 'editor'>('split');
+  const [previewMode, setPreviewMode] = useState<
+    'split' | 'preview' | 'editor'
+  >('split');
 
   const {
     register,
@@ -147,7 +166,9 @@ export default function DocEditor({ projectId, pageId, initialData }: DocEditorP
 
       toast({
         title: 'Success',
-        description: pageId ? 'Page updated successfully' : 'Page created successfully',
+        description: pageId
+          ? 'Page updated successfully'
+          : 'Page created successfully',
       });
 
       if (!pageId) {
@@ -182,7 +203,9 @@ export default function DocEditor({ projectId, pageId, initialData }: DocEditorP
               <h1 className='text-lg font-semibold'>
                 {pageId ? 'Edit Page' : 'New Page'}
               </h1>
-              {isSaving && <p className='text-sm text-muted-foreground'>Saving...</p>}
+              {isSaving && (
+                <p className='text-sm text-muted-foreground'>Saving...</p>
+              )}
             </div>
           </div>
 
@@ -211,7 +234,11 @@ export default function DocEditor({ projectId, pageId, initialData }: DocEditorP
               </Button>
             </div>
 
-            <Button variant='outline' onClick={handleSubmit(onSubmit)} disabled={isSubmitting}>
+            <Button
+              variant='outline'
+              onClick={handleSubmit(onSubmit)}
+              disabled={isSubmitting}
+            >
               <Save className='mr-2 h-4 w-4' />
               Save Draft
             </Button>
@@ -241,15 +268,23 @@ export default function DocEditor({ projectId, pageId, initialData }: DocEditorP
                     className='text-lg font-semibold'
                   />
                   {errors.title && (
-                    <p className='text-sm text-red-600'>{errors.title.message}</p>
+                    <p className='text-sm text-red-600'>
+                      {errors.title.message}
+                    </p>
                   )}
                 </div>
 
                 <div className='space-y-2'>
                   <Label htmlFor='slug'>URL Slug *</Label>
-                  <Input id='slug' {...register('slug')} placeholder='getting-started' />
+                  <Input
+                    id='slug'
+                    {...register('slug')}
+                    placeholder='getting-started'
+                  />
                   {errors.slug && (
-                    <p className='text-sm text-red-600'>{errors.slug.message}</p>
+                    <p className='text-sm text-red-600'>
+                      {errors.slug.message}
+                    </p>
                   )}
                 </div>
 
@@ -273,7 +308,9 @@ export default function DocEditor({ projectId, pageId, initialData }: DocEditorP
                     className='font-mono text-sm'
                   />
                   {errors.content && (
-                    <p className='text-sm text-red-600'>{errors.content.message}</p>
+                    <p className='text-sm text-red-600'>
+                      {errors.content.message}
+                    </p>
                   )}
                 </div>
 
@@ -288,7 +325,9 @@ export default function DocEditor({ projectId, pageId, initialData }: DocEditorP
                       <Label htmlFor='status'>Status</Label>
                       <Select
                         value={watch('status')}
-                        onValueChange={value => setValue('status', value as any)}
+                        onValueChange={value =>
+                          setValue('status', value as any)
+                        }
                       >
                         <SelectTrigger>
                           <SelectValue />

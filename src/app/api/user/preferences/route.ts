@@ -8,11 +8,13 @@ const preferencesSchema = z.object({
   editor: z.enum(['rich-html', 'mdx']).optional(),
   theme: z.enum(['light', 'dark', 'auto']).optional(),
   language: z.string().optional(),
-  notifications: z.object({
-    email: z.boolean().optional(),
-    browser: z.boolean().optional(),
-    mobile: z.boolean().optional(),
-  }).optional(),
+  notifications: z
+    .object({
+      email: z.boolean().optional(),
+      browser: z.boolean().optional(),
+      mobile: z.boolean().optional(),
+    })
+    .optional(),
 });
 
 // GET /api/user/preferences - Get current user's preferences
@@ -47,8 +49,14 @@ export async function GET(request: NextRequest) {
       },
     };
 
-    console.log('[GET /api/user/preferences] User preferences from DB:', userPrefs);
-    console.log('[GET /api/user/preferences] Returning merged preferences:', preferences);
+    console.log(
+      '[GET /api/user/preferences] User preferences from DB:',
+      userPrefs
+    );
+    console.log(
+      '[GET /api/user/preferences] Returning merged preferences:',
+      preferences
+    );
 
     return NextResponse.json({
       preferences,
@@ -81,7 +89,10 @@ export async function PATCH(request: NextRequest) {
 
     if (parsed.editor) {
       updateFields['preferences.editor'] = parsed.editor;
-      console.log('[PATCH /api/user/preferences] Updating editor preference to:', parsed.editor);
+      console.log(
+        '[PATCH /api/user/preferences] Updating editor preference to:',
+        parsed.editor
+      );
     }
 
     if (parsed.theme) {
@@ -94,13 +105,16 @@ export async function PATCH(request: NextRequest) {
 
     if (parsed.notifications) {
       if (parsed.notifications.email !== undefined) {
-        updateFields['preferences.notifications.email'] = parsed.notifications.email;
+        updateFields['preferences.notifications.email'] =
+          parsed.notifications.email;
       }
       if (parsed.notifications.browser !== undefined) {
-        updateFields['preferences.notifications.browser'] = parsed.notifications.browser;
+        updateFields['preferences.notifications.browser'] =
+          parsed.notifications.browser;
       }
       if (parsed.notifications.mobile !== undefined) {
-        updateFields['preferences.notifications.mobile'] = parsed.notifications.mobile;
+        updateFields['preferences.notifications.mobile'] =
+          parsed.notifications.mobile;
       }
     }
 
@@ -109,11 +123,17 @@ export async function PATCH(request: NextRequest) {
     // First, let's verify the user exists
     const existingUser = await UserModel.findOne({ clerkId: userId });
     if (!existingUser) {
-      console.error('[PATCH /api/user/preferences] User not found for clerkId:', userId);
+      console.error(
+        '[PATCH /api/user/preferences] User not found for clerkId:',
+        userId
+      );
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    console.log('[PATCH /api/user/preferences] Existing preferences before update:', existingUser.preferences);
+    console.log(
+      '[PATCH /api/user/preferences] Existing preferences before update:',
+      existingUser.preferences
+    );
 
     // Update the user
     const user = await UserModel.findOneAndUpdate(
@@ -123,12 +143,21 @@ export async function PATCH(request: NextRequest) {
     );
 
     if (!user) {
-      console.error('[PATCH /api/user/preferences] User not found for clerkId:', userId);
+      console.error(
+        '[PATCH /api/user/preferences] User not found for clerkId:',
+        userId
+      );
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    console.log('[PATCH /api/user/preferences] Updated user preferences:', user.preferences);
-    console.log('[PATCH /api/user/preferences] Full user object:', JSON.stringify(user, null, 2));
+    console.log(
+      '[PATCH /api/user/preferences] Updated user preferences:',
+      user.preferences
+    );
+    console.log(
+      '[PATCH /api/user/preferences] Full user object:',
+      JSON.stringify(user, null, 2)
+    );
 
     return NextResponse.json({
       success: true,

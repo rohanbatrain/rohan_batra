@@ -143,7 +143,7 @@ describe('Experience Model', () => {
         'Seasonal',
       ];
 
-      validTypes.forEach((type) => {
+      validTypes.forEach(type => {
         const experience = new ExperienceModel({
           title: 'Engineer',
           company: 'Tech Corp',
@@ -345,7 +345,7 @@ describe('Experience Model', () => {
 
       // Trigger pre-save hook
       await experience.validate();
-      
+
       expect(experience.isCurrent).toBe(true);
       // Note: This would be set in pre-save, which requires actual DB save
     });

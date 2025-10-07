@@ -11,14 +11,15 @@ export async function getBooleanSetting(
 ): Promise<boolean> {
   try {
     await connectToDatabase();
-  const setting = await SiteSetting.findOne({ key: key.toLowerCase() });
+    const setting = await SiteSetting.findOne({ key: key.toLowerCase() });
     if (!setting) return defaultValue;
     if (setting.type === 'boolean') return Boolean(setting.value);
     // If stored as json/string, coerce sensible values
     if (typeof setting.value === 'string') {
       const lowered = setting.value.toLowerCase().trim();
       if (['true', '1', 'yes', 'on', 'enabled'].includes(lowered)) return true;
-      if (['false', '0', 'no', 'off', 'disabled'].includes(lowered)) return false;
+      if (['false', '0', 'no', 'off', 'disabled'].includes(lowered))
+        return false;
     }
     if (typeof setting.value === 'number') {
       return setting.value !== 0;

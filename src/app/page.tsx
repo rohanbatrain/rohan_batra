@@ -66,7 +66,7 @@ export default async function Home() {
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800'>
       <HeroSection />
-    <SkillsSection />
+      <SkillsSection />
 
       {/* Professional Experience */}
       {experiences.length > 0 && (

@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     // Use Clerk authentication instead of fake header
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json(
         {
@@ -131,7 +131,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's database ID
-    const user = await UserModel.findOne({ clerkId: userId }).select('_id').lean();
+    const user = await UserModel.findOne({ clerkId: userId })
+      .select('_id')
+      .lean();
     if (!user) {
       return NextResponse.json(
         {
@@ -144,7 +146,7 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const { targetId, targetType } = body;
-    
+
     if (!targetId || !targetType) {
       return NextResponse.json(
         {
@@ -172,7 +174,7 @@ export async function POST(request: NextRequest) {
       targetId,
       targetType
     );
-    
+
     return NextResponse.json({
       success: true,
       data: result,

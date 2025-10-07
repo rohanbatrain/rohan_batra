@@ -130,13 +130,13 @@ export async function POST(
     if (parsed.order !== undefined) {
       // User provided explicit order
       order = parsed.order;
-      
+
       // Check for conflicts
       const existingModule = await CourseModuleModel.exists({
         courseId: courseDoc._id,
         order,
       });
-      
+
       if (existingModule) {
         return NextResponse.json(
           { error: `Module order ${order} already exists for this course` },
@@ -150,7 +150,7 @@ export async function POST(
         { $inc: { _nextModuleOrder: 1 } },
         { new: true, select: '_nextModuleOrder' }
       );
-      
+
       order = (updated?._nextModuleOrder ?? 1) - 1;
     }
 

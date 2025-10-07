@@ -11,7 +11,10 @@ import { uniqueSlug } from '@/lib/slug';
 
 const PageInputSchema = z.object({
   title: z.string().min(2).max(200),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   description: z.string().max(300).optional(),
   content: z.string(),
   contentFormat: z.enum(['mdx', 'markdown']).default('mdx'),
@@ -19,19 +22,23 @@ const PageInputSchema = z.object({
   parentPageId: z.string().optional().nullable(),
   order: z.number().int().min(0).optional(),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
-  features: z.object({
-    showToc: z.boolean().optional(),
-    showBreadcrumbs: z.boolean().optional(),
-    showLastUpdated: z.boolean().optional(),
-    allowComments: z.boolean().optional(),
-    showEditLink: z.boolean().optional(),
-  }).optional(),
-  seo: z.object({
-    title: z.string().max(70).optional(),
-    description: z.string().max(160).optional(),
-    keywords: z.array(z.string()).optional(),
-    ogImage: z.string().url().optional(),
-  }).optional(),
+  features: z
+    .object({
+      showToc: z.boolean().optional(),
+      showBreadcrumbs: z.boolean().optional(),
+      showLastUpdated: z.boolean().optional(),
+      allowComments: z.boolean().optional(),
+      showEditLink: z.boolean().optional(),
+    })
+    .optional(),
+  seo: z
+    .object({
+      title: z.string().max(70).optional(),
+      description: z.string().max(160).optional(),
+      keywords: z.array(z.string()).optional(),
+      ogImage: z.string().url().optional(),
+    })
+    .optional(),
   relatedPages: z.array(z.string()).optional(),
   prerequisites: z.array(z.string()).optional(),
 });
@@ -49,7 +56,9 @@ async function getAuthorizedUser(userId: string) {
 }
 
 // Extract headings from content for TOC
-function extractHeadings(content: string): Array<{ level: number; text: string; id: string }> {
+function extractHeadings(
+  content: string
+): Array<{ level: number; text: string; id: string }> {
   const headings: Array<{ level: number; text: string; id: string }> = [];
   const headingRegex = /^(#{1,6})\s+(.+)$/gm;
   let match;
@@ -61,7 +70,7 @@ function extractHeadings(content: string): Array<{ level: number; text: string; 
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
-    
+
     headings.push({ level, text, id });
   }
 
@@ -75,7 +84,7 @@ export async function GET(
   try {
     const { id: projectId } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -97,10 +106,7 @@ export async function GET(
 
     const project = await DocProjectModel.findById(projectId);
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
     const pages = await DocPageModel.find({ docProjectId: project._id })
@@ -147,7 +153,7 @@ export async function POST(
   try {
     const { id: projectId } = await context.params;
     const { userId } = await auth();
-    
+
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -169,10 +175,7 @@ export async function POST(
 
     const project = await DocProjectModel.findById(projectId);
     if (!project) {
-      return NextResponse.json(
-        { error: 'Project not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
 
     const body = await request.json();
@@ -233,28 +236,32 @@ export async function POST(
     const headings = extractHeadings(parsed.content);
 
     // Validate related pages and prerequisites
-    const relatedPages = parsed.relatedPages
-      ?.filter(id => Types.ObjectId.isValid(id))
-      .map(id => new Types.ObjectId(id)) || [];
-    
-    const prerequisites = parsed.prerequisites
-      ?.filter(id => Types.ObjectId.isValid(id))
-      .map(id => new Types.ObjectId(id)) || [];
+    const relatedPages =
+      parsed.relatedPages
+        ?.filter(id => Types.ObjectId.isValid(id))
+        .map(id => new Types.ObjectId(id)) || [];
+
+    const prerequisites =
+      parsed.prerequisites
+        ?.filter(id => Types.ObjectId.isValid(id))
+        .map(id => new Types.ObjectId(id)) || [];
 
     const page = new DocPageModel({
       docProjectId: project._id,
-      sectionId: parsed.sectionId && Types.ObjectId.isValid(parsed.sectionId)
-        ? new Types.ObjectId(parsed.sectionId)
-        : undefined,
+      sectionId:
+        parsed.sectionId && Types.ObjectId.isValid(parsed.sectionId)
+          ? new Types.ObjectId(parsed.sectionId)
+          : undefined,
       title: parsed.title,
       slug,
       description: parsed.description?.trim(),
       content: parsed.content,
       contentFormat: parsed.contentFormat,
       order: parsed.order ?? 0,
-      parentPageId: parsed.parentPageId && Types.ObjectId.isValid(parsed.parentPageId)
-        ? new Types.ObjectId(parsed.parentPageId)
-        : undefined,
+      parentPageId:
+        parsed.parentPageId && Types.ObjectId.isValid(parsed.parentPageId)
+          ? new Types.ObjectId(parsed.parentPageId)
+          : undefined,
       headings,
       status: parsed.status,
       features: {
@@ -279,10 +286,7 @@ export async function POST(
 
     await page.save();
 
-    return NextResponse.json(
-      { page: page.toJSON() },
-      { status: 201 }
-    );
+    return NextResponse.json({ page: page.toJSON() }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

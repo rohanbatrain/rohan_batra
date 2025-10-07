@@ -15,7 +15,11 @@ const TryHackMeBadgeSchema = new Schema<ITryHackMeBadge>(
     category: { type: String, trim: true },
     tags: [{ type: String, trim: true, lowercase: true }],
     earnedAt: { type: Date },
-    visibility: { type: String, enum: ['public', 'private'], default: 'public' },
+    visibility: {
+      type: String,
+      enum: ['public', 'private'],
+      default: 'public',
+    },
   },
   {
     timestamps: true,

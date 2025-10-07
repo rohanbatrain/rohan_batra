@@ -151,18 +151,18 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
   const [savingDeck, setSavingDeck] = useState(false);
   const [savingCard, setSavingCard] = useState(false);
   const [loadingDecks, setLoadingDecks] = useState(false);
-  const [availableDecks, setAvailableDecks] = useState<Array<{ id: string; title: string; level: number; path: string }>>([]);
+  const [availableDecks, setAvailableDecks] = useState<
+    Array<{ id: string; title: string; level: number; path: string }>
+  >([]);
 
   const deckDetailQuery = useMemo(() => {
     if (!deckId) return null;
     return `/api/admin/flashcards/${deckId}?includeCards=true`;
   }, [deckId]);
 
-  const { data, error, isLoading, mutate } = useSWR<DeckDetail & { id: string }>(
-    deckDetailQuery,
-    fetcher,
-    { keepPreviousData: true }
-  );
+  const { data, error, isLoading, mutate } = useSWR<
+    DeckDetail & { id: string }
+  >(deckDetailQuery, fetcher, { keepPreviousData: true });
 
   useEffect(() => {
     if (data?.id) {
@@ -191,7 +191,7 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
         const res = await fetch('/api/admin/flashcards?tree=true');
         if (!res.ok) return;
         const treeData = await res.json();
-        
+
         // Flatten tree for dropdown (exclude current deck and its descendants, and decks at max depth)
         const flatten = (nodes: any[], depth = 0): any[] => {
           const MAX_DEPTH = 6;
@@ -200,19 +200,21 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
             if (node.id === deckId || node.level >= MAX_DEPTH - 1) {
               return [];
             }
-            const items = [{ 
-              id: node.id, 
-              title: node.title, 
-              level: node.level,
-              path: node.path 
-            }];
+            const items = [
+              {
+                id: node.id,
+                title: node.title,
+                level: node.level,
+                path: node.path,
+              },
+            ];
             if (node.children && node.children.length > 0) {
               items.push(...flatten(node.children, depth + 1));
             }
             return items;
           });
         };
-        
+
         setAvailableDecks(flatten(treeData.decks || []));
       } catch (err) {
         console.error('Failed to load decks:', err);
@@ -248,11 +250,19 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
   const saveDeck = async () => {
     if (!deckId) return;
     if (!deckForm.title.trim()) {
-      toast({ title: 'Title required', description: 'Please provide a deck title.', variant: 'destructive' });
+      toast({
+        title: 'Title required',
+        description: 'Please provide a deck title.',
+        variant: 'destructive',
+      });
       return;
     }
     if (!deckForm.slug.trim()) {
-      toast({ title: 'Slug required', description: 'Decks require a slug identifier.', variant: 'destructive' });
+      toast({
+        title: 'Slug required',
+        description: 'Decks require a slug identifier.',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -268,7 +278,8 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
         isFeatured: deckForm.isFeatured,
         tags: parseCommaSeparated(deckForm.tags),
         categories: parseCommaSeparated(deckForm.categories),
-        parentDeckId: deckForm.parentDeckId === '__none__' ? null : deckForm.parentDeckId,
+        parentDeckId:
+          deckForm.parentDeckId === '__none__' ? null : deckForm.parentDeckId,
       };
 
       if (deckForm.estimatedReviewMinutes.trim()) {
@@ -293,12 +304,16 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
         throw new Error(errorPayload.error || 'Failed to update deck');
       }
 
-      toast({ title: 'Deck updated', description: 'Flashcard deck saved successfully.' });
+      toast({
+        title: 'Deck updated',
+        description: 'Flashcard deck saved successfully.',
+      });
       await mutate();
     } catch (err) {
       toast({
         title: 'Unable to update deck',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
+        description:
+          err instanceof Error ? err.message : 'Unknown error occurred',
         variant: 'destructive',
       });
     } finally {
@@ -310,14 +325,17 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
     if (!deckId) return;
     const confirmed = await confirm({
       title: 'Delete deck?',
-      description: 'This will remove the deck and all cards. This action cannot be undone.',
+      description:
+        'This will remove the deck and all cards. This action cannot be undone.',
       confirmText: 'Delete deck',
       destructive: true,
     });
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/admin/flashcards/${deckId}`, { method: 'DELETE' });
+      const response = await fetch(`/api/admin/flashcards/${deckId}`, {
+        method: 'DELETE',
+      });
       if (!response.ok) {
         const errorPayload = await response.json().catch(() => ({}));
         throw new Error(errorPayload.error || 'Failed to delete deck');
@@ -327,7 +345,8 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
     } catch (err) {
       toast({
         title: 'Unable to delete deck',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
+        description:
+          err instanceof Error ? err.message : 'Unknown error occurred',
         variant: 'destructive',
       });
     }
@@ -356,11 +375,19 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
   const saveCard = async () => {
     if (!deckId) return;
     if (!cardForm.prompt.trim()) {
-      toast({ title: 'Prompt required', description: 'Enter prompt text.', variant: 'destructive' });
+      toast({
+        title: 'Prompt required',
+        description: 'Enter prompt text.',
+        variant: 'destructive',
+      });
       return;
     }
     if (!cardForm.response.trim()) {
-      toast({ title: 'Response required', description: 'Enter response text.', variant: 'destructive' });
+      toast({
+        title: 'Response required',
+        description: 'Enter response text.',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -400,7 +427,9 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
 
       toast({
         title: editingCard ? 'Card updated' : 'Card created',
-        description: editingCard ? 'Flashcard updated successfully.' : 'New flashcard added to deck.',
+        description: editingCard
+          ? 'Flashcard updated successfully.'
+          : 'New flashcard added to deck.',
       });
       await mutate();
       setCardDialogOpen(false);
@@ -409,7 +438,8 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
     } catch (err) {
       toast({
         title: 'Unable to save card',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
+        description:
+          err instanceof Error ? err.message : 'Unknown error occurred',
         variant: 'destructive',
       });
     } finally {
@@ -428,17 +458,24 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
     if (!confirmed) return;
 
     try {
-      const response = await fetch(`/api/admin/flashcards/${deckId}/cards/${card.id}`, { method: 'DELETE' });
+      const response = await fetch(
+        `/api/admin/flashcards/${deckId}/cards/${card.id}`,
+        { method: 'DELETE' }
+      );
       if (!response.ok) {
         const errorPayload = await response.json().catch(() => ({}));
         throw new Error(errorPayload.error || 'Failed to delete card');
       }
-      toast({ title: 'Card deleted', description: 'Flashcard removed from deck.' });
+      toast({
+        title: 'Card deleted',
+        description: 'Flashcard removed from deck.',
+      });
       await mutate();
     } catch (err) {
       toast({
         title: 'Unable to delete card',
-        description: err instanceof Error ? err.message : 'Unknown error occurred',
+        description:
+          err instanceof Error ? err.message : 'Unknown error occurred',
         variant: 'destructive',
       });
     }
@@ -450,16 +487,22 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
 
       <div className='flex items-center justify-between'>
         <div>
-          <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>Manage deck</h1>
+          <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
+            Manage deck
+          </h1>
           {data?.title ? (
-            <p className='text-sm text-gray-500 dark:text-gray-400'>Editing: {data.title}</p>
+            <p className='text-sm text-gray-500 dark:text-gray-400'>
+              Editing: {data.title}
+            </p>
           ) : null}
         </div>
         <div className='flex items-center gap-2'>
           <Link href='/admin/flashcards' className='hidden sm:inline-block'>
             <Button variant='outline'>Back to decks</Button>
           </Link>
-          <Button variant='destructive' onClick={deleteDeck} disabled={!data}>Delete deck</Button>
+          <Button variant='destructive' onClick={deleteDeck} disabled={!data}>
+            Delete deck
+          </Button>
           <Button onClick={saveDeck} disabled={savingDeck || !data}>
             {savingDeck ? 'Saving…' : 'Save deck'}
           </Button>
@@ -482,33 +525,64 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
             <div className='space-y-3'>
               <div>
                 <Label htmlFor='deck-title'>Title</Label>
-                <Input id='deck-title' value={deckForm.title} onChange={e => handleDeckFieldChange('title', e.target.value)} />
+                <Input
+                  id='deck-title'
+                  value={deckForm.title}
+                  onChange={e => handleDeckFieldChange('title', e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor='deck-slug'>Slug</Label>
-                <Input id='deck-slug' value={deckForm.slug} onChange={e => handleDeckFieldChange('slug', e.target.value)} />
+                <Input
+                  id='deck-slug'
+                  value={deckForm.slug}
+                  onChange={e => handleDeckFieldChange('slug', e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor='deck-subtitle'>Subtitle</Label>
-                <Input id='deck-subtitle' value={deckForm.subtitle} onChange={e => handleDeckFieldChange('subtitle', e.target.value)} />
+                <Input
+                  id='deck-subtitle'
+                  value={deckForm.subtitle}
+                  onChange={e =>
+                    handleDeckFieldChange('subtitle', e.target.value)
+                  }
+                />
               </div>
               <div>
                 <Label htmlFor='deck-description'>Description</Label>
-                <Textarea id='deck-description' value={deckForm.description} onChange={e => handleDeckFieldChange('description', e.target.value)} rows={4} />
+                <Textarea
+                  id='deck-description'
+                  value={deckForm.description}
+                  onChange={e =>
+                    handleDeckFieldChange('description', e.target.value)
+                  }
+                  rows={4}
+                />
               </div>
-              
+
               {/* Parent Deck Selector */}
               <div>
                 <Label htmlFor='parentDeck' className='flex items-center gap-2'>
                   <Folder className='h-4 w-4' />
                   Parent Deck
                 </Label>
-                <Select value={deckForm.parentDeckId} onValueChange={v => handleDeckFieldChange('parentDeckId', v)} disabled={loadingDecks}>
+                <Select
+                  value={deckForm.parentDeckId}
+                  onValueChange={v => handleDeckFieldChange('parentDeckId', v)}
+                  disabled={loadingDecks}
+                >
                   <SelectTrigger id='parentDeck'>
-                    <SelectValue placeholder={loadingDecks ? 'Loading...' : 'None (top-level)'} />
+                    <SelectValue
+                      placeholder={
+                        loadingDecks ? 'Loading...' : 'None (top-level)'
+                      }
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value='__none__'>None (top-level deck)</SelectItem>
+                    <SelectItem value='__none__'>
+                      None (top-level deck)
+                    </SelectItem>
                     {availableDecks.map(deck => (
                       <SelectItem key={deck.id} value={deck.id}>
                         <span style={{ paddingLeft: `${deck.level * 12}px` }}>
@@ -528,7 +602,15 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
               <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
                 <div>
                   <Label>Status</Label>
-                  <Select value={deckForm.status} onValueChange={value => handleDeckFieldChange('status', value as DeckFormState['status'])}>
+                  <Select
+                    value={deckForm.status}
+                    onValueChange={value =>
+                      handleDeckFieldChange(
+                        'status',
+                        value as DeckFormState['status']
+                      )
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder='Select status' />
                     </SelectTrigger>
@@ -541,7 +623,15 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
                 </div>
                 <div>
                   <Label>Visibility</Label>
-                  <Select value={deckForm.visibility} onValueChange={value => handleDeckFieldChange('visibility', value as DeckFormState['visibility'])}>
+                  <Select
+                    value={deckForm.visibility}
+                    onValueChange={value =>
+                      handleDeckFieldChange(
+                        'visibility',
+                        value as DeckFormState['visibility']
+                      )
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder='Select visibility' />
                     </SelectTrigger>
@@ -556,29 +646,71 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
               <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
                 <div>
                   <Label htmlFor='deck-tags'>Tags</Label>
-                  <Input id='deck-tags' placeholder='Comma separated' value={deckForm.tags} onChange={e => handleDeckFieldChange('tags', e.target.value)} />
+                  <Input
+                    id='deck-tags'
+                    placeholder='Comma separated'
+                    value={deckForm.tags}
+                    onChange={e =>
+                      handleDeckFieldChange('tags', e.target.value)
+                    }
+                  />
                 </div>
                 <div>
                   <Label htmlFor='deck-categories'>Categories</Label>
-                  <Input id='deck-categories' placeholder='Comma separated' value={deckForm.categories} onChange={e => handleDeckFieldChange('categories', e.target.value)} />
+                  <Input
+                    id='deck-categories'
+                    placeholder='Comma separated'
+                    value={deckForm.categories}
+                    onChange={e =>
+                      handleDeckFieldChange('categories', e.target.value)
+                    }
+                  />
                 </div>
               </div>
               <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
                 <div>
                   <Label htmlFor='deck-estimated'>Estimated minutes</Label>
-                  <Input id='deck-estimated' type='number' min={0} value={deckForm.estimatedReviewMinutes} onChange={e => handleDeckFieldChange('estimatedReviewMinutes', e.target.value)} />
+                  <Input
+                    id='deck-estimated'
+                    type='number'
+                    min={0}
+                    value={deckForm.estimatedReviewMinutes}
+                    onChange={e =>
+                      handleDeckFieldChange(
+                        'estimatedReviewMinutes',
+                        e.target.value
+                      )
+                    }
+                  />
                 </div>
                 <div>
-                  <Label htmlFor='deck-cover'>Cover image URL or shortcode</Label>
-                  <Input id='deck-cover' value={deckForm.coverImage} onChange={e => handleDeckFieldChange('coverImage', e.target.value)} />
+                  <Label htmlFor='deck-cover'>
+                    Cover image URL or shortcode
+                  </Label>
+                  <Input
+                    id='deck-cover'
+                    value={deckForm.coverImage}
+                    onChange={e =>
+                      handleDeckFieldChange('coverImage', e.target.value)
+                    }
+                  />
                 </div>
               </div>
               <div className='flex items-center justify-between rounded-md border border-dashed border-gray-300 px-3 py-2 dark:border-gray-700'>
                 <div>
-                  <Label className='text-sm font-medium'>Feature this deck</Label>
-                  <p className='text-xs text-muted-foreground'>Featured decks can be spotlighted in landing sections.</p>
+                  <Label className='text-sm font-medium'>
+                    Feature this deck
+                  </Label>
+                  <p className='text-xs text-muted-foreground'>
+                    Featured decks can be spotlighted in landing sections.
+                  </p>
                 </div>
-                <Switch checked={deckForm.isFeatured} onCheckedChange={checked => handleDeckFieldChange('isFeatured', checked)} />
+                <Switch
+                  checked={deckForm.isFeatured}
+                  onCheckedChange={checked =>
+                    handleDeckFieldChange('isFeatured', checked)
+                  }
+                />
               </div>
             </div>
           </section>
@@ -586,7 +718,9 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
           <section className='space-y-4'>
             <div className='flex items-center justify-between'>
               <h3 className='text-lg font-semibold'>Flashcards</h3>
-              <Button size='sm' onClick={openCreateCard}>Add card</Button>
+              <Button size='sm' onClick={openCreateCard}>
+                Add card
+              </Button>
             </div>
             {data.cards && data.cards.length > 0 ? (
               <Table>
@@ -597,15 +731,21 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
                     <TableHead>Response</TableHead>
                     <TableHead>Tags</TableHead>
                     <TableHead className='w-[90px] text-right'>Order</TableHead>
-                    <TableHead className='w-[160px] text-right'>Actions</TableHead>
+                    <TableHead className='w-[160px] text-right'>
+                      Actions
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {data.cards.map(card => (
                     <TableRow key={card.id}>
                       <TableCell className='capitalize'>{card.type}</TableCell>
-                      <TableCell className='max-w-xs truncate'>{card.prompt.text ?? card.prompt.richText ?? '—'}</TableCell>
-                      <TableCell className='max-w-xs truncate'>{card.response.text ?? card.response.richText ?? '—'}</TableCell>
+                      <TableCell className='max-w-xs truncate'>
+                        {card.prompt.text ?? card.prompt.richText ?? '—'}
+                      </TableCell>
+                      <TableCell className='max-w-xs truncate'>
+                        {card.response.text ?? card.response.richText ?? '—'}
+                      </TableCell>
                       <TableCell className='space-x-2'>
                         {card.tags.map(tag => (
                           <Badge key={`${card.id}-${tag}`} variant='secondary'>
@@ -613,19 +753,34 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
                           </Badge>
                         ))}
                         {card.tags.length === 0 ? (
-                          <span className='text-xs text-muted-foreground'>—</span>
+                          <span className='text-xs text-muted-foreground'>
+                            —
+                          </span>
                         ) : null}
                       </TableCell>
                       <TableCell className='text-right'>{card.order}</TableCell>
                       <TableCell className='space-x-2 text-right'>
-                        <Button size='sm' variant='outline' onClick={() => openEditCard(card)}>Edit</Button>
-                        <Button size='sm' variant='destructive' onClick={() => deleteCard(card)}>Delete</Button>
+                        <Button
+                          size='sm'
+                          variant='outline'
+                          onClick={() => openEditCard(card)}
+                        >
+                          Edit
+                        </Button>
+                        <Button
+                          size='sm'
+                          variant='destructive'
+                          onClick={() => deleteCard(card)}
+                        >
+                          Delete
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
                 <TableCaption>
-                  {data.cards.length} card{data.cards.length === 1 ? '' : 's'} in this deck.
+                  {data.cards.length} card{data.cards.length === 1 ? '' : 's'}{' '}
+                  in this deck.
                 </TableCaption>
               </Table>
             ) : (
@@ -641,12 +796,19 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
       <Dialog open={cardDialogOpen} onOpenChange={setCardDialogOpen}>
         <DialogContent className='max-w-lg'>
           <DialogHeader>
-            <DialogTitle>{editingCard ? 'Edit flashcard' : 'Create flashcard'}</DialogTitle>
+            <DialogTitle>
+              {editingCard ? 'Edit flashcard' : 'Create flashcard'}
+            </DialogTitle>
           </DialogHeader>
           <div className='space-y-3'>
             <div>
               <Label>Type</Label>
-              <Select value={cardForm.type} onValueChange={value => handleCardFieldChange('type', value as CardFormState['type'])}>
+              <Select
+                value={cardForm.type}
+                onValueChange={value =>
+                  handleCardFieldChange('type', value as CardFormState['type'])
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder='Select type' />
                 </SelectTrigger>
@@ -660,29 +822,63 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
             </div>
             <div>
               <Label htmlFor='card-prompt'>Prompt</Label>
-              <Textarea id='card-prompt' rows={3} value={cardForm.prompt} onChange={e => handleCardFieldChange('prompt', e.target.value)} />
+              <Textarea
+                id='card-prompt'
+                rows={3}
+                value={cardForm.prompt}
+                onChange={e => handleCardFieldChange('prompt', e.target.value)}
+              />
             </div>
             <div>
               <Label htmlFor='card-response'>Response</Label>
-              <Textarea id='card-response' rows={3} value={cardForm.response} onChange={e => handleCardFieldChange('response', e.target.value)} />
+              <Textarea
+                id='card-response'
+                rows={3}
+                value={cardForm.response}
+                onChange={e =>
+                  handleCardFieldChange('response', e.target.value)
+                }
+              />
             </div>
             <div className='grid grid-cols-1 gap-3 sm:grid-cols-2'>
               <div>
                 <Label htmlFor='card-hint'>Hint</Label>
-                <Input id='card-hint' value={cardForm.hint} onChange={e => handleCardFieldChange('hint', e.target.value)} />
+                <Input
+                  id='card-hint'
+                  value={cardForm.hint}
+                  onChange={e => handleCardFieldChange('hint', e.target.value)}
+                />
               </div>
               <div>
                 <Label htmlFor='card-order'>Order</Label>
-                <Input id='card-order' type='number' min={0} value={cardForm.order} onChange={e => handleCardFieldChange('order', e.target.value)} />
+                <Input
+                  id='card-order'
+                  type='number'
+                  min={0}
+                  value={cardForm.order}
+                  onChange={e => handleCardFieldChange('order', e.target.value)}
+                />
               </div>
             </div>
             <div>
               <Label htmlFor='card-explanation'>Explanation</Label>
-              <Textarea id='card-explanation' rows={3} value={cardForm.explanation} onChange={e => handleCardFieldChange('explanation', e.target.value)} />
+              <Textarea
+                id='card-explanation'
+                rows={3}
+                value={cardForm.explanation}
+                onChange={e =>
+                  handleCardFieldChange('explanation', e.target.value)
+                }
+              />
             </div>
             <div>
               <Label htmlFor='card-tags'>Tags</Label>
-              <Input id='card-tags' placeholder='Comma separated tags' value={cardForm.tags} onChange={e => handleCardFieldChange('tags', e.target.value)} />
+              <Input
+                id='card-tags'
+                placeholder='Comma separated tags'
+                value={cardForm.tags}
+                onChange={e => handleCardFieldChange('tags', e.target.value)}
+              />
             </div>
           </div>
           <DialogFooter className='mt-6'>
@@ -690,7 +886,11 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
               <Button variant='outline'>Cancel</Button>
             </DialogClose>
             <Button onClick={saveCard} disabled={savingCard}>
-              {savingCard ? 'Saving…' : editingCard ? 'Save changes' : 'Create card'}
+              {savingCard
+                ? 'Saving…'
+                : editingCard
+                  ? 'Save changes'
+                  : 'Create card'}
             </Button>
           </DialogFooter>
         </DialogContent>

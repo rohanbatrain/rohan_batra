@@ -1,6 +1,6 @@
 /**
  * T007: Unit Test - Redis Cache
- * 
+ *
  * Tests graph caching functions.
  */
 
@@ -67,9 +67,9 @@ describe('Graph Cache', () => {
   describe('invalidateCourseGraph', () => {
     it('should delete all keys matching pattern', async () => {
       const courseId = 'test-course-123';
-      
+
       await invalidateCourseGraph(courseId);
-      
+
       // Should complete without throwing
       expect(true).toBe(true);
     });
@@ -78,9 +78,9 @@ describe('Graph Cache', () => {
   describe('invalidateLessonGraph', () => {
     it('should delete all keys matching pattern', async () => {
       const lessonId = 'test-lesson-123';
-      
+
       await invalidateLessonGraph(lessonId);
-      
+
       // Should complete without throwing
       expect(true).toBe(true);
     });
@@ -90,9 +90,9 @@ describe('Graph Cache', () => {
     it('should delete user-specific cache keys', async () => {
       const userId = 'test-user-123';
       const courseId = 'test-course-123';
-      
+
       await invalidateUserProgress(userId, courseId);
-      
+
       // Should complete without throwing
       expect(true).toBe(true);
     });

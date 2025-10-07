@@ -30,7 +30,9 @@ export default function BackToTop() {
       size='icon'
       className={cn(
         'fixed bottom-8 right-8 z-40 rounded-full shadow-lg transition-all',
-        isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16 pointer-events-none'
+        isVisible
+          ? 'opacity-100 translate-y-0'
+          : 'opacity-0 translate-y-16 pointer-events-none'
       )}
       aria-label='Back to top'
     >

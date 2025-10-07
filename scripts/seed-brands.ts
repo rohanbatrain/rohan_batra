@@ -82,7 +82,9 @@ async function seedBrands() {
         order: 4,
       },
     ]);
-    console.log(`✅ Created ${professionalProfiles.length} profiles for ${professionalBrand.name}`);
+    console.log(
+      `✅ Created ${professionalProfiles.length} profiles for ${professionalBrand.name}`
+    );
 
     // Create rohanbatrain_lens (Creative/Photography) brand
     const creativeBrand = await BrandModel.create({
@@ -116,7 +118,9 @@ async function seedBrands() {
         order: 0,
       },
     ]);
-    console.log(`✅ Created ${creativeProfiles.length} profiles for ${creativeBrand.name}`);
+    console.log(
+      `✅ Created ${creativeProfiles.length} profiles for ${creativeBrand.name}`
+    );
 
     // Summary
     const totalBrands = await BrandModel.countDocuments();

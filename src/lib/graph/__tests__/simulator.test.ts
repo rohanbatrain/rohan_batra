@@ -1,6 +1,6 @@
 /**
  * T008: Unit Test - D3 Force Simulator
- * 
+ *
  * Tests D3 force simulation wrapper functions.
  */
 
@@ -20,9 +20,7 @@ describe('D3 Force Simulator', () => {
           { id: '1', type: 'module', label: 'Module 1' },
           { id: '2', type: 'lesson', label: 'Lesson 1' },
         ],
-        edges: [
-          { source: '1', target: '2', type: 'contains' },
-        ],
+        edges: [{ source: '1', target: '2', type: 'contains' }],
         metadata: {
           courseId: 'test-course',
           nodeCount: 2,

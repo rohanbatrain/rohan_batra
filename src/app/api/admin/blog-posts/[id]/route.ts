@@ -172,9 +172,8 @@ export async function PUT(
 
     // Map contentFormat to contentType if provided
     if (validatedData.contentFormat) {
-      updateData.contentType = validatedData.contentFormat === 'mdx'
-        ? 'markdown'
-        : 'rich-text';
+      updateData.contentType =
+        validatedData.contentFormat === 'mdx' ? 'markdown' : 'rich-text';
       delete updateData.contentFormat; // Remove contentFormat as it's not in the schema
     }
 
@@ -232,7 +231,8 @@ export async function PUT(
         _id: updatedPost._id,
         title: updatedPost.title,
         content: updatedPost.content,
-        contentFormat: updatedPost.contentType === 'markdown' ? 'mdx' : 'rich-html',
+        contentFormat:
+          updatedPost.contentType === 'markdown' ? 'mdx' : 'rich-html',
         excerpt: updatedPost.excerpt,
         slug: updatedPost.slug,
         status: updatedPost.status,

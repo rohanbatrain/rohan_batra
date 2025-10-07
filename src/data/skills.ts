@@ -62,8 +62,19 @@ export const skillsData: SkillDef[] = [
     Icon: Code,
     color: 'text-orange-600',
     category: 'backend',
-    blogTags: ['competitive programming', 'dsa', 'algorithms', 'leetcode', 'codeforces'],
-    projectTags: ['competitive programming', 'dsa', 'algorithms', 'data structures'],
+    blogTags: [
+      'competitive programming',
+      'dsa',
+      'algorithms',
+      'leetcode',
+      'codeforces',
+    ],
+    projectTags: [
+      'competitive programming',
+      'dsa',
+      'algorithms',
+      'data structures',
+    ],
   },
   {
     slug: 'full-stack-developer',

@@ -452,11 +452,12 @@ export async function POST(request: NextRequest) {
 
       // Create the blog post with progressive feature support
       // Map contentFormat to contentType
-      const contentType = filteredData.contentFormat === 'mdx'
-        ? 'markdown'
-        : filteredData.markdown
-        ? 'markdown'
-        : 'rich-text';
+      const contentType =
+        filteredData.contentFormat === 'mdx'
+          ? 'markdown'
+          : filteredData.markdown
+            ? 'markdown'
+            : 'rich-text';
 
       const postData: any = {
         title: filteredData.title,

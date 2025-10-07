@@ -28,11 +28,12 @@ export function buildOrderedOutline(modules: any[], lessons: any[]) {
     const all = (lessonsByModule.get(String(m._id)) || []) as any[];
     // Top-level lessons (no parent)
     const top = all.filter(l => !l.parentLessonId);
-    const orderedTop = Array.isArray(m.lessonIds) && m.lessonIds.length
-      ? (m.lessonIds as any[])
-          .map((id: any) => top.find(l => String(l._id) === String(id)))
-          .filter(Boolean)
-      : top.sort((a: any, b: any) => a.title.localeCompare(b.title));
+    const orderedTop =
+      Array.isArray(m.lessonIds) && m.lessonIds.length
+        ? (m.lessonIds as any[])
+            .map((id: any) => top.find(l => String(l._id) === String(id)))
+            .filter(Boolean)
+        : top.sort((a: any, b: any) => a.title.localeCompare(b.title));
     // Attach sub-lessons grouped by parent
     const childrenMap = new Map<string, any[]>();
     for (const l of all) {
@@ -52,13 +53,17 @@ export function buildOrderedOutline(modules: any[], lessons: any[]) {
           .map((id: any) => map.get(String(id)))
           .filter(Boolean);
         // Append any remaining children not in childOrder (new ones) alphabetically
-        const remaining = children.filter((c: any) => !idSet.has(String(c._id)));
+        const remaining = children.filter(
+          (c: any) => !idSet.has(String(c._id))
+        );
         orderedChildren = [
           ...orderedChildren,
           ...remaining.sort((a: any, b: any) => a.title.localeCompare(b.title)),
         ];
       } else {
-        orderedChildren = children.sort((a: any, b: any) => a.title.localeCompare(b.title));
+        orderedChildren = children.sort((a: any, b: any) =>
+          a.title.localeCompare(b.title)
+        );
       }
       return { ...l, subLessons: orderedChildren };
     });
@@ -70,7 +75,11 @@ export async function generateMetadata(ctx: PageProps) {
   const { slug } = await ctx.params;
   await connectToDatabase();
   const course = await Course.findOne({ slug }).lean();
-  if (!course || course.status !== 'published' || course.visibility !== 'public') {
+  if (
+    !course ||
+    course.status !== 'published' ||
+    course.visibility !== 'public'
+  ) {
     return { title: 'Course not found' };
   }
   const title = course.seo?.title || course.title;
@@ -92,7 +101,8 @@ export default async function CoursePublicPage(ctx: PageProps) {
   if (!course) return notFound();
   // Allow preview of drafts in development via ?preview=1 (Next provides no searchParams here by default).
   // For simplicity, only published courses are visible; previews should be handled via a separate admin preview route.
-  if (course.status !== 'published' || course.visibility !== 'public') return notFound();
+  if (course.status !== 'published' || course.visibility !== 'public')
+    return notFound();
 
   // Fetch outline (modules + lessons)
   const modules = await CourseModule.find({ courseId: course._id })
@@ -101,8 +111,13 @@ export default async function CoursePublicPage(ctx: PageProps) {
     .lean();
 
   const moduleIds = modules.map((m: any) => m._id);
-  const lessons = await CourseLesson.find({ courseId: course._id, moduleId: { $in: moduleIds } })
-    .select('moduleId title contentType blogSlug estimatedDurationMinutes isPreviewable parentLessonId')
+  const lessons = await CourseLesson.find({
+    courseId: course._id,
+    moduleId: { $in: moduleIds },
+  })
+    .select(
+      'moduleId title contentType blogSlug estimatedDurationMinutes isPreviewable parentLessonId'
+    )
     .lean();
   const outline = buildOrderedOutline(modules as any[], lessons as any[]);
 
@@ -111,13 +126,18 @@ export default async function CoursePublicPage(ctx: PageProps) {
   let enrollment: any = null;
   let progress: any = null;
   if (userId) {
-    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as
-      | { _id: any }
-      | null;
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
+      _id: any;
+    } | null;
     if (userDoc && userDoc._id) {
-      enrollment = await CourseEnrollment.findOne({ courseId: course._id, userId: userDoc._id }).lean();
+      enrollment = await CourseEnrollment.findOne({
+        courseId: course._id,
+        userId: userDoc._id,
+      }).lean();
       if (enrollment) {
-        progress = await CourseProgress.findOne({ enrollmentId: enrollment._id }).lean();
+        progress = await CourseProgress.findOne({
+          enrollmentId: enrollment._id,
+        }).lean();
       }
     }
   }
@@ -131,7 +151,6 @@ export default async function CoursePublicPage(ctx: PageProps) {
       `}</style>
       <script
         type='application/ld+json'
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
             generateCourseStructuredData({
@@ -144,7 +163,7 @@ export default async function CoursePublicPage(ctx: PageProps) {
           ),
         }}
       />
-      
+
       {/* Hero Section */}
       <div className='relative overflow-hidden border-b border-border/40 bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-900'>
         <div className='absolute inset-0 bg-grid-slate-100 [mask-image:linear-gradient(0deg,white,rgba(255,255,255,0.6))] dark:bg-grid-slate-700/25 dark:[mask-image:linear-gradient(0deg,rgba(255,255,255,0.1),transparent)]' />
@@ -164,41 +183,49 @@ export default async function CoursePublicPage(ctx: PageProps) {
                   </span>
                 )}
               </div>
-              
+
               <h1 className='mb-4 text-4xl font-bold tracking-tight text-gray-900 dark:text-white md:text-5xl lg:text-6xl'>
                 {course.title}
               </h1>
-              
+
               {course.subtitle && (
                 <p className='mb-6 text-lg text-gray-600 dark:text-gray-300 md:text-xl'>
                   {course.subtitle}
                 </p>
               )}
-              
+
               <p className='mb-6 text-base text-gray-600 dark:text-gray-400 leading-relaxed'>
                 {course.summary}
               </p>
-              
+
               {/* Quick Stats */}
               <div className='mb-6 grid grid-cols-3 gap-4'>
                 <div className='rounded-lg border border-gray-200 bg-white/60 dark:border-gray-700 dark:bg-gray-800/60 p-3 backdrop-blur-sm'>
                   <div className='text-2xl font-bold text-gray-900 dark:text-white'>
                     {course.lessonCount ?? 0}
                   </div>
-                  <div className='text-xs text-gray-600 dark:text-gray-400'>Lessons</div>
+                  <div className='text-xs text-gray-600 dark:text-gray-400'>
+                    Lessons
+                  </div>
                 </div>
                 <div className='rounded-lg border border-gray-200 bg-white/60 dark:border-gray-700 dark:bg-gray-800/60 p-3 backdrop-blur-sm'>
                   <div className='text-2xl font-bold text-gray-900 dark:text-white'>
-                    {course.estimatedDurationMinutes ? formatMinutes(course.estimatedDurationMinutes) : '—'}
+                    {course.estimatedDurationMinutes
+                      ? formatMinutes(course.estimatedDurationMinutes)
+                      : '—'}
                   </div>
-                  <div className='text-xs text-gray-600 dark:text-gray-400'>Duration</div>
+                  <div className='text-xs text-gray-600 dark:text-gray-400'>
+                    Duration
+                  </div>
                 </div>
                 {enrollment && progress ? (
                   <div className='rounded-lg border border-gray-200 bg-white/60 dark:border-gray-700 dark:bg-gray-800/60 p-3 backdrop-blur-sm'>
                     <div className='text-2xl font-bold text-gray-900 dark:text-white'>
                       {progress?.percentageComplete ?? 0}%
                     </div>
-                    <div className='text-xs text-gray-600 dark:text-gray-400'>Complete</div>
+                    <div className='text-xs text-gray-600 dark:text-gray-400'>
+                      Complete
+                    </div>
                   </div>
                 ) : (
                   <div className='rounded-lg border border-gray-200 bg-white/60 dark:border-gray-700 dark:bg-gray-800/60 p-3 backdrop-blur-sm'>
@@ -207,11 +234,13 @@ export default async function CoursePublicPage(ctx: PageProps) {
                         ? `${course.difficulty.charAt(0).toUpperCase()}${course.difficulty.slice(1)}`
                         : '—'}
                     </div>
-                    <div className='text-xs text-gray-600 dark:text-gray-400'>Level</div>
+                    <div className='text-xs text-gray-600 dark:text-gray-400'>
+                      Level
+                    </div>
                   </div>
                 )}
               </div>
-              
+
               {/* CTA Section */}
               <div className='flex flex-wrap items-center gap-4'>
                 {userId ? (
@@ -223,7 +252,10 @@ export default async function CoursePublicPage(ctx: PageProps) {
                       >
                         Continue Learning
                       </Link>
-                      <form action={`/api/courses/${course.slug}/unenroll`} method='POST'>
+                      <form
+                        action={`/api/courses/${course.slug}/unenroll`}
+                        method='POST'
+                      >
                         <button
                           type='submit'
                           className='inline-flex items-center justify-center rounded-lg border border-gray-300 bg-white px-6 py-3 text-base font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 transition-all duration-200'
@@ -233,7 +265,10 @@ export default async function CoursePublicPage(ctx: PageProps) {
                       </form>
                     </>
                   ) : (
-                    <form action={`/api/courses/${course.slug}/enroll`} method='POST'>
+                    <form
+                      action={`/api/courses/${course.slug}/enroll`}
+                      method='POST'
+                    >
                       <button
                         type='submit'
                         className='inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 px-8 py-3 text-base font-medium text-white shadow-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200'
@@ -251,12 +286,14 @@ export default async function CoursePublicPage(ctx: PageProps) {
                   </Link>
                 )}
               </div>
-              
+
               {/* Progress Bar (if enrolled) */}
               {enrollment && progress && (
                 <div className='mt-6'>
                   <div className='mb-2 flex items-center justify-between text-sm'>
-                    <span className='text-gray-600 dark:text-gray-400'>Your Progress</span>
+                    <span className='text-gray-600 dark:text-gray-400'>
+                      Your Progress
+                    </span>
                     <span className='font-semibold text-gray-900 dark:text-white'>
                       {progress.percentageComplete ?? 0}%
                     </span>
@@ -270,12 +307,12 @@ export default async function CoursePublicPage(ctx: PageProps) {
                 </div>
               )}
             </div>
-            
+
             {/* Right: Hero Image */}
             <div className='relative'>
               {course.heroImage ? (
                 <div className='relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700'>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {}
                   <img
                     src={course.heroImage}
                     alt={`${course.title} cover`}
@@ -284,7 +321,7 @@ export default async function CoursePublicPage(ctx: PageProps) {
                 </div>
               ) : (
                 <div className='relative aspect-[4/3] overflow-hidden rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700'>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {}
                   <img
                     src='/course-hero-default.svg'
                     alt={`${course.title} cover`}
@@ -294,7 +331,7 @@ export default async function CoursePublicPage(ctx: PageProps) {
               )}
             </div>
           </div>
-          
+
           {/* Tags */}
           {Array.isArray(course.tags) && course.tags.length > 0 && (
             <div className='mt-8 flex flex-wrap gap-2'>
@@ -312,7 +349,7 @@ export default async function CoursePublicPage(ctx: PageProps) {
           )}
         </div>
       </div>
-      
+
       {/* Course Outline */}
       <div id='outline' className='container mx-auto max-w-6xl px-4 py-12'>
         <div className='mb-8'>
@@ -320,10 +357,12 @@ export default async function CoursePublicPage(ctx: PageProps) {
             Course Curriculum
           </h2>
           <p className='text-gray-600 dark:text-gray-400'>
-            {outline.length} {outline.length === 1 ? 'module' : 'modules'} • {course.lessonCount ?? 0} {course.lessonCount === 1 ? 'lesson' : 'lessons'}
+            {outline.length} {outline.length === 1 ? 'module' : 'modules'} •{' '}
+            {course.lessonCount ?? 0}{' '}
+            {course.lessonCount === 1 ? 'lesson' : 'lessons'}
           </p>
         </div>
-        
+
         {outline.length === 0 ? (
           <div className='rounded-xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-800/50'>
             <div className='text-4xl mb-4'>📝</div>
@@ -363,17 +402,25 @@ export default async function CoursePublicPage(ctx: PageProps) {
                           {formatMinutes(m.estimatedDurationMinutes)}
                         </span>
                         <span className='text-xs text-gray-500 dark:text-gray-400'>
-                          {m.lessons.length} {m.lessons.length === 1 ? 'lesson' : 'lessons'}
+                          {m.lessons.length}{' '}
+                          {m.lessons.length === 1 ? 'lesson' : 'lessons'}
                         </span>
                       </div>
                       {/* Single chevron toggle indicator on the right */}
-                      <span aria-hidden className='ml-1 inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-700/30 bg-white/0 text-gray-500 transition-all group-open:text-gray-200 dark:border-gray-500/30 dark:bg-gray-900/20 dark:text-gray-400'>
+                      <span
+                        aria-hidden
+                        className='ml-1 inline-flex h-7 w-7 items-center justify-center rounded-md border border-gray-700/30 bg-white/0 text-gray-500 transition-all group-open:text-gray-200 dark:border-gray-500/30 dark:bg-gray-900/20 dark:text-gray-400'
+                      >
                         <svg
                           className='h-5 w-5 flex-shrink-0 transition-transform duration-200 group-open:rotate-180'
                           viewBox='0 0 20 20'
                           fill='currentColor'
                         >
-                          <path fillRule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.186l3.71-3.955a.75.75 0 111.08 1.04l-4.24 4.52a.75.75 0 01-1.08 0l-4.24-4.52a.75.75 0 01.02-1.06z' clipRule='evenodd' />
+                          <path
+                            fillRule='evenodd'
+                            d='M5.23 7.21a.75.75 0 011.06.02L10 11.186l3.71-3.955a.75.75 0 111.08 1.04l-4.24 4.52a.75.75 0 01-1.08 0l-4.24-4.52a.75.75 0 01.02-1.06z'
+                            clipRule='evenodd'
+                          />
                         </svg>
                       </span>
                     </div>
@@ -399,17 +446,23 @@ export default async function CoursePublicPage(ctx: PageProps) {
                               {l.title}
                             </div>
                             <div className='mt-0.5 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
-                              <span className='capitalize'>{l.contentType}</span>
+                              <span className='capitalize'>
+                                {l.contentType}
+                              </span>
                               <span>•</span>
-                              <span>{formatMinutes(l.estimatedDurationMinutes)}</span>
-                              {Array.isArray(l.subLessons) && l.subLessons.length > 0 && (
-                                <>
-                                  <span>•</span>
-                                  <span className='text-blue-600 dark:text-blue-400'>
-                                    {l.subLessons.length} sub-lesson{l.subLessons.length !== 1 ? 's' : ''}
-                                  </span>
-                                </>
-                              )}
+                              <span>
+                                {formatMinutes(l.estimatedDurationMinutes)}
+                              </span>
+                              {Array.isArray(l.subLessons) &&
+                                l.subLessons.length > 0 && (
+                                  <>
+                                    <span>•</span>
+                                    <span className='text-blue-600 dark:text-blue-400'>
+                                      {l.subLessons.length} sub-lesson
+                                      {l.subLessons.length !== 1 ? 's' : ''}
+                                    </span>
+                                  </>
+                                )}
                             </div>
                           </div>
                         </div>
@@ -451,75 +504,84 @@ export default async function CoursePublicPage(ctx: PageProps) {
                           ) : null}
                         </div>
                       </div>
-                      
+
                       {/* Sub-Lessons */}
-                      {Array.isArray(l.subLessons) && l.subLessons.length > 0 && (
-                        <div className='border-t border-gray-100 bg-gradient-to-r from-blue-50/30 to-purple-50/30 dark:border-gray-700 dark:from-blue-950/10 dark:to-purple-950/10'>
-                          <ul className='divide-y divide-gray-100 dark:divide-gray-700'>
-                            {l.subLessons.map((s: any, sIdx: number) => (
-                              <li 
-                                key={String(s._id)} 
-                                id={`lesson-${String(s._id)}`}
-                                className='group/sublesson flex items-center justify-between gap-3 p-4 pl-14 hover:bg-white/60 dark:hover:bg-gray-800/40 transition-colors'
-                              >
-                                <div className='flex flex-1 items-center gap-3'>
-                                  <span className='text-gray-400 dark:text-gray-600'>└─</span>
-                                  <span className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-blue-100 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'>
-                                    {idx + 1}.{sIdx + 1}
-                                  </span>
-                                  <div className='flex-1'>
-                                    <div className='text-sm font-medium text-gray-900 dark:text-white'>
-                                      {s.title}
-                                    </div>
-                                    <div className='mt-0.5 flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400'>
-                                      <span className='capitalize'>{s.contentType}</span>
-                                      <span>•</span>
-                                      <span>{formatMinutes(s.estimatedDurationMinutes)}</span>
+                      {Array.isArray(l.subLessons) &&
+                        l.subLessons.length > 0 && (
+                          <div className='border-t border-gray-100 bg-gradient-to-r from-blue-50/30 to-purple-50/30 dark:border-gray-700 dark:from-blue-950/10 dark:to-purple-950/10'>
+                            <ul className='divide-y divide-gray-100 dark:divide-gray-700'>
+                              {l.subLessons.map((s: any, sIdx: number) => (
+                                <li
+                                  key={String(s._id)}
+                                  id={`lesson-${String(s._id)}`}
+                                  className='group/sublesson flex items-center justify-between gap-3 p-4 pl-14 hover:bg-white/60 dark:hover:bg-gray-800/40 transition-colors'
+                                >
+                                  <div className='flex flex-1 items-center gap-3'>
+                                    <span className='text-gray-400 dark:text-gray-600'>
+                                      └─
+                                    </span>
+                                    <span className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-blue-100 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'>
+                                      {idx + 1}.{sIdx + 1}
+                                    </span>
+                                    <div className='flex-1'>
+                                      <div className='text-sm font-medium text-gray-900 dark:text-white'>
+                                        {s.title}
+                                      </div>
+                                      <div className='mt-0.5 flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400'>
+                                        <span className='capitalize'>
+                                          {s.contentType}
+                                        </span>
+                                        <span>•</span>
+                                        <span>
+                                          {formatMinutes(
+                                            s.estimatedDurationMinutes
+                                          )}
+                                        </span>
+                                      </div>
                                     </div>
                                   </div>
-                                </div>
-                                <div className='flex items-center gap-2'>
-                                  {/* Start button for enrolled users */}
-                                  {enrollment ? (
-                                    <Link
-                                      href={`/courses/${course.slug}/lesson/${String(s._id)}`}
-                                      className='rounded-md border border-blue-600 bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors'
-                                      aria-label={`Start sub-lesson: ${s.title}`}
-                                    >
-                                      Start
-                                    </Link>
-                                  ) : null}
-                                  
-                                  {/* Preview button - only show for NON-enrolled users */}
-                                  {!enrollment && s.isPreviewable ? (
-                                    s.contentType === 'blog' && s.blogSlug ? (
+                                  <div className='flex items-center gap-2'>
+                                    {/* Start button for enrolled users */}
+                                    {enrollment ? (
                                       <Link
-                                        href={`/blog/${s.blogSlug}`}
-                                        className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
-                                        aria-label={`Preview sub-lesson: ${s.title}`}
+                                        href={`/courses/${course.slug}/lesson/${String(s._id)}`}
+                                        className='rounded-md border border-blue-600 bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors'
+                                        aria-label={`Start sub-lesson: ${s.title}`}
                                       >
-                                        Preview
+                                        Start
                                       </Link>
-                                    ) : (
-                                      <Link
-                                        href={`/courses/preview/${String(s._id)}`}
-                                        className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
-                                        aria-label={`Preview sub-lesson: ${s.title}`}
-                                      >
-                                        Preview
-                                      </Link>
-                                    )
-                                  ) : !enrollment ? (
-                                    <span className='rounded-md bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
-                                      Preview N/A
-                                    </span>
-                                  ) : null}
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
+                                    ) : null}
+
+                                    {/* Preview button - only show for NON-enrolled users */}
+                                    {!enrollment && s.isPreviewable ? (
+                                      s.contentType === 'blog' && s.blogSlug ? (
+                                        <Link
+                                          href={`/blog/${s.blogSlug}`}
+                                          className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
+                                          aria-label={`Preview sub-lesson: ${s.title}`}
+                                        >
+                                          Preview
+                                        </Link>
+                                      ) : (
+                                        <Link
+                                          href={`/courses/preview/${String(s._id)}`}
+                                          className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
+                                          aria-label={`Preview sub-lesson: ${s.title}`}
+                                        >
+                                          Preview
+                                        </Link>
+                                      )
+                                    ) : !enrollment ? (
+                                      <span className='rounded-md bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-500 dark:bg-gray-700 dark:text-gray-400'>
+                                        Preview N/A
+                                      </span>
+                                    ) : null}
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
                     </li>
                   ))}
                 </ul>

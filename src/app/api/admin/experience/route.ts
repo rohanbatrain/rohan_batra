@@ -22,11 +22,14 @@ const createExperienceSchema = z.object({
     'Apprenticeship',
     'Seasonal',
   ]),
-  startDate: z.string().or(z.date()).transform((val) => new Date(val)),
+  startDate: z
+    .string()
+    .or(z.date())
+    .transform(val => new Date(val)),
   endDate: z
     .string()
     .or(z.date())
-    .transform((val) => new Date(val))
+    .transform(val => new Date(val))
     .nullable()
     .optional(),
   isCurrent: z.boolean().default(false),
@@ -82,8 +85,8 @@ export async function GET(request: NextRequest) {
       publishedParam === 'true'
         ? true
         : publishedParam === 'false'
-        ? false
-        : undefined;
+          ? false
+          : undefined;
 
     const result = await ExperienceService.list({
       page,

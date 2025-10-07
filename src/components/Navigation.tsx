@@ -115,7 +115,9 @@ export function Navigation({
             >
               {navigationItems.map(item => {
                 const isActive = isActiveRoute(item.href);
-                const hasChildren = Array.isArray((item as any).children) && (item as any).children.length;
+                const hasChildren =
+                  Array.isArray((item as any).children) &&
+                  (item as any).children.length;
                 return hasChildren ? (
                   <div key={item.name} className='relative group'>
                     <button
@@ -132,7 +134,11 @@ export function Navigation({
                           layoutId='activeTab'
                           className='absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400'
                           initial={false}
-                          transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                          transition={{
+                            type: 'spring',
+                            stiffness: 400,
+                            damping: 30,
+                          }}
                         />
                       )}
                     </button>
@@ -166,7 +172,11 @@ export function Navigation({
                         layoutId='activeTab'
                         className='absolute -bottom-1 left-0 right-0 h-0.5 bg-blue-600 dark:bg-blue-400'
                         initial={false}
-                        transition={{ type: 'spring', stiffness: 400, damping: 30 }}
+                        transition={{
+                          type: 'spring',
+                          stiffness: 400,
+                          damping: 30,
+                        }}
                       />
                     )}
                   </Link>
@@ -270,7 +280,9 @@ export function Navigation({
                 {navigationItems.map((item, index) => {
                   const isActive = isActiveRoute(item.href);
                   const Icon = item.icon;
-                  const hasChildren = Array.isArray((item as any).children) && (item as any).children.length;
+                  const hasChildren =
+                    Array.isArray((item as any).children) &&
+                    (item as any).children.length;
                   return (
                     <motion.div
                       key={item.name}

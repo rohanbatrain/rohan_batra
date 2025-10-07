@@ -182,10 +182,15 @@ SocialProfileSchema.index({ brandId: 1, order: 1 });
 SocialProfileSchema.index({ platform: 1 });
 
 // Compound index for unique platform per brand
-SocialProfileSchema.index({ brandId: 1, platform: 1, username: 1 }, { unique: true });
+SocialProfileSchema.index(
+  { brandId: 1, platform: 1, username: 1 },
+  { unique: true }
+);
 
 // Static method to find profiles by brand
-SocialProfileSchema.statics.findByBrand = function (brandId: mongoose.Types.ObjectId) {
+SocialProfileSchema.statics.findByBrand = function (
+  brandId: mongoose.Types.ObjectId
+) {
   return this.find({ brandId, isActive: true }).sort({ order: 1 });
 };
 

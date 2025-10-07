@@ -1,7 +1,7 @@
 /**
  * SM-2 Spaced Repetition Algorithm
  * Based on the SuperMemo-2 algorithm
- * 
+ *
  * Ease levels:
  * - Again: 0 (Forgot/Failed)
  * - Hard: 1 (Difficult)
@@ -53,8 +53,9 @@ export function calculateNextReview(
   } else {
     // Update ease factor using SM-2 formula
     // EF' = EF + (0.1 - (3 - q) * (0.08 + (3 - q) * 0.02))
-    easeFactor = easeFactor + (0.1 - (3 - quality) * (0.08 + (3 - quality) * 0.02));
-    
+    easeFactor =
+      easeFactor + (0.1 - (3 - quality) * (0.08 + (3 - quality) * 0.02));
+
     // Clamp ease factor
     if (easeFactor < MIN_EASE_FACTOR) {
       easeFactor = MIN_EASE_FACTOR;
@@ -80,7 +81,10 @@ export function calculateNextReview(
   }
 
   // Clamp interval to reasonable bounds
-  intervalDays = Math.max(MIN_INTERVAL_DAYS, Math.min(MAX_INTERVAL_DAYS, intervalDays));
+  intervalDays = Math.max(
+    MIN_INTERVAL_DAYS,
+    Math.min(MAX_INTERVAL_DAYS, intervalDays)
+  );
 
   // Calculate next review date
   const nextReviewAt = new Date(now);
@@ -121,7 +125,9 @@ export function isCardDue(scheduling: SchedulingData): boolean {
 /**
  * Get cards due for review count
  */
-export function getDueCardsCount(cards: Array<{ scheduling?: SchedulingData }>): number {
+export function getDueCardsCount(
+  cards: Array<{ scheduling?: SchedulingData }>
+): number {
   return cards.filter(card => {
     if (!card.scheduling) return true;
     return isCardDue(card.scheduling);

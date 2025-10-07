@@ -53,74 +53,80 @@ const platformUrlPatterns: Record<string, RegExp> = {
 function validateProfileUrl(platform: string, url: string): boolean {
   // For platforms without specific patterns, just check HTTPS
   if (!platformUrlPatterns[platform]) {
-    return url.startsWith('https://') || (platform === 'email' && url.startsWith('mailto:'));
+    return (
+      url.startsWith('https://') ||
+      (platform === 'email' && url.startsWith('mailto:'))
+    );
   }
-  
+
   return platformUrlPatterns[platform].test(url);
 }
 
 // Validation schema
-const createProfileSchema = z.object({
-  platform: z.enum([
-    'instagram',
-    'twitter',
-    'linkedin',
-    'github',
-    'youtube',
-    'tiktok',
-    'facebook',
-    'threads',
-    'mastodon',
-    'bluesky',
-    'medium',
-    'dev.to',
-    'hashnode',
-    'dribbble',
-    'behance',
-    'pinterest',
-    'snapchat',
-    'reddit',
-    'discord',
-    'telegram',
-    'whatsapp',
-    'spotify',
-    'twitch',
-    'tinder',
-    'bumble',
-    'hinge',
-    'website',
-    'email',
-    'other',
-  ]),
-  username: z.string().min(1).max(100),
-  profileUrl: z.string().url(),
-  displayName: z.string().max(100).optional(),
-  description: z.string().max(300).optional(),
-  isActive: z.boolean().default(true),
-  isVerified: z.boolean().default(false),
-  order: z.number().min(0).default(0),
-  visibility: z.enum(['public', 'private', 'unlisted']).default('public'),
-  stats: z
-    .object({
-      followers: z.number().min(0).optional(),
-      following: z.number().min(0).optional(),
-      posts: z.number().min(0).optional(),
-    })
-    .optional(),
-  customIcon: z.string().max(50).optional(),
-}).refine(
-  (data) => {
-    // Skip validation for platforms without specific patterns (tinder, bumble, hinge, other)
-    if (['tinder', 'bumble', 'hinge', 'other'].includes(data.platform)) {
-      return data.profileUrl.startsWith('https://');
+const createProfileSchema = z
+  .object({
+    platform: z.enum([
+      'instagram',
+      'twitter',
+      'linkedin',
+      'github',
+      'youtube',
+      'tiktok',
+      'facebook',
+      'threads',
+      'mastodon',
+      'bluesky',
+      'medium',
+      'dev.to',
+      'hashnode',
+      'dribbble',
+      'behance',
+      'pinterest',
+      'snapchat',
+      'reddit',
+      'discord',
+      'telegram',
+      'whatsapp',
+      'spotify',
+      'twitch',
+      'tinder',
+      'bumble',
+      'hinge',
+      'website',
+      'email',
+      'other',
+    ]),
+    username: z.string().min(1).max(100),
+    profileUrl: z.string().url(),
+    displayName: z.string().max(100).optional(),
+    description: z.string().max(300).optional(),
+    isActive: z.boolean().default(true),
+    isVerified: z.boolean().default(false),
+    order: z.number().min(0).default(0),
+    visibility: z.enum(['public', 'private', 'unlisted']).default('public'),
+    stats: z
+      .object({
+        followers: z.number().min(0).optional(),
+        following: z.number().min(0).optional(),
+        posts: z.number().min(0).optional(),
+      })
+      .optional(),
+    customIcon: z.string().max(50).optional(),
+  })
+  .refine(
+    data => {
+      // Skip validation for platforms without specific patterns (tinder, bumble, hinge, other)
+      if (['tinder', 'bumble', 'hinge', 'other'].includes(data.platform)) {
+        return data.profileUrl.startsWith('https://');
+      }
+      return validateProfileUrl(data.platform, data.profileUrl);
+    },
+    {
+      message:
+        'Profile URL does not match the expected format for this platform',
+      path: ['profileUrl'],
     }
-    return validateProfileUrl(data.platform, data.profileUrl);
-  },
-  {
-    message: 'Profile URL does not match the expected format for this platform',
-    path: ['profileUrl'],
-  }
-);
+  );
 
 // GET /api/admin/brands/[id]/profiles - List profiles for brand
 export async function GET(
@@ -137,7 +143,10 @@ export async function GET(
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     if (!Types.ObjectId.isValid(brandId)) {
@@ -176,7 +185,10 @@ export async function GET(
     });
   } catch (error) {
     console.error('Error fetching profiles:', error);
-    return NextResponse.json({ error: 'Failed to fetch profiles' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to fetch profiles' },
+      { status: 500 }
+    );
   }
 }
 
@@ -195,7 +207,10 @@ export async function POST(
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     if (!Types.ObjectId.isValid(brandId)) {
@@ -221,7 +236,10 @@ export async function POST(
 
     if (existingProfile) {
       return NextResponse.json(
-        { error: 'Profile with this platform and username already exists for this brand' },
+        {
+          error:
+            'Profile with this platform and username already exists for this brand',
+        },
         { status: 409 }
       );
     }
@@ -259,6 +277,9 @@ export async function POST(
     }
 
     console.error('Error creating profile:', error);
-    return NextResponse.json({ error: 'Failed to create profile' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create profile' },
+      { status: 500 }
+    );
   }
 }

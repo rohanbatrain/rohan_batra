@@ -15,7 +15,8 @@ export async function PATCH(
 ) {
   try {
     const { userId } = await auth();
-    if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    if (!userId)
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     await connectToDatabase();
     const body = await req.json();
@@ -26,28 +27,43 @@ export async function PATCH(
       ? { _id: new Types.ObjectId(courseId) }
       : { slug: courseId };
 
-  const course = await CourseModel.findOne(query);
-    if (!course) return NextResponse.json({ error: 'Course not found' }, { status: 404 });
+    const course = await CourseModel.findOne(query);
+    if (!course)
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
 
-  const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
-  if (!userDoc || !userDoc._id) return NextResponse.json({ error: 'Not enrolled' }, { status: 403 });
-  const enrollment = await CourseEnrollmentModel.findOne({ courseId: course._id, userId: userDoc._id });
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
+      _id: any;
+    } | null;
+    if (!userDoc || !userDoc._id)
+      return NextResponse.json({ error: 'Not enrolled' }, { status: 403 });
+    const enrollment = await CourseEnrollmentModel.findOne({
+      courseId: course._id,
+      userId: userDoc._id,
+    });
     if (!enrollment)
       return NextResponse.json({ error: 'Not enrolled' }, { status: 403 });
 
-    const progress = await CourseProgressModel.findOne({ enrollmentId: enrollment._id });
-    if (!progress) return NextResponse.json({ error: 'Progress not found' }, { status: 404 });
+    const progress = await CourseProgressModel.findOne({
+      enrollmentId: enrollment._id,
+    });
+    if (!progress)
+      return NextResponse.json(
+        { error: 'Progress not found' },
+        { status: 404 }
+      );
 
     if (parsed.completedLessonIds) {
       const completed = new Set(parsed.completedLessonIds);
-      progress.completedLessonIds = parsed.completedLessonIds.map(id => new Types.ObjectId(id));
+      progress.completedLessonIds = parsed.completedLessonIds.map(
+        id => new Types.ObjectId(id)
+      );
       // Keep incomplete as complement of all lessons; local recompute handles percentages
       // We don't fetch all lessons here; previous initial set will be updated progressively by clients.
       // For accuracy, recomputation uses course structure and completed.
       // Remove any completed from incomplete list
-      progress.incompleteLessonIds = (progress.incompleteLessonIds ?? []).filter(
-        id => !completed.has(id.toString())
-      );
+      progress.incompleteLessonIds = (
+        progress.incompleteLessonIds ?? []
+      ).filter(id => !completed.has(id.toString()));
     }
 
     if (parsed.currentLessonId !== undefined) {
@@ -57,7 +73,10 @@ export async function PATCH(
     }
 
     // Handle quiz attempts if provided
-    if (parsed.quizAttempts !== undefined && Array.isArray(parsed.quizAttempts)) {
+    if (
+      parsed.quizAttempts !== undefined &&
+      Array.isArray(parsed.quizAttempts)
+    ) {
       // Merge new quiz attempts with existing ones
       const existingAttempts = progress.quizAttempts || [];
       const newAttempts = parsed.quizAttempts.map((attempt: any) => ({
@@ -65,9 +84,11 @@ export async function PATCH(
         score: attempt.score,
         totalQuestions: attempt.totalQuestions,
         passed: attempt.passed,
-        attemptedAt: attempt.attemptedAt ? new Date(attempt.attemptedAt) : new Date(),
+        attemptedAt: attempt.attemptedAt
+          ? new Date(attempt.attemptedAt)
+          : new Date(),
       }));
-      
+
       // Combine and deduplicate by lessonId + attemptedAt
       progress.quizAttempts = [...existingAttempts, ...newAttempts] as any;
     }
@@ -81,13 +102,22 @@ export async function PATCH(
     progress.lastUpdatedAt = new Date();
 
     await progress.save();
-    return NextResponse.json({ success: true, percentage: progress.percentageComplete });
+    return NextResponse.json({
+      success: true,
+      percentage: progress.percentageComplete,
+    });
   } catch (err: any) {
     if (err?.name === 'ZodError') {
-      return NextResponse.json({ error: 'Validation error', details: err.issues }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Validation error', details: err.issues },
+        { status: 400 }
+      );
     }
     console.error('[progress] error:', err);
-    return NextResponse.json({ error: 'Failed to update progress' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update progress' },
+      { status: 500 }
+    );
   }
 }
 
@@ -105,7 +135,7 @@ export async function GET(
 
     await connectToDatabase();
     const { courseId } = await ctx.params;
-    
+
     const query = Types.ObjectId.isValid(courseId)
       ? { _id: new Types.ObjectId(courseId) }
       : { slug: courseId };
@@ -115,7 +145,9 @@ export async function GET(
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
+      _id: any;
+    } | null;
     if (!userDoc || !userDoc._id) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
@@ -157,4 +189,3 @@ export async function GET(
     );
   }
 }
-

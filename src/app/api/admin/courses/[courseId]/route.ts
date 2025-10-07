@@ -102,7 +102,9 @@ export async function GET(
             toStringId
           ),
           releaseAt: lesson.releaseAt ?? null,
-          parentLessonId: lesson.parentLessonId ? lesson.parentLessonId.toString() : null,
+          parentLessonId: lesson.parentLessonId
+            ? lesson.parentLessonId.toString()
+            : null,
           createdAt: lesson.createdAt,
           updatedAt: lesson.updatedAt,
         })),
@@ -322,7 +324,8 @@ export async function PUT(
       // Prevent publishing empty courses: must have at least one lesson
       if (
         parsed.status === 'published' &&
-        (typeof courseDoc.lessonCount !== 'number' || courseDoc.lessonCount <= 0)
+        (typeof courseDoc.lessonCount !== 'number' ||
+          courseDoc.lessonCount <= 0)
       ) {
         return NextResponse.json(
           {
@@ -383,13 +386,16 @@ export async function PUT(
     const changes = getChangedFields(beforeState, afterState);
 
     if (changes.fields.length > 0) {
-      await createAuditLog({
-        userId,
-        action: 'update',
-        resource: 'course',
-        resourceId: courseDoc._id.toString(),
-        changes,
-      }, request);
+      await createAuditLog(
+        {
+          userId,
+          action: 'update',
+          resource: 'course',
+          resourceId: courseDoc._id.toString(),
+          changes,
+        },
+        request
+      );
     }
 
     return NextResponse.json({ success: true });
@@ -437,7 +443,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-  const courseObjectId = courseDoc._id;
+    const courseObjectId = courseDoc._id;
 
     await Promise.all([
       CourseLessonModel.deleteMany({ courseId: courseObjectId }),

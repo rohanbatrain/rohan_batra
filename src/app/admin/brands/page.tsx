@@ -15,7 +15,13 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -124,7 +130,9 @@ export default function BrandsListPage() {
       {/* Header */}
       <div className='flex items-center justify-between mb-8'>
         <div>
-          <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>Brand Management</h1>
+          <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
+            Brand Management
+          </h1>
           <p className='text-gray-600 dark:text-gray-400 mt-2'>
             Manage your brand identities and social profiles
           </p>
@@ -163,7 +171,10 @@ export default function BrandsListPage() {
       ) : (
         <div className='space-y-4'>
           {brands.map(brand => (
-            <Card key={brand.id} className={!brand.isActive ? 'opacity-60' : ''}>
+            <Card
+              key={brand.id}
+              className={!brand.isActive ? 'opacity-60' : ''}
+            >
               <CardHeader>
                 <div className='flex items-start justify-between'>
                   <div className='flex items-center gap-3 flex-1'>
@@ -184,14 +195,20 @@ export default function BrandsListPage() {
                           {brand.type}
                         </Badge>
                         <Badge
-                          variant={brand.visibility === 'public' ? 'default' : 'secondary'}
+                          variant={
+                            brand.visibility === 'public'
+                              ? 'default'
+                              : 'secondary'
+                          }
                           className='capitalize'
                         >
                           {brand.visibility}
                         </Badge>
                       </div>
                       {brand.description && (
-                        <CardDescription className='mt-1'>{brand.description}</CardDescription>
+                        <CardDescription className='mt-1'>
+                          {brand.description}
+                        </CardDescription>
                       )}
                       <p className='text-sm text-gray-500 dark:text-gray-400 mt-1'>
                         @{brand.name} • /{brand.slug}
@@ -213,11 +230,7 @@ export default function BrandsListPage() {
                         <EyeOff className='h-4 w-4' />
                       )}
                     </Button>
-                    <Button
-                      variant='ghost'
-                      size='sm'
-                      asChild
-                    >
+                    <Button variant='ghost' size='sm' asChild>
                       <Link href={`/admin/brands/${brand.id}`}>
                         <Edit className='h-4 w-4' />
                       </Link>
@@ -246,8 +259,9 @@ export default function BrandsListPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Brand</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{brandToDelete?.displayName}"? This will also delete
-              all associated social profiles. This action cannot be undone.
+              Are you sure you want to delete "{brandToDelete?.displayName}"?
+              This will also delete all associated social profiles. This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

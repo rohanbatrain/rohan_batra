@@ -11,11 +11,11 @@ interface ContentRendererProps {
 
 /**
  * Universal content renderer that supports both Rich HTML and MDX formats.
- * 
+ *
  * Automatically detects format and renders appropriately:
  * - Rich HTML: Renders using dangerouslySetInnerHTML
  * - MDX: Renders using next-mdx-remote with full MDX support
- * 
+ *
  * If format is not specified, defaults to Rich HTML for backward compatibility.
  */
 export default async function ContentRenderer({
@@ -48,9 +48,6 @@ export default async function ContentRenderer({
 
   // Default: Rich HTML
   return (
-    <div
-      className={className}
-      dangerouslySetInnerHTML={{ __html: content }}
-    />
+    <div className={className} dangerouslySetInnerHTML={{ __html: content }} />
   );
 }

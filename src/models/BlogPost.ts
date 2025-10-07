@@ -267,7 +267,7 @@ BlogPostSchema.pre<IBlogPost>('save', async function (next) {
   if (this.isModified('title') && !this.slug) {
     // Import uniqueSlug dynamically to avoid circular dependencies
     const { uniqueSlug } = await import('@/lib/slug');
-    
+
     const baseSlug = this.title
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')

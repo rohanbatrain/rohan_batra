@@ -134,7 +134,11 @@ describe('POST /api/admin/flashcards/[deckId]/cards/bulk', () => {
   it('should accept file upload', () => {
     // Contract: Expects multipart/form-data with 'file' field
     const formData = new FormData();
-    formData.append('file', new Blob(['test'], { type: 'text/markdown' }), 'test.md');
+    formData.append(
+      'file',
+      new Blob(['test'], { type: 'text/markdown' }),
+      'test.md'
+    );
 
     expect(formData.has('file')).toBe(true);
   });
@@ -160,7 +164,7 @@ describe('POST /api/admin/flashcards/[deckId]/cards/bulk', () => {
   it('should support multiple file formats', () => {
     // Contract: Accepts .md, .json, .csv, .yaml
     const supportedFormats = ['md', 'json', 'csv', 'yaml', 'yml'];
-    
+
     supportedFormats.forEach(format => {
       const fileName = `test.${format}`;
       expect(fileName).toMatch(/\.(md|json|csv|ya?ml)$/);
@@ -233,7 +237,9 @@ describe('Data Model Contracts', () => {
     };
 
     // Validate required nested fields
-    expect(deck.parentDeckId === null || typeof deck.parentDeckId === 'string').toBe(true);
+    expect(
+      deck.parentDeckId === null || typeof deck.parentDeckId === 'string'
+    ).toBe(true);
     expect(typeof deck.path).toBe('string');
     expect(typeof deck.level).toBe('number');
     expect(deck.level).toBeGreaterThanOrEqual(0);
@@ -282,8 +288,12 @@ describe('Data Model Contracts', () => {
       errorSummary: 'Card 5: Parse error',
     };
 
-    expect(['import', 'export', 'move', 'delete', 'edit']).toContain(operation.operationType);
-    expect(['pending', 'running', 'completed', 'failed']).toContain(operation.status);
+    expect(['import', 'export', 'move', 'delete', 'edit']).toContain(
+      operation.operationType
+    );
+    expect(['pending', 'running', 'completed', 'failed']).toContain(
+      operation.status
+    );
     expect(operation.succeeded + operation.failed).toBe(operation.totalItems);
   });
 });

@@ -1,6 +1,6 @@
 /**
  * T018: Graph Canvas Component
- * 
+ *
  * SVG-based graph rendering with D3 zoom/pan/drag interactions.
  * Renders nodes and edges from a knowledge graph.
  */
@@ -24,7 +24,7 @@ interface GraphCanvasProps {
 
 /**
  * Graph Canvas Component
- * 
+ *
  * Renders an interactive SVG graph with D3 force layout,
  * zoom/pan controls, and draggable nodes.
  */
@@ -38,7 +38,9 @@ export function GraphCanvas({
   const [transform, setTransform] = useState('translate(0, 0) scale(1)');
   const [layoutGraph, setLayoutGraph] = useState<KnowledgeGraph | null>(null);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
-  const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(
+    null
+  );
 
   // Simulate layout when graph changes
   useEffect(() => {
@@ -47,7 +49,11 @@ export function GraphCanvas({
       return;
     }
 
-    console.log('[GraphCanvas] Simulating layout for', graph.nodes.length, 'nodes');
+    console.log(
+      '[GraphCanvas] Simulating layout for',
+      graph.nodes.length,
+      'nodes'
+    );
     const simulated = simulateGraphLayout(graph, {
       width: 1200,
       height: 600,
@@ -61,10 +67,10 @@ export function GraphCanvas({
     if (!svgRef.current) return;
 
     const svg = select(svgRef.current);
-    
+
     const zoomBehavior = d3Zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
-      .on('zoom', (event) => {
+      .on('zoom', event => {
         const { x, y, k } = event.transform;
         setTransform(`translate(${x}, ${y}) scale(${k})`);
       });
@@ -86,48 +92,51 @@ export function GraphCanvas({
     const nodes = [...layoutGraph.nodes];
 
     const dragBehavior = d3Drag<SVGCircleElement, GraphNode>()
-      .on('start', function(event, d) {
+      .on('start', function (event, d) {
         select(this).raise().attr('stroke', '#fff').attr('stroke-width', 3);
       })
-      .on('drag', function(event, d) {
+      .on('drag', function (event, d) {
         d.x = event.x;
         d.y = event.y;
-        
+
         // Update node position
-        select(this)
-          .attr('cx', d.x!)
-          .attr('cy', d.y!);
-        
+        select(this).attr('cx', d.x!).attr('cy', d.y!);
+
         // Update label position
-        svg.select(`text[data-node-id="${d.id}"]`)
+        svg
+          .select(`text[data-node-id="${d.id}"]`)
           .attr('x', d.x!)
           .attr('y', d.y! + (d.size || 30) + 15);
-        
+
         // Update connected edges
-        svg.selectAll<SVGLineElement, GraphEdge>('line.edge')
-          .filter((edge: GraphEdge) => edge.source === d.id || edge.target === d.id)
+        svg
+          .selectAll<SVGLineElement, GraphEdge>('line.edge')
+          .filter(
+            (edge: GraphEdge) => edge.source === d.id || edge.target === d.id
+          )
           .attr('x1', (edge: GraphEdge) => {
             const sourceNode = nodes.find(n => n.id === edge.source);
-            return edge.source === d.id ? d.x! : (sourceNode?.x || 0);
+            return edge.source === d.id ? d.x! : sourceNode?.x || 0;
           })
           .attr('y1', (edge: GraphEdge) => {
             const sourceNode = nodes.find(n => n.id === edge.source);
-            return edge.source === d.id ? d.y! : (sourceNode?.y || 0);
+            return edge.source === d.id ? d.y! : sourceNode?.y || 0;
           })
           .attr('x2', (edge: GraphEdge) => {
             const targetNode = nodes.find(n => n.id === edge.target);
-            return edge.target === d.id ? d.x! : (targetNode?.x || 0);
+            return edge.target === d.id ? d.x! : targetNode?.x || 0;
           })
           .attr('y2', (edge: GraphEdge) => {
             const targetNode = nodes.find(n => n.id === edge.target);
-            return edge.target === d.id ? d.y! : (targetNode?.y || 0);
+            return edge.target === d.id ? d.y! : targetNode?.y || 0;
           });
       })
-      .on('end', function() {
+      .on('end', function () {
         select(this).attr('stroke', null).attr('stroke-width', null);
       });
 
-    svg.selectAll<SVGCircleElement, GraphNode>('circle.node')
+    svg
+      .selectAll<SVGCircleElement, GraphNode>('circle.node')
       .call(dragBehavior as any);
   }, [layoutGraph]);
 
@@ -148,16 +157,25 @@ export function GraphCanvas({
         case '+':
         case '=':
           e.preventDefault();
-          svg.transition().duration(300).call(zoomBehaviorRef.current.scaleBy, 1.3);
+          svg
+            .transition()
+            .duration(300)
+            .call(zoomBehaviorRef.current.scaleBy, 1.3);
           break;
         case '-':
         case '_':
           e.preventDefault();
-          svg.transition().duration(300).call(zoomBehaviorRef.current.scaleBy, 0.7);
+          svg
+            .transition()
+            .duration(300)
+            .call(zoomBehaviorRef.current.scaleBy, 0.7);
           break;
         case '0':
           e.preventDefault();
-          svg.transition().duration(300).call(zoomBehaviorRef.current.transform, zoomIdentity);
+          svg
+            .transition()
+            .duration(300)
+            .call(zoomBehaviorRef.current.transform, zoomIdentity);
           break;
         case 'Escape':
           if (onNodeClick) onNodeClick('');
@@ -170,11 +188,14 @@ export function GraphCanvas({
   }, [onNodeClick]);
 
   // Handle node click
-  const handleNodeClick = useCallback((node: GraphNode) => {
-    if (onNodeClick) {
-      onNodeClick(node.id);
-    }
-  }, [onNodeClick]);
+  const handleNodeClick = useCallback(
+    (node: GraphNode) => {
+      if (onNodeClick) {
+        onNodeClick(node.id);
+      }
+    },
+    [onNodeClick]
+  );
 
   if (!layoutGraph || layoutGraph.nodes.length === 0) {
     return null;
@@ -183,39 +204,48 @@ export function GraphCanvas({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[600px] bg-background"
-      role="img"
-      aria-label="Knowledge graph visualization"
+      className='relative w-full h-[600px] bg-background'
+      role='img'
+      aria-label='Knowledge graph visualization'
     >
       <svg
         ref={svgRef}
-        width="100%"
-        height="100%"
-        className="cursor-grab active:cursor-grabbing"
+        width='100%'
+        height='100%'
+        className='cursor-grab active:cursor-grabbing'
         style={{ touchAction: 'none' }}
       >
         <defs>
           {/* Arrowhead marker for directed edges */}
           <marker
-            id="arrowhead"
-            markerWidth="10"
-            markerHeight="10"
-            refX="8"
-            refY="3"
-            orient="auto"
-            markerUnits="strokeWidth"
+            id='arrowhead'
+            markerWidth='10'
+            markerHeight='10'
+            refX='8'
+            refY='3'
+            orient='auto'
+            markerUnits='strokeWidth'
           >
-            <path d="M0,0 L0,6 L9,3 z" fill="#94a3b8" />
+            <path d='M0,0 L0,6 L9,3 z' fill='#94a3b8' />
           </marker>
         </defs>
 
         <g transform={transform}>
           {/* Render edges */}
           {layoutGraph.edges.map((edge, idx) => {
-            const sourceNode = layoutGraph.nodes.find((n) => n.id === edge.source);
-            const targetNode = layoutGraph.nodes.find((n) => n.id === edge.target);
+            const sourceNode = layoutGraph.nodes.find(
+              n => n.id === edge.source
+            );
+            const targetNode = layoutGraph.nodes.find(
+              n => n.id === edge.target
+            );
 
-            if (!sourceNode || !targetNode || sourceNode.x === undefined || targetNode.x === undefined) {
+            if (
+              !sourceNode ||
+              !targetNode ||
+              sourceNode.x === undefined ||
+              targetNode.x === undefined
+            ) {
               return null;
             }
 
@@ -224,7 +254,7 @@ export function GraphCanvas({
             return (
               <line
                 key={`edge-${idx}`}
-                className="edge"
+                className='edge'
                 x1={sourceNode.x}
                 y1={sourceNode.y}
                 x2={targetNode.x}
@@ -239,7 +269,7 @@ export function GraphCanvas({
           })}
 
           {/* Render nodes */}
-          {layoutGraph.nodes.map((node) => {
+          {layoutGraph.nodes.map(node => {
             if (node.x === undefined || node.y === undefined) return null;
 
             const isSelected = node.id === selectedNodeId;
@@ -251,7 +281,7 @@ export function GraphCanvas({
               <g key={`node-${node.id}`}>
                 <GraphNodeTooltip node={node}>
                   <circle
-                    className="node"
+                    className='node'
                     cx={node.x}
                     cy={node.y}
                     r={size}
@@ -267,10 +297,10 @@ export function GraphCanvas({
                     onClick={() => handleNodeClick(node)}
                     onMouseEnter={() => setHoveredNodeId(node.id)}
                     onMouseLeave={() => setHoveredNodeId(null)}
-                    role="button"
+                    role='button'
                     tabIndex={0}
                     aria-label={`${node.label} - ${node.type}`}
-                    onKeyDown={(e) => {
+                    onKeyDown={e => {
                       if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         handleNodeClick(node);
@@ -284,11 +314,13 @@ export function GraphCanvas({
                   data-node-id={node.id}
                   x={node.x}
                   y={node.y + size + 15}
-                  textAnchor="middle"
-                  className="text-xs fill-foreground pointer-events-none select-none"
+                  textAnchor='middle'
+                  className='text-xs fill-foreground pointer-events-none select-none'
                   style={{ fontSize: '12px' }}
                 >
-                  {node.label.length > 20 ? node.label.substring(0, 20) + '...' : node.label}
+                  {node.label.length > 20
+                    ? node.label.substring(0, 20) + '...'
+                    : node.label}
                 </text>
               </g>
             );
@@ -297,10 +329,11 @@ export function GraphCanvas({
       </svg>
 
       {/* Keyboard shortcuts hint */}
-      <div className="absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded">
-        <kbd className="px-1 border rounded">+</kbd> / <kbd className="px-1 border rounded">-</kbd> zoom · 
-        <kbd className="px-1 border rounded">0</kbd> reset · 
-        <kbd className="px-1 border rounded">drag</kbd> move
+      <div className='absolute bottom-2 right-2 text-xs text-muted-foreground bg-background/80 px-2 py-1 rounded'>
+        <kbd className='px-1 border rounded'>+</kbd> /{' '}
+        <kbd className='px-1 border rounded'>-</kbd> zoom ·
+        <kbd className='px-1 border rounded'>0</kbd> reset ·
+        <kbd className='px-1 border rounded'>drag</kbd> move
       </div>
     </div>
   );

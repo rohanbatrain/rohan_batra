@@ -14,11 +14,15 @@ const CANONICAL_MAP: Record<string, string> = {
 };
 
 export function normalizeTag(tag: string): string {
-  const t = String(tag || '').trim().toLowerCase();
+  const t = String(tag || '')
+    .trim()
+    .toLowerCase();
   return CANONICAL_MAP[t] || t;
 }
 
-export function canonicalizeTags(tags: Array<string | undefined | null>): string[] {
+export function canonicalizeTags(
+  tags: Array<string | undefined | null>
+): string[] {
   return Array.from(
     new Set(
       (tags || [])
@@ -29,12 +33,15 @@ export function canonicalizeTags(tags: Array<string | undefined | null>): string
   );
 }
 
-export function mapTagsToSkills(tags: string[]): { slug: string; title: string; Icon: any }[] {
+export function mapTagsToSkills(
+  tags: string[]
+): { slug: string; title: string; Icon: any }[] {
   const canon = new Set(canonicalizeTags(tags));
   return skillsData
-    .filter(skill =>
-      (skill.blogTags || []).some(t => canon.has(normalizeTag(t))) ||
-      (skill.projectTags || []).some(t => canon.has(normalizeTag(t)))
+    .filter(
+      skill =>
+        (skill.blogTags || []).some(t => canon.has(normalizeTag(t))) ||
+        (skill.projectTags || []).some(t => canon.has(normalizeTag(t)))
     )
     .map(s => ({ slug: s.slug, title: s.title, Icon: s.Icon }));
 }

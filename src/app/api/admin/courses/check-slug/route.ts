@@ -23,7 +23,10 @@ export async function GET(request: NextRequest) {
     const slug = searchParams.get('slug');
 
     if (!slug) {
-      return NextResponse.json({ message: 'Slug is required' }, { status: 400 });
+      return NextResponse.json(
+        { message: 'Slug is required' },
+        { status: 400 }
+      );
     }
 
     await connectToDatabase();
@@ -32,6 +35,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ isAvailable });
   } catch (error) {
     console.error('Error checking course slug:', error);
-    return NextResponse.json({ message: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json(
+      { message: 'Internal Server Error' },
+      { status: 500 }
+    );
   }
 }

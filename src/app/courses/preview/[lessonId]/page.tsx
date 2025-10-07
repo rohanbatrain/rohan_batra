@@ -16,30 +16,38 @@ import { auth } from '@clerk/nextjs/server';
 
 export const dynamic = 'force-dynamic';
 
-export default async function LessonPreviewPage({ params }: { params: Promise<{ lessonId: string }> }) {
+export default async function LessonPreviewPage({
+  params,
+}: {
+  params: Promise<{ lessonId: string }>;
+}) {
   const { lessonId } = await params;
   await connectToDatabase();
-  
+
   const lesson = await CourseLesson.findById(lessonId).lean();
   if (!lesson) return notFound();
-  
-  const course = await Course.findById(lesson.courseId).select('slug title').lean();
-  
+
+  const course = await Course.findById(lesson.courseId)
+    .select('slug title')
+    .lean();
+
   // Check if user is enrolled
   const { userId } = await auth();
   let isEnrolled = false;
-  
+
   if (userId) {
-    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
+      _id: any;
+    } | null;
     if (userDoc && userDoc._id) {
       const enrollment = await CourseEnrollment.findOne({
         courseId: lesson.courseId,
-        userId: userDoc._id
+        userId: userDoc._id,
       }).lean();
       isEnrolled = !!enrollment;
     }
   }
-  
+
   // Allow access if: enrolled OR lesson is previewable
   if (!isEnrolled && !lesson.isPreviewable) {
     return notFound();
@@ -52,7 +60,8 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
       switch (provider) {
         case 'youtube': {
           // Handle youtu.be or youtube.com/watch?v=ID
-          if (u.hostname.includes('youtu.be')) return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+          if (u.hostname.includes('youtu.be'))
+            return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
           const id = u.searchParams.get('v');
           return id ? `https://www.youtube.com/embed/${id}` : url;
         }
@@ -108,7 +117,9 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
               if (mark.type === 'underline') text = `<u>${text}</u>`;
               if (mark.type === 'link' && mark.attrs?.href) {
                 const href = escapeAttr(String(mark.attrs.href));
-                const rel = href.startsWith('/') ? '' : ' rel="nofollow noopener"';
+                const rel = href.startsWith('/')
+                  ? ''
+                  : ' rel="nofollow noopener"';
                 text = `<a href="${href}"${rel}>${text}</a>`;
               }
             }
@@ -128,20 +139,27 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
             chunks.push(`<p>${renderText(node)}</p>`);
             break;
           case 'heading': {
-            const level = Math.min(Math.max(Number(node.attrs?.level || 1), 1), 6);
+            const level = Math.min(
+              Math.max(Number(node.attrs?.level || 1), 1),
+              6
+            );
             chunks.push(`<h${level}>${renderText(node)}</h${level}>`);
             break;
           }
           case 'bulletList':
           case 'bullet_list': {
-            const items = (node.content || []).map((li: any) => `<li>${renderText(li)}</li>`).join('');
+            const items = (node.content || [])
+              .map((li: any) => `<li>${renderText(li)}</li>`)
+              .join('');
             chunks.push(`<ul>${items}</ul>`);
             break;
           }
           case 'orderedList':
           case 'ordered_list': {
             const start = Number(node.attrs?.start || 1);
-            const items = (node.content || []).map((li: any) => `<li>${renderText(li)}</li>`).join('');
+            const items = (node.content || [])
+              .map((li: any) => `<li>${renderText(li)}</li>`)
+              .join('');
             chunks.push(`<ol start="${start}">${items}</ol>`);
             break;
           }
@@ -154,7 +172,9 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
             break;
           case 'codeBlock':
           case 'code_block': {
-            const language = node.attrs?.language ? ` class="language-${node.attrs.language}"` : '';
+            const language = node.attrs?.language
+              ? ` class="language-${node.attrs.language}"`
+              : '';
             const code = escapeHtml(renderText(node));
             chunks.push(`<pre><code${language}>${code}</code></pre>`);
             break;
@@ -166,7 +186,10 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
           case 'image': {
             const src = node.attrs?.src;
             const alt = node.attrs?.alt || '';
-            if (src) chunks.push(`<img src="${escapeAttr(src)}" alt="${escapeHtml(alt)}" />`);
+            if (src)
+              chunks.push(
+                `<img src="${escapeAttr(src)}" alt="${escapeHtml(alt)}" />`
+              );
             break;
           }
           default: {
@@ -188,11 +211,20 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
     <main className='min-h-screen bg-gradient-to-b from-background to-muted/20'>
       <div className='container mx-auto max-w-3xl px-4 py-10'>
         <div className='mb-6 flex items-center justify-between'>
-          <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>{lesson.title}</h1>
+          <h1 className='text-2xl font-bold text-gray-900 dark:text-white'>
+            {lesson.title}
+          </h1>
           {course?.slug ? (
-            <Link href={`/courses/${course.slug}#lesson-${String(lesson._id)}`} className='text-sm underline'>Back to course</Link>
+            <Link
+              href={`/courses/${course.slug}#lesson-${String(lesson._id)}`}
+              className='text-sm underline'
+            >
+              Back to course
+            </Link>
           ) : (
-            <Link href='/courses' className='text-sm underline'>Back to courses</Link>
+            <Link href='/courses' className='text-sm underline'>
+              Back to courses
+            </Link>
           )}
         </div>
         {lesson.contentType === 'blog' && lesson.blogSlug ? (
@@ -200,7 +232,10 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
             <p className='text-sm text-gray-600 dark:text-gray-400'>
               This lesson is a blog post. Open the full article:
             </p>
-            <Link href={`/blog/${lesson.blogSlug}`} className='mt-2 inline-block rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700'>
+            <Link
+              href={`/blog/${lesson.blogSlug}`}
+              className='mt-2 inline-block rounded bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700'
+            >
               Read blog post
             </Link>
           </div>
@@ -209,7 +244,11 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
           <article className={mdxProseBase}>
             {lesson.standaloneFormat === 'novelsh' ? (
               <div
-                dangerouslySetInnerHTML={{ __html: renderNovelJsonToHtml(lesson.standaloneContent as any) }}
+                dangerouslySetInnerHTML={{
+                  __html: renderNovelJsonToHtml(
+                    lesson.standaloneContent as any
+                  ),
+                }}
               />
             ) : lesson.standaloneFormat === 'mdx' ? (
               // Render MDX content
@@ -218,7 +257,10 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
                 components={MDXComponents}
                 options={{
                   mdxOptions: {
-                    remarkPlugins: [remarkGfm, remarkStripTitleH1(String(lesson.title))],
+                    remarkPlugins: [
+                      remarkGfm,
+                      remarkStripTitleH1(String(lesson.title)),
+                    ],
                     rehypePlugins: [
                       rehypeSlug,
                       [rehypeAutolinkHeadings, { behavior: 'wrap' }],
@@ -244,7 +286,10 @@ export default async function LessonPreviewPage({ params }: { params: Promise<{ 
         {lesson.contentType === 'video' && lesson.externalResource?.url ? (
           <div className='relative aspect-video overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700'>
             <iframe
-              src={toEmbedUrl(lesson.externalResource?.provider as any, lesson.externalResource?.url as any)}
+              src={toEmbedUrl(
+                lesson.externalResource?.provider as any,
+                lesson.externalResource?.url as any
+              )}
               title={lesson.title as any}
               className='h-full w-full'
               allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share'

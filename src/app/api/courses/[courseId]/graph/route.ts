@@ -1,9 +1,9 @@
 /**
  * T015: Course Graph API Endpoint
- * 
+ *
  * GET /api/courses/:courseId/graph
  * Returns knowledge graph for a course
- * 
+ *
  * @pattern Follows /src/app/api/courses/[courseId]/progress/route.ts
  */
 
@@ -15,7 +15,11 @@ import connectToDatabase from '@/lib/mongodb';
 import CourseModel from '@/models/Course';
 import User from '@/models/User';
 import { buildCourseGraph } from '@/lib/graph/generator';
-import { getCachedGraph, setCachedGraph, GraphCacheKeys } from '@/lib/graph/cache';
+import {
+  getCachedGraph,
+  setCachedGraph,
+  GraphCacheKeys,
+} from '@/lib/graph/cache';
 
 // Query parameter validation schema
 const QuerySchema = z.object({
@@ -27,7 +31,7 @@ export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/courses/:courseId/graph
- * 
+ *
  * Returns knowledge graph for a course
  */
 export async function GET(
@@ -67,10 +71,7 @@ export async function GET(
     const course = await CourseModel.findOne(query).lean();
 
     if (!course) {
-      return NextResponse.json(
-        { error: 'Course not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
     // 5. User lookup if authenticated
@@ -79,7 +80,7 @@ export async function GET(
       const userDoc = (await User.findOne({ clerkId: userId })
         .select('_id')
         .lean()) as { _id: Types.ObjectId } | null;
-      
+
       if (userDoc) {
         userObjectId = userDoc._id;
       }

@@ -12,7 +12,9 @@ import dynamic from 'next/dynamic';
 
 const MDXPreview = dynamic(() => import('@/components/admin/mdx-preview'), {
   ssr: false,
-  loading: () => <div className='text-sm text-muted-foreground p-4'>Loading preview...</div>,
+  loading: () => (
+    <div className='text-sm text-muted-foreground p-4'>Loading preview...</div>
+  ),
 });
 
 interface ContentEditorProps {
@@ -39,7 +41,9 @@ export default function ContentEditor({
   className,
 }: ContentEditorProps) {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
-  const [userPreference, setUserPreference] = useState<'rich-html' | 'mdx'>(editorType);
+  const [userPreference, setUserPreference] = useState<'rich-html' | 'mdx'>(
+    editorType
+  );
 
   // Fetch user's editor preference on mount
   useEffect(() => {
@@ -77,7 +81,10 @@ export default function ContentEditor({
           <div className='flex items-center justify-between'>
             <Label className='flex items-center gap-2'>
               {label}
-              <Badge variant={isMDX ? 'default' : 'secondary'} className='text-xs'>
+              <Badge
+                variant={isMDX ? 'default' : 'secondary'}
+                className='text-xs'
+              >
                 {isMDX ? (
                   <>
                     <Code className='h-3 w-3 mr-1' />
@@ -96,18 +103,23 @@ export default function ContentEditor({
         <Textarea
           value={value}
           onChange={e => onChange(e.target.value)}
-          placeholder={placeholder || (isMDX ? 'Write MDX content...' : 'Write HTML content...')}
+          placeholder={
+            placeholder ||
+            (isMDX ? 'Write MDX content...' : 'Write HTML content...')
+          }
           rows={rows}
           className='font-mono text-sm'
         />
         {isMDX && (
           <p className='text-xs text-muted-foreground'>
-            💡 Tip: Use Markdown syntax. Custom components: &lt;Alert&gt;, &lt;Card&gt;, &lt;Badge&gt;
+            💡 Tip: Use Markdown syntax. Custom components: &lt;Alert&gt;,
+            &lt;Card&gt;, &lt;Badge&gt;
           </p>
         )}
         {showConversionWarning && (
           <p className='text-xs text-amber-600 dark:text-amber-400'>
-            ⚠️ This content contains HTML tags. Consider converting to Markdown syntax.
+            ⚠️ This content contains HTML tags. Consider converting to Markdown
+            syntax.
           </p>
         )}
       </div>
@@ -120,7 +132,10 @@ export default function ContentEditor({
         <div className='flex items-center justify-between'>
           <Label className='flex items-center gap-2'>
             {label}
-            <Badge variant={isMDX ? 'default' : 'secondary'} className='text-xs'>
+            <Badge
+              variant={isMDX ? 'default' : 'secondary'}
+              className='text-xs'
+            >
               {isMDX ? (
                 <>
                   <Code className='h-3 w-3 mr-1' />
@@ -148,7 +163,10 @@ export default function ContentEditor({
         </div>
       )}
 
-      <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'edit' | 'preview')}>
+      <Tabs
+        value={activeTab}
+        onValueChange={v => setActiveTab(v as 'edit' | 'preview')}
+      >
         <TabsList className='grid w-full grid-cols-2'>
           <TabsTrigger value='edit' className='flex items-center gap-2'>
             <FileText className='h-4 w-4' />
@@ -164,18 +182,23 @@ export default function ContentEditor({
           <Textarea
             value={value}
             onChange={e => onChange(e.target.value)}
-            placeholder={placeholder || (isMDX ? 'Write MDX content...' : 'Write HTML content...')}
+            placeholder={
+              placeholder ||
+              (isMDX ? 'Write MDX content...' : 'Write HTML content...')
+            }
             rows={rows}
             className='font-mono text-sm'
           />
           {isMDX && (
             <p className='text-xs text-muted-foreground mt-2'>
-              💡 Tip: Use Markdown syntax. Custom components: &lt;Alert&gt;, &lt;Card&gt;, &lt;Badge&gt;
+              💡 Tip: Use Markdown syntax. Custom components: &lt;Alert&gt;,
+              &lt;Card&gt;, &lt;Badge&gt;
             </p>
           )}
           {showConversionWarning && (
             <p className='text-xs text-amber-600 dark:text-amber-400 mt-2'>
-              ⚠️ This content contains HTML tags. Consider converting to Markdown syntax for better MDX compatibility.
+              ⚠️ This content contains HTML tags. Consider converting to
+              Markdown syntax for better MDX compatibility.
             </p>
           )}
         </TabsContent>

@@ -10,7 +10,20 @@ export interface IBraindump extends Document {
   userId: mongoose.Types.ObjectId;
   // Can be associated with multiple content types
   associations?: Array<{
-    type: 'blog' | 'project' | 'course' | 'book' | 'character' | 'portfolio' | 'social-post' | 'linkedin' | 'twitter' | 'experience' | 'flashcard' | 'documentation' | 'other';
+    type:
+      | 'blog'
+      | 'project'
+      | 'course'
+      | 'book'
+      | 'character'
+      | 'portfolio'
+      | 'social-post'
+      | 'linkedin'
+      | 'twitter'
+      | 'experience'
+      | 'flashcard'
+      | 'documentation'
+      | 'other';
     id?: string;
     title?: string;
     url?: string;
@@ -24,7 +37,14 @@ export interface IBraindump extends Document {
     };
   };
   processedInto?: {
-    type: 'blog' | 'project' | 'course' | 'book' | 'character' | 'task' | 'other';
+    type:
+      | 'blog'
+      | 'project'
+      | 'course'
+      | 'book'
+      | 'character'
+      | 'task'
+      | 'other';
     id?: string;
     note?: string;
   };
@@ -120,6 +140,7 @@ braindumpSchema.index({ userId: 1, tags: 1 });
 braindumpSchema.index({ userId: 1, priority: 1, status: 1 });
 
 const BraindumpModel: Model<IBraindump> =
-  mongoose.models.Braindump || mongoose.model<IBraindump>('Braindump', braindumpSchema);
+  mongoose.models.Braindump ||
+  mongoose.model<IBraindump>('Braindump', braindumpSchema);
 
 export default BraindumpModel;

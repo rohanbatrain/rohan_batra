@@ -99,6 +99,9 @@ export type BulkOperationRecordModelType = mongoose.Model<IBulkOperationRecord>;
 
 const BulkOperationRecordModel: BulkOperationRecordModelType =
   mongoose.models.BulkOperationRecord ||
-  mongoose.model<IBulkOperationRecord>('BulkOperationRecord', BulkOperationRecordSchema);
+  mongoose.model<IBulkOperationRecord>(
+    'BulkOperationRecord',
+    BulkOperationRecordSchema
+  );
 
 export default BulkOperationRecordModel;

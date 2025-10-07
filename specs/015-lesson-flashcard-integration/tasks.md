@@ -11,6 +11,7 @@
 - [x] Backend schema supports lesson flashcards (`CourseLesson.flashcardDeckIds`)
 - [x] FlashcardDeck supports lesson scope linkTargets
 - [x] Flashcard review components exist (`ReviewButtons.tsx`)
+- [x] **NEW**: API route for lesson flashcards (`/api/admin/lessons/[lessonId]/flashcards`)
 - [ ] Lesson page route (empty, needs implementation)
 
 ---
@@ -195,10 +196,12 @@ const { data } = useSWR(
 
 ---
 
-#### T005: Create API Route - GET /api/courses/[courseId]/lessons/[lessonId]/flashcards ⏳
+#### T005: Create GET /api/courses/[courseId]/lessons/[lessonId]/flashcards ⏳
 **File**: `/src/app/api/courses/[courseId]/lessons/[lessonId]/flashcards/route.ts`  
 **Priority**: HIGH  
 **Time**: 1 hour
+
+**Note**: We already have `/api/admin/lessons/[lessonId]/flashcards` for admin operations (create/list decks). This route is for **students** to fetch decks with progress.
 
 **Query Params**:
 - `includeProgress` (boolean, default: true if authenticated)

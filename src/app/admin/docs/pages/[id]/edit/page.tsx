@@ -17,7 +17,10 @@ export default function EditDocPagePage() {
   const params = useParams();
   const pageId = params?.id as string;
 
-  const { data, error, isLoading } = useSWR(`/api/admin/docs/pages/${pageId}`, fetcher);
+  const { data, error, isLoading } = useSWR(
+    `/api/admin/docs/pages/${pageId}`,
+    fetcher
+  );
 
   if (isLoading) {
     return (

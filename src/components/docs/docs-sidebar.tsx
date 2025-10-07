@@ -13,12 +13,16 @@ interface DocsSidebarProps {
 
 export default function DocsSidebar({ project, sections }: DocsSidebarProps) {
   const pathname = usePathname();
-  
+
   // Group sections by parent
-  const rootSections = sections.filter((s: any) => !s.parentSectionId).sort((a: any, b: any) => a.order - b.order);
-  
+  const rootSections = sections
+    .filter((s: any) => !s.parentSectionId)
+    .sort((a: any, b: any) => a.order - b.order);
+
   const getSectionChildren = (sectionId: string) => {
-    return sections.filter((s: any) => s.parentSectionId === sectionId).sort((a: any, b: any) => a.order - b.order);
+    return sections
+      .filter((s: any) => s.parentSectionId === sectionId)
+      .sort((a: any, b: any) => a.order - b.order);
   };
 
   return (

@@ -6,7 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { slugify } from '@/lib/slug';
 import { CheckCircle2, Loader2, XCircle } from 'lucide-react';
@@ -119,16 +125,28 @@ export default function CourseCreateContent() {
   const createCourse = async () => {
     const title = form.title.trim();
     if (!title) {
-      toast({ title: 'Title required', description: 'Please provide a course title.', variant: 'destructive' });
+      toast({
+        title: 'Title required',
+        description: 'Please provide a course title.',
+        variant: 'destructive',
+      });
       return;
     }
     if (form.summary.trim().length < 50) {
-      toast({ title: 'Summary too short', description: 'Course summary must be at least 50 characters.', variant: 'destructive' });
+      toast({
+        title: 'Summary too short',
+        description: 'Course summary must be at least 50 characters.',
+        variant: 'destructive',
+      });
       return;
     }
     const slugVal = (form.slug || slugify(form.title)).trim();
     if (!slugVal || !slugPattern.test(slugVal) || isSlugAvailable === false) {
-      toast({ title: 'Invalid or taken slug', description: 'Please fix the slug before creating the course.', variant: 'destructive' });
+      toast({
+        title: 'Invalid or taken slug',
+        description: 'Please fix the slug before creating the course.',
+        variant: 'destructive',
+      });
       return;
     }
 
@@ -145,16 +163,37 @@ export default function CourseCreateContent() {
         flashcardDeckIds: [],
       };
       if (form.subtitle.trim()) payload.subtitle = form.subtitle.trim();
-      if (form.categories.trim()) payload.categories = form.categories.split(',').map(s => s.trim()).filter(Boolean);
-      if (form.tags.trim()) payload.tags = form.tags.split(',').map(s => s.trim());
+      if (form.categories.trim())
+        payload.categories = form.categories
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+      if (form.tags.trim())
+        payload.tags = form.tags.split(',').map(s => s.trim());
       if (form.estimatedDurationMinutes.trim()) {
         const m = Number(form.estimatedDurationMinutes);
         if (!Number.isNaN(m) && m >= 0) payload.estimatedDurationMinutes = m;
       }
-      if (form.prerequisiteCourseIds.trim()) payload.prerequisiteCourseIds = form.prerequisiteCourseIds.split(',').map(s => s.trim()).filter(Boolean);
-      if (form.prerequisiteBlogSlugs.trim()) payload.prerequisiteBlogSlugs = form.prerequisiteBlogSlugs.split(',').map(s => s.trim()).filter(Boolean);
-      if (form.recommendedBlogSlugs.trim()) payload.recommendedBlogSlugs = form.recommendedBlogSlugs.split(',').map(s => s.trim()).filter(Boolean);
-      if (form.recommendedBookIds.trim()) payload.recommendedBookIds = form.recommendedBookIds.split(',').map(s => s.trim()).filter(Boolean);
+      if (form.prerequisiteCourseIds.trim())
+        payload.prerequisiteCourseIds = form.prerequisiteCourseIds
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+      if (form.prerequisiteBlogSlugs.trim())
+        payload.prerequisiteBlogSlugs = form.prerequisiteBlogSlugs
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+      if (form.recommendedBlogSlugs.trim())
+        payload.recommendedBlogSlugs = form.recommendedBlogSlugs
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+      if (form.recommendedBookIds.trim())
+        payload.recommendedBookIds = form.recommendedBookIds
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
 
       const res = await fetch('/api/admin/courses', {
         method: 'POST',
@@ -166,10 +205,17 @@ export default function CourseCreateContent() {
         throw new Error(j.error || 'Failed to create course');
       }
       const created: { id: string; slug: string } = await res.json();
-      toast({ title: 'Course created', description: 'Redirecting to manager…' });
+      toast({
+        title: 'Course created',
+        description: 'Redirecting to manager…',
+      });
       router.push(`/admin/courses/${created.id}`);
     } catch (err) {
-      toast({ title: 'Unable to create course', description: err instanceof Error ? err.message : 'Unknown error', variant: 'destructive' });
+      toast({
+        title: 'Unable to create course',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
     } finally {
       setIsCreating(false);
     }
@@ -180,29 +226,48 @@ export default function CourseCreateContent() {
       <div className='flex items-center justify-between'>
         <div>
           <h1 className='text-3xl font-bold'>Create course</h1>
-          <p className='text-sm text-muted-foreground'>Add a new course, then manage modules and lessons.</p>
+          <p className='text-sm text-muted-foreground'>
+            Add a new course, then manage modules and lessons.
+          </p>
         </div>
       </div>
 
       <div className='rounded-lg border p-4 dark:border-gray-800'>
-        <div className='mb-4 text-sm text-muted-foreground'>Step {step} of 4</div>
+        <div className='mb-4 text-sm text-muted-foreground'>
+          Step {step} of 4
+        </div>
 
         {step === 1 && (
           <div className='space-y-4'>
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
               <div className='space-y-2'>
                 <Label htmlFor='title'>Title</Label>
-                <Input id='title' name='title' value={form.title} onChange={handleInput} placeholder='e.g. Introduction to Next.js' />
+                <Input
+                  id='title'
+                  name='title'
+                  value={form.title}
+                  onChange={handleInput}
+                  placeholder='e.g. Introduction to Next.js'
+                />
               </div>
               <div className='space-y-2'>
                 <Label htmlFor='slug'>Slug</Label>
-                <Input id='slug' name='slug' value={form.slug} onChange={handleInput} placeholder='e.g. nextjs-intro' />
+                <Input
+                  id='slug'
+                  name='slug'
+                  value={form.slug}
+                  onChange={handleInput}
+                  placeholder='e.g. nextjs-intro'
+                />
                 <div className='flex items-center gap-2 text-xs pt-1 min-h-[20px]'>
                   {!form.slug ? (
-                    <span className='text-muted-foreground'>Auto-generated from title</span>
+                    <span className='text-muted-foreground'>
+                      Auto-generated from title
+                    </span>
                   ) : isCheckingSlug ? (
                     <span className='flex items-center gap-1 text-muted-foreground'>
-                      <Loader2 className='h-3 w-3 animate-spin' /> Checking availability…
+                      <Loader2 className='h-3 w-3 animate-spin' /> Checking
+                      availability…
                     </span>
                   ) : !isSlugFormatValid ? (
                     <span className='flex items-center gap-1 text-red-600 dark:text-red-400'>
@@ -222,11 +287,24 @@ export default function CourseCreateContent() {
             </div>
             <div className='space-y-2'>
               <Label htmlFor='subtitle'>Subtitle</Label>
-              <Input id='subtitle' name='subtitle' value={form.subtitle} onChange={handleInput} placeholder='A brief, catchy subtitle' />
+              <Input
+                id='subtitle'
+                name='subtitle'
+                value={form.subtitle}
+                onChange={handleInput}
+                placeholder='A brief, catchy subtitle'
+              />
             </div>
             <div className='space-y-2'>
               <Label htmlFor='summary'>Summary</Label>
-              <Textarea id='summary' name='summary' value={form.summary} onChange={handleInput} placeholder='A short summary of the course content.' rows={4} />
+              <Textarea
+                id='summary'
+                name='summary'
+                value={form.summary}
+                onChange={handleInput}
+                placeholder='A short summary of the course content.'
+                rows={4}
+              />
             </div>
           </div>
         )}
@@ -236,7 +314,15 @@ export default function CourseCreateContent() {
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
               <div className='space-y-2'>
                 <Label>Difficulty</Label>
-                <Select value={form.difficulty} onValueChange={value => setForm(prev => ({ ...prev, difficulty: value as Difficulty }))}>
+                <Select
+                  value={form.difficulty}
+                  onValueChange={value =>
+                    setForm(prev => ({
+                      ...prev,
+                      difficulty: value as Difficulty,
+                    }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder='Select difficulty' />
                   </SelectTrigger>
@@ -249,7 +335,12 @@ export default function CourseCreateContent() {
               </div>
               <div className='space-y-2'>
                 <Label>Status</Label>
-                <Select value={form.status} onValueChange={value => setForm(prev => ({ ...prev, status: value as Status }))}>
+                <Select
+                  value={form.status}
+                  onValueChange={value =>
+                    setForm(prev => ({ ...prev, status: value as Status }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder='Select status' />
                   </SelectTrigger>
@@ -261,11 +352,21 @@ export default function CourseCreateContent() {
                     <SelectItem value='archived'>Archived</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className='text-xs text-muted-foreground'>You can publish only after adding at least one lesson.</p>
+                <p className='text-xs text-muted-foreground'>
+                  You can publish only after adding at least one lesson.
+                </p>
               </div>
               <div className='space-y-2'>
                 <Label>Visibility</Label>
-                <Select value={form.visibility} onValueChange={value => setForm(prev => ({ ...prev, visibility: value as Visibility }))}>
+                <Select
+                  value={form.visibility}
+                  onValueChange={value =>
+                    setForm(prev => ({
+                      ...prev,
+                      visibility: value as Visibility,
+                    }))
+                  }
+                >
                   <SelectTrigger>
                     <SelectValue placeholder='Select visibility' />
                   </SelectTrigger>
@@ -276,8 +377,16 @@ export default function CourseCreateContent() {
                 </Select>
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='estimatedDurationMinutes'>Estimated minutes</Label>
-                <Input id='estimatedDurationMinutes' name='estimatedDurationMinutes' value={form.estimatedDurationMinutes} onChange={handleInput} placeholder='e.g. 120' />
+                <Label htmlFor='estimatedDurationMinutes'>
+                  Estimated minutes
+                </Label>
+                <Input
+                  id='estimatedDurationMinutes'
+                  name='estimatedDurationMinutes'
+                  value={form.estimatedDurationMinutes}
+                  onChange={handleInput}
+                  placeholder='e.g. 120'
+                />
               </div>
             </div>
           </div>
@@ -288,19 +397,40 @@ export default function CourseCreateContent() {
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
               <div className='space-y-2'>
                 <Label htmlFor='categories'>Categories</Label>
-                <Input id='categories' name='categories' value={form.categories} onChange={handleInput} placeholder='Comma separated (e.g. web,apis,backend)' />
+                <Input
+                  id='categories'
+                  name='categories'
+                  value={form.categories}
+                  onChange={handleInput}
+                  placeholder='Comma separated (e.g. web,apis,backend)'
+                />
               </div>
               <div className='space-y-2'>
                 <Label htmlFor='tags'>Tags</Label>
-                <Input id='tags' name='tags' value={form.tags} onChange={handleInput} placeholder='Comma separated tags' />
+                <Input
+                  id='tags'
+                  name='tags'
+                  value={form.tags}
+                  onChange={handleInput}
+                  placeholder='Comma separated tags'
+                />
               </div>
             </div>
             <div className='flex items-center justify-between rounded-md border p-4'>
               <div>
                 <Label htmlFor='isFeatured'>Feature this course</Label>
-                <p className='text-sm text-muted-foreground'>Featured courses are highlighted in marketing sections.</p>
+                <p className='text-sm text-muted-foreground'>
+                  Featured courses are highlighted in marketing sections.
+                </p>
               </div>
-              <input id='isFeatured' type='checkbox' checked={form.isFeatured} onChange={e => setForm(prev => ({ ...prev, isFeatured: e.target.checked }))} />
+              <input
+                id='isFeatured'
+                type='checkbox'
+                checked={form.isFeatured}
+                onChange={e =>
+                  setForm(prev => ({ ...prev, isFeatured: e.target.checked }))
+                }
+              />
             </div>
           </div>
         )}
@@ -310,44 +440,94 @@ export default function CourseCreateContent() {
             <div className='grid grid-cols-1 gap-4 sm:grid-cols-2'>
               <div className='space-y-2'>
                 <Label htmlFor='heroImage'>Hero image URL or shortcode</Label>
-                <Input id='heroImage' name='heroImage' value={form.heroImage} onChange={handleInput} placeholder='https:// or asset://' />
+                <Input
+                  id='heroImage'
+                  name='heroImage'
+                  value={form.heroImage}
+                  onChange={handleInput}
+                  placeholder='https:// or asset://'
+                />
               </div>
               <div className='space-y-2'>
                 <Label htmlFor='heroLottieId'>Hero lottie asset ID</Label>
-                <Input id='heroLottieId' name='heroLottieId' value={form.heroLottieId} onChange={handleInput} placeholder='Optional ObjectId for animated hero' />
+                <Input
+                  id='heroLottieId'
+                  name='heroLottieId'
+                  value={form.heroLottieId}
+                  onChange={handleInput}
+                  placeholder='Optional ObjectId for animated hero'
+                />
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='prerequisiteCourseIds'>Prerequisite course IDs</Label>
-                <Input id='prerequisiteCourseIds' name='prerequisiteCourseIds' value={form.prerequisiteCourseIds} onChange={handleInput} placeholder='Comma separated ObjectIds' />
+                <Label htmlFor='prerequisiteCourseIds'>
+                  Prerequisite course IDs
+                </Label>
+                <Input
+                  id='prerequisiteCourseIds'
+                  name='prerequisiteCourseIds'
+                  value={form.prerequisiteCourseIds}
+                  onChange={handleInput}
+                  placeholder='Comma separated ObjectIds'
+                />
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='prerequisiteBlogSlugs'>Prerequisite blog slugs</Label>
-                <Input id='prerequisiteBlogSlugs' name='prerequisiteBlogSlugs' value={form.prerequisiteBlogSlugs} onChange={handleInput} placeholder='Comma separated slugs' />
+                <Label htmlFor='prerequisiteBlogSlugs'>
+                  Prerequisite blog slugs
+                </Label>
+                <Input
+                  id='prerequisiteBlogSlugs'
+                  name='prerequisiteBlogSlugs'
+                  value={form.prerequisiteBlogSlugs}
+                  onChange={handleInput}
+                  placeholder='Comma separated slugs'
+                />
               </div>
               <div className='space-y-2'>
-                <Label htmlFor='recommendedBlogSlugs'>Recommended blog slugs</Label>
-                <Input id='recommendedBlogSlugs' name='recommendedBlogSlugs' value={form.recommendedBlogSlugs} onChange={handleInput} placeholder='Comma separated slugs' />
+                <Label htmlFor='recommendedBlogSlugs'>
+                  Recommended blog slugs
+                </Label>
+                <Input
+                  id='recommendedBlogSlugs'
+                  name='recommendedBlogSlugs'
+                  value={form.recommendedBlogSlugs}
+                  onChange={handleInput}
+                  placeholder='Comma separated slugs'
+                />
               </div>
               <div className='space-y-2'>
                 <Label htmlFor='recommendedBookIds'>Recommended book IDs</Label>
-                <Input id='recommendedBookIds' name='recommendedBookIds' value={form.recommendedBookIds} onChange={handleInput} placeholder='Comma separated ObjectIds' />
+                <Input
+                  id='recommendedBookIds'
+                  name='recommendedBookIds'
+                  value={form.recommendedBookIds}
+                  onChange={handleInput}
+                  placeholder='Comma separated ObjectIds'
+                />
               </div>
             </div>
           </div>
         )}
 
         <div className='mt-6 flex items-center justify-between'>
-          <Button variant='outline' onClick={() => router.push('/admin/courses')}>
+          <Button
+            variant='outline'
+            onClick={() => router.push('/admin/courses')}
+          >
             Cancel
           </Button>
           <div className='flex gap-2'>
             {step > 1 && (
-              <Button variant='outline' onClick={() => setStep(s => s - 1)}>Back</Button>
+              <Button variant='outline' onClick={() => setStep(s => s - 1)}>
+                Back
+              </Button>
             )}
             {step < 4 ? (
               <Button onClick={() => setStep(s => s + 1)}>Next</Button>
             ) : (
-              <Button onClick={createCourse} disabled={isCreating || form.status === 'published'}>
+              <Button
+                onClick={createCourse}
+                disabled={isCreating || form.status === 'published'}
+              >
                 {isCreating ? 'Creating…' : 'Create course'}
               </Button>
             )}

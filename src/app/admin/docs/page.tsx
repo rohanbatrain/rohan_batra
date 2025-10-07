@@ -23,7 +23,14 @@ import {
   CardTitle,
 } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Book, FileText, Eye, Search as SearchIcon, Plus, ExternalLink } from 'lucide-react';
+import {
+  Book,
+  FileText,
+  Eye,
+  Search as SearchIcon,
+  Plus,
+  ExternalLink,
+} from 'lucide-react';
 
 interface DocProject {
   id: string;
@@ -141,7 +148,10 @@ export default function DocsAdminPage() {
                 <SelectItem value='archived'>Archived</SelectItem>
               </SelectContent>
             </Select>
-            <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
+            <Select
+              value={visibilityFilter}
+              onValueChange={setVisibilityFilter}
+            >
               <SelectTrigger className='w-[160px]'>
                 <SelectValue placeholder='Visibility' />
               </SelectTrigger>
@@ -183,10 +193,12 @@ export default function DocsAdminPage() {
         <Card>
           <CardContent className='flex flex-col items-center justify-center py-16'>
             <Book className='h-16 w-16 text-muted-foreground mb-4' />
-            <h3 className='text-lg font-semibold mb-2'>No documentation projects yet</h3>
+            <h3 className='text-lg font-semibold mb-2'>
+              No documentation projects yet
+            </h3>
             <p className='text-muted-foreground mb-4 text-center max-w-md'>
-              Create your first documentation project to get started with writing comprehensive
-              docs for your portfolio projects.
+              Create your first documentation project to get started with
+              writing comprehensive docs for your portfolio projects.
             </p>
             <Button onClick={() => router.push('/admin/docs/new')}>
               <Plus className='mr-2 h-4 w-4' />
@@ -197,12 +209,17 @@ export default function DocsAdminPage() {
       ) : (
         <div className='grid gap-6 md:grid-cols-2 lg:grid-cols-3'>
           {projects.map(project => (
-            <Card key={project.id} className='hover:shadow-lg transition-shadow'>
+            <Card
+              key={project.id}
+              className='hover:shadow-lg transition-shadow'
+            >
               <CardHeader>
                 <div className='flex items-start justify-between gap-2'>
                   <div className='flex-1 min-w-0'>
                     <CardTitle className='truncate'>{project.title}</CardTitle>
-                    <CardDescription className='truncate'>{project.slug}</CardDescription>
+                    <CardDescription className='truncate'>
+                      {project.slug}
+                    </CardDescription>
                   </div>
                   {project.logoUrl && (
                     <img
@@ -213,7 +230,9 @@ export default function DocsAdminPage() {
                   )}
                 </div>
                 <div className='flex gap-2 pt-2'>
-                  <Badge className={getStatusColor(project.status)}>{project.status}</Badge>
+                  <Badge className={getStatusColor(project.status)}>
+                    {project.status}
+                  </Badge>
                   <Badge className={getVisibilityColor(project.visibility)}>
                     {project.visibility}
                   </Badge>
@@ -223,7 +242,7 @@ export default function DocsAdminPage() {
                 <p className='text-sm text-muted-foreground line-clamp-2'>
                   {project.description}
                 </p>
-                
+
                 <div className='flex items-center gap-4 text-sm text-muted-foreground'>
                   <div className='flex items-center gap-1'>
                     <FileText className='h-4 w-4' />
@@ -248,7 +267,9 @@ export default function DocsAdminPage() {
                     <Button
                       variant='ghost'
                       size='sm'
-                      onClick={() => window.open(`/docs/${project.slug}`, '_blank')}
+                      onClick={() =>
+                        window.open(`/docs/${project.slug}`, '_blank')
+                      }
                     >
                       <ExternalLink className='h-4 w-4' />
                     </Button>

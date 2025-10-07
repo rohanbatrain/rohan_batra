@@ -116,24 +116,28 @@ export function Footer() {
       try {
         const response = await fetch('/api/public/brands');
         if (!response.ok) throw new Error('Failed to fetch brands');
-        
+
         const data = await response.json();
         const primaryBrand = data.brands?.find((brand: any) => brand.isPrimary);
-        
+
         if (primaryBrand && primaryBrand.profiles?.length > 0) {
           // Convert profiles to footer social links format
-          const dynamicLinks = primaryBrand.profiles.map((profile: SocialProfile) => {
-            const Icon = getPlatformIcon(profile.platform);
-            const color = getPlatformColor(profile.platform);
-            
-            return {
-              name: profile.platform.charAt(0).toUpperCase() + profile.platform.slice(1),
-              href: profile.profileUrl,
-              icon: Icon,
-              color: color,
-            };
-          });
-          
+          const dynamicLinks = primaryBrand.profiles.map(
+            (profile: SocialProfile) => {
+              const Icon = getPlatformIcon(profile.platform);
+              const color = getPlatformColor(profile.platform);
+
+              return {
+                name:
+                  profile.platform.charAt(0).toUpperCase() +
+                  profile.platform.slice(1),
+                href: profile.profileUrl,
+                icon: Icon,
+                color: color,
+              };
+            }
+          );
+
           setSocialLinks(dynamicLinks);
         }
       } catch (error) {

@@ -20,7 +20,7 @@ export async function generateMetadata(props: DocPageProps): Promise<Metadata> {
   const params = await props.params;
   await connectDB();
   const project: any = await DocProject.findOne({ slug: params.slug }).lean();
-  
+
   if (!project) {
     return { title: 'Page Not Found' };
   }
@@ -54,8 +54,11 @@ export async function generateMetadata(props: DocPageProps): Promise<Metadata> {
 export default async function DocPageView(props: DocPageProps) {
   const params = await props.params;
   await connectDB();
-  
-  const project: any = await DocProject.findOne({ slug: params.slug, status: 'published' }).lean();
+
+  const project: any = await DocProject.findOne({
+    slug: params.slug,
+    status: 'published',
+  }).lean();
 
   if (!project) {
     notFound();
@@ -69,7 +72,9 @@ export default async function DocPageView(props: DocPageProps) {
           <div className='space-y-4'>
             <h1 className='text-4xl font-bold'>{project.title}</h1>
             {project.description && (
-              <p className='text-xl text-muted-foreground'>{project.description}</p>
+              <p className='text-xl text-muted-foreground'>
+                {project.description}
+              </p>
             )}
           </div>
 
@@ -132,15 +137,16 @@ export default async function DocPageView(props: DocPageProps) {
               )}
             </div>
           </div>
-          
+
           <h1 className='text-4xl font-bold'>{page.title}</h1>
-          
+
           {page.excerpt && (
             <p className='text-xl text-muted-foreground'>{page.excerpt}</p>
           )}
 
           <div className='text-sm text-muted-foreground'>
-            Last updated: {new Date(page.updatedAt).toLocaleDateString('en-US', {
+            Last updated:{' '}
+            {new Date(page.updatedAt).toLocaleDateString('en-US', {
               year: 'numeric',
               month: 'long',
               day: 'numeric',

@@ -25,22 +25,31 @@ async function getAuthorizedUser(userId: string) {
 }
 
 // Safe URL validation - only HTTP/HTTPS
-const safeUrl = z.string().url().refine(
-  (url) => url.startsWith('http://') || url.startsWith('https://'),
-  { message: 'Only HTTP/HTTPS URLs are allowed' }
-);
+const safeUrl = z
+  .string()
+  .url()
+  .refine(url => url.startsWith('http://') || url.startsWith('https://'), {
+    message: 'Only HTTP/HTTPS URLs are allowed',
+  });
 
 // HTTPS-only URL validation
-const httpsUrl = z.string().url().refine(
-  (url) => url.startsWith('https://'),
-  { message: 'Only HTTPS URLs are allowed' }
-);
+const httpsUrl = z
+  .string()
+  .url()
+  .refine(url => url.startsWith('https://'), {
+    message: 'Only HTTPS URLs are allowed',
+  });
 
 // Validation schema
 const createBrandSchema = z.object({
   name: z.string().min(2).max(50),
   displayName: z.string().min(2).max(100),
-  slug: z.string().min(2).max(100).regex(/^[a-z0-9-_]+$/).optional(),
+  slug: z
+    .string()
+    .min(2)
+    .max(100)
+    .regex(/^[a-z0-9-_]+$/)
+    .optional(),
   description: z.string().max(500).optional(),
   type: z.enum(['professional', 'creative', 'personal', 'other']),
   visibility: z.enum(['public', 'private', 'unlisted']).default('public'),
@@ -49,8 +58,14 @@ const createBrandSchema = z.object({
   order: z.number().min(0).default(0),
   theme: z
     .object({
-      primaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
-      secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/).optional(),
+      primaryColor: z
+        .string()
+        .regex(/^#[0-9A-Fa-f]{6}$/)
+        .optional(),
+      secondaryColor: z
+        .string()
+        .regex(/^#[0-9A-Fa-f]{6}$/)
+        .optional(),
       icon: z.string().max(50).optional(),
     })
     .optional(),
@@ -82,12 +97,17 @@ export async function GET(request: NextRequest) {
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     await connectToDatabase();
 
-    const brands = await BrandModel.find().sort({ order: 1, createdAt: -1 }).lean();
+    const brands = await BrandModel.find()
+      .sort({ order: 1, createdAt: -1 })
+      .lean();
 
     return NextResponse.json({
       brands: brands.map((brand: any) => ({
@@ -109,7 +129,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching brands:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
   }
 }
 
@@ -135,7 +158,10 @@ export async function POST(request: NextRequest) {
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
     const body = await request.json();
@@ -186,12 +212,22 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: 'Validation error', details: error.errors }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Validation error', details: error.errors },
+        { status: 400 }
+      );
     }
 
     // Handle duplicate key errors from MongoDB
-    if (error && typeof error === 'object' && 'code' in error && error.code === 11000) {
-      const duplicateField = (error as any).keyPattern ? Object.keys((error as any).keyPattern)[0] : 'field';
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 11000
+    ) {
+      const duplicateField = (error as any).keyPattern
+        ? Object.keys((error as any).keyPattern)[0]
+        : 'field';
       return NextResponse.json(
         { error: `A brand with this ${duplicateField} already exists` },
         { status: 409 }
@@ -199,6 +235,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Error creating brand:', error);
-    return NextResponse.json({ error: 'Failed to create brand' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to create brand' },
+      { status: 500 }
+    );
   }
 }

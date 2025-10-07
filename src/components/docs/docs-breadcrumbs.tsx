@@ -14,9 +14,15 @@ interface DocBreadcrumbsProps {
   className?: string;
 }
 
-export default function DocBreadcrumbs({ items, className }: DocBreadcrumbsProps) {
+export default function DocBreadcrumbs({
+  items,
+  className,
+}: DocBreadcrumbsProps) {
   return (
-    <nav aria-label='Breadcrumb' className={cn('flex items-center gap-2 text-sm', className)}>
+    <nav
+      aria-label='Breadcrumb'
+      className={cn('flex items-center gap-2 text-sm', className)}
+    >
       <Link
         href='/docs'
         className='flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors'

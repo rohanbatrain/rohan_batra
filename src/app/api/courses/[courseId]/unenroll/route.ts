@@ -14,7 +14,7 @@ export async function POST(
   try {
     const { userId } = await auth();
     const url = new URL(req.url);
-    
+
     if (!userId) {
       return NextResponse.redirect(new URL('/sign-in', url.origin));
     }
@@ -25,17 +25,24 @@ export async function POST(
       ? { _id: new Types.ObjectId(courseId) }
       : { slug: courseId };
     const course = await CourseModel.findOne(query);
-    
+
     if (!course) {
       return NextResponse.redirect(new URL('/courses', url.origin));
     }
 
-    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as { _id: any } | null;
+    const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
+      _id: any;
+    } | null;
     if (!userDoc || !userDoc._id) {
-      return NextResponse.redirect(new URL(`/courses/${course.slug}`, url.origin));
+      return NextResponse.redirect(
+        new URL(`/courses/${course.slug}`, url.origin)
+      );
     }
 
-    const enrollment = await CourseEnrollmentModel.findOne({ courseId: course._id, userId: userDoc._id });
+    const enrollment = await CourseEnrollmentModel.findOne({
+      courseId: course._id,
+      userId: userDoc._id,
+    });
     if (enrollment) {
       await Promise.all([
         CourseProgressModel.deleteOne({ enrollmentId: enrollment._id }),
@@ -43,7 +50,9 @@ export async function POST(
       ]);
     }
 
-    return NextResponse.redirect(new URL(`/courses/${course.slug}`, url.origin));
+    return NextResponse.redirect(
+      new URL(`/courses/${course.slug}`, url.origin)
+    );
   } catch (err) {
     // Always redirect back; errors can be logged server-side
     const url = new URL(req.url);

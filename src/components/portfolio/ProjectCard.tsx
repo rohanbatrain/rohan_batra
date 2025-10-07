@@ -108,7 +108,12 @@ export function ProjectCard({
                 </span>
               )}
               {project.tags?.includes('forked') && (
-                <span className={'inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 ' + (primaryCategory ? 'ml-2' : '')}>
+                <span
+                  className={
+                    'inline-flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800 ' +
+                    (primaryCategory ? 'ml-2' : '')
+                  }
+                >
                   <GitFork className='w-3 h-3' /> Forked
                 </span>
               )}

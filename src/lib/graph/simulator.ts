@@ -1,6 +1,6 @@
 /**
  * T013: D3 Force Simulator Wrapper
- * 
+ *
  * Wrapper functions for D3 force simulation.
  * Applies force-directed layout to graph nodes.
  */
@@ -24,7 +24,7 @@ import type {
 
 /**
  * Simulate graph layout using D3 force-directed algorithm
- * 
+ *
  * @param graph - Knowledge graph to simulate
  * @param options - Simulation options
  * @returns Graph with updated node positions
@@ -56,8 +56,8 @@ export function simulateGraphLayout(
   const startTime = Date.now();
 
   // Create copies of nodes and edges for simulation
-  const nodes = graph.nodes.map((node) => ({ ...node }));
-  const edges = graph.edges.map((edge) => ({ ...edge }));
+  const nodes = graph.nodes.map(node => ({ ...node }));
+  const edges = graph.edges.map(edge => ({ ...edge }));
 
   // Create D3 force simulation
   const simulation = forceSimulation(nodes as any)
@@ -69,7 +69,10 @@ export function simulateGraphLayout(
     )
     .force('charge', forceManyBody().strength(chargeStrength))
     .force('center', forceCenter(width / 2, height / 2))
-    .force('collide', forceCollide().radius((d: any) => (d.size || 30) + 5))
+    .force(
+      'collide',
+      forceCollide().radius((d: any) => (d.size || 30) + 5)
+    )
     .stop();
 
   // Run simulation for specified iterations
@@ -78,7 +81,9 @@ export function simulateGraphLayout(
   }
 
   const elapsed = Date.now() - startTime;
-  console.log(`[Simulator] Layout computed in ${elapsed}ms for ${nodes.length} nodes`);
+  console.log(
+    `[Simulator] Layout computed in ${elapsed}ms for ${nodes.length} nodes`
+  );
 
   return {
     ...graph,
@@ -90,7 +95,7 @@ export function simulateGraphLayout(
 /**
  * Apply module grouping to graph layout
  * Groups lessons by their module using force positioning
- * 
+ *
  * @param graph - Knowledge graph
  * @returns Graph with module-grouped layout
  */
@@ -103,7 +108,7 @@ export function applyModuleGrouping(graph: KnowledgeGraph): KnowledgeGraph {
 
   // Group nodes by module
   const moduleGroups = new Map<string, GraphNode[]>();
-  nodes.forEach((node) => {
+  nodes.forEach(node => {
     if (node.type === 'lesson' || node.type === 'sublesson') {
       const moduleId = node.moduleId || 'unknown';
       if (!moduleGroups.has(moduleId)) {
@@ -164,7 +169,7 @@ export function applyModuleGrouping(graph: KnowledgeGraph): KnowledgeGraph {
 
 /**
  * Calculate bounding box of graph nodes
- * 
+ *
  * @param nodes - Graph nodes with x, y coordinates
  * @returns Bounds with min/max x,y and width/height
  */
@@ -185,7 +190,7 @@ export function calculateBounds(nodes: GraphNode[]): GraphBounds {
   let minY = Infinity;
   let maxY = -Infinity;
 
-  nodes.forEach((node) => {
+  nodes.forEach(node => {
     const x = node.x ?? 0;
     const y = node.y ?? 0;
 

@@ -11,7 +11,7 @@ export function calculateDuration(
 ): string {
   const end = endDate || new Date();
   const start = new Date(startDate);
-  
+
   const totalMonths = differenceInMonths(end, start);
   const years = Math.floor(totalMonths / 12);
   const months = totalMonths % 12;
@@ -21,11 +21,11 @@ export function calculateDuration(
   }
 
   const parts: string[] = [];
-  
+
   if (years > 0) {
     parts.push(`${years} yr${years > 1 ? 's' : ''}`);
   }
-  
+
   if (months > 0) {
     parts.push(`${months} mo${months > 1 ? 's' : ''}`);
   }
@@ -43,11 +43,11 @@ export function formatDateRange(
   isCurrent: boolean
 ): string {
   const start = format(new Date(startDate), 'MMM yyyy');
-  
+
   if (isCurrent || !endDate) {
     return `${start} - Present`;
   }
-  
+
   const end = format(new Date(endDate), 'MMM yyyy');
   return `${start} - ${end}`;
 }
@@ -76,7 +76,7 @@ export function sortExperiences(experiences: Experience[]): Experience[] {
     if (a.displayOrder !== b.displayOrder) {
       return a.displayOrder - b.displayOrder;
     }
-    
+
     // Secondary sort: startDate (descending - most recent first)
     return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
   });
@@ -90,10 +90,10 @@ export function isValidDateRange(
   endDate: Date | string | null | undefined
 ): boolean {
   if (!endDate) return true;
-  
+
   const start = new Date(startDate);
   const end = new Date(endDate);
-  
+
   return end > start;
 }
 
@@ -127,10 +127,10 @@ export function filterBySkills(
   skills: string[]
 ): Experience[] {
   if (skills.length === 0) return experiences;
-  
-  return experiences.filter((exp) =>
-    skills.some((skill) =>
-      exp.skills.some((expSkill) =>
+
+  return experiences.filter(exp =>
+    skills.some(skill =>
+      exp.skills.some(expSkill =>
         expSkill.toLowerCase().includes(skill.toLowerCase())
       )
     )
@@ -142,10 +142,10 @@ export function filterBySkills(
  */
 export function extractUniqueSkills(experiences: Experience[]): string[] {
   const skillsSet = new Set<string>();
-  
-  experiences.forEach((exp) => {
-    exp.skills.forEach((skill) => skillsSet.add(skill));
+
+  experiences.forEach(exp => {
+    exp.skills.forEach(skill => skillsSet.add(skill));
   });
-  
+
   return Array.from(skillsSet).sort();
 }

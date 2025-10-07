@@ -98,7 +98,10 @@ export async function validateDeckMove(
   // Check if new parent is a descendant of the deck being moved
   const descendantIds = await getDescendantDeckIds(deckId);
   if (descendantIds.includes(newParentId)) {
-    return { valid: false, error: 'Cannot move a deck into its own descendant' };
+    return {
+      valid: false,
+      error: 'Cannot move a deck into its own descendant',
+    };
   }
 
   // Check depth limit
@@ -117,7 +120,9 @@ export async function updateDeckHierarchy(
   deckId: string,
   session?: mongoose.ClientSession
 ): Promise<void> {
-  const deck = await FlashcardDeckModel.findById(deckId).session(session || null);
+  const deck = await FlashcardDeckModel.findById(deckId).session(
+    session || null
+  );
   if (!deck) return;
 
   // Update the deck itself (path/level set by pre-save hook)
@@ -130,7 +135,9 @@ export async function updateDeckHierarchy(
 
   for (const descendant of descendants) {
     // Recalculate path based on parent
-    const parent = await FlashcardDeckModel.findById(descendant.parentDeckId).session(session || null);
+    const parent = await FlashcardDeckModel.findById(
+      descendant.parentDeckId
+    ).session(session || null);
     if (parent) {
       descendant.level = parent.level + 1;
       descendant.path = `${parent.path}/${descendant.slug}`;
@@ -142,7 +149,9 @@ export async function updateDeckHierarchy(
 /**
  * Get breadcrumb trail for a deck
  */
-export async function getDeckBreadcrumbs(deckId: string): Promise<Array<{ id: string; title: string; slug: string }>> {
+export async function getDeckBreadcrumbs(
+  deckId: string
+): Promise<Array<{ id: string; title: string; slug: string }>> {
   const deck = await FlashcardDeckModel.findById(deckId);
   if (!deck) return [];
 

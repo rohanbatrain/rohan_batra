@@ -155,7 +155,9 @@ export async function POST(
     // Update bulk operation if created
     if (bulkOp._id) {
       try {
-        const bulkOperation = await BulkOperationRecordModel.findById(bulkOp._id);
+        const bulkOperation = await BulkOperationRecordModel.findById(
+          bulkOp._id
+        );
         if (bulkOperation) {
           bulkOperation.status = 'failed';
           bulkOperation.finishedAt = new Date();

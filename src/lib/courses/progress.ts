@@ -38,7 +38,8 @@ export function computeModuleTotals(
   const moduleLessons = ordered.length ? ordered : fallback;
 
   const totalWeight = moduleLessons.reduce(
-    (sum, l) => sum + (typeof l.progressWeight === 'number' ? l.progressWeight : 1),
+    (sum, l) =>
+      sum + (typeof l.progressWeight === 'number' ? l.progressWeight : 1),
     0
   );
 
@@ -59,24 +60,38 @@ export function computeSnapshots(
     const completedWeight = moduleLessons.reduce((sum, l) => {
       const id = l._id.toString();
       if (completedLessonIds.has(id)) {
-        return sum + (typeof l.progressWeight === 'number' ? l.progressWeight : 1);
+        return (
+          sum + (typeof l.progressWeight === 'number' ? l.progressWeight : 1)
+        );
       }
       return sum;
     }, 0);
 
-    const percentage = totalWeight === 0 ? 0 : Math.min(100, Math.round((completedWeight / totalWeight) * 100));
-    snapshots.push({ moduleId: m._id, completedWeight, totalWeight, percentage });
+    const percentage =
+      totalWeight === 0
+        ? 0
+        : Math.min(100, Math.round((completedWeight / totalWeight) * 100));
+    snapshots.push({
+      moduleId: m._id,
+      completedWeight,
+      totalWeight,
+      percentage,
+    });
     totalWeightAll += totalWeight;
     completedWeightAll += completedWeight;
   }
 
-  const overallPercentage = totalWeightAll === 0 ? 0 : Math.min(100, Math.round((completedWeightAll / totalWeightAll) * 100));
+  const overallPercentage =
+    totalWeightAll === 0
+      ? 0
+      : Math.min(100, Math.round((completedWeightAll / totalWeightAll) * 100));
 
   return { snapshots, overallPercentage };
 }
 
 export async function buildInitialProgress(courseId: Types.ObjectId) {
-  const { modules, lessons, lessonsById } = await fetchCourseStructure(courseId);
+  const { modules, lessons, lessonsById } =
+    await fetchCourseStructure(courseId);
   const incompleteLessonIds = lessons.map(l => l._id as Types.ObjectId);
 
   // First lesson defaults to first lesson of first module by order

@@ -11,33 +11,42 @@ import { uniqueSlug } from '@/lib/slug';
 
 const DocProjectInputSchema = z.object({
   title: z.string().min(3).max(200),
-  slug: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).optional(),
+  slug: z
+    .string()
+    .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+    .optional(),
   description: z.string().min(10).max(500),
   logoUrl: z.string().url().optional().or(z.literal('')),
   projectId: z.string().optional(), // Link to portfolio project
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   visibility: z.enum(['public', 'private', 'unlisted']).default('public'),
-  config: z.object({
-    theme: z.enum(['light', 'dark', 'system']).optional(),
-    primaryColor: z.string().optional(),
-    sidebarPosition: z.enum(['left', 'right']).optional(),
-    showToc: z.boolean().optional(),
-    showBreadcrumbs: z.boolean().optional(),
-    showLastUpdated: z.boolean().optional(),
-    showContributors: z.boolean().optional(),
-  }).optional(),
-  externalLinks: z.object({
-    github: z.string().url().optional().or(z.literal('')),
-    npm: z.string().url().optional().or(z.literal('')),
-    demo: z.string().url().optional().or(z.literal('')),
-    support: z.string().url().optional().or(z.literal('')),
-  }).optional(),
-  seo: z.object({
-    title: z.string().max(70).optional(),
-    description: z.string().max(160).optional(),
-    image: z.string().url().optional().or(z.literal('')),
-    keywords: z.array(z.string()).optional(),
-  }).optional(),
+  config: z
+    .object({
+      theme: z.enum(['light', 'dark', 'system']).optional(),
+      primaryColor: z.string().optional(),
+      sidebarPosition: z.enum(['left', 'right']).optional(),
+      showToc: z.boolean().optional(),
+      showBreadcrumbs: z.boolean().optional(),
+      showLastUpdated: z.boolean().optional(),
+      showContributors: z.boolean().optional(),
+    })
+    .optional(),
+  externalLinks: z
+    .object({
+      github: z.string().url().optional().or(z.literal('')),
+      npm: z.string().url().optional().or(z.literal('')),
+      demo: z.string().url().optional().or(z.literal('')),
+      support: z.string().url().optional().or(z.literal('')),
+    })
+    .optional(),
+  seo: z
+    .object({
+      title: z.string().max(70).optional(),
+      description: z.string().max(160).optional(),
+      image: z.string().url().optional().or(z.literal('')),
+      keywords: z.array(z.string()).optional(),
+    })
+    .optional(),
 });
 
 async function getAuthorizedUser(userId: string) {
@@ -176,9 +185,10 @@ export async function POST(request: NextRequest) {
       slug,
       description: parsed.description,
       logoUrl: parsed.logoUrl?.trim() || undefined,
-      projectId: parsed.projectId && Types.ObjectId.isValid(parsed.projectId)
-        ? new Types.ObjectId(parsed.projectId)
-        : undefined,
+      projectId:
+        parsed.projectId && Types.ObjectId.isValid(parsed.projectId)
+          ? new Types.ObjectId(parsed.projectId)
+          : undefined,
       status: parsed.status,
       visibility: parsed.visibility,
       config: parsed.config || {},
@@ -194,10 +204,7 @@ export async function POST(request: NextRequest) {
 
     await docProject.save();
 
-    return NextResponse.json(
-      { project: docProject.toJSON() },
-      { status: 201 }
-    );
+    return NextResponse.json({ project: docProject.toJSON() }, { status: 201 });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(

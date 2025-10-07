@@ -95,7 +95,11 @@ const validateLessonPayload = (
 };
 
 export const LessonInputSchema = z
-  .object({ ...lessonCreateShape, parentLessonId: z.string().optional().nullable(), childOrder: z.array(z.string()).optional() })
+  .object({
+    ...lessonCreateShape,
+    parentLessonId: z.string().optional().nullable(),
+    childOrder: z.array(z.string()).optional(),
+  })
   .superRefine(validateLessonPayload);
 
 export const LessonUpdateSchema = z
@@ -208,7 +212,9 @@ export const sanitizeLesson = (lesson: any) => ({
   prerequisiteLessonIds: (lesson.prerequisiteLessonIds ?? []).map((id: any) =>
     id.toString()
   ),
-  parentLessonId: lesson.parentLessonId ? lesson.parentLessonId.toString() : null,
+  parentLessonId: lesson.parentLessonId
+    ? lesson.parentLessonId.toString()
+    : null,
   childOrder: (lesson.childOrder ?? []).map((id: any) => id.toString()),
   releaseAt: lesson.releaseAt ?? null,
   createdAt: lesson.createdAt,

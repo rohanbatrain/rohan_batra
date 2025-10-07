@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
@@ -71,7 +77,7 @@ export default function NewBrandPage() {
   const handleChange = (key: keyof BrandForm, value: string | boolean) => {
     setForm(prev => {
       const next = { ...prev, [key]: value };
-      
+
       // Auto-generate slug from displayName if auto mode is on
       if (key === 'displayName' && autoSlug && typeof value === 'string') {
         next.slug = generateSlug(value);
@@ -80,7 +86,7 @@ export default function NewBrandPage() {
           next.name = generateSlug(value);
         }
       }
-      
+
       // Auto-generate name from displayName if empty
       if (key === 'displayName' && typeof value === 'string' && !prev.name) {
         next.name = generateSlug(value);
@@ -99,7 +105,8 @@ export default function NewBrandPage() {
     if (!form.name.trim()) return 'Name is required';
     if (!form.displayName.trim()) return 'Display name is required';
     if (form.name.length < 2) return 'Name must be at least 2 characters';
-    if (form.displayName.length < 2) return 'Display name must be at least 2 characters';
+    if (form.displayName.length < 2)
+      return 'Display name must be at least 2 characters';
     if (form.slug && !/^[a-z0-9-_]+$/.test(form.slug)) {
       return 'Slug must contain only lowercase letters, numbers, dashes, and underscores';
     }
@@ -142,20 +149,25 @@ export default function NewBrandPage() {
       };
 
       if (form.slug.trim()) payload.slug = form.slug.trim();
-      if (form.description.trim()) payload.description = form.description.trim();
+      if (form.description.trim())
+        payload.description = form.description.trim();
 
       // Theme object
       const theme: any = {};
       if (form.icon.trim()) theme.icon = form.icon.trim();
-      if (form.primaryColor.trim()) theme.primaryColor = form.primaryColor.trim();
-      if (form.secondaryColor.trim()) theme.secondaryColor = form.secondaryColor.trim();
+      if (form.primaryColor.trim())
+        theme.primaryColor = form.primaryColor.trim();
+      if (form.secondaryColor.trim())
+        theme.secondaryColor = form.secondaryColor.trim();
       if (Object.keys(theme).length > 0) payload.theme = theme;
 
       // Metadata object
       const metadata: any = {};
       if (form.websiteUrl.trim()) metadata.websiteUrl = form.websiteUrl.trim();
-      if (form.followers.trim()) metadata.followers = parseInt(form.followers) || 0;
-      if (form.totalPosts.trim()) metadata.totalPosts = parseInt(form.totalPosts) || 0;
+      if (form.followers.trim())
+        metadata.followers = parseInt(form.followers) || 0;
+      if (form.totalPosts.trim())
+        metadata.totalPosts = parseInt(form.totalPosts) || 0;
       if (Object.keys(metadata).length > 0) payload.metadata = metadata;
 
       const response = await fetch('/api/admin/brands', {
@@ -181,7 +193,8 @@ export default function NewBrandPage() {
       console.error('Error creating brand:', error);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create brand',
+        description:
+          error instanceof Error ? error.message : 'Failed to create brand',
         variant: 'destructive',
       });
     } finally {
@@ -199,7 +212,9 @@ export default function NewBrandPage() {
             Back to Brands
           </Link>
         </Button>
-        <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>Create New Brand</h1>
+        <h1 className='text-3xl font-bold text-gray-900 dark:text-white'>
+          Create New Brand
+        </h1>
         <p className='text-gray-600 dark:text-gray-400 mt-2'>
           Add a new brand identity to manage your social profiles
         </p>
@@ -212,7 +227,9 @@ export default function NewBrandPage() {
           <Card>
             <CardHeader>
               <CardTitle>Basic Information</CardTitle>
-              <CardDescription>The fundamental details of your brand</CardDescription>
+              <CardDescription>
+                The fundamental details of your brand
+              </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
               <div>
@@ -279,7 +296,10 @@ export default function NewBrandPage() {
                 <Label htmlFor='type'>
                   Type <span className='text-red-500'>*</span>
                 </Label>
-                <Select value={form.type} onValueChange={value => handleChange('type', value)}>
+                <Select
+                  value={form.type}
+                  onValueChange={value => handleChange('type', value)}
+                >
                   <SelectTrigger id='type'>
                     <SelectValue />
                   </SelectTrigger>
@@ -332,7 +352,9 @@ export default function NewBrandPage() {
                   <Input
                     id='secondaryColor'
                     value={form.secondaryColor}
-                    onChange={e => handleChange('secondaryColor', e.target.value)}
+                    onChange={e =>
+                      handleChange('secondaryColor', e.target.value)
+                    }
                     placeholder='#33FF57'
                     pattern='^#[0-9A-Fa-f]{6}$'
                   />
@@ -345,7 +367,9 @@ export default function NewBrandPage() {
           <Card>
             <CardHeader>
               <CardTitle>Settings</CardTitle>
-              <CardDescription>Configure brand visibility and status</CardDescription>
+              <CardDescription>
+                Configure brand visibility and status
+              </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
               <div>
@@ -389,7 +413,9 @@ export default function NewBrandPage() {
                 <Switch
                   id='isPrimary'
                   checked={form.isPrimary}
-                  onCheckedChange={checked => handleChange('isPrimary', checked)}
+                  onCheckedChange={checked =>
+                    handleChange('isPrimary', checked)
+                  }
                 />
               </div>
 
@@ -413,7 +439,9 @@ export default function NewBrandPage() {
           <Card>
             <CardHeader>
               <CardTitle>Metadata</CardTitle>
-              <CardDescription>Additional information about your brand</CardDescription>
+              <CardDescription>
+                Additional information about your brand
+              </CardDescription>
             </CardHeader>
             <CardContent className='space-y-4'>
               <div>
@@ -457,7 +485,11 @@ export default function NewBrandPage() {
 
           {/* Actions */}
           <div className='flex items-center justify-end gap-4'>
-            <Button type='button' variant='outline' onClick={() => router.push('/admin/brands')}>
+            <Button
+              type='button'
+              variant='outline'
+              onClick={() => router.push('/admin/brands')}
+            >
               Cancel
             </Button>
             <Button type='submit' disabled={creating}>

@@ -9,7 +9,13 @@ import useSWR from 'swr';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -26,7 +32,10 @@ const sectionSchema = z.object({
     .string()
     .min(1, 'Slug is required')
     .max(100)
-    .regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens'),
+    .regex(
+      /^[a-z0-9-]+$/,
+      'Slug must contain only lowercase letters, numbers, and hyphens'
+    ),
   parentSectionId: z.string().optional().or(z.literal('')),
   order: z.number().int().min(0),
   isExpanded: z.boolean(),
@@ -90,11 +99,14 @@ export default function SectionForm({ projectId }: SectionFormProps) {
     setIsSubmitting(true);
 
     try {
-      const response = await fetch(`/api/admin/docs/projects/${projectId}/sections`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `/api/admin/docs/projects/${projectId}/sections`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(data),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();
@@ -127,7 +139,9 @@ export default function SectionForm({ projectId }: SectionFormProps) {
         </Button>
         <div className='space-y-1'>
           <h1 className='text-3xl font-bold'>New Section</h1>
-          <p className='text-muted-foreground'>Create a new documentation section</p>
+          <p className='text-muted-foreground'>
+            Create a new documentation section
+          </p>
         </div>
       </div>
 
@@ -135,19 +149,33 @@ export default function SectionForm({ projectId }: SectionFormProps) {
         <Card>
           <CardHeader>
             <CardTitle>Section Details</CardTitle>
-            <CardDescription>Basic information about the section</CardDescription>
+            <CardDescription>
+              Basic information about the section
+            </CardDescription>
           </CardHeader>
           <CardContent className='space-y-4'>
             <div className='space-y-2'>
               <Label htmlFor='title'>Title *</Label>
-              <Input id='title' {...register('title')} placeholder='Getting Started' />
-              {errors.title && <p className='text-sm text-red-600'>{errors.title.message}</p>}
+              <Input
+                id='title'
+                {...register('title')}
+                placeholder='Getting Started'
+              />
+              {errors.title && (
+                <p className='text-sm text-red-600'>{errors.title.message}</p>
+              )}
             </div>
 
             <div className='space-y-2'>
               <Label htmlFor='slug'>URL Slug *</Label>
-              <Input id='slug' {...register('slug')} placeholder='getting-started' />
-              {errors.slug && <p className='text-sm text-red-600'>{errors.slug.message}</p>}
+              <Input
+                id='slug'
+                {...register('slug')}
+                placeholder='getting-started'
+              />
+              {errors.slug && (
+                <p className='text-sm text-red-600'>{errors.slug.message}</p>
+              )}
             </div>
 
             <div className='space-y-2'>

@@ -1,7 +1,7 @@
 /**
  * Export/Import V2 Format
  * Supports nested deck structure and scheduling data
- * 
+ *
  * Format: JSON with hierarchy preservation
  */
 
@@ -78,7 +78,7 @@ export async function exportDecksV2(
   // Get decks
   const query: any = { ownerId };
   if (deckIds && deckIds.length > 0) {
-    query._id = { $in: deckIds.map((id) => new Types.ObjectId(id)) };
+    query._id = { $in: deckIds.map(id => new Types.ObjectId(id)) };
   }
 
   const decks = await FlashcardDeckModel.find(query).lean();
@@ -122,7 +122,7 @@ export async function exportDecksV2(
       .lean();
 
     const deckNode = deckMap.get(deck._id.toString())!;
-    deckNode.cards = cards.map((card) => ({
+    deckNode.cards = cards.map(card => ({
       prompt: card.prompt,
       response: card.response,
       hint: card.hint,
@@ -134,7 +134,8 @@ export async function exportDecksV2(
             intervalDays: card.scheduling.intervalDays,
             easeFactor: card.scheduling.easeFactor,
             repetitions: card.scheduling.repetitions,
-            lastReviewedAt: card.scheduling.lastReviewedAt?.toISOString() || null,
+            lastReviewedAt:
+              card.scheduling.lastReviewedAt?.toISOString() || null,
             nextReviewAt: card.scheduling.nextReviewAt?.toISOString(),
           }
         : undefined,
@@ -185,10 +186,7 @@ export async function importDecksV2(
   cardsImported: number;
   errors: string[];
 }> {
-  const {
-    mergeStrategy = 'skip',
-    preserveScheduling = false,
-  } = options;
+  const { mergeStrategy = 'skip', preserveScheduling = false } = options;
 
   const result = {
     decksImported: 0,
@@ -229,7 +227,7 @@ export async function importDecksV2(
       } else {
         // Create new deck (duplicate or new)
         const slug = deck ? `${deckData.slug}-${Date.now()}` : deckData.slug;
-        
+
         deck = new FlashcardDeckModel({
           slug,
           title: deckData.title,
@@ -264,19 +262,20 @@ export async function importDecksV2(
             explanation: cardData.explanation,
             tags: cardData.tags || [],
             order: cardData.order,
-            scheduling: preserveScheduling && cardData.scheduling
-              ? {
-                  intervalDays: cardData.scheduling.intervalDays,
-                  easeFactor: cardData.scheduling.easeFactor,
-                  repetitions: cardData.scheduling.repetitions,
-                  lastReviewedAt: cardData.scheduling.lastReviewedAt
-                    ? new Date(cardData.scheduling.lastReviewedAt)
-                    : null,
-                  nextReviewAt: cardData.scheduling.nextReviewAt
-                    ? new Date(cardData.scheduling.nextReviewAt)
-                    : new Date(),
-                }
-              : undefined,
+            scheduling:
+              preserveScheduling && cardData.scheduling
+                ? {
+                    intervalDays: cardData.scheduling.intervalDays,
+                    easeFactor: cardData.scheduling.easeFactor,
+                    repetitions: cardData.scheduling.repetitions,
+                    lastReviewedAt: cardData.scheduling.lastReviewedAt
+                      ? new Date(cardData.scheduling.lastReviewedAt)
+                      : null,
+                    nextReviewAt: cardData.scheduling.nextReviewAt
+                      ? new Date(cardData.scheduling.nextReviewAt)
+                      : new Date(),
+                  }
+                : undefined,
           });
 
           await card.save();
@@ -336,7 +335,10 @@ export async function exportDeckWithChildren(
     path: new RegExp(`^${deck.path}/`),
   });
 
-  const allDeckIds = [deck._id.toString(), ...descendants.map((d) => d._id.toString())];
+  const allDeckIds = [
+    deck._id.toString(),
+    ...descendants.map(d => d._id.toString()),
+  ];
 
   return exportDecksV2(ownerId, allDeckIds);
 }

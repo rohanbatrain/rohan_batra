@@ -8,7 +8,7 @@ describe('Contract: Courses index shape', () => {
       page: 1,
       limit: 10,
     });
-    
+
     // Verify structure matches OpenAPI schema
     expect(result).toHaveProperty('items');
     expect(Array.isArray(result.items)).toBe(true);
@@ -16,13 +16,13 @@ describe('Contract: Courses index shape', () => {
     expect(result).toHaveProperty('limit');
     expect(result).toHaveProperty('total');
     expect(result).toHaveProperty('totalPages');
-    
+
     // Verify types
     expect(typeof result.page).toBe('number');
     expect(typeof result.limit).toBe('number');
     expect(typeof result.total).toBe('number');
     expect(typeof result.totalPages).toBe('number');
-    
+
     // If items exist, verify structure
     if (result.items.length > 0) {
       const course = result.items[0];

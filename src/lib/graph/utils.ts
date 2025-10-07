@@ -1,8 +1,8 @@
 /**
  * T014: Graph Utilities
- * 
+ *
  * Helper functions for graph manipulation.
- * 
+ *
  * @pattern Follows /src/lib/courses/format.ts structure
  */
 
@@ -11,7 +11,7 @@ import type { KnowledgeGraph, GraphNode, GraphEdge } from './types';
 /**
  * Filter graph by depth from a start node
  * Uses BFS traversal to include only nodes within maxDepth edges
- * 
+ *
  * @param graph - Knowledge graph
  * @param startNodeId - Starting node ID
  * @param maxDepth - Maximum edge distance to include
@@ -23,7 +23,7 @@ export function filterByDepth(
   maxDepth: number
 ): KnowledgeGraph {
   if (maxDepth === 0) {
-    const startNode = graph.nodes.find((n) => n.id === startNodeId);
+    const startNode = graph.nodes.find(n => n.id === startNodeId);
     return {
       ...graph,
       nodes: startNode ? [startNode] : [],
@@ -38,7 +38,7 @@ export function filterByDepth(
 
   // Build adjacency map
   const adjacency = new Map<string, Set<string>>();
-  graph.edges.forEach((edge) => {
+  graph.edges.forEach(edge => {
     if (!adjacency.has(edge.source)) {
       adjacency.set(edge.source, new Set());
     }
@@ -51,14 +51,16 @@ export function filterByDepth(
 
   // BFS traversal
   const visited = new Set<string>([startNodeId]);
-  const queue: Array<{ id: string; depth: number }> = [{ id: startNodeId, depth: 0 }];
+  const queue: Array<{ id: string; depth: number }> = [
+    { id: startNodeId, depth: 0 },
+  ];
 
   while (queue.length > 0) {
     const { id, depth } = queue.shift()!;
-    
+
     if (depth < maxDepth) {
       const neighbors = adjacency.get(id) || new Set();
-      neighbors.forEach((neighborId) => {
+      neighbors.forEach(neighborId => {
         if (!visited.has(neighborId)) {
           visited.add(neighborId);
           queue.push({ id: neighborId, depth: depth + 1 });
@@ -68,9 +70,9 @@ export function filterByDepth(
   }
 
   // Filter nodes and edges
-  const filteredNodes = graph.nodes.filter((node) => visited.has(node.id));
+  const filteredNodes = graph.nodes.filter(node => visited.has(node.id));
   const filteredEdges = graph.edges.filter(
-    (edge) => visited.has(edge.source) && visited.has(edge.target)
+    edge => visited.has(edge.source) && visited.has(edge.target)
   );
 
   return {
@@ -89,7 +91,7 @@ export function filterByDepth(
 /**
  * Find shortest path between two nodes
  * Uses BFS to find the shortest path
- * 
+ *
  * @param graph - Knowledge graph
  * @param startId - Start node ID
  * @param endId - End node ID
@@ -106,7 +108,7 @@ export function findPath(
 
   // Build adjacency map
   const adjacency = new Map<string, Set<string>>();
-  graph.edges.forEach((edge) => {
+  graph.edges.forEach(edge => {
     if (!adjacency.has(edge.source)) {
       adjacency.set(edge.source, new Set());
     }
@@ -144,7 +146,7 @@ export function findPath(
 
 /**
  * Get all nodes connected to a given node
- * 
+ *
  * @param graph - Knowledge graph
  * @param nodeId - Node ID
  * @returns Array of connected node IDs
@@ -155,7 +157,7 @@ export function getConnectedNodes(
 ): string[] {
   const connected = new Set<string>();
 
-  graph.edges.forEach((edge) => {
+  graph.edges.forEach(edge => {
     if (edge.source === nodeId) {
       connected.add(edge.target);
     } else if (edge.target === nodeId) {
@@ -168,7 +170,7 @@ export function getConnectedNodes(
 
 /**
  * Calculate graph statistics
- * 
+ *
  * @param graph - Knowledge graph
  * @returns Statistics object
  */
@@ -183,7 +185,7 @@ export function calculateStats(graph: KnowledgeGraph): {
 
   // Calculate average degree (connections per node)
   const degrees = new Map<string, number>();
-  graph.edges.forEach((edge) => {
+  graph.edges.forEach(edge => {
     degrees.set(edge.source, (degrees.get(edge.source) || 0) + 1);
     degrees.set(edge.target, (degrees.get(edge.target) || 0) + 1);
   });
@@ -197,7 +199,7 @@ export function calculateStats(graph: KnowledgeGraph): {
   let maxDepth = 0;
   if (totalNodes > 0 && totalNodes < 100) {
     // Only calculate for smaller graphs to avoid performance issues
-    const nodes = graph.nodes.map((n) => n.id);
+    const nodes = graph.nodes.map(n => n.id);
     for (let i = 0; i < nodes.length; i++) {
       for (let j = i + 1; j < nodes.length; j++) {
         const path = findPath(graph, nodes[i], nodes[j]);
@@ -218,16 +220,14 @@ export function calculateStats(graph: KnowledgeGraph): {
 
 /**
  * Group nodes by module
- * 
+ *
  * @param graph - Knowledge graph
  * @returns Map of module ID to nodes
  */
-export function groupByModule(
-  graph: KnowledgeGraph
-): Map<string, GraphNode[]> {
+export function groupByModule(graph: KnowledgeGraph): Map<string, GraphNode[]> {
   const groups = new Map<string, GraphNode[]>();
 
-  graph.nodes.forEach((node) => {
+  graph.nodes.forEach(node => {
     if (node.type === 'lesson' || node.type === 'sublesson') {
       const moduleId = node.moduleId || 'unknown';
       if (!groups.has(moduleId)) {

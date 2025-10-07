@@ -52,79 +52,85 @@ const platformUrlPatterns: Record<string, RegExp> = {
 function validateProfileUrl(platform: string, url: string): boolean {
   // For platforms without specific patterns, just check HTTPS
   if (!platformUrlPatterns[platform]) {
-    return url.startsWith('https://') || (platform === 'email' && url.startsWith('mailto:'));
+    return (
+      url.startsWith('https://') ||
+      (platform === 'email' && url.startsWith('mailto:'))
+    );
   }
-  
+
   return platformUrlPatterns[platform].test(url);
 }
 
 // Validation schema
-const updateProfileSchema = z.object({
-  platform: z
-    .enum([
-      'instagram',
-      'twitter',
-      'linkedin',
-      'github',
-      'youtube',
-      'tiktok',
-      'facebook',
-      'threads',
-      'mastodon',
-      'bluesky',
-      'medium',
-      'dev.to',
-      'hashnode',
-      'dribbble',
-      'behance',
-      'pinterest',
-      'snapchat',
-      'reddit',
-      'discord',
-      'telegram',
-      'whatsapp',
-      'spotify',
-      'twitch',
-      'tinder',
-      'bumble',
-      'hinge',
-      'website',
-      'email',
-      'other',
-    ])
-    .optional(),
-  username: z.string().min(1).max(100).optional(),
-  profileUrl: z.string().url().optional(),
-  displayName: z.string().max(100).optional(),
-  description: z.string().max(300).optional(),
-  isActive: z.boolean().optional(),
-  isVerified: z.boolean().optional(),
-  order: z.number().min(0).optional(),
-  visibility: z.enum(['public', 'private', 'unlisted']).optional(),
-  stats: z
-    .object({
-      followers: z.number().min(0).optional(),
-      following: z.number().min(0).optional(),
-      posts: z.number().min(0).optional(),
-    })
-    .optional(),
-  customIcon: z.string().max(50).optional(),
-}).refine(
-  (data) => {
-    // Only validate if both platform and profileUrl are provided
-    if (data.platform && data.profileUrl) {
-      if (['tinder', 'bumble', 'hinge', 'other'].includes(data.platform)) {
-        return data.profileUrl.startsWith('https://');
+const updateProfileSchema = z
+  .object({
+    platform: z
+      .enum([
+        'instagram',
+        'twitter',
+        'linkedin',
+        'github',
+        'youtube',
+        'tiktok',
+        'facebook',
+        'threads',
+        'mastodon',
+        'bluesky',
+        'medium',
+        'dev.to',
+        'hashnode',
+        'dribbble',
+        'behance',
+        'pinterest',
+        'snapchat',
+        'reddit',
+        'discord',
+        'telegram',
+        'whatsapp',
+        'spotify',
+        'twitch',
+        'tinder',
+        'bumble',
+        'hinge',
+        'website',
+        'email',
+        'other',
+      ])
+      .optional(),
+    username: z.string().min(1).max(100).optional(),
+    profileUrl: z.string().url().optional(),
+    displayName: z.string().max(100).optional(),
+    description: z.string().max(300).optional(),
+    isActive: z.boolean().optional(),
+    isVerified: z.boolean().optional(),
+    order: z.number().min(0).optional(),
+    visibility: z.enum(['public', 'private', 'unlisted']).optional(),
+    stats: z
+      .object({
+        followers: z.number().min(0).optional(),
+        following: z.number().min(0).optional(),
+        posts: z.number().min(0).optional(),
+      })
+      .optional(),
+    customIcon: z.string().max(50).optional(),
+  })
+  .refine(
+    data => {
+      // Only validate if both platform and profileUrl are provided
+      if (data.platform && data.profileUrl) {
+        if (['tinder', 'bumble', 'hinge', 'other'].includes(data.platform)) {
+          return data.profileUrl.startsWith('https://');
+        }
+        return validateProfileUrl(data.platform, data.profileUrl);
       }
-      return validateProfileUrl(data.platform, data.profileUrl);
+      return true;
+    },
+    {
+      message:
+        'Profile URL does not match the expected format for this platform',
+      path: ['profileUrl'],
     }
-    return true;
-  },
-  {
-    message: 'Profile URL does not match the expected format for this platform',
-    path: ['profileUrl'],
-  }
-);
+  );
 
 // PUT /api/admin/brands/[id]/profiles/[profileId] - Update profile
 export async function PUT(
@@ -141,10 +147,16 @@ export async function PUT(
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
-    if (!Types.ObjectId.isValid(brandId) || !Types.ObjectId.isValid(profileId)) {
+    if (
+      !Types.ObjectId.isValid(brandId) ||
+      !Types.ObjectId.isValid(profileId)
+    ) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
@@ -191,7 +203,10 @@ export async function PUT(
     }
 
     console.error('Error updating profile:', error);
-    return NextResponse.json({ error: 'Failed to update profile' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to update profile' },
+      { status: 500 }
+    );
   }
 }
 
@@ -210,10 +225,16 @@ export async function DELETE(
 
     const { authorized } = await getAuthorizedUser(userId);
     if (!authorized) {
-      return NextResponse.json({ error: 'Insufficient permissions' }, { status: 403 });
+      return NextResponse.json(
+        { error: 'Insufficient permissions' },
+        { status: 403 }
+      );
     }
 
-    if (!Types.ObjectId.isValid(brandId) || !Types.ObjectId.isValid(profileId)) {
+    if (
+      !Types.ObjectId.isValid(brandId) ||
+      !Types.ObjectId.isValid(profileId)
+    ) {
       return NextResponse.json({ error: 'Invalid ID' }, { status: 400 });
     }
 
@@ -238,6 +259,9 @@ export async function DELETE(
     });
   } catch (error) {
     console.error('Error deleting profile:', error);
-    return NextResponse.json({ error: 'Failed to delete profile' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Failed to delete profile' },
+      { status: 500 }
+    );
   }
 }

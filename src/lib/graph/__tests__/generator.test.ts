@@ -1,6 +1,6 @@
 /**
  * T006: Unit Test - Graph Generator
- * 
+ *
  * Tests buildCourseGraph and buildLessonGraph functions with mock data.
  */
 
@@ -63,7 +63,9 @@ describe('Graph Generator', () => {
         includeProgress: false,
       });
 
-      const containsEdges = graph.edges.filter((e: any) => e.type === 'contains');
+      const containsEdges = graph.edges.filter(
+        (e: any) => e.type === 'contains'
+      );
       expect(containsEdges).toBeInstanceOf(Array);
     });
 
@@ -131,7 +133,9 @@ describe('Graph Generator', () => {
         includeProgress: false,
       });
 
-      const subLessonNodes = graph.nodes.filter((n: any) => n.type === 'sublesson');
+      const subLessonNodes = graph.nodes.filter(
+        (n: any) => n.type === 'sublesson'
+      );
       expect(subLessonNodes).toBeInstanceOf(Array);
     });
   });

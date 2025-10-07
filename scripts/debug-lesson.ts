@@ -10,8 +10,8 @@ import CourseLessonModel from '../src/models/CourseLesson';
 async function run() {
   await connectToDatabase();
 
-  const lesson = await CourseLessonModel.findOne({ 
-    title: 'Randomness and Uncertainty' 
+  const lesson = await CourseLessonModel.findOne({
+    title: 'Randomness and Uncertainty',
   }).lean();
 
   if (lesson) {
@@ -27,7 +27,7 @@ async function run() {
 
     // Check sub-lessons
     const subLessons = await CourseLessonModel.find({
-      parentLessonId: lesson._id
+      parentLessonId: lesson._id,
     }).lean();
 
     console.log('\n📚 Sub-lessons:', subLessons.length);
@@ -36,8 +36,16 @@ async function run() {
     });
 
     // Calculate total
-    const subTotal = subLessons.reduce((sum, s) => sum + s.estimatedDurationMinutes, 0);
-    const hasContent = !!(lesson.standaloneContent || lesson.externalResource || lesson.blogSlug || lesson.quizId);
+    const subTotal = subLessons.reduce(
+      (sum, s) => sum + s.estimatedDurationMinutes,
+      0
+    );
+    const hasContent = !!(
+      lesson.standaloneContent ||
+      lesson.externalResource ||
+      lesson.blogSlug ||
+      lesson.quizId
+    );
     const parentDuration = hasContent ? lesson.estimatedDurationMinutes : 0;
     const total = parentDuration + subTotal;
 
@@ -53,7 +61,7 @@ async function run() {
   process.exit(0);
 }
 
-run().catch((err) => {
+run().catch(err => {
   console.error('Error:', err);
   process.exit(1);
 });

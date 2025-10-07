@@ -39,9 +39,9 @@ export default function MarkCompleteButton({
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             lessonId,
-            markAsComplete: !isCompleted // Toggle: if completed, mark as incomplete
+            markAsComplete: !isCompleted, // Toggle: if completed, mark as incomplete
           }),
         }
       );
@@ -73,28 +73,42 @@ export default function MarkCompleteButton({
           isCompleted
             ? 'bg-green-600 text-white hover:bg-green-700 cursor-pointer'
             : isLoading
-            ? 'bg-gray-400 text-white cursor-wait'
-            : !canComplete
-            ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
-            : 'bg-blue-600 text-white hover:bg-blue-700'
+              ? 'bg-gray-400 text-white cursor-wait'
+              : !canComplete
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
+                : 'bg-blue-600 text-white hover:bg-blue-700'
         }`}
         title={
-          isCompleted 
-            ? 'Click to mark as incomplete' 
-            : !canComplete 
-            ? 'Complete all sub-lessons first' 
-            : 'Mark this lesson as complete'
+          isCompleted
+            ? 'Click to mark as incomplete'
+            : !canComplete
+              ? 'Complete all sub-lessons first'
+              : 'Mark this lesson as complete'
         }
       >
         {isCompleted ? (
           <span className='flex items-center gap-2'>
-            <svg className='h-4 w-4' fill='none' viewBox='0 0 24 24' stroke='currentColor'>
-              <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M5 13l4 4L19 7' />
+            <svg
+              className='h-4 w-4'
+              fill='none'
+              viewBox='0 0 24 24'
+              stroke='currentColor'
+            >
+              <path
+                strokeLinecap='round'
+                strokeLinejoin='round'
+                strokeWidth={2}
+                d='M5 13l4 4L19 7'
+              />
             </svg>
             Completed
           </span>
         ) : isLoading ? (
-          isCompleted ? 'Unmarking...' : 'Marking...'
+          isCompleted ? (
+            'Unmarking...'
+          ) : (
+            'Marking...'
+          )
         ) : (
           'Mark as Complete'
         )}

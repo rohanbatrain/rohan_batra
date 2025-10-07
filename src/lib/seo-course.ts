@@ -23,6 +23,8 @@ export function generateCourseStructuredData(course: {
     ...(course.image && {
       image: `${SITE_URL}${course.image}`,
     }),
-    ...(course.tags && course.tags.length ? { keywords: course.tags.join(', ') } : {}),
+    ...(course.tags && course.tags.length
+      ? { keywords: course.tags.join(', ') }
+      : {}),
   } as const;
 }

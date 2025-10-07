@@ -125,7 +125,9 @@ const defaultForm: CreateDeckForm = {
 export default function FlashcardsManagement() {
   const router = useRouter();
   const [status, setStatus] = useState('all');
-  const [visibility, setVisibility] = useState<'all' | 'public' | 'unlisted' | 'private'>('all');
+  const [visibility, setVisibility] = useState<
+    'all' | 'public' | 'unlisted' | 'private'
+  >('all');
   const [searchInput, setSearchInput] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
   const [form, setForm] = useState<CreateDeckForm>(defaultForm);
@@ -163,7 +165,9 @@ export default function FlashcardsManagement() {
   );
 
   const handleStatusChange = (value: string) => setStatus(value);
-  const handleVisibilityChange = (value: 'all' | 'public' | 'unlisted' | 'private') => setVisibility(value);
+  const handleVisibilityChange = (
+    value: 'all' | 'public' | 'unlisted' | 'private'
+  ) => setVisibility(value);
 
   const handleSearchSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -227,7 +231,7 @@ export default function FlashcardsManagement() {
         title: 'Deck created',
         description: 'Flashcard deck saved successfully.',
       });
-  setForm(defaultForm);
+      setForm(defaultForm);
       const created = await response.json().catch(() => null);
       mutate();
       if (created?.id) {
@@ -314,7 +318,9 @@ export default function FlashcardsManagement() {
         const payload = await res.json().catch(() => ({}));
         throw new Error(payload.error || 'Bulk delete failed');
       }
-      const { deleted } = await res.json().catch(() => ({ deleted: selectedIds.length }));
+      const { deleted } = await res
+        .json()
+        .catch(() => ({ deleted: selectedIds.length }));
       toast({ title: 'Deleted', description: `${deleted} deck(s) deleted` });
       setSelectedIds([]);
       mutate();
@@ -390,8 +396,13 @@ export default function FlashcardsManagement() {
             </form>
             <div className='flex items-center gap-3'>
               <div className='flex items-center gap-2 text-sm'>
-                <span className='text-gray-600 dark:text-gray-300'>Visibility</span>
-                <Select value={visibility} onValueChange={v => handleVisibilityChange(v as any)}>
+                <span className='text-gray-600 dark:text-gray-300'>
+                  Visibility
+                </span>
+                <Select
+                  value={visibility}
+                  onValueChange={v => handleVisibilityChange(v as any)}
+                >
                   <SelectTrigger className='w-[140px]'>
                     <SelectValue placeholder='Visibility' />
                   </SelectTrigger>
@@ -404,7 +415,11 @@ export default function FlashcardsManagement() {
                 </Select>
               </div>
               <div className='text-sm text-gray-500 dark:text-gray-400'>
-                Showing page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1} &middot; {data?.total ?? 0} total
+                Showing page {data?.page ?? page} of{' '}
+                {data?.pageSize && data?.total
+                  ? Math.max(1, Math.ceil(data.total / data.pageSize))
+                  : 1}{' '}
+                &middot; {data?.total ?? 0} total
               </div>
             </div>
           </div>
@@ -448,185 +463,211 @@ export default function FlashcardsManagement() {
             </Card>
           ) : (
             <>
-            {selectedIds.length > 0 ? (
-              <div className='p-4 mb-4 border rounded-md flex items-center justify-between bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
-                <div className='text-sm text-gray-700 dark:text-gray-300'>
-                  {selectedIds.length} selected
+              {selectedIds.length > 0 ? (
+                <div className='p-4 mb-4 border rounded-md flex items-center justify-between bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
+                  <div className='text-sm text-gray-700 dark:text-gray-300'>
+                    {selectedIds.length} selected
+                  </div>
+                  <div className='flex items-center gap-2'>
+                    <Button
+                      variant='outline'
+                      size='sm'
+                      onClick={selectVisible}
+                      disabled={isBulkProcessing}
+                    >
+                      Select visible
+                    </Button>
+                    <Button
+                      variant='destructive'
+                      size='sm'
+                      onClick={bulkDeleteSelected}
+                      disabled={isBulkProcessing}
+                    >
+                      {isBulkProcessing ? 'Deleting…' : 'Delete selected'}
+                    </Button>
+                  </div>
                 </div>
-                <div className='flex items-center gap-2'>
-                  <Button variant='outline' size='sm' onClick={selectVisible} disabled={isBulkProcessing}>
-                    Select visible
-                  </Button>
-                  <Button variant='destructive' size='sm' onClick={bulkDeleteSelected} disabled={isBulkProcessing}>
-                    {isBulkProcessing ? 'Deleting…' : 'Delete selected'}
-                  </Button>
-                </div>
-              </div>
-            ) : null}
+              ) : null}
 
-            <div className='grid gap-4 md:grid-cols-2'>
-              {data?.decks.map(deck => (
-                <Card
-                  key={deck.id}
-                  className='border border-gray-200 dark:border-gray-800 shadow-sm'
-                >
-                  <CardHeader className='space-y-2'>
-                    <div className='flex items-start justify-between gap-2'>
-                      <div className='flex items-start gap-2'>
-                        <input
-                          type='checkbox'
-                          className='mt-1.5 h-4 w-4'
-                          checked={selectedIds.includes(deck.id)}
-                          onChange={e => toggleSelect(deck.id, e.target.checked)}
-                        />
-                        <CardTitle className='text-xl'>{deck.title}</CardTitle>
+              <div className='grid gap-4 md:grid-cols-2'>
+                {data?.decks.map(deck => (
+                  <Card
+                    key={deck.id}
+                    className='border border-gray-200 dark:border-gray-800 shadow-sm'
+                  >
+                    <CardHeader className='space-y-2'>
+                      <div className='flex items-start justify-between gap-2'>
+                        <div className='flex items-start gap-2'>
+                          <input
+                            type='checkbox'
+                            className='mt-1.5 h-4 w-4'
+                            checked={selectedIds.includes(deck.id)}
+                            onChange={e =>
+                              toggleSelect(deck.id, e.target.checked)
+                            }
+                          />
+                          <CardTitle className='text-xl'>
+                            {deck.title}
+                          </CardTitle>
+                        </div>
+                        <div className='flex gap-2'>
+                          <Badge
+                            className={
+                              statusColors[deck.status] ??
+                              'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                            }
+                          >
+                            {deck.status}
+                          </Badge>
+                          <Badge
+                            className={
+                              visibilityColors[deck.visibility] ??
+                              'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
+                            }
+                          >
+                            {deck.visibility}
+                          </Badge>
+                        </div>
                       </div>
-                      <div className='flex gap-2'>
-                        <Badge
-                          className={
-                            statusColors[deck.status] ??
-                            'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                          }
-                        >
-                          {deck.status}
-                        </Badge>
-                        <Badge
-                          className={
-                            visibilityColors[deck.visibility] ??
-                            'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
-                          }
-                        >
-                          {deck.visibility}
-                        </Badge>
-                      </div>
-                    </div>
-                    {deck.subtitle ? (
-                      <p className='text-sm text-gray-500 dark:text-gray-400'>
-                        {deck.subtitle}
-                      </p>
-                    ) : null}
-                  </CardHeader>
-                  <CardContent className='space-y-4'>
-                    {deck.description ? (
-                      <p className='text-sm text-gray-600 dark:text-gray-300 line-clamp-3'>
-                        {deck.description}
-                      </p>
-                    ) : (
-                      <p className='text-sm text-gray-500 dark:text-gray-500 italic'>
-                        No description provided.
-                      </p>
-                    )}
-                    <div className='flex flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400'>
-                      <span className='flex items-center gap-1'>
-                        <Layers className='h-4 w-4' /> {deck.cardCount} card
-                        {deck.cardCount === 1 ? '' : 's'}
-                      </span>
-                      {deck.estimatedReviewMinutes ? (
-                        <span>{deck.estimatedReviewMinutes} min review</span>
+                      {deck.subtitle ? (
+                        <p className='text-sm text-gray-500 dark:text-gray-400'>
+                          {deck.subtitle}
+                        </p>
                       ) : null}
-                      {deck.analytics?.reviewCount ? (
-                        <span>{deck.analytics.reviewCount} total reviews</span>
-                      ) : null}
-                    </div>
-                    {deck.tags.length > 0 ? (
-                      <div className='space-y-1'>
-                        <div className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>
-                          Tags
-                        </div>
-                        <div className='flex flex-wrap gap-2'>
-                          {deck.tags.map(tag => (
-                            <Badge key={tag} variant='secondary'>
-                              <Tag className='mr-1 h-3 w-3' />
-                              {tag}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    {deck.categories.length > 0 ? (
-                      <div className='space-y-1'>
-                        <div className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>
-                          Categories
-                        </div>
-                        <div className='flex flex-wrap gap-2'>
-                          {deck.categories.map(category => (
-                            <Badge key={category} variant='outline'>
-                              {category}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    {deck.linkTargets.length > 0 ? (
-                      <div className='space-y-1'>
-                        <div className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>
-                          Linked content
-                        </div>
-                        <div className='flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300'>
-                          {deck.linkTargets.map((target, index) => (
-                            <Badge
-                              key={`${deck.id}-target-${index}`}
-                              variant='outline'
-                              className='capitalize'
-                            >
-                              {target.scope}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    ) : null}
-                    <div className='flex items-center justify-between border-t border-dashed pt-3 text-sm text-gray-500 dark:text-gray-400'>
-                      <span>
-                        Updated {new Date(deck.updatedAt).toLocaleDateString()}
-                      </span>
-                      <div className='flex items-center gap-2'>
-                        {deck.publishedAt ? (
+                    </CardHeader>
+                    <CardContent className='space-y-4'>
+                      {deck.description ? (
+                        <p className='text-sm text-gray-600 dark:text-gray-300 line-clamp-3'>
+                          {deck.description}
+                        </p>
+                      ) : (
+                        <p className='text-sm text-gray-500 dark:text-gray-500 italic'>
+                          No description provided.
+                        </p>
+                      )}
+                      <div className='flex flex-wrap gap-2 text-sm text-gray-500 dark:text-gray-400'>
+                        <span className='flex items-center gap-1'>
+                          <Layers className='h-4 w-4' /> {deck.cardCount} card
+                          {deck.cardCount === 1 ? '' : 's'}
+                        </span>
+                        {deck.estimatedReviewMinutes ? (
+                          <span>{deck.estimatedReviewMinutes} min review</span>
+                        ) : null}
+                        {deck.analytics?.reviewCount ? (
                           <span>
-                            Published{' '}
-                            {new Date(deck.publishedAt).toLocaleDateString()}
+                            {deck.analytics.reviewCount} total reviews
                           </span>
-                        ) : (
-                          <span>Not yet published</span>
-                        )}
-                        <Link href={`/admin/flashcards/${deck.id}`}>
-                          <Button size='sm' variant='outline'>
-                            <Settings className='mr-1 h-4 w-4' /> Manage
-                          </Button>
-                        </Link>
-                        <Button
-                          size='sm'
-                          variant='destructive'
-                          onClick={() => handleDeleteDeck(deck.id)}
-                        >
-                          Delete
-                        </Button>
+                        ) : null}
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-            <div className='mt-6 flex items-center justify-center gap-3'>
-              <Button
-                variant='outline'
-                size='sm'
-                disabled={(data?.page ?? page) <= 1 || isLoading}
-                onClick={() => setPage(p => Math.max(1, p - 1))}
-              >
-                Previous
-              </Button>
-              <span className='text-sm text-gray-600 dark:text-gray-300'>
-                Page {data?.page ?? page} of {data?.pageSize && data?.total ? Math.max(1, Math.ceil((data.total) / (data.pageSize))) : 1}
-              </span>
-              <Button
-                variant='outline'
-                size='sm'
-                disabled={isLoading || ((data?.page ?? page) >= (data?.pageSize && data?.total ? Math.ceil((data.total) / (data.pageSize)) : 1))}
-                onClick={() => setPage(p => p + 1)}
-              >
-                Next
-              </Button>
-            </div>
+                      {deck.tags.length > 0 ? (
+                        <div className='space-y-1'>
+                          <div className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>
+                            Tags
+                          </div>
+                          <div className='flex flex-wrap gap-2'>
+                            {deck.tags.map(tag => (
+                              <Badge key={tag} variant='secondary'>
+                                <Tag className='mr-1 h-3 w-3' />
+                                {tag}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {deck.categories.length > 0 ? (
+                        <div className='space-y-1'>
+                          <div className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>
+                            Categories
+                          </div>
+                          <div className='flex flex-wrap gap-2'>
+                            {deck.categories.map(category => (
+                              <Badge key={category} variant='outline'>
+                                {category}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      {deck.linkTargets.length > 0 ? (
+                        <div className='space-y-1'>
+                          <div className='text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400'>
+                            Linked content
+                          </div>
+                          <div className='flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300'>
+                            {deck.linkTargets.map((target, index) => (
+                              <Badge
+                                key={`${deck.id}-target-${index}`}
+                                variant='outline'
+                                className='capitalize'
+                              >
+                                {target.scope}
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      ) : null}
+                      <div className='flex items-center justify-between border-t border-dashed pt-3 text-sm text-gray-500 dark:text-gray-400'>
+                        <span>
+                          Updated{' '}
+                          {new Date(deck.updatedAt).toLocaleDateString()}
+                        </span>
+                        <div className='flex items-center gap-2'>
+                          {deck.publishedAt ? (
+                            <span>
+                              Published{' '}
+                              {new Date(deck.publishedAt).toLocaleDateString()}
+                            </span>
+                          ) : (
+                            <span>Not yet published</span>
+                          )}
+                          <Link href={`/admin/flashcards/${deck.id}`}>
+                            <Button size='sm' variant='outline'>
+                              <Settings className='mr-1 h-4 w-4' /> Manage
+                            </Button>
+                          </Link>
+                          <Button
+                            size='sm'
+                            variant='destructive'
+                            onClick={() => handleDeleteDeck(deck.id)}
+                          >
+                            Delete
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              <div className='mt-6 flex items-center justify-center gap-3'>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  disabled={(data?.page ?? page) <= 1 || isLoading}
+                  onClick={() => setPage(p => Math.max(1, p - 1))}
+                >
+                  Previous
+                </Button>
+                <span className='text-sm text-gray-600 dark:text-gray-300'>
+                  Page {data?.page ?? page} of{' '}
+                  {data?.pageSize && data?.total
+                    ? Math.max(1, Math.ceil(data.total / data.pageSize))
+                    : 1}
+                </span>
+                <Button
+                  variant='outline'
+                  size='sm'
+                  disabled={
+                    isLoading ||
+                    (data?.page ?? page) >=
+                      (data?.pageSize && data?.total
+                        ? Math.ceil(data.total / data.pageSize)
+                        : 1)
+                  }
+                  onClick={() => setPage(p => p + 1)}
+                >
+                  Next
+                </Button>
+              </div>
             </>
           )}
         </TabsContent>

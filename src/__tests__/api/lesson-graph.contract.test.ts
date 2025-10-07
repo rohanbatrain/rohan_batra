@@ -1,9 +1,9 @@
 /**
  * T005: Contract Test - GET /api/courses/:courseId/lessons/:lessonSlug/graph
- * 
+ *
  * Tests the lesson graph API endpoint contract.
  * Validates response structure for lesson-centric graph views.
- * 
+ *
  * @pattern Follows /src/test/contract/courses.detail.contract.test.ts
  */
 
@@ -21,12 +21,17 @@ describe('Lesson Graph API Contract', () => {
 
   it('should return valid lesson-centric graph structure', async () => {
     // Find a published course with lessons
-    const course = await CourseModel.findOne({ published: true, lessonCount: { $gt: 0 } }).lean();
+    const course = await CourseModel.findOne({
+      published: true,
+      lessonCount: { $gt: 0 },
+    }).lean();
 
     expect(course).toBeDefined();
 
     // Find any lesson from the course
-    const lesson = await CourseLessonModel.findOne({ courseId: course?._id }).lean();
+    const lesson = await CourseLessonModel.findOne({
+      courseId: course?._id,
+    }).lean();
 
     if (!lesson) {
       // Skip if no lessons found
@@ -68,11 +73,16 @@ describe('Lesson Graph API Contract', () => {
 
   it('should respect depth parameter', async () => {
     // Find a lesson
-    const course = await CourseModel.findOne({ published: true, lessonCount: { $gt: 0 } }).lean();
+    const course = await CourseModel.findOne({
+      published: true,
+      lessonCount: { $gt: 0 },
+    }).lean();
 
     if (!course) return;
 
-    const lesson = await CourseLessonModel.findOne({ courseId: course._id }).lean();
+    const lesson = await CourseLessonModel.findOne({
+      courseId: course._id,
+    }).lean();
 
     if (!lesson) return;
 

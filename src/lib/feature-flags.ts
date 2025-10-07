@@ -287,4 +287,3 @@ export function hasGithubSync(context?: FeatureFlagContext): boolean {
 export function hasBulkOperations(context?: FeatureFlagContext): boolean {
   return isAdvancedFeatureEnabled('bulkOperations', context);
 }
-
