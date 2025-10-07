@@ -66,7 +66,7 @@ describe('POST /api/admin/lessons/[lessonId]/flashcards', () => {
       }),
     });
 
-    const response = await POST(req, { params: { lessonId: 'lesson123' } });
+    const response = await POST(req, { params: Promise.resolve({ lessonId: 'lesson123' }) });
     const data = await response.json();
 
     expect(response.status).toBe(201);
@@ -100,7 +100,7 @@ describe('POST /api/admin/lessons/[lessonId]/flashcards', () => {
       body: JSON.stringify({}),
     });
 
-    await POST(req, { params: { lessonId: 'lesson123' } });
+    await POST(req, { params: Promise.resolve({ lessonId: 'lesson123' }) });
 
     expect(FlashcardDeckModel.create).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -117,7 +117,7 @@ describe('POST /api/admin/lessons/[lessonId]/flashcards', () => {
       method: 'POST',
     });
 
-    const response = await POST(req, { params: { lessonId: 'lesson123' } });
+    const response = await POST(req, { params: Promise.resolve({ lessonId: 'lesson123' }) });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -132,7 +132,7 @@ describe('POST /api/admin/lessons/[lessonId]/flashcards', () => {
       body: JSON.stringify({}),
     });
 
-    const response = await POST(req, { params: { lessonId: 'lesson123' } });
+    const response = await POST(req, { params: Promise.resolve({ lessonId: 'lesson123' }) });
     const data = await response.json();
 
     expect(response.status).toBe(404);
@@ -145,7 +145,7 @@ describe('POST /api/admin/lessons/[lessonId]/flashcards', () => {
       body: JSON.stringify({}),
     });
 
-    const response = await POST(req, { params: { lessonId: 'invalid-id' } });
+    const response = await POST(req, { params: Promise.resolve({ lessonId: 'invalid-id' }) });
     const data = await response.json();
 
     expect(response.status).toBe(400);
@@ -162,7 +162,7 @@ describe('POST /api/admin/lessons/[lessonId]/flashcards', () => {
       body: JSON.stringify({}),
     });
 
-    const response = await POST(req, { params: { lessonId: 'lesson123' } });
+    const response = await POST(req, { params: Promise.resolve({ lessonId: 'lesson123' }) });
     const data = await response.json();
 
     expect(response.status).toBe(409);
@@ -192,7 +192,7 @@ describe('GET /api/admin/lessons/[lessonId]/flashcards', () => {
   it('should return all flashcard decks for a lesson', async () => {
     const req = new NextRequest('http://localhost:3000/api/admin/lessons/lesson123/flashcards');
 
-    const response = await GET(req, { params: { lessonId: 'lesson123' } });
+    const response = await GET(req, { params: Promise.resolve({ lessonId: 'lesson123' }) });
     const data = await response.json();
 
     expect(response.status).toBe(200);
@@ -206,7 +206,7 @@ describe('GET /api/admin/lessons/[lessonId]/flashcards', () => {
 
     const req = new NextRequest('http://localhost:3000/api/admin/lessons/lesson123/flashcards');
 
-    const response = await GET(req, { params: { lessonId: 'lesson123' } });
+    const response = await GET(req, { params: Promise.resolve({ lessonId: 'lesson123' }) });
     const data = await response.json();
 
     expect(response.status).toBe(401);
@@ -220,7 +220,7 @@ describe('GET /api/admin/lessons/[lessonId]/flashcards', () => {
 
     const req = new NextRequest('http://localhost:3000/api/admin/lessons/lesson123/flashcards');
 
-    const response = await GET(req, { params: { lessonId: 'lesson123' } });
+    const response = await GET(req, { params: Promise.resolve({ lessonId: 'lesson123' }) });
     const data = await response.json();
 
     expect(response.status).toBe(404);
