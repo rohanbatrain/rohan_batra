@@ -42,11 +42,25 @@ async function connectToDatabase() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
+      serverSelectionTimeoutMS: 10000, // Timeout after 10s instead of default 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      minPoolSize: 2, // Maintain at least 2 socket connections
+      maxIdleTimeMS: 10000, // Close connections idle for 10s
+      retryWrites: true, // Retry writes on network errors
+      retryReads: true, // Retry reads on network errors
     };
 
     cached.promise = mongoose
       .connect(MONGODB_URI, opts)
-      .then(mongoose => mongoose);
+      .then(mongoose => {
+        console.log('✅ MongoDB connected successfully');
+        return mongoose;
+      })
+      .catch(error => {
+        console.error('❌ MongoDB connection error:', error.message);
+        throw error;
+      });
   }
 
   try {

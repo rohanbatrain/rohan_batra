@@ -22,8 +22,20 @@ export default function DeckCreateContent() {
   const { toast } = useToast();
   const [creating, setCreating] = useState(false);
   const [loadingDecks, setLoadingDecks] = useState(false);
+  const [loadingCourses, setLoadingCourses] = useState(false);
+  const [loadingModules, setLoadingModules] = useState(false);
+  const [loadingLessons, setLoadingLessons] = useState(false);
   const [availableDecks, setAvailableDecks] = useState<
     Array<{ id: string; title: string; level: number; path: string }>
+  >([]);
+  const [availableCourses, setAvailableCourses] = useState<
+    Array<{ id: string; title: string; slug: string }>
+  >([]);
+  const [availableModules, setAvailableModules] = useState<
+    Array<{ id: string; title: string; order: number }>
+  >([]);
+  const [availableLessons, setAvailableLessons] = useState<
+    Array<{ id: string; title: string; slug: string }>
   >([]);
   const [form, setForm] = useState({
     title: '',
@@ -86,6 +98,92 @@ export default function DeckCreateContent() {
     };
     loadDecks();
   }, []);
+
+  // Load courses when link scope requires it
+  useEffect(() => {
+    if (form.linkScope === 'standalone') return;
+    
+    const loadCourses = async () => {
+      try {
+        setLoadingCourses(true);
+        const res = await fetch('/api/admin/courses');
+        if (!res.ok) return;
+        const data = await res.json();
+        setAvailableCourses(
+          data.courses?.map((c: any) => ({
+            id: c.id,
+            title: c.title,
+            slug: c.slug,
+          })) || []
+        );
+      } catch (err) {
+        console.error('Failed to load courses:', err);
+      } finally {
+        setLoadingCourses(false);
+      }
+    };
+    loadCourses();
+  }, [form.linkScope]);
+
+  // Load modules when course is selected
+  useEffect(() => {
+    if (!form.linkCourseId || (form.linkScope !== 'module' && form.linkScope !== 'lesson')) {
+      setAvailableModules([]);
+      return;
+    }
+    
+    const loadModules = async () => {
+      try {
+        setLoadingModules(true);
+        const res = await fetch(`/api/admin/courses/${form.linkCourseId}/modules`);
+        if (!res.ok) return;
+        const data = await res.json();
+        setAvailableModules(
+          data.modules?.map((m: any) => ({
+            id: m.id,
+            title: m.title,
+            order: m.order,
+          })) || []
+        );
+      } catch (err) {
+        console.error('Failed to load modules:', err);
+      } finally {
+        setLoadingModules(false);
+      }
+    };
+    loadModules();
+  }, [form.linkCourseId, form.linkScope]);
+
+  // Load lessons when module is selected
+  useEffect(() => {
+    if (!form.linkModuleId || form.linkScope !== 'lesson') {
+      setAvailableLessons([]);
+      return;
+    }
+    
+    const loadLessons = async () => {
+      try {
+        setLoadingLessons(true);
+        const res = await fetch(
+          `/api/admin/courses/${form.linkCourseId}/modules/${form.linkModuleId}/lessons`
+        );
+        if (!res.ok) return;
+        const data = await res.json();
+        setAvailableLessons(
+          data.lessons?.map((l: any) => ({
+            id: l.id,
+            title: l.title,
+            slug: l.slug,
+          })) || []
+        );
+      } catch (err) {
+        console.error('Failed to load lessons:', err);
+      } finally {
+        setLoadingLessons(false);
+      }
+    };
+    loadLessons();
+  }, [form.linkModuleId, form.linkCourseId, form.linkScope]);
 
   const create = async () => {
     if (!form.title.trim()) {
@@ -328,36 +426,102 @@ export default function DeckCreateContent() {
           {form.linkScope !== 'standalone' && (
             <div className='space-y-4 pl-4 border-l-2 border-primary/20'>
               <div className='space-y-2'>
-                <Label htmlFor='linkCourseId'>Course ID</Label>
-                <Input
-                  id='linkCourseId'
+                <Label htmlFor='linkCourseId'>Course</Label>
+                <Select
                   value={form.linkCourseId}
-                  onChange={e => set('linkCourseId', e.target.value)}
-                  placeholder='Enter course ObjectId'
-                />
+                  onValueChange={v => setForm(prev => ({ 
+                    ...prev, 
+                    linkCourseId: v,
+                    linkModuleId: '',
+                    linkLessonId: '',
+                  }))}
+                  disabled={loadingCourses}
+                >
+                  <SelectTrigger id='linkCourseId'>
+                    <SelectValue placeholder={loadingCourses ? 'Loading courses...' : 'Select a course'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableCourses.map(course => (
+                      <SelectItem key={course.id} value={course.id}>
+                        {course.title}
+                      </SelectItem>
+                    ))}
+                    {availableCourses.length === 0 && !loadingCourses && (
+                      <SelectItem value='__none__' disabled>
+                        No courses available
+                      </SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
               </div>
 
               {(form.linkScope === 'module' || form.linkScope === 'lesson') && (
                 <div className='space-y-2'>
-                  <Label htmlFor='linkModuleId'>Module ID</Label>
-                  <Input
-                    id='linkModuleId'
+                  <Label htmlFor='linkModuleId'>Module</Label>
+                  <Select
                     value={form.linkModuleId}
-                    onChange={e => set('linkModuleId', e.target.value)}
-                    placeholder='Enter module ObjectId'
-                  />
+                    onValueChange={v => setForm(prev => ({ 
+                      ...prev, 
+                      linkModuleId: v,
+                      linkLessonId: '',
+                    }))}
+                    disabled={!form.linkCourseId || loadingModules}
+                  >
+                    <SelectTrigger id='linkModuleId'>
+                      <SelectValue placeholder={
+                        !form.linkCourseId 
+                          ? 'Select a course first' 
+                          : loadingModules 
+                          ? 'Loading modules...' 
+                          : 'Select a module'
+                      } />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableModules.map(module => (
+                        <SelectItem key={module.id} value={module.id}>
+                          {module.title}
+                        </SelectItem>
+                      ))}
+                      {availableModules.length === 0 && !loadingModules && form.linkCourseId && (
+                        <SelectItem value='__none__' disabled>
+                          No modules in this course
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 
               {form.linkScope === 'lesson' && (
                 <div className='space-y-2'>
-                  <Label htmlFor='linkLessonId'>Lesson ID</Label>
-                  <Input
-                    id='linkLessonId'
+                  <Label htmlFor='linkLessonId'>Lesson</Label>
+                  <Select
                     value={form.linkLessonId}
-                    onChange={e => set('linkLessonId', e.target.value)}
-                    placeholder='Enter lesson ObjectId'
-                  />
+                    onValueChange={v => set('linkLessonId', v)}
+                    disabled={!form.linkModuleId || loadingLessons}
+                  >
+                    <SelectTrigger id='linkLessonId'>
+                      <SelectValue placeholder={
+                        !form.linkModuleId 
+                          ? 'Select a module first' 
+                          : loadingLessons 
+                          ? 'Loading lessons...' 
+                          : 'Select a lesson'
+                      } />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableLessons.map(lesson => (
+                        <SelectItem key={lesson.id} value={lesson.id}>
+                          {lesson.title}
+                        </SelectItem>
+                      ))}
+                      {availableLessons.length === 0 && !loadingLessons && form.linkModuleId && (
+                        <SelectItem value='__none__' disabled>
+                          No lessons in this module
+                        </SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 

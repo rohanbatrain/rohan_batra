@@ -95,7 +95,14 @@ export async function generateMetadata(ctx: PageProps) {
 
 export default async function CoursePublicPage(ctx: PageProps) {
   const { slug } = await ctx.params;
-  await connectToDatabase();
+  
+  try {
+    await connectToDatabase();
+  } catch (error) {
+    console.error('MongoDB connection failed:', error);
+    throw new Error('Database connection unavailable. Please try again later.');
+  }
+  
   const course = await Course.findOne({ slug }).lean();
 
   if (!course) return notFound();
