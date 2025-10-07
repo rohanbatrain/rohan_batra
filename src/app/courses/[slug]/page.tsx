@@ -497,7 +497,7 @@ export default async function CoursePublicPage(ctx: PageProps) {
                               </Link>
                             ) : (
                               <Link
-                                href={`/courses/preview/${String(l._id)}`}
+                                href={`/courses/${course.slug}/lesson/${String(l._id)}`}
                                 className='rounded-lg bg-blue-100 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
                                 aria-label={`Preview lesson: ${l.title}`}
                               >
@@ -571,7 +571,7 @@ export default async function CoursePublicPage(ctx: PageProps) {
                                         </Link>
                                       ) : (
                                         <Link
-                                          href={`/courses/preview/${String(s._id)}`}
+                                          href={`/courses/${course.slug}/lesson/${String(s._id)}`}
                                           className='rounded-md bg-blue-100 px-2.5 py-1 text-[11px] font-medium text-blue-700 hover:bg-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:hover:bg-blue-900/50 transition-colors'
                                           aria-label={`Preview sub-lesson: ${s.title}`}
                                         >
