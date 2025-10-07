@@ -71,9 +71,10 @@ export default async function LessonPage({ params }: LessonPageProps) {
   let user = null;
   
   if (clerkUserId) {
-    user = await UserModel.findOne({ clerkUserId }).lean();
+    const foundUser = await UserModel.findOne({ clerkId: clerkUserId }).lean();
     
-    if (user && !Array.isArray(user)) {
+    if (foundUser && !Array.isArray(foundUser)) {
+      user = foundUser;
       enrollment = await CourseEnrollmentModel.findOne({
         courseId: course._id,
         userId: user._id,
