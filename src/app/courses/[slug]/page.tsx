@@ -10,6 +10,7 @@ import { auth } from '@clerk/nextjs/server';
 import CourseEnrollment from '@/models/CourseEnrollment';
 import CourseProgress from '@/models/CourseProgress';
 import User from '@/models/User';
+import { KnowledgeGraph } from '@/components/courses/KnowledgeGraph';
 
 export const dynamic = 'force-dynamic';
 
@@ -524,6 +525,16 @@ export default async function CoursePublicPage(ctx: PageProps) {
                 </ul>
               </details>
             ))}
+          </div>
+        )}
+
+        {/* T024: Knowledge Graph Visualization */}
+        {outline && outline.length > 0 && (
+          <div className='container mx-auto max-w-6xl px-4 py-12'>
+            <KnowledgeGraph
+              courseSlug={course.slug}
+              includeProgress={!!enrollment}
+            />
           </div>
         )}
       </div>

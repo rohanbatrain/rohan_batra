@@ -15,6 +15,7 @@ import {
   sanitizeDeck,
 } from '../schemas';
 import { resolveAssetShortcodes } from '@/lib/assets/resolve-shortcodes';
+import { validateDeckMove } from '@/lib/decks/tree';
 
 const FlashcardDeckUpdateSchema = FlashcardDeckInputSchema.partial().extend({
   slug: z
@@ -22,6 +23,7 @@ const FlashcardDeckUpdateSchema = FlashcardDeckInputSchema.partial().extend({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
     .optional(),
   linkTargets: z.array(LinkTargetSchema).optional(),
+  parentDeckId: z.string().nullable().optional(), // Allow moving decks
 });
 
 function sanitizeCard(card: any) {
@@ -227,6 +229,46 @@ export async function PUT(
           ? new Types.ObjectId(target.lessonId)
           : undefined,
       }));
+    }
+
+    // Handle parentDeckId change (moving deck)
+    if (parsed.parentDeckId !== undefined) {
+      let newParentDeckId: Types.ObjectId | null = null;
+
+      if (parsed.parentDeckId) {
+        if (!Types.ObjectId.isValid(parsed.parentDeckId)) {
+          return NextResponse.json(
+            { error: 'Invalid parent deck ID' },
+            { status: 400 }
+          );
+        }
+
+        const parentDeck = await FlashcardDeckModel.findById(parsed.parentDeckId);
+        if (!parentDeck) {
+          return NextResponse.json(
+            { error: 'Parent deck not found' },
+            { status: 404 }
+          );
+        }
+
+        // Validate move would not create cycle or exceed depth
+        const validation = await validateDeckMove(
+          deckDoc._id.toString(),
+          parsed.parentDeckId
+        );
+
+        if (!validation.valid) {
+          return NextResponse.json(
+            { error: validation.error || 'Invalid deck move' },
+            { status: 400 }
+          );
+        }
+
+        newParentDeckId = parentDeck._id;
+      }
+
+      deckDoc.parentDeckId = newParentDeckId;
+      // Pre-save hook will recompute path/level and update descendants
     }
 
     await deckDoc.save();

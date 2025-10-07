@@ -1,0 +1,65 @@
+openapi: 3.0.0
+info:
+  title: Flqshcqrds Flashcards API (Nested Decks)
+  version: 1.0.0
+paths:
+  /api/flashcards/decks:
+    get:
+      summary: List decks (flat or tree)
+      parameters:
+        - name: tree
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: OK
+  /api/admin/flashcards:
+    post:
+      summary: Create a flashcard deck
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeckInput'
+      responses:
+        '201':
+          description: Created
+  /api/admin/flashcards/{deckId}/cards/bulk:
+    post:
+      summary: Bulk import cards into a deck
+      parameters:
+        - name: deckId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                format:
+                  type: string
+                  enum: [markdown,json,csv,yaml]
+      responses:
+        '200':
+          description: Bulk import result
+components:
+  schemas:
+    DeckInput:
+      type: object
+      properties:
+        title:
+          type: string
+        parentDeckId:
+          type: string
+        slug:
+          type: string
+        visibility:
+          type: string

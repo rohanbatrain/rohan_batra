@@ -46,6 +46,9 @@ interface EnvConfig {
     multiCategories: boolean;
     urlValidation: boolean;
     auditTrail: boolean;
+    nestedDecks: boolean;
+    githubSync: boolean;
+    bulkOperations: boolean;
   };
 
   // Rollout Configuration
@@ -154,6 +157,9 @@ export const env: EnvConfig = {
     multiCategories: getBooleanEnvVar('FEATURE_MULTI_CATEGORIES', false),
     urlValidation: getBooleanEnvVar('FEATURE_URL_VALIDATION', false),
     auditTrail: getBooleanEnvVar('FEATURE_AUDIT_TRAIL', false),
+    nestedDecks: getBooleanEnvVar('FEATURE_NESTED_DECKS', false),
+    githubSync: getBooleanEnvVar('FEATURE_GITHUB_SYNC', false),
+    bulkOperations: getBooleanEnvVar('FEATURE_BULK_OPERATIONS', false),
   },
 
   // Rollout Configuration

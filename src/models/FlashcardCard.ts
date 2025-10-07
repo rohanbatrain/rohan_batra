@@ -27,6 +27,13 @@ export interface IFlashcardCard
       audioUrl?: string | null;
     };
   };
+  scheduling?: {
+    intervalDays: number;
+    easeFactor: number;
+    repetitions: number;
+    lastReviewedAt?: Date | null;
+    nextReviewAt?: Date | null;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -45,6 +52,17 @@ const faceSchema = new Schema(
     text: { type: String, trim: true },
     richText: { type: String },
     media: { type: mediaSchema, default: undefined },
+  },
+  { _id: false }
+);
+
+const schedulingSchema = new Schema(
+  {
+    intervalDays: { type: Number, default: 0, min: 0 },
+    easeFactor: { type: Number, default: 2.5, min: 1.3, max: 2.5 },
+    repetitions: { type: Number, default: 0, min: 0 },
+    lastReviewedAt: { type: Date, default: null },
+    nextReviewAt: { type: Date, default: null },
   },
   { _id: false }
 );
@@ -88,6 +106,16 @@ const FlashcardCardSchema = new Schema<IFlashcardCard>(
       min: 0,
       index: true,
     },
+    scheduling: {
+      type: schedulingSchema,
+      default: () => ({
+        intervalDays: 0,
+        easeFactor: 2.5,
+        repetitions: 0,
+        lastReviewedAt: null,
+        nextReviewAt: null,
+      }),
+    },
   },
   {
     timestamps: true,
@@ -111,6 +139,7 @@ const FlashcardCardSchema = new Schema<IFlashcardCard>(
 FlashcardCardSchema.index({ deckId: 1, order: 1 }, { unique: true });
 FlashcardCardSchema.index({ deckId: 1, createdAt: -1 });
 FlashcardCardSchema.index({ deckId: 1, tags: 1 });
+FlashcardCardSchema.index({ 'scheduling.nextReviewAt': 1 });
 
 FlashcardCardSchema.pre<IFlashcardCard>('validate', function (next) {
   if (this.type === 'cloze' && !(this.prompt.richText || this.prompt.text)) {

@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useConfirm } from '@/components/ui/confirm-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { Folder } from 'lucide-react';
 import {
   Dialog,
   DialogClose,
@@ -66,6 +67,9 @@ interface DeckDetail {
   cardCount: number;
   estimatedReviewMinutes?: number | null;
   coverImage?: string | null;
+  parentDeckId?: string | null;
+  path?: string;
+  level?: number;
   createdAt: string;
   updatedAt: string;
   publishedAt?: string | null;
@@ -90,6 +94,7 @@ interface DeckFormState {
   categories: string;
   estimatedReviewMinutes: string;
   coverImage: string;
+  parentDeckId: string;
 }
 
 const defaultDeckForm: DeckFormState = {
@@ -104,6 +109,7 @@ const defaultDeckForm: DeckFormState = {
   categories: '',
   estimatedReviewMinutes: '',
   coverImage: '',
+  parentDeckId: '__none__',
 };
 
 interface CardFormState {
@@ -144,6 +150,8 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
   const [cardDialogOpen, setCardDialogOpen] = useState(false);
   const [savingDeck, setSavingDeck] = useState(false);
   const [savingCard, setSavingCard] = useState(false);
+  const [loadingDecks, setLoadingDecks] = useState(false);
+  const [availableDecks, setAvailableDecks] = useState<Array<{ id: string; title: string; level: number; path: string }>>([]);
 
   const deckDetailQuery = useMemo(() => {
     if (!deckId) return null;
@@ -170,9 +178,52 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
         categories: data.categories.join(', '),
         estimatedReviewMinutes: data.estimatedReviewMinutes?.toString() ?? '',
         coverImage: data.coverImage ?? '',
+        parentDeckId: data.parentDeckId ?? '__none__',
       });
     }
   }, [data?.id]);
+
+  // Load available decks for parent selection
+  useEffect(() => {
+    const loadDecks = async () => {
+      try {
+        setLoadingDecks(true);
+        const res = await fetch('/api/admin/flashcards?tree=true');
+        if (!res.ok) return;
+        const treeData = await res.json();
+        
+        // Flatten tree for dropdown (exclude current deck and its descendants, and decks at max depth)
+        const flatten = (nodes: any[], depth = 0): any[] => {
+          const MAX_DEPTH = 6;
+          return nodes.flatMap(node => {
+            // Exclude current deck being edited and decks at max depth
+            if (node.id === deckId || node.level >= MAX_DEPTH - 1) {
+              return [];
+            }
+            const items = [{ 
+              id: node.id, 
+              title: node.title, 
+              level: node.level,
+              path: node.path 
+            }];
+            if (node.children && node.children.length > 0) {
+              items.push(...flatten(node.children, depth + 1));
+            }
+            return items;
+          });
+        };
+        
+        setAvailableDecks(flatten(treeData.decks || []));
+      } catch (err) {
+        console.error('Failed to load decks:', err);
+      } finally {
+        setLoadingDecks(false);
+      }
+    };
+    if (deckId) {
+      loadDecks();
+    }
+  }, [deckId]);
 
   const parseCommaSeparated = (value: string) =>
     value
@@ -217,6 +268,7 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
         isFeatured: deckForm.isFeatured,
         tags: parseCommaSeparated(deckForm.tags),
         categories: parseCommaSeparated(deckForm.categories),
+        parentDeckId: deckForm.parentDeckId === '__none__' ? null : deckForm.parentDeckId,
       };
 
       if (deckForm.estimatedReviewMinutes.trim()) {
@@ -443,6 +495,33 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
               <div>
                 <Label htmlFor='deck-description'>Description</Label>
                 <Textarea id='deck-description' value={deckForm.description} onChange={e => handleDeckFieldChange('description', e.target.value)} rows={4} />
+              </div>
+              
+              {/* Parent Deck Selector */}
+              <div>
+                <Label htmlFor='parentDeck' className='flex items-center gap-2'>
+                  <Folder className='h-4 w-4' />
+                  Parent Deck
+                </Label>
+                <Select value={deckForm.parentDeckId} onValueChange={v => handleDeckFieldChange('parentDeckId', v)} disabled={loadingDecks}>
+                  <SelectTrigger id='parentDeck'>
+                    <SelectValue placeholder={loadingDecks ? 'Loading...' : 'None (top-level)'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value='__none__'>None (top-level deck)</SelectItem>
+                    {availableDecks.map(deck => (
+                      <SelectItem key={deck.id} value={deck.id}>
+                        <span style={{ paddingLeft: `${deck.level * 12}px` }}>
+                          {deck.level > 0 && '└─ '}
+                          {deck.title}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className='text-xs text-muted-foreground mt-1'>
+                  Move this deck under another deck (max 6 levels deep)
+                </p>
               </div>
             </div>
             <div className='space-y-3'>

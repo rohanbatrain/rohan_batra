@@ -275,3 +275,16 @@ export function hasUrlValidation(context?: FeatureFlagContext): boolean {
 export function hasAuditTrail(context?: FeatureFlagContext): boolean {
   return isAdvancedFeatureEnabled('auditTrail', context);
 }
+
+export function hasNestedDecks(context?: FeatureFlagContext): boolean {
+  return isAdvancedFeatureEnabled('nestedDecks', context);
+}
+
+export function hasGithubSync(context?: FeatureFlagContext): boolean {
+  return isAdvancedFeatureEnabled('githubSync', context);
+}
+
+export function hasBulkOperations(context?: FeatureFlagContext): boolean {
+  return isAdvancedFeatureEnabled('bulkOperations', context);
+}
+

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,11 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
+import { Folder } from 'lucide-react';
 
 export default function DeckCreateContent() {
   const router = useRouter();
   const { toast } = useToast();
   const [creating, setCreating] = useState(false);
+  const [loadingDecks, setLoadingDecks] = useState(false);
+  const [availableDecks, setAvailableDecks] = useState<Array<{ id: string; title: string; level: number; path: string }>>([]);
   const [form, setForm] = useState({
     title: '',
     subtitle: '',
@@ -23,9 +26,46 @@ export default function DeckCreateContent() {
     tags: '',
     categories: '',
     estimatedReviewMinutes: '',
+    parentDeckId: '__none__',
   });
 
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }));
+
+  // Load available decks for parent selection
+  useEffect(() => {
+    const loadDecks = async () => {
+      try {
+        setLoadingDecks(true);
+        const res = await fetch('/api/admin/flashcards?tree=true');
+        if (!res.ok) return;
+        const data = await res.json();
+        
+        // Flatten tree for dropdown (exclude decks at max depth)
+        const flatten = (nodes: any[], depth = 0): any[] => {
+          const MAX_DEPTH = 6;
+          return nodes.flatMap(node => {
+            const items = node.level < MAX_DEPTH - 1 ? [{ 
+              id: node.id, 
+              title: node.title, 
+              level: node.level,
+              path: node.path 
+            }] : [];
+            if (node.children && node.children.length > 0) {
+              items.push(...flatten(node.children, depth + 1));
+            }
+            return items;
+          });
+        };
+        
+        setAvailableDecks(flatten(data.decks || []));
+      } catch (err) {
+        console.error('Failed to load decks:', err);
+      } finally {
+        setLoadingDecks(false);
+      }
+    };
+    loadDecks();
+  }, []);
 
   const create = async () => {
     if (!form.title.trim()) {
@@ -43,6 +83,7 @@ export default function DeckCreateContent() {
         visibility: form.visibility,
         tags: form.tags ? form.tags.split(',').map(s => s.trim()).filter(Boolean) : [],
         categories: form.categories ? form.categories.split(',').map(s => s.trim()).filter(Boolean) : [],
+        parentDeckId: form.parentDeckId === '__none__' ? null : form.parentDeckId,
       };
       if (form.estimatedReviewMinutes.trim()) {
         const m = Number(form.estimatedReviewMinutes);
@@ -86,6 +127,34 @@ export default function DeckCreateContent() {
             <Input id='subtitle' value={form.subtitle} onChange={e => set('subtitle', e.target.value)} />
           </div>
         </div>
+        
+        {/* Parent Deck Selector - NEW */}
+        <div className='space-y-2'>
+          <Label htmlFor='parentDeck' className='flex items-center gap-2'>
+            <Folder className='h-4 w-4' />
+            Parent Deck (Optional)
+          </Label>
+          <Select value={form.parentDeckId} onValueChange={v => set('parentDeckId', v)} disabled={loadingDecks}>
+            <SelectTrigger id='parentDeck'>
+              <SelectValue placeholder={loadingDecks ? 'Loading decks...' : 'None (top-level deck)'} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value='__none__'>None (top-level deck)</SelectItem>
+              {availableDecks.map(deck => (
+                <SelectItem key={deck.id} value={deck.id}>
+                  <span style={{ paddingLeft: `${deck.level * 12}px` }}>
+                    {deck.level > 0 && '└─ '}
+                    {deck.title}
+                  </span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <p className='text-xs text-muted-foreground'>
+            Organize this deck under another deck (max 6 levels deep)
+          </p>
+        </div>
+        
         <div className='space-y-2'>
           <Label htmlFor='description'>Description</Label>
           <Textarea id='description' rows={4} value={form.description} onChange={e => set('description', e.target.value)} />

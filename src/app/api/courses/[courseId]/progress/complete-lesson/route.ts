@@ -5,6 +5,7 @@ import CourseProgress from '@/models/CourseProgress';
 import CourseEnrollment from '@/models/CourseEnrollment';
 import CourseLesson from '@/models/CourseLesson';
 import User from '@/models/User';
+import { invalidateUserProgress } from '@/lib/graph/cache';
 
 export async function POST(
   req: NextRequest,
@@ -118,6 +119,14 @@ export async function POST(
       );
 
       await progress.save();
+    }
+
+    // T022: Invalidate user-specific graph cache after progress update
+    try {
+      await invalidateUserProgress(userDoc._id.toString(), courseId);
+    } catch (cacheError) {
+      console.warn('Failed to invalidate user progress cache:', cacheError);
+      // Non-blocking: cache invalidation failure should not fail the request
     }
 
     return NextResponse.json({

@@ -13,6 +13,7 @@ import {
 } from '@/lib/assets/resolve-shortcodes';
 import { syncDeckLinkTargets } from '@/lib/flashcards/sync-link-targets';
 import { uniqueSlug } from '@/lib/slug';
+import { invalidateCourseGraph } from '@/lib/graph/cache';
 
 async function findCourse(courseIdOrSlug: string) {
   if (Types.ObjectId.isValid(courseIdOrSlug)) {
@@ -244,6 +245,14 @@ export async function POST(
         moduleId: moduleDoc._id,
         lessonId: lessonDoc._id,
       });
+    }
+
+    // T021: Invalidate course graph cache after lesson creation
+    try {
+      await invalidateCourseGraph(courseDoc._id.toString());
+    } catch (cacheError) {
+      console.warn('Failed to invalidate course graph cache:', cacheError);
+      // Non-blocking: cache invalidation failure should not fail the request
     }
 
     return NextResponse.json(sanitizeLesson(lessonDoc), { status: 201 });

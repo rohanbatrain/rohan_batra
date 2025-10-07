@@ -8,87 +8,48 @@ import UserModel from '@/models/User';
 import { uniqueSlug } from '@/lib/slug';
 import { resolveAssetShortcodes } from '@/lib/assets/resolve-shortcodes';
 import { LinkTargetSchema, FlashcardDeckInputSchema, sanitizeDeck } from './schemas';
+import { buildDeckTree } from '@/lib/decks/tree';
 
+/**
+ * GET /api/admin/flashcards
+ * Get all flashcard decks for the authenticated user
+ * Query params:
+ *   - tree=true: Return decks as hierarchical tree
+ */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
+    // Authenticate user
+    const { userId: clerkUserId } = await auth();
 
-    if (!userId) {
+    if (!clerkUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    // Connect to database
     await connectToDatabase();
-    const currentUser = await UserModel.findOne({ clerkId: userId });
-    const userRole = (currentUser?.role as string) || 'user';
 
-    if (!['editor', 'admin'].includes(userRole)) {
-      return NextResponse.json(
-        { error: 'Insufficient permissions' },
-        { status: 403 }
-      );
+    // Find user in database
+    const user = await UserModel.findOne({ clerkId: clerkUserId });
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // Get all decks for user
+    const decks = await FlashcardDeckModel.find({ ownerId: user._id }).sort({ createdAt: -1 }).lean();
+
+    // Check if tree mode requested
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const visibility = searchParams.get('visibility');
-    const search = searchParams.get('search');
-    const page = Math.max(parseInt(searchParams.get('page') || '1', 10), 1);
-    const limit = Math.min(
-      Math.max(parseInt(searchParams.get('limit') || '24', 10), 1),
-      100
-    );
+    const treeMode = searchParams.get('tree') === 'true';
 
-    const filter: Record<string, unknown> = {};
-
-    if (status && ['draft', 'published', 'archived'].includes(status)) {
-      filter.status = status;
+    if (treeMode) {
+      const tree = buildDeckTree(decks);
+      return NextResponse.json({ decks: tree, treeMode: true });
     }
 
-    if (visibility && ['public', 'unlisted', 'private'].includes(visibility)) {
-      filter.visibility = visibility;
-    }
-
-    if (search) {
-      filter.$or = [
-        { title: { $regex: search, $options: 'i' } },
-        { slug: { $regex: search, $options: 'i' } },
-        { description: { $regex: search, $options: 'i' } },
-      ];
-    }
-
-    if (userRole === 'editor' && currentUser?._id) {
-      filter.createdBy = currentUser._id;
-    }
-
-    const totalCount = await FlashcardDeckModel.countDocuments(filter);
-    const skip = (page - 1) * limit;
-    const decks = await FlashcardDeckModel.find(filter)
-      .sort({ updatedAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
-
-    const statusStats = await FlashcardDeckModel.aggregate([
-      { $match: filter },
-      { $group: { _id: '$status', count: { $sum: 1 } } },
-    ]);
-
-    return NextResponse.json({
-      decks: decks.map(sanitizeDeck),
-      stats: statusStats.reduce((acc: Record<string, number>, doc) => {
-        acc[doc._id] = doc.count;
-        return acc;
-      }, {}),
-      total: totalCount,
-      page,
-      pageSize: limit,
-    });
-  } catch (error) {
+    return NextResponse.json({ decks });
+  } catch (error: unknown) {
     console.error('Error fetching flashcard decks:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -112,7 +73,34 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const parsed = FlashcardDeckInputSchema.parse(body);
+    
+    // Extend schema to include parentDeckId
+    const ExtendedSchema = FlashcardDeckInputSchema.extend({
+      parentDeckId: z.string().optional(),
+    });
+    const parsed = ExtendedSchema.parse(body);
+
+    // Validate parent deck if provided
+    let parentDeck = null;
+    if (parsed.parentDeckId) {
+      if (!Types.ObjectId.isValid(parsed.parentDeckId)) {
+        return NextResponse.json({ error: 'Invalid parent deck ID' }, { status: 400 });
+      }
+
+      parentDeck = await FlashcardDeckModel.findById(parsed.parentDeckId);
+
+      if (!parentDeck) {
+        return NextResponse.json({ error: 'Parent deck not found' }, { status: 404 });
+      }
+
+      // Check depth limit (max 6 levels, so parent can be at most level 5)
+      if (parentDeck.level >= 6) {
+        return NextResponse.json(
+          { error: 'Maximum nesting depth (6 levels) exceeded' },
+          { status: 400 }
+        );
+      }
+    }
 
     const slug = await uniqueSlug(parsed.title, async candidate => {
       const existing = await FlashcardDeckModel.exists({ slug: candidate });
@@ -168,6 +156,7 @@ export async function POST(request: NextRequest) {
         lastReviewedAt: undefined,
       },
       publishedAt: parsed.status === 'published' ? new Date() : undefined,
+      parentDeckId: parentDeck?._id || null, // Pre-save hook will compute path & level
     });
 
     const saved = await deck.save();

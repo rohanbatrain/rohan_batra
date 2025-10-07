@@ -8,6 +8,10 @@ export interface IFlashcardDeck
     >,
     Document {
   _id: mongoose.Types.ObjectId;
+  parentDeckId?: mongoose.Types.ObjectId | null;
+  path: string;
+  level: number;
+  dueCount?: number;
   linkTargets: Array<{
     scope: 'standalone' | 'course' | 'module' | 'lesson';
     courseId?: mongoose.Types.ObjectId | null;
@@ -86,6 +90,24 @@ const FlashcardDeckSchema = new Schema<IFlashcardDeck>(
       type: String,
       trim: true,
     },
+    parentDeckId: {
+      type: Schema.Types.ObjectId,
+      ref: 'FlashcardDeck',
+      default: null,
+      index: true,
+    },
+    path: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    level: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
+      max: 6,
+    },
     tags: {
       type: [String],
       default: [],
@@ -113,6 +135,11 @@ const FlashcardDeckSchema = new Schema<IFlashcardDeck>(
       min: 0,
     },
     cardCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+    dueCount: {
       type: Number,
       default: 0,
       min: 0,
@@ -155,6 +182,28 @@ const FlashcardDeckSchema = new Schema<IFlashcardDeck>(
 
 FlashcardDeckSchema.index({ status: 1, visibility: 1 });
 FlashcardDeckSchema.index({ createdBy: 1 });
+FlashcardDeckSchema.index({ parentDeckId: 1 });
+FlashcardDeckSchema.index({ path: 1 });
+
+// Auto-compute path and level before saving
+FlashcardDeckSchema.pre<IFlashcardDeck>('save', async function (next) {
+  if (this.isModified('parentDeckId') || this.isNew) {
+    if (this.parentDeckId) {
+      const parent = await (this.constructor as any).findById(this.parentDeckId);
+      if (parent) {
+        this.level = parent.level + 1;
+        this.path = `${parent.path}/${this.slug}`;
+      } else {
+        this.level = 0;
+        this.path = this.slug;
+      }
+    } else {
+      this.level = 0;
+      this.path = this.slug;
+    }
+  }
+  next();
+});
 
 FlashcardDeckSchema.pre<IFlashcardDeck>('validate', function (next) {
   for (const target of this.linkTargets) {
