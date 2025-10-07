@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import {
   Select,
   SelectContent,
@@ -14,7 +15,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { Folder } from 'lucide-react';
+import { Folder, Link2 } from 'lucide-react';
 
 export default function DeckCreateContent() {
   const router = useRouter();
@@ -31,10 +32,16 @@ export default function DeckCreateContent() {
     coverImage: '',
     status: 'draft',
     visibility: 'public',
+    isFeatured: false,
     tags: '',
     categories: '',
     estimatedReviewMinutes: '',
     parentDeckId: '__none__',
+    // Link targets
+    linkScope: 'standalone' as 'standalone' | 'course' | 'module' | 'lesson',
+    linkCourseId: '',
+    linkModuleId: '',
+    linkLessonId: '',
   });
 
   const set = (k: string, v: string) => setForm(prev => ({ ...prev, [k]: v }));
@@ -98,6 +105,7 @@ export default function DeckCreateContent() {
         coverImage: form.coverImage.trim() || undefined,
         status: form.status,
         visibility: form.visibility,
+        isFeatured: form.isFeatured,
         tags: form.tags
           ? form.tags
               .split(',')
@@ -113,10 +121,33 @@ export default function DeckCreateContent() {
         parentDeckId:
           form.parentDeckId === '__none__' ? null : form.parentDeckId,
       };
+      
       if (form.estimatedReviewMinutes.trim()) {
         const m = Number(form.estimatedReviewMinutes);
         if (!Number.isNaN(m) && m >= 0) payload.estimatedReviewMinutes = m;
       }
+      
+      // Add linkTargets if not standalone
+      if (form.linkScope !== 'standalone') {
+        const linkTarget: any = { scope: form.linkScope };
+        
+        if (form.linkScope === 'course' && form.linkCourseId) {
+          linkTarget.courseId = form.linkCourseId;
+        } else if (form.linkScope === 'module' && form.linkCourseId && form.linkModuleId) {
+          linkTarget.courseId = form.linkCourseId;
+          linkTarget.moduleId = form.linkModuleId;
+        } else if (form.linkScope === 'lesson' && form.linkCourseId && form.linkModuleId && form.linkLessonId) {
+          linkTarget.courseId = form.linkCourseId;
+          linkTarget.moduleId = form.linkModuleId;
+          linkTarget.lessonId = form.linkLessonId;
+        }
+        
+        // Only add linkTargets if we have valid IDs
+        if (Object.keys(linkTarget).length > 1) {
+          payload.linkTargets = [linkTarget];
+        }
+      }
+      
       const res = await fetch('/api/admin/flashcards', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -245,6 +276,98 @@ export default function DeckCreateContent() {
             </Select>
           </div>
         </div>
+
+        {/* Featured Toggle */}
+        <div className='flex items-center space-x-2'>
+          <Checkbox
+            id='isFeatured'
+            checked={form.isFeatured}
+            onCheckedChange={(checked) => setForm(prev => ({ ...prev, isFeatured: checked === true }))}
+          />
+          <Label htmlFor='isFeatured' className='cursor-pointer'>
+            Mark as featured deck
+          </Label>
+        </div>
+
+        {/* Link Targets Section */}
+        <div className='space-y-4 rounded-lg border p-4 bg-muted/50'>
+          <div className='flex items-center gap-2'>
+            <Link2 className='h-4 w-4' />
+            <div>
+              <Label className='text-base font-semibold'>Link to Content (Optional)</Label>
+              <p className='text-xs text-muted-foreground mt-1'>
+                Associate this deck with a course, module, or lesson
+              </p>
+            </div>
+          </div>
+          
+          <div className='space-y-2'>
+            <Label>Link Scope</Label>
+            <Select
+              value={form.linkScope}
+              onValueChange={v => setForm(prev => ({ 
+                ...prev, 
+                linkScope: v as typeof form.linkScope,
+                linkCourseId: '',
+                linkModuleId: '',
+                linkLessonId: '',
+              }))}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value='standalone'>Standalone (No Link)</SelectItem>
+                <SelectItem value='course'>Link to Course</SelectItem>
+                <SelectItem value='module'>Link to Module</SelectItem>
+                <SelectItem value='lesson'>Link to Lesson</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {form.linkScope !== 'standalone' && (
+            <div className='space-y-4 pl-4 border-l-2 border-primary/20'>
+              <div className='space-y-2'>
+                <Label htmlFor='linkCourseId'>Course ID</Label>
+                <Input
+                  id='linkCourseId'
+                  value={form.linkCourseId}
+                  onChange={e => set('linkCourseId', e.target.value)}
+                  placeholder='Enter course ObjectId'
+                />
+              </div>
+
+              {(form.linkScope === 'module' || form.linkScope === 'lesson') && (
+                <div className='space-y-2'>
+                  <Label htmlFor='linkModuleId'>Module ID</Label>
+                  <Input
+                    id='linkModuleId'
+                    value={form.linkModuleId}
+                    onChange={e => set('linkModuleId', e.target.value)}
+                    placeholder='Enter module ObjectId'
+                  />
+                </div>
+              )}
+
+              {form.linkScope === 'lesson' && (
+                <div className='space-y-2'>
+                  <Label htmlFor='linkLessonId'>Lesson ID</Label>
+                  <Input
+                    id='linkLessonId'
+                    value={form.linkLessonId}
+                    onChange={e => set('linkLessonId', e.target.value)}
+                    placeholder='Enter lesson ObjectId'
+                  />
+                </div>
+              )}
+
+              <p className='text-xs text-muted-foreground'>
+                💡 Tip: Use the lesson flashcard API route instead for easier lesson linking
+              </p>
+            </div>
+          )}
+        </div>
+
         <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
           <div className='space-y-2'>
             <Label htmlFor='tags'>Tags</Label>
