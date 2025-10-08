@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@clerk/nextjs';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -20,6 +21,7 @@ import { Folder, Link2 } from 'lucide-react';
 export default function DeckCreateContent() {
   const router = useRouter();
   const { toast } = useToast();
+  const { isLoaded, isSignedIn } = useAuth();
   const [creating, setCreating] = useState(false);
   const [loadingDecks, setLoadingDecks] = useState(false);
   const [loadingCourses, setLoadingCourses] = useState(false);
@@ -60,11 +62,21 @@ export default function DeckCreateContent() {
 
   // Load available decks for parent selection
   useEffect(() => {
+    // Don't fetch if auth is not loaded or user is not signed in
+    if (!isLoaded || !isSignedIn) return;
+    
     const loadDecks = async () => {
       try {
         setLoadingDecks(true);
         const res = await fetch('/api/admin/flashcards?tree=true');
-        if (!res.ok) return;
+        if (!res.ok) {
+          // Silently fail - likely auth issue on page load
+          if (res.status === 401 || res.status === 400) {
+            return;
+          }
+          console.error('Failed to load decks:', res.status);
+          return;
+        }
         const data = await res.json();
 
         // Flatten tree for dropdown (exclude decks at max depth)
@@ -97,10 +109,12 @@ export default function DeckCreateContent() {
       }
     };
     loadDecks();
-  }, []);
+  }, [isLoaded, isSignedIn]);
 
   // Load courses when link scope requires it
   useEffect(() => {
+    // Don't fetch if auth is not loaded or user is not signed in
+    if (!isLoaded || !isSignedIn) return;
     if (form.linkScope === 'standalone') return;
     
     const loadCourses = async () => {
@@ -123,10 +137,12 @@ export default function DeckCreateContent() {
       }
     };
     loadCourses();
-  }, [form.linkScope]);
+  }, [form.linkScope, isLoaded, isSignedIn]);
 
   // Load modules when course is selected
   useEffect(() => {
+    // Don't fetch if auth is not loaded or user is not signed in
+    if (!isLoaded || !isSignedIn) return;
     if (!form.linkCourseId || (form.linkScope !== 'module' && form.linkScope !== 'lesson')) {
       setAvailableModules([]);
       return;
@@ -152,10 +168,12 @@ export default function DeckCreateContent() {
       }
     };
     loadModules();
-  }, [form.linkCourseId, form.linkScope]);
+  }, [form.linkCourseId, form.linkScope, isLoaded, isSignedIn]);
 
   // Load lessons when module is selected
   useEffect(() => {
+    // Don't fetch if auth is not loaded or user is not signed in
+    if (!isLoaded || !isSignedIn) return;
     if (!form.linkModuleId || form.linkScope !== 'lesson') {
       setAvailableLessons([]);
       return;
@@ -183,7 +201,7 @@ export default function DeckCreateContent() {
       }
     };
     loadLessons();
-  }, [form.linkModuleId, form.linkCourseId, form.linkScope]);
+  }, [form.linkModuleId, form.linkCourseId, form.linkScope, isLoaded, isSignedIn]);
 
   const create = async () => {
     if (!form.title.trim()) {
@@ -217,7 +235,7 @@ export default function DeckCreateContent() {
               .filter(Boolean)
           : [],
         parentDeckId:
-          form.parentDeckId === '__none__' ? null : form.parentDeckId,
+          form.parentDeckId === '__none__' ? undefined : form.parentDeckId,
       };
       
       if (form.estimatedReviewMinutes.trim()) {
@@ -251,8 +269,24 @@ export default function DeckCreateContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
+      
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
+        console.error('Deck creation failed:');
+        console.error('Status:', res.status);
+        console.error('Error response:', j);
+        console.error('Payload sent:', payload);
+        
+        // If there are validation details, log them clearly
+        if (j.details && Array.isArray(j.details)) {
+          console.error('Validation errors:');
+          j.details.forEach((detail: any) => {
+            console.error(`  - Field: ${detail.path?.join('.') || 'unknown'}`);
+            console.error(`    Code: ${detail.code}`);
+            console.error(`    Message: ${detail.message}`);
+          });
+        }
+        
         throw new Error(j.error || 'Failed to create deck');
       }
       const created: { id: string } = await res.json();

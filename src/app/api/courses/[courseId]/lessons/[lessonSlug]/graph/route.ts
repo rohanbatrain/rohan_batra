@@ -75,11 +75,13 @@ export async function GET(
       return NextResponse.json({ error: 'Course not found' }, { status: 404 });
     }
 
-    // 5. Lesson lookup by slug
-    const lesson = await CourseLessonModel.findOne({
-      courseId: course._id,
-      slug: lessonSlug,
-    })
+    // 5. Lesson lookup by slug OR ObjectId
+    // Check if lessonSlug is actually an ObjectId
+    const lessonQuery = Types.ObjectId.isValid(lessonSlug)
+      ? { _id: new Types.ObjectId(lessonSlug), courseId: course._id }
+      : { slug: lessonSlug, courseId: course._id };
+    
+    const lesson = await CourseLessonModel.findOne(lessonQuery)
       .select('_id')
       .lean();
 

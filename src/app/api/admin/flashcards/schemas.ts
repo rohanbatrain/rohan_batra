@@ -60,7 +60,7 @@ export const FlashcardDeckInputSchema = z.object({
   title: z.string().min(3).max(200),
   subtitle: z.string().max(200).optional().or(z.literal('')),
   description: z.string().optional().or(z.literal('')),
-  coverImage: z.string().url().optional().or(z.literal('')),
+  coverImage: z.union([z.string().url(), z.literal('')]).optional(),
   tags: z.array(z.string()).optional().default([]),
   categories: z.array(z.string()).optional().default([]),
   status: z.enum(['draft', 'published', 'archived']).default('draft'),

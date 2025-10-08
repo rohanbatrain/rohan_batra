@@ -76,7 +76,7 @@ export async function exportDecksV2(
   deckIds?: string[]
 ): Promise<ExportV2Format> {
   // Get decks
-  const query: any = { ownerId };
+  const query: any = { createdBy: ownerId };
   if (deckIds && deckIds.length > 0) {
     query._id = { $in: deckIds.map(id => new Types.ObjectId(id)) };
   }
@@ -208,7 +208,7 @@ export async function importDecksV2(
     try {
       // Check if deck exists
       let deck = await FlashcardDeckModel.findOne({
-        ownerId,
+        createdBy: ownerId,
         slug: deckData.slug,
       });
 
@@ -236,7 +236,7 @@ export async function importDecksV2(
           categories: deckData.categories || [],
           status: deckData.status,
           visibility: deckData.visibility,
-          ownerId,
+          createdBy: ownerId,
           parentDeckId,
           cardCount: 0,
         });

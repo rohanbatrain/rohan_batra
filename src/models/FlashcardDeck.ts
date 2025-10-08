@@ -94,12 +94,11 @@ const FlashcardDeckSchema = new Schema<IFlashcardDeck>(
       type: Schema.Types.ObjectId,
       ref: 'FlashcardDeck',
       default: null,
-      index: true,
     },
     path: {
       type: String,
-      required: true,
-      index: true,
+      required: false, // Will be set by pre-validate hook
+      default: '',
     },
     level: {
       type: Number,
@@ -185,9 +184,15 @@ FlashcardDeckSchema.index({ createdBy: 1 });
 FlashcardDeckSchema.index({ parentDeckId: 1 });
 FlashcardDeckSchema.index({ path: 1 });
 
-// Auto-compute path and level before saving
-FlashcardDeckSchema.pre<IFlashcardDeck>('save', async function (next) {
+// Auto-compute path and level before validation (so required fields are set)
+FlashcardDeckSchema.pre<IFlashcardDeck>('validate', async function (next) {
+  // Compute path and level if new or parentDeckId changed
   if (this.isModified('parentDeckId') || this.isNew) {
+    // Ensure slug is set before computing path
+    if (!this.slug) {
+      return next(new Error('Slug must be set before validation'));
+    }
+    
     if (this.parentDeckId) {
       const parent = await (this.constructor as any).findById(
         this.parentDeckId
@@ -207,7 +212,8 @@ FlashcardDeckSchema.pre<IFlashcardDeck>('save', async function (next) {
   next();
 });
 
-FlashcardDeckSchema.pre<IFlashcardDeck>('validate', function (next) {
+// Validate linkTargets after path/level computation
+FlashcardDeckSchema.pre<IFlashcardDeck>('save', function (next) {
   for (const target of this.linkTargets) {
     if (target.scope === 'course' && !target.courseId) {
       return next(new Error('Course scope requires courseId'));

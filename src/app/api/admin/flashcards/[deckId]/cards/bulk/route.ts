@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
 import { Types } from 'mongoose';
 import connectToDatabase from '@/lib/mongodb';
 import FlashcardDeckModel from '@/models/FlashcardDeck';
@@ -7,6 +8,25 @@ import FlashcardCardModel from '@/models/FlashcardCard';
 import BulkOperationRecordModel from '@/models/BulkOperationRecord';
 import UserModel from '@/models/User';
 import { parseBulkImportFile } from '@/lib/flashcards/bulk-import';
+import { createAuditLog } from '@/lib/audit-log';
+
+const BulkDeleteSchema = z.object({
+  ids: z
+    .array(z.string())
+    .min(1, 'At least one card ID required')
+    .max(100, 'Maximum 100 cards can be deleted at once'),
+});
+
+const BulkUpdateSchema = z.object({
+  ids: z
+    .array(z.string())
+    .min(1, 'At least one card ID required')
+    .max(100, 'Maximum 100 cards can be updated at once'),
+  updates: z.object({
+    tags: z.array(z.string()).optional(),
+    type: z.enum(['basic', 'cloze', 'qa', 'image']).optional(),
+  }),
+});
 
 /**
  * POST /api/admin/flashcards/[deckId]/cards/bulk
@@ -176,3 +196,202 @@ export async function POST(
     );
   }
 }
+
+/**
+ * DELETE /api/admin/flashcards/[deckId]/cards/bulk
+ * Bulk delete flashcard cards
+ */
+export async function DELETE(
+  request: NextRequest,
+  props: { params: Promise<{ deckId: string }> }
+) {
+  const params = await props.params;
+  await connectToDatabase();
+
+  try {
+    // Auth check
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Permission check
+    const user = await UserModel.findOne({ clerkId: userId }).select('role');
+    if (!user || !['editor', 'admin'].includes(user.role)) {
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+    }
+
+    // Validate request
+    const body = await request.json();
+    const validation = BulkDeleteSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const { ids } = validation.data;
+
+    // Find deck by ID or slug
+    const deck = await FlashcardDeckModel.findOne({
+      $or: [
+        Types.ObjectId.isValid(params.deckId) ? { _id: params.deckId } : { slug: params.deckId },
+        { slug: params.deckId }
+      ],
+    });
+
+    if (!deck) {
+      return NextResponse.json({ error: 'Deck not found' }, { status: 404 });
+    }
+
+    // Verify all cards exist and belong to this deck
+    const cards = await FlashcardCardModel.find({
+      _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
+      deckId: deck._id,
+    });
+
+    if (cards.length !== ids.length) {
+      return NextResponse.json(
+        { error: 'Some cards not found or do not belong to this deck' },
+        { status: 400 }
+      );
+    }
+
+    // Create audit log before deletion
+    await createAuditLog(
+      {
+        userId,
+        action: 'delete',
+        resource: 'FlashcardCard',
+        resourceId: 'bulk',
+        changes: {
+          before: { count: ids.length, ids, deckId: deck._id.toString(), deckTitle: deck.title },
+          after: { deleted: true },
+        },
+      },
+      request
+    );
+
+    // Delete cards
+    const deleteResult = await FlashcardCardModel.deleteMany({
+      _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
+    });
+
+    // Update deck card count
+    const remainingCount = await FlashcardCardModel.countDocuments({ deckId: deck._id });
+    deck.cardCount = remainingCount;
+    await deck.save();
+
+    return NextResponse.json({
+      success: true,
+      deleted: deleteResult.deletedCount,
+      remainingCards: remainingCount,
+    });
+  } catch (error) {
+    console.error('Error in bulk delete cards:', error);
+    return NextResponse.json({ error: 'Failed to delete cards' }, { status: 500 });
+  }
+}
+
+/**
+ * PATCH /api/admin/flashcards/[deckId]/cards/bulk
+ * Bulk update flashcard cards
+ */
+export async function PATCH(
+  request: NextRequest,
+  props: { params: Promise<{ deckId: string }> }
+) {
+  const params = await props.params;
+  await connectToDatabase();
+
+  try {
+    // Auth check
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Permission check
+    const user = await UserModel.findOne({ clerkId: userId }).select('role');
+    if (!user || !['editor', 'admin'].includes(user.role)) {
+      return NextResponse.json({ error: 'Forbidden: Insufficient permissions' }, { status: 403 });
+    }
+
+    // Validate request
+    const body = await request.json();
+    const validation = BulkUpdateSchema.safeParse(body);
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: validation.error.errors },
+        { status: 400 }
+      );
+    }
+
+    const { ids, updates } = validation.data;
+
+    // Find deck by ID or slug
+    const deck = await FlashcardDeckModel.findOne({
+      $or: [
+        Types.ObjectId.isValid(params.deckId) ? { _id: params.deckId } : { slug: params.deckId },
+        { slug: params.deckId }
+      ],
+    });
+
+    if (!deck) {
+      return NextResponse.json({ error: 'Deck not found' }, { status: 404 });
+    }
+
+    // Verify all cards exist and belong to this deck
+    const cards = await FlashcardCardModel.find({
+      _id: { $in: ids.map((id) => new Types.ObjectId(id)) },
+      deckId: deck._id,
+    });
+
+    if (cards.length !== ids.length) {
+      return NextResponse.json(
+        { error: 'Some cards not found or do not belong to this deck' },
+        { status: 400 }
+      );
+    }
+
+    // Build update object
+    const updateObj: any = {};
+    if (updates.tags !== undefined) {
+      updateObj.tags = updates.tags;
+    }
+    if (updates.type) {
+      updateObj.type = updates.type;
+    }
+
+    // Create audit log before update
+    await createAuditLog(
+      {
+        userId,
+        action: 'update',
+        resource: 'FlashcardCard',
+        resourceId: 'bulk',
+        changes: {
+          before: { count: ids.length, ids, deckId: deck._id.toString(), deckTitle: deck.title },
+          after: { updates: updateObj },
+        },
+      },
+      request
+    );
+
+    // Update cards
+    const updateResult = await FlashcardCardModel.updateMany(
+      { _id: { $in: ids.map((id) => new Types.ObjectId(id)) } },
+      { $set: updateObj }
+    );
+
+    return NextResponse.json({
+      success: true,
+      updated: updateResult.modifiedCount,
+    });
+  } catch (error) {
+    console.error('Error in bulk update cards:', error);
+    return NextResponse.json({ error: 'Failed to update cards' }, { status: 500 });
+  }
+}
+

@@ -718,9 +718,16 @@ export default function DeckManagerContent({ deckId }: { deckId: string }) {
           <section className='space-y-4'>
             <div className='flex items-center justify-between'>
               <h3 className='text-lg font-semibold'>Flashcards</h3>
-              <Button size='sm' onClick={openCreateCard}>
-                Add card
-              </Button>
+              <div className='flex gap-2'>
+                <Link href={`/admin/flashcards/${deckId}/cards`}>
+                  <Button size='sm' variant='outline'>
+                    View All Cards
+                  </Button>
+                </Link>
+                <Button size='sm' onClick={openCreateCard}>
+                  Add card
+                </Button>
+              </div>
             </div>
             {data.cards && data.cards.length > 0 ? (
               <Table>

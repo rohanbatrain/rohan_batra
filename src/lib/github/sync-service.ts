@@ -153,7 +153,7 @@ export class GitHubSyncService {
       const { owner, repo } = this.parseRepoUrl(repoUrl);
 
       // Get all decks for owner
-      const decks = await FlashcardDeckModel.find({ ownerId }).lean();
+      const decks = await FlashcardDeckModel.find({ createdBy: ownerId }).lean();
 
       // Push each deck
       for (const deck of decks) {
@@ -294,7 +294,7 @@ export class GitHubSyncService {
     const title = frontmatter.title || slug;
 
     // Find or create deck
-    let deck = await FlashcardDeckModel.findOne({ ownerId, slug });
+    let deck = await FlashcardDeckModel.findOne({ createdBy: ownerId, slug });
     const isNew = !deck;
 
     if (!deck) {
@@ -302,7 +302,7 @@ export class GitHubSyncService {
         slug,
         title,
         description: frontmatter.description,
-        ownerId,
+        createdBy: ownerId,
         tags: frontmatter.tags || [],
         categories: frontmatter.categories || [],
         status: frontmatter.status || 'draft',

@@ -19,6 +19,13 @@ import { buildDeckTree } from '@/lib/decks/tree';
  * Get all flashcard decks for the authenticated user
  * Query params:
  *   - tree=true: Return decks as hierarchical tree
+ *   - status: Filter by status (draft, published, archived)
+ *   - visibility: Filter by visibility (public, unlisted, private)
+ *   - search: Search in title, subtitle, description
+ *   - tags: Filter by tags (comma-separated)
+ *   - categories: Filter by categories (comma-separated)
+ *   - page: Page number (default: 1)
+ *   - limit: Items per page (default: 24)
  */
 export async function GET(request: NextRequest) {
   try {
@@ -38,21 +45,99 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    // Get all decks for user
-    const decks = await FlashcardDeckModel.find({ ownerId: user._id })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    // Check if tree mode requested
+    // Parse query parameters
     const { searchParams } = new URL(request.url);
     const treeMode = searchParams.get('tree') === 'true';
+    const status = searchParams.get('status');
+    const visibility = searchParams.get('visibility');
+    const search = searchParams.get('search');
+    const tags = searchParams.get('tags');
+    const categories = searchParams.get('categories');
+    const page = parseInt(searchParams.get('page') || '1');
+    const limit = parseInt(searchParams.get('limit') || '24');
 
-    if (treeMode) {
-      const tree = buildDeckTree(decks);
-      return NextResponse.json({ decks: tree, treeMode: true });
+    // Build query
+    const query: any = { createdBy: user._id };
+
+    // Filter by status
+    if (status && status !== 'all') {
+      query.status = status;
     }
 
-    return NextResponse.json({ decks });
+    // Filter by visibility
+    if (visibility && visibility !== 'all') {
+      query.visibility = visibility;
+    }
+
+    // Search in title, subtitle, description
+    if (search && search.trim()) {
+      query.$or = [
+        { title: { $regex: search.trim(), $options: 'i' } },
+        { subtitle: { $regex: search.trim(), $options: 'i' } },
+        { description: { $regex: search.trim(), $options: 'i' } },
+        { slug: { $regex: search.trim(), $options: 'i' } },
+      ];
+    }
+
+    // Filter by tags
+    if (tags && tags.trim()) {
+      const tagArray = tags.split(',').map(t => t.trim()).filter(Boolean);
+      if (tagArray.length > 0) {
+        query.tags = { $in: tagArray };
+      }
+    }
+
+    // Filter by categories
+    if (categories && categories.trim()) {
+      const categoryArray = categories.split(',').map(c => c.trim()).filter(Boolean);
+      if (categoryArray.length > 0) {
+        query.categories = { $in: categoryArray };
+      }
+    }
+
+    // Get total count for pagination
+    const total = await FlashcardDeckModel.countDocuments(query);
+
+    // Get decks with pagination
+    const skip = (page - 1) * limit;
+    const decks = await FlashcardDeckModel.find(query)
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
+
+    // Sanitize decks to ensure proper id field
+    const sanitizedDecks = decks.map(deck => sanitizeDeck(deck));
+
+    // Get stats for each status
+    const stats: Record<string, number> = {};
+    const statusCounts = await FlashcardDeckModel.aggregate([
+      { $match: { createdBy: user._id } },
+      { $group: { _id: '$status', count: { $sum: 1 } } },
+    ]);
+    statusCounts.forEach(({ _id, count }) => {
+      stats[_id] = count;
+    });
+
+    if (treeMode) {
+      const tree = buildDeckTree(sanitizedDecks);
+      return NextResponse.json({ 
+        decks: tree, 
+        treeMode: true,
+        stats,
+        total,
+        page,
+        pageSize: limit,
+      });
+    }
+
+    return NextResponse.json({ 
+      decks: sanitizedDecks,
+      stats,
+      total,
+      page,
+      pageSize: limit,
+    });
   } catch (error: unknown) {
     console.error('Error fetching flashcard decks:', error);
     return NextResponse.json(
@@ -87,7 +172,20 @@ export async function POST(request: NextRequest) {
     const ExtendedSchema = FlashcardDeckInputSchema.extend({
       parentDeckId: z.string().optional(),
     });
-    const parsed = ExtendedSchema.parse(body);
+    
+    const parseResult = ExtendedSchema.safeParse(body);
+    if (!parseResult.success) {
+      console.error('Validation error:', {
+        issues: parseResult.error.issues,
+        body,
+      });
+      return NextResponse.json(
+        { error: 'Validation error', details: parseResult.error.issues },
+        { status: 400 }
+      );
+    }
+    
+    const parsed = parseResult.data;
 
     // Validate parent deck if provided
     let parentDeck = null;
@@ -138,13 +236,20 @@ export async function POST(request: NextRequest) {
         }))
       : undefined;
 
-    const coverImageRaw = parsed.coverImage
-      ? await resolveAssetShortcodes(parsed.coverImage)
-      : undefined;
-    const coverImage =
-      coverImageRaw && coverImageRaw.trim().length > 0
-        ? coverImageRaw.trim()
-        : undefined;
+    // Handle coverImage - only process if it's a non-empty string
+    let coverImage: string | undefined = undefined;
+    if (parsed.coverImage && parsed.coverImage.trim().length > 0) {
+      try {
+        const coverImageRaw = await resolveAssetShortcodes(parsed.coverImage);
+        coverImage = coverImageRaw && coverImageRaw.trim().length > 0
+          ? coverImageRaw.trim()
+          : undefined;
+      } catch (err) {
+        console.error('Error resolving coverImage shortcodes:', err);
+        // Continue without coverImage rather than failing
+        coverImage = undefined;
+      }
+    }
 
     const tags = parsed.tags || [];
     const categories = parsed.categories || [];
@@ -189,8 +294,9 @@ export async function POST(request: NextRequest) {
     }
 
     console.error('Error creating flashcard deck:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: 'Internal server error', message: errorMessage },
       { status: 500 }
     );
   }

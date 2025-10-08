@@ -130,6 +130,8 @@ export default function FlashcardsManagement() {
   >('all');
   const [searchInput, setSearchInput] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [form, setForm] = useState<CreateDeckForm>(defaultForm);
   const { toast } = useToast();
   const { confirm, ConfirmDialog } = useConfirm();
@@ -150,11 +152,17 @@ export default function FlashcardsManagement() {
     if (activeSearch) {
       params.set('search', activeSearch);
     }
+    if (selectedTags.length > 0) {
+      params.set('tags', selectedTags.join(','));
+    }
+    if (selectedCategories.length > 0) {
+      params.set('categories', selectedCategories.join(','));
+    }
     params.set('page', String(page));
     params.set('limit', String(pageSize));
     const qs = params.toString();
     return `/api/admin/flashcards${qs ? `?${qs}` : ''}`;
-  }, [status, visibility, activeSearch, page]);
+  }, [status, visibility, activeSearch, selectedTags, selectedCategories, page]);
 
   const { data, error, isLoading, mutate } = useSWR<FlashcardsResponse>(
     query,
@@ -163,6 +171,25 @@ export default function FlashcardsManagement() {
       revalidateOnFocus: false,
     }
   );
+
+  // Get all unique tags and categories from current data
+  const allTags = useMemo(() => {
+    if (!data?.decks) return [];
+    const tagSet = new Set<string>();
+    data.decks.forEach(deck => {
+      deck.tags.forEach(tag => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [data?.decks]);
+
+  const allCategories = useMemo(() => {
+    if (!data?.decks) return [];
+    const categorySet = new Set<string>();
+    data.decks.forEach(deck => {
+      deck.categories.forEach(category => categorySet.add(category));
+    });
+    return Array.from(categorySet).sort();
+  }, [data?.decks]);
 
   const handleStatusChange = (value: string) => setStatus(value);
   const handleVisibilityChange = (
@@ -179,6 +206,8 @@ export default function FlashcardsManagement() {
     setVisibility('all');
     setSearchInput('');
     setActiveSearch('');
+    setSelectedTags([]);
+    setSelectedCategories([]);
     setPage(1);
     mutate();
   };
@@ -330,8 +359,71 @@ export default function FlashcardsManagement() {
         description: err instanceof Error ? err.message : 'Unknown error',
         variant: 'destructive',
       });
+    } finally {
+      setIsBulkProcessing(false);
     }
-    setIsBulkProcessing(false);
+  };
+
+  const bulkUpdateStatus = async (status: 'draft' | 'published' | 'archived') => {
+    if (selectedIds.length === 0) return;
+    try {
+      setIsBulkProcessing(true);
+      const res = await fetch('/api/admin/flashcards/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, updates: { status } }),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || 'Bulk update failed');
+      }
+      const { updated } = await res.json();
+      toast({ 
+        title: 'Updated', 
+        description: `${updated} deck(s) marked as ${status}` 
+      });
+      setSelectedIds([]);
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Bulk update failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkProcessing(false);
+    }
+  };
+
+  const bulkUpdateVisibility = async (visibility: 'public' | 'unlisted' | 'private') => {
+    if (selectedIds.length === 0) return;
+    try {
+      setIsBulkProcessing(true);
+      const res = await fetch('/api/admin/flashcards/bulk', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ids: selectedIds, updates: { visibility } }),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.error || 'Bulk update failed');
+      }
+      const { updated } = await res.json();
+      toast({ 
+        title: 'Updated', 
+        description: `${updated} deck(s) visibility changed to ${visibility}` 
+      });
+      setSelectedIds([]);
+      mutate();
+    } catch (err) {
+      toast({
+        title: 'Bulk update failed',
+        description: err instanceof Error ? err.message : 'Unknown error',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsBulkProcessing(false);
+    }
   };
 
   return (
@@ -381,47 +473,139 @@ export default function FlashcardsManagement() {
         </TabsList>
 
         <TabsContent value={status} className='mt-4'>
-          <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6'>
-            <form
-              onSubmit={handleSearchSubmit}
-              className='flex w-full md:w-auto gap-2'
-            >
-              <Input
-                value={searchInput}
-                onChange={event => setSearchInput(event.target.value)}
-                placeholder='Search decks by title or slug'
-                className='min-w-[220px]'
-              />
-              <Button type='submit'>Search</Button>
-            </form>
-            <div className='flex items-center gap-3'>
-              <div className='flex items-center gap-2 text-sm'>
-                <span className='text-gray-600 dark:text-gray-300'>
-                  Visibility
-                </span>
-                <Select
-                  value={visibility}
-                  onValueChange={v => handleVisibilityChange(v as any)}
-                >
-                  <SelectTrigger className='w-[140px]'>
-                    <SelectValue placeholder='Visibility' />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value='all'>All</SelectItem>
-                    <SelectItem value='public'>Public</SelectItem>
-                    <SelectItem value='unlisted'>Unlisted</SelectItem>
-                    <SelectItem value='private'>Private</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className='text-sm text-gray-500 dark:text-gray-400'>
-                Showing page {data?.page ?? page} of{' '}
-                {data?.pageSize && data?.total
-                  ? Math.max(1, Math.ceil(data.total / data.pageSize))
-                  : 1}{' '}
-                &middot; {data?.total ?? 0} total
+          <div className='flex flex-col gap-4 mb-6'>
+            {/* Search and Primary Filters */}
+            <div className='flex flex-col md:flex-row md:items-center md:justify-between gap-4'>
+              <form
+                onSubmit={handleSearchSubmit}
+                className='flex w-full md:w-auto gap-2'
+              >
+                <Input
+                  value={searchInput}
+                  onChange={event => setSearchInput(event.target.value)}
+                  placeholder='Search decks by title or slug'
+                  className='min-w-[220px]'
+                />
+                <Button type='submit'>Search</Button>
+              </form>
+              <div className='flex items-center gap-3'>
+                <div className='flex items-center gap-2 text-sm'>
+                  <span className='text-gray-600 dark:text-gray-300'>
+                    Visibility
+                  </span>
+                  <Select
+                    value={visibility}
+                    onValueChange={v => handleVisibilityChange(v as any)}
+                  >
+                    <SelectTrigger className='w-[140px]'>
+                      <SelectValue placeholder='Visibility' />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value='all'>All</SelectItem>
+                      <SelectItem value='public'>Public</SelectItem>
+                      <SelectItem value='unlisted'>Unlisted</SelectItem>
+                      <SelectItem value='private'>Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className='text-sm text-gray-500 dark:text-gray-400'>
+                  Showing page {data?.page ?? page} of{' '}
+                  {data?.pageSize && data?.total
+                    ? Math.max(1, Math.ceil(data.total / data.pageSize))
+                    : 1}{' '}
+                  &middot; {data?.total ?? 0} total
+                </div>
               </div>
             </div>
+
+            {/* Tag and Category Filters */}
+            <div className='flex flex-col sm:flex-row gap-3'>
+              {allTags.length > 0 && (
+                <div className='flex items-center gap-2 text-sm flex-1'>
+                  <span className='text-gray-600 dark:text-gray-300 whitespace-nowrap'>
+                    Tags
+                  </span>
+                  <div className='flex flex-wrap gap-2'>
+                    {allTags.map(tag => (
+                      <Badge
+                        key={tag}
+                        variant={selectedTags.includes(tag) ? 'default' : 'outline'}
+                        className='cursor-pointer hover:opacity-80 transition-opacity'
+                        onClick={() => {
+                          setSelectedTags(prev =>
+                            prev.includes(tag)
+                              ? prev.filter(t => t !== tag)
+                              : [...prev, tag]
+                          );
+                          setPage(1);
+                        }}
+                      >
+                        <Tag className='mr-1 h-3 w-3' />
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {allCategories.length > 0 && (
+                <div className='flex items-center gap-2 text-sm flex-1'>
+                  <span className='text-gray-600 dark:text-gray-300 whitespace-nowrap'>
+                    Categories
+                  </span>
+                  <div className='flex flex-wrap gap-2'>
+                    {allCategories.map(category => (
+                      <Badge
+                        key={category}
+                        variant={selectedCategories.includes(category) ? 'default' : 'outline'}
+                        className='cursor-pointer hover:opacity-80 transition-opacity'
+                        onClick={() => {
+                          setSelectedCategories(prev =>
+                            prev.includes(category)
+                              ? prev.filter(c => c !== category)
+                              : [...prev, category]
+                          );
+                          setPage(1);
+                        }}
+                      >
+                        {category}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Active Filters Display */}
+            {(selectedTags.length > 0 || selectedCategories.length > 0 || activeSearch) && (
+              <div className='flex items-center gap-2 text-sm bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-md p-3'>
+                <span className='text-blue-700 dark:text-blue-300 font-medium'>
+                  Active filters:
+                </span>
+                {activeSearch && (
+                  <Badge variant='secondary'>
+                    Search: {activeSearch}
+                  </Badge>
+                )}
+                {selectedTags.map(tag => (
+                  <Badge key={tag} variant='secondary'>
+                    Tag: {tag}
+                  </Badge>
+                ))}
+                {selectedCategories.map(category => (
+                  <Badge key={category} variant='secondary'>
+                    Category: {category}
+                  </Badge>
+                ))}
+                <Button
+                  size='sm'
+                  variant='ghost'
+                  onClick={handleClearFilters}
+                  className='ml-auto text-blue-700 dark:text-blue-300'
+                >
+                  Clear all filters
+                </Button>
+              </div>
+            )}
           </div>
 
           {isLoading ? (
@@ -464,27 +648,70 @@ export default function FlashcardsManagement() {
           ) : (
             <>
               {selectedIds.length > 0 ? (
-                <div className='p-4 mb-4 border rounded-md flex items-center justify-between bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
-                  <div className='text-sm text-gray-700 dark:text-gray-300'>
-                    {selectedIds.length} selected
-                  </div>
-                  <div className='flex items-center gap-2'>
-                    <Button
-                      variant='outline'
-                      size='sm'
-                      onClick={selectVisible}
-                      disabled={isBulkProcessing}
-                    >
-                      Select visible
-                    </Button>
-                    <Button
-                      variant='destructive'
-                      size='sm'
-                      onClick={bulkDeleteSelected}
-                      disabled={isBulkProcessing}
-                    >
-                      {isBulkProcessing ? 'Deleting…' : 'Delete selected'}
-                    </Button>
+                <div className='p-4 mb-4 border rounded-md bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700'>
+                  <div className='flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
+                    <div className='text-sm font-medium text-gray-700 dark:text-gray-300'>
+                      {selectedIds.length} deck{selectedIds.length === 1 ? '' : 's'} selected
+                    </div>
+                    <div className='flex flex-wrap items-center gap-2'>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        onClick={selectVisible}
+                        disabled={isBulkProcessing}
+                      >
+                        Select visible
+                      </Button>
+                      <Button
+                        variant='outline'
+                        size='sm'
+                        onClick={() => setSelectedIds([])}
+                        disabled={isBulkProcessing}
+                      >
+                        Deselect all
+                      </Button>
+                      
+                      <div className='w-px h-6 bg-gray-300 dark:bg-gray-600' />
+                      
+                      <Select
+                        onValueChange={(value) => bulkUpdateStatus(value as any)}
+                        disabled={isBulkProcessing}
+                      >
+                        <SelectTrigger className='w-[140px] h-9'>
+                          <SelectValue placeholder='Set status' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='draft'>Mark as Draft</SelectItem>
+                          <SelectItem value='published'>Publish</SelectItem>
+                          <SelectItem value='archived'>Archive</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <Select
+                        onValueChange={(value) => bulkUpdateVisibility(value as any)}
+                        disabled={isBulkProcessing}
+                      >
+                        <SelectTrigger className='w-[140px] h-9'>
+                          <SelectValue placeholder='Set visibility' />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value='public'>Make Public</SelectItem>
+                          <SelectItem value='unlisted'>Make Unlisted</SelectItem>
+                          <SelectItem value='private'>Make Private</SelectItem>
+                        </SelectContent>
+                      </Select>
+
+                      <div className='w-px h-6 bg-gray-300 dark:bg-gray-600' />
+                      
+                      <Button
+                        variant='destructive'
+                        size='sm'
+                        onClick={bulkDeleteSelected}
+                        disabled={isBulkProcessing}
+                      >
+                        {isBulkProcessing ? 'Processing…' : 'Delete'}
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ) : null}

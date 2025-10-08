@@ -41,11 +41,18 @@ export function GraphCanvas({
   const zoomBehaviorRef = useRef<ZoomBehavior<SVGSVGElement, unknown> | null>(
     null
   );
+  const lastGraphRef = useRef<KnowledgeGraph | null>(null);
 
   // Simulate layout when graph changes
   useEffect(() => {
     if (!graph || graph.nodes.length === 0) {
       setLayoutGraph(null);
+      lastGraphRef.current = null;
+      return;
+    }
+
+    // Only update if graph actually changed (deep comparison by reference)
+    if (lastGraphRef.current === graph) {
       return;
     }
 
@@ -54,6 +61,8 @@ export function GraphCanvas({
       graph.nodes.length,
       'nodes'
     );
+    
+    lastGraphRef.current = graph;
     const simulated = simulateGraphLayout(graph, {
       width: 1200,
       height: 600,
@@ -86,7 +95,7 @@ export function GraphCanvas({
 
   // Setup D3 drag behavior for nodes
   const setupDragBehavior = useCallback(() => {
-    if (!svgRef.current || !layoutGraph) return;
+    if (!svgRef.current || !layoutGraph || layoutGraph.nodes.length === 0) return;
 
     const svg = select(svgRef.current);
     const nodes = [...layoutGraph.nodes];
@@ -96,6 +105,9 @@ export function GraphCanvas({
         select(this).raise().attr('stroke', '#fff').attr('stroke-width', 3);
       })
       .on('drag', function (event, d) {
+        // Validate positions
+        if (!event.x || !event.y || isNaN(event.x) || isNaN(event.y)) return;
+        
         d.x = event.x;
         d.y = event.y;
 
@@ -116,19 +128,23 @@ export function GraphCanvas({
           )
           .attr('x1', (edge: GraphEdge) => {
             const sourceNode = nodes.find(n => n.id === edge.source);
-            return edge.source === d.id ? d.x! : sourceNode?.x || 0;
+            const x = edge.source === d.id ? d.x! : sourceNode?.x || 0;
+            return isNaN(x) ? 0 : x;
           })
           .attr('y1', (edge: GraphEdge) => {
             const sourceNode = nodes.find(n => n.id === edge.source);
-            return edge.source === d.id ? d.y! : sourceNode?.y || 0;
+            const y = edge.source === d.id ? d.y! : sourceNode?.y || 0;
+            return isNaN(y) ? 0 : y;
           })
           .attr('x2', (edge: GraphEdge) => {
             const targetNode = nodes.find(n => n.id === edge.target);
-            return edge.target === d.id ? d.x! : targetNode?.x || 0;
+            const x = edge.target === d.id ? d.x! : targetNode?.x || 0;
+            return isNaN(x) ? 0 : x;
           })
           .attr('y2', (edge: GraphEdge) => {
             const targetNode = nodes.find(n => n.id === edge.target);
-            return edge.target === d.id ? d.y! : targetNode?.y || 0;
+            const y = edge.target === d.id ? d.y! : targetNode?.y || 0;
+            return isNaN(y) ? 0 : y;
           });
       })
       .on('end', function () {
@@ -142,8 +158,10 @@ export function GraphCanvas({
 
   // Apply drag behavior when layout changes
   useEffect(() => {
-    setupDragBehavior();
-  }, [setupDragBehavior]);
+    if (layoutGraph && layoutGraph.nodes.length > 0) {
+      setupDragBehavior();
+    }
+  }, [layoutGraph?.nodes.length]); // Only depend on node count, not the function
 
   // Handle keyboard navigation
   useEffect(() => {
@@ -240,12 +258,21 @@ export function GraphCanvas({
               n => n.id === edge.target
             );
 
+            // Skip if nodes don't exist or don't have positions
             if (
               !sourceNode ||
               !targetNode ||
               sourceNode.x === undefined ||
-              targetNode.x === undefined
+              sourceNode.y === undefined ||
+              targetNode.x === undefined ||
+              targetNode.y === undefined
             ) {
+              console.warn(`[GraphCanvas] Skipping edge ${idx}: missing node or position`, {
+                source: edge.source,
+                target: edge.target,
+                sourceNode: sourceNode ? { x: sourceNode.x, y: sourceNode.y } : null,
+                targetNode: targetNode ? { x: targetNode.x, y: targetNode.y } : null,
+              });
               return null;
             }
 
@@ -270,7 +297,11 @@ export function GraphCanvas({
 
           {/* Render nodes */}
           {layoutGraph.nodes.map(node => {
-            if (node.x === undefined || node.y === undefined) return null;
+            // Skip nodes without valid positions
+            if (node.x === undefined || node.y === undefined || isNaN(node.x) || isNaN(node.y)) {
+              console.warn(`[GraphCanvas] Skipping node ${node.id}: invalid position`, { x: node.x, y: node.y });
+              return null;
+            }
 
             const isSelected = node.id === selectedNodeId;
             const isHovered = node.id === hoveredNodeId;

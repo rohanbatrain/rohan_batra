@@ -23,7 +23,7 @@ export function buildDeckTree(decks: any[]): DeckTreeNode[] {
   // First pass: Create nodes
   for (const deck of decks) {
     const node: DeckTreeNode = {
-      id: deck._id?.toString() || deck.id,
+      id: deck.id || deck._id?.toString(),
       slug: deck.slug,
       title: deck.title,
       parentDeckId: deck.parentDeckId?.toString() || null,
