@@ -4,10 +4,22 @@ import connectToDatabase from '@/lib/mongodb';
 import ProjectModel from '@/models/Project';
 import UserModel from '@/models/User';
 import { ProjectWithAuthor } from '@/types/project';
+import { checkRateLimit, createRateLimitResponse } from '@/lib/rate-limit';
 
 // GET /api/portfolio/projects - Get all portfolio projects with pagination and filtering
 export async function GET(request: NextRequest) {
   try {
+    // Rate limiting for public endpoint
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+    const rateLimitResult = checkRateLimit(ip, {
+      max: 60,           // 60 requests
+      windowMs: 60000,   // per minute
+    });
+
+    if (!rateLimitResult.success) {
+      return createRateLimitResponse(rateLimitResult);
+    }
+
     const { searchParams } = new URL(request.url);
     const page = parseInt(searchParams.get('page') || '1');
     const limit = parseInt(searchParams.get('limit') || '12');

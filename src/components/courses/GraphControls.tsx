@@ -43,17 +43,17 @@ export function GraphControls({
   onResetZoom,
 }: GraphControlsProps) {
   return (
-    <div className='flex flex-wrap items-center gap-3 p-3 bg-muted/30 rounded-lg border'>
+    <div className='flex items-center gap-2'>
       {/* Depth Selector */}
       <div className='flex items-center gap-2'>
-        <label htmlFor='graph-depth' className='text-sm font-medium'>
+        <label htmlFor='graph-depth' className='text-sm font-medium whitespace-nowrap'>
           Depth:
         </label>
         <Select
           value={depth.toString()}
           onValueChange={value => onDepthChange(parseInt(value))}
         >
-          <SelectTrigger id='graph-depth' className='w-[100px]'>
+          <SelectTrigger id='graph-depth' className='w-[110px] h-9 bg-background hover:bg-muted/50 transition-colors'>
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -64,72 +64,72 @@ export function GraphControls({
         </Select>
       </div>
 
-      {/* Divider */}
-      <div className='h-6 w-px bg-border' />
-
       {/* Zoom Controls */}
-      <TooltipProvider>
-        <div className='flex items-center gap-1'>
-          {onZoomIn && (
-            <TooltipRoot>
-              <TooltipTrigger asChild>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={onZoomIn}
-                  aria-label='Zoom in'
-                >
-                  <ZoomIn className='h-4 w-4' />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Zoom In (+ key)</p>
-              </TooltipContent>
-            </TooltipRoot>
-          )}
+      {(onZoomIn || onZoomOut || onResetZoom) && (
+        <>
+          <div className='h-6 w-px bg-border mx-1' />
+          <TooltipProvider>
+            <div className='flex items-center gap-1'>
+              {onZoomIn && (
+                <TooltipRoot>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant='outline'
+                      size='icon'
+                      className='h-9 w-9 hover:bg-primary/10 transition-all'
+                      onClick={onZoomIn}
+                      aria-label='Zoom in'
+                    >
+                      <ZoomIn className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className='text-xs'>Zoom In <kbd className='ml-1 px-1 bg-muted rounded'>+</kbd></p>
+                  </TooltipContent>
+                </TooltipRoot>
+              )}
 
-          {onZoomOut && (
-            <TooltipRoot>
-              <TooltipTrigger asChild>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={onZoomOut}
-                  aria-label='Zoom out'
-                >
-                  <ZoomOut className='h-4 w-4' />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Zoom Out (- key)</p>
-              </TooltipContent>
-            </TooltipRoot>
-          )}
+              {onZoomOut && (
+                <TooltipRoot>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant='outline'
+                      size='icon'
+                      className='h-9 w-9 hover:bg-primary/10 transition-all'
+                      onClick={onZoomOut}
+                      aria-label='Zoom out'
+                    >
+                      <ZoomOut className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className='text-xs'>Zoom Out <kbd className='ml-1 px-1 bg-muted rounded'>-</kbd></p>
+                  </TooltipContent>
+                </TooltipRoot>
+              )}
 
-          {onResetZoom && (
-            <TooltipRoot>
-              <TooltipTrigger asChild>
-                <Button
-                  variant='outline'
-                  size='sm'
-                  onClick={onResetZoom}
-                  aria-label='Reset zoom'
-                >
-                  <Maximize className='h-4 w-4' />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Reset View (0 key)</p>
-              </TooltipContent>
-            </TooltipRoot>
-          )}
-        </div>
-      </TooltipProvider>
-
-      {/* Help Text */}
-      <div className='ml-auto text-xs text-muted-foreground hidden sm:block'>
-        Click nodes to navigate · Drag to move · Scroll to zoom
-      </div>
+              {onResetZoom && (
+                <TooltipRoot>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant='outline'
+                      size='icon'
+                      className='h-9 w-9 hover:bg-primary/10 transition-all'
+                      onClick={onResetZoom}
+                      aria-label='Reset zoom'
+                    >
+                      <Maximize className='h-4 w-4' />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className='text-xs'>Reset View <kbd className='ml-1 px-1 bg-muted rounded'>0</kbd></p>
+                  </TooltipContent>
+                </TooltipRoot>
+              )}
+            </div>
+          </TooltipProvider>
+        </>
+      )}
     </div>
   );
 }

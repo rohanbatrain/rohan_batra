@@ -38,34 +38,46 @@ export async function POST(
     if (!userDoc || !userDoc._id)
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    const existing = await CourseEnrollmentModel.findOne({
+    // Use findOneAndUpdate with upsert to prevent race conditions
+    const enrollment = await CourseEnrollmentModel.findOneAndUpdate(
+      {
+        courseId: course._id,
+        userId: userDoc._id,
+      },
+      {
+        $setOnInsert: {
+          courseId: course._id,
+          userId: userDoc._id,
+          status: 'in_progress',
+          origin: 'self_enroll',
+          enrolledAt: new Date(),
+        },
+        $set: {
+          lastAccessedAt: new Date(),
+        },
+      },
+      {
+        upsert: true,
+        new: true,
+      }
+    );
+
+    // Check if progress already exists (might have been created by another request)
+    const existingProgress = await CourseProgressModel.findOne({
       courseId: course._id,
       userId: userDoc._id,
     });
-    if (existing) {
-      // idempotent - already enrolled, redirect back
-      const url = new URL(req.url);
-      const backTo = new URL(`/courses/${course.slug}`, url.origin);
-      return NextResponse.redirect(backTo);
+
+    if (!existingProgress) {
+      const initial = await buildInitialProgress(course._id);
+      await CourseProgressModel.create({
+        courseId: course._id,
+        userId: userDoc._id,
+        enrollmentId: enrollment._id,
+        ...initial,
+        lastUpdatedAt: new Date(),
+      } as any);
     }
-
-    const enrollment = await CourseEnrollmentModel.create({
-      courseId: course._id,
-      userId: userDoc._id,
-      status: 'in_progress',
-      origin: 'self_enroll',
-      enrolledAt: new Date(),
-      lastAccessedAt: new Date(),
-    } as any);
-
-    const initial = await buildInitialProgress(course._id);
-    await CourseProgressModel.create({
-      courseId: course._id,
-      userId: userDoc._id,
-      enrollmentId: enrollment._id,
-      ...initial,
-      lastUpdatedAt: new Date(),
-    } as any);
 
     const url = new URL(req.url);
     const backTo = new URL(`/courses/${course.slug}`, url.origin);

@@ -8,6 +8,9 @@ import PortfolioPageClient from './PortfolioPageClient';
 import { PortfolioErrorBoundary } from '@/components/ErrorBoundary';
 import { GridSkeleton } from '@/components/ui/skeleton';
 
+// Enable ISR with 1 hour revalidation
+export const revalidate = 3600;
+
 // Server-side data fetching
 async function getProjectsFromApi(params?: {
   tag?: string;

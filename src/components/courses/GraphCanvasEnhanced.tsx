@@ -44,7 +44,9 @@ export function GraphCanvasEnhanced({
   const lastGraphRef = useRef<KnowledgeGraph | null>(null);
 
   // Enhanced color schemes
-  const getNodeColor = (node: GraphNode): string => {
+  const getNodeColor = (node: GraphNode | undefined): string => {
+    if (!node) return 'rgb(156, 163, 175)'; // gray-400 default
+    
     // Completed state takes priority
     if (node.locked === false && node.color === '#22c55e') {
       return 'rgb(34, 197, 94)'; // green-500
@@ -71,7 +73,9 @@ export function GraphCanvasEnhanced({
     }
   };
 
-  const getNodeStrokeColor = (node: GraphNode): string => {
+  const getNodeStrokeColor = (node: GraphNode | undefined): string => {
+    if (!node) return 'rgb(107, 114, 128)'; // gray-500 default
+    
     if (node.locked === false && node.color === '#22c55e') {
       return 'rgb(22, 163, 74)'; // green-600
     }
@@ -90,7 +94,8 @@ export function GraphCanvasEnhanced({
     }
   };
 
-  const getNodeRadius = (node: GraphNode): number => {
+  const getNodeRadius = (node: GraphNode | undefined): number => {
+    if (!node) return 10; // Default radius for undefined nodes
     const baseSize = node.size || 30;
     switch (node.type) {
       case 'module':
@@ -125,8 +130,8 @@ export function GraphCanvasEnhanced({
 
     lastGraphRef.current = graph;
     const simulated = simulateGraphLayout(graph, {
-      width: 1200,
-      height: 600,
+      width: 600,
+      height: 300,
       maxIterations: Math.min(300, graph.nodes.length * 3),
     });
     setLayoutGraph(simulated);
@@ -173,8 +178,8 @@ export function GraphCanvasEnhanced({
           .attr('stroke-width', 3);
       })
       .on('drag', function (event, d) {
-        // Validate positions
-        if (!event.x || !event.y || isNaN(event.x) || isNaN(event.y)) return;
+        // Validate node and positions
+        if (!d || !event.x || !event.y || isNaN(event.x) || isNaN(event.y)) return;
 
         d.x = event.x;
         d.y = event.y;
@@ -291,7 +296,7 @@ export function GraphCanvasEnhanced({
   return (
     <div
       ref={containerRef}
-      className='relative w-full h-[600px] bg-gradient-to-br from-background via-background to-muted/10 rounded-lg'
+      className='relative w-full h-[300px] bg-gradient-to-br from-background via-background to-muted/10 rounded-lg'
       role='img'
       aria-label='Knowledge graph visualization'
     >

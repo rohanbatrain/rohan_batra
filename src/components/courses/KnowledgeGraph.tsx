@@ -63,11 +63,15 @@ export function KnowledgeGraph({
     data: graph,
     error,
     isLoading,
-  } = useSWR<KnowledgeGraph>(isOpen ? apiUrl : null, fetcher, {
-    revalidateOnFocus: false,
-    revalidateOnReconnect: false,
-    dedupingInterval: 60000, // 1 minute
-  });
+  } = useSWR<KnowledgeGraph>(
+    isOpen && apiUrl ? apiUrl : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      revalidateOnReconnect: false,
+      dedupingInterval: 60000, // 1 minute
+    }
+  );
 
   // Handle errors in useEffect to avoid render-time side effects
   useEffect(() => {

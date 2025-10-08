@@ -63,6 +63,7 @@ export const CourseInputSchema = z.object({
   status: z.enum(['draft', 'published', 'archived']).default('draft'),
   visibility: z.enum(['public', 'unlisted']).default('public'),
   isFeatured: z.boolean().optional().default(false),
+  showKnowledgeGraph: z.boolean().optional().default(false),
   releaseSchedule: z
     .object({
       publishAt: z.union([z.string(), z.date()]),
@@ -379,6 +380,7 @@ export async function POST(request: NextRequest) {
       status: parsed.status,
       visibility: parsed.visibility,
       isFeatured: parsed.isFeatured ?? false,
+      showKnowledgeGraph: parsed.showKnowledgeGraph ?? false,
       seo: parsed.seo
         ? {
             title: parsed.seo.title?.trim() || undefined,

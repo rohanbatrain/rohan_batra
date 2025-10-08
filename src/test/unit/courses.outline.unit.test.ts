@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { buildOrderedOutline } from '@/app/courses/[slug]/page';
+import { buildOrderedOutline } from '@/lib/courses/outline';
 
 describe('Unit: buildOrderedOutline', () => {
   it('orders lessons by lessonIds when provided, otherwise A–Z', () => {

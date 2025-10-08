@@ -174,6 +174,7 @@ export async function GET(
       status: courseDoc.status,
       visibility: courseDoc.visibility,
       isFeatured: Boolean(courseDoc.isFeatured),
+      showKnowledgeGraph: Boolean(courseDoc.showKnowledgeGraph),
       seo: courseDoc.seo ?? null,
       releaseSchedule: courseDoc.releaseSchedule ?? null,
       structureVersion: courseDoc.structureVersion ?? 1,
@@ -348,6 +349,8 @@ export async function PUT(
     if (parsed.visibility) courseDoc.visibility = parsed.visibility;
     if (parsed.isFeatured !== undefined)
       courseDoc.isFeatured = parsed.isFeatured;
+    if (parsed.showKnowledgeGraph !== undefined)
+      courseDoc.showKnowledgeGraph = parsed.showKnowledgeGraph;
 
     if (parsed.seo !== undefined) {
       const seoImageRaw = parsed.seo?.image

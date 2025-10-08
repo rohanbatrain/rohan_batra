@@ -7,6 +7,7 @@ import CourseModuleModel from '@/models/CourseModule';
 import CourseEnrollmentModel from '@/models/CourseEnrollment';
 import CourseProgressModel from '@/models/CourseProgress';
 import UserModel from '@/models/User';
+import FlashcardDeckModel from '@/models/FlashcardDeck';
 import { Metadata } from 'next';
 import { MDXRemote } from 'next-mdx-remote/rsc';
 import remarkGfm from 'remark-gfm';
@@ -17,6 +18,7 @@ import { MDXComponents, mdxProseBase } from '@/components/mdx/MDXComponents';
 import { remarkStripTitleH1 } from '@/lib/mdx/plugins/remarkStripTitleH1';
 import MarkCompleteButton from '@/components/courses/MarkCompleteButton';
 import { KnowledgeGraph } from '@/components/courses/KnowledgeGraph';
+import { StudyButton } from '@/components/flashcards/StudyButton';
 
 // Helper function to convert external video URLs to embed URLs
 function toEmbedUrl(provider?: string, url?: string) {
@@ -222,6 +224,14 @@ export default async function LessonPage({ params }: LessonPageProps) {
     notFound();
   }
   
+  // Fetch flashcard deck for this lesson (if exists)
+  const lessonDeck = await FlashcardDeckModel.findOne({
+    'linkTargets.scope': 'lesson',
+    'linkTargets.lessonId': lesson._id,
+  })
+    .select('_id title cardCount')
+    .lean();
+  
   // Fetch module for breadcrumb
   const module = await CourseModuleModel.findById(lesson.moduleId).lean();
   if (!module) {
@@ -324,22 +334,94 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <span className="text-foreground font-medium">{lesson.title}</span>
         </nav>
         
-        {/* Main Layout: Sidebar Left + Content Right */}
-        <div className="grid grid-cols-1 lg:grid-cols-[400px_1fr] xl:grid-cols-[500px_1fr] gap-6">
-          {/* Left Sidebar - Overview & TOC */}
-          <div className="space-y-6">
-            {/* Course Overview & Knowledge Graph - Side by Side */}
-            <div className="grid grid-cols-2 gap-4">
-              {/* Course Overview Card */}
-              <div className="bg-card rounded-xl border shadow-sm p-5">
-                <h3 className="font-semibold text-xs text-muted-foreground uppercase tracking-wider mb-3">Course Overview</h3>
-                <a href={`/courses/${slug}`} className="block mb-3 hover:opacity-80 transition-opacity">
+        {/* Main Layout: Fixed Sidebar Left + Content Right */}
+        <div className="flex gap-6">
+          {/* Left Sidebar - Fixed Position, Collapsible */}
+          <aside className="hidden lg:block lg:w-80 xl:w-96 flex-shrink-0">
+            <div className="sticky top-6 space-y-4">
+              {/* Course Overview - Collapsible */}
+              <details open className="bg-card rounded-xl border shadow-sm overflow-hidden group">
+                <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/50 transition-colors select-none">
+                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                    </svg>
+                    Course Overview
+                  </h3>
+                  <svg className="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </summary>
+                
+                <div className="p-5 pt-0 space-y-4">
+                  <a href={`/courses/${slug}`} className="block hover:opacity-80 transition-opacity">
+                    <h4 className="font-semibold text-base mb-1 line-clamp-2">{course.title}</h4>
+                    <p className="text-xs text-muted-foreground line-clamp-1">{module.title}</p>
+                  </a>
+                  
+                  {progress && (
+                    <div className="pb-3 border-b">
+                      <div className="flex items-center justify-between text-xs mb-2">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-semibold">{progress.percentageComplete ?? 0}%</span>
+                      </div>
+                      <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full transition-all duration-500"
+                          style={{ width: `${progress.percentageComplete ?? 0}%` }}
+                        />
+                      </div>
+                    </div>
+                  )}
+                  
+                  <a 
+                    href={`/courses/${slug}`}
+                    className="flex items-center justify-center gap-2 w-full px-3 py-2 border rounded-lg hover:bg-accent transition-colors text-xs font-medium"
+                  >
+                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    Back to Course
+                  </a>
+                </div>
+              </details>
+              
+              {/* Knowledge Graph (conditionally rendered based on course setting) */}
+              {course.showKnowledgeGraph && (
+                <div>
+                  <KnowledgeGraph
+                    courseSlug={slug}
+                    lessonSlug={String(lesson._id)}
+                    includeProgress={!!progress}
+                  />
+                </div>
+              )}
+            </div>
+          </aside>
+          
+          {/* Mobile: Course Overview at top */}
+          <div className="lg:hidden mb-6">
+            <details open className="bg-card rounded-xl border shadow-sm overflow-hidden group">
+              <summary className="flex items-center justify-between p-4 cursor-pointer hover:bg-accent/50 transition-colors select-none">
+                <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                  Course Overview
+                </h3>
+                <svg className="w-5 h-5 text-muted-foreground transition-transform group-open:rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </summary>
+              
+              <div className="p-5 pt-0 space-y-4">
+                <a href={`/courses/${slug}`} className="block hover:opacity-80 transition-opacity">
                   <h4 className="font-semibold text-base mb-1 line-clamp-2">{course.title}</h4>
                   <p className="text-xs text-muted-foreground line-clamp-1">{module.title}</p>
                 </a>
                 
                 {progress && (
-                  <div className="mb-3 pb-3 border-b">
+                  <div className="pb-3 border-b">
                     <div className="flex items-center justify-between text-xs mb-2">
                       <span className="text-muted-foreground">Progress</span>
                       <span className="font-semibold">{progress.percentageComplete ?? 0}%</span>
@@ -363,82 +445,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
                   Back to Course
                 </a>
               </div>
-              
-              {/* Knowledge Graph */}
-              <div>
-                <KnowledgeGraph
-                  courseSlug={slug}
-                  lessonSlug={String(lesson._id)}
-                  includeProgress={!!progress}
-                />
-              </div>
-            </div>
-            
-            {/* Sub-Lessons Card (TOC) */}
-            {subLessons.length > 0 && (
-              <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
-                <div className="p-5 border-b bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20">
-                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
-                    </svg>
-                    Sub-Lessons ({subLessons.length})
-                  </h3>
-                </div>
-                <div className="divide-y">
-                  {subLessons.map((subLesson: any, idx: number) => {
-                    const isSubCompleted = progress?.completedLessonIds?.some(
-                      (id: any) => id.toString() === subLesson._id.toString()
-                    ) ?? false;
-                    
-                    return (
-                      <a
-                        key={String(subLesson._id)}
-                        href={`/courses/${slug}/lesson/${String(subLesson._id)}`}
-                        className="block p-4 hover:bg-accent/50 transition-colors group"
-                      >
-                        <div className="flex items-start gap-3">
-                          {isSubCompleted ? (
-                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                              <svg className="w-3.5 h-3.5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            </div>
-                          ) : (
-                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-                              <span className="text-xs font-medium text-muted-foreground">{idx + 1}</span>
-                            </div>
-                          )}
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm mb-1 group-hover:text-primary transition-colors line-clamp-2">
-                              {subLesson.title}
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <span className="capitalize">{subLesson.contentType}</span>
-                              <span>•</span>
-                              <span>{formatMinutes(subLesson.estimatedDurationMinutes)}</span>
-                            </div>
-                          </div>
-                          
-                          {String(subLesson._id) === lessonId && (
-                            <div className="flex-shrink-0">
-                              <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
-                                Current
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                      </a>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
+            </details>
           </div>
           
-          {/* Right Content Area - Takes all remaining space */}
-          <div className="space-y-6">
+          {/* Main Content Area - Flexible, takes remaining space */}
+          <main className="flex-1 min-w-0 space-y-6">
             {/* Combined Lesson Card */}
             <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
               {/* Lesson Header */}
@@ -658,8 +669,8 @@ export default async function LessonPage({ params }: LessonPageProps) {
               )}
             </div>
             
-            {/* Flashcard Section (if decks exist) */}
-            {lesson.flashcardDeckIds && lesson.flashcardDeckIds.length > 0 && lesson.contentType !== 'flashcards' && (
+            {/* Flashcard Section (if deck exists with cards) */}
+            {lessonDeck && lessonDeck.cardCount > 0 && lesson.contentType !== 'flashcards' && (
               <div className="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-950/20 dark:to-purple-950/20 rounded-xl border shadow-sm p-6">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg">
@@ -670,12 +681,79 @@ export default async function LessonPage({ params }: LessonPageProps) {
                   <div className="flex-1">
                     <h3 className="font-semibold text-lg">Study Materials Available</h3>
                     <p className="text-sm text-muted-foreground mt-1">
-                      Review <strong>{lesson.flashcardDeckIds.length}</strong> flashcard deck{lesson.flashcardDeckIds.length > 1 ? 's' : ''} to reinforce this lesson
+                      Review <strong>{lessonDeck.cardCount}</strong> flashcard{lessonDeck.cardCount > 1 ? 's' : ''} to reinforce this lesson
                     </p>
                   </div>
-                  <button className="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors shrink-0">
-                    Review Now
-                  </button>
+                  <StudyButton
+                    scope='lesson'
+                    courseId={String(course._id)}
+                    moduleId={String(lesson.moduleId)}
+                    lessonId={String(lesson._id)}
+                    cardCount={lessonDeck.cardCount}
+                    variant="default"
+                  />
+                </div>
+              </div>
+            )}
+            
+            {/* Sub-Lessons Section - Moved here (after content, before navigation) */}
+            {subLessons.length > 0 && (
+              <div className="bg-card rounded-xl border shadow-sm overflow-hidden">
+                <div className="p-5 border-b bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-950/20 dark:to-indigo-950/20">
+                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider flex items-center gap-2">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+                    </svg>
+                    Sub-Lessons ({subLessons.length})
+                  </h3>
+                </div>
+                <div className="divide-y">
+                  {subLessons.map((subLesson: any, idx: number) => {
+                    const isSubCompleted = progress?.completedLessonIds?.some(
+                      (id: any) => id.toString() === subLesson._id.toString()
+                    ) ?? false;
+                    
+                    return (
+                      <a
+                        key={String(subLesson._id)}
+                        href={`/courses/${slug}/lesson/${String(subLesson._id)}`}
+                        className="block p-4 hover:bg-accent/50 transition-colors group"
+                      >
+                        <div className="flex items-start gap-3">
+                          {isSubCompleted ? (
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                              <svg className="w-3.5 h-3.5 text-green-600 dark:text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                          ) : (
+                            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                              <span className="text-xs font-medium text-muted-foreground">{idx + 1}</span>
+                            </div>
+                          )}
+                          
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm mb-1 group-hover:text-primary transition-colors line-clamp-2">
+                              {subLesson.title}
+                            </div>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <span className="capitalize">{subLesson.contentType}</span>
+                              <span>•</span>
+                              <span>{formatMinutes(subLesson.estimatedDurationMinutes)}</span>
+                            </div>
+                          </div>
+                          
+                          {String(subLesson._id) === lessonId && (
+                            <div className="flex-shrink-0">
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
+                                Current
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </a>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -716,7 +794,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                 <div></div>
               )}
             </div>
-          </div>
+          </main>
         </div>
       </div>
     </div>

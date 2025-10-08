@@ -36,6 +36,7 @@ export interface Course {
   status: CourseStatus;
   visibility: CourseVisibility;
   isFeatured: boolean;
+  showKnowledgeGraph: boolean;
   seo?: CourseSEOOverrides;
   releaseSchedule?: CourseReleaseSchedule | null;
   structureVersion: number;

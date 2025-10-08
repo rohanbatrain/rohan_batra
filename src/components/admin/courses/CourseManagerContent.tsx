@@ -82,6 +82,7 @@ interface CourseDetail {
   status: 'draft' | 'published' | 'archived';
   visibility: 'public' | 'unlisted';
   isFeatured: boolean;
+  showKnowledgeGraph: boolean;
   seo: {
     title?: string | null;
     description?: string | null;
@@ -149,6 +150,7 @@ interface CourseFormState {
   recommendedBookIds: string;
   flashcardDeckIds: string[];
   isFeatured: boolean;
+  showKnowledgeGraph: boolean;
   seoTitle: string;
   seoDescription: string;
   seoImage: string;
@@ -175,6 +177,7 @@ const defaultCourseForm: CourseFormState = {
   recommendedBookIds: '',
   flashcardDeckIds: [],
   isFeatured: false,
+  showKnowledgeGraph: false,
   seoTitle: '',
   seoDescription: '',
   seoImage: '',
@@ -650,6 +653,7 @@ export default function CourseManagerContent({
       recommendedBookIds: detail.recommendedBookIds.join(', '),
       flashcardDeckIds: detail.flashcardDeckIds ?? [],
       isFeatured: detail.isFeatured,
+      showKnowledgeGraph: detail.showKnowledgeGraph ?? false,
       seoTitle: detail.seo?.title ?? '',
       seoDescription: detail.seo?.description ?? '',
       seoImage: detail.seo?.image ?? '',
@@ -755,6 +759,7 @@ export default function CourseManagerContent({
         status: courseForm.status,
         visibility: courseForm.visibility,
         isFeatured: courseForm.isFeatured,
+        showKnowledgeGraph: courseForm.showKnowledgeGraph,
         categories: parseCommaSeparated(courseForm.categories),
         tags: parseCommaSeparated(courseForm.tags),
         prerequisiteCourseIds: parseCommaSeparated(
@@ -1727,6 +1732,22 @@ export default function CourseManagerContent({
                     checked={courseForm.isFeatured}
                     onCheckedChange={checked =>
                       handleCourseFieldChange('isFeatured', checked)
+                    }
+                  />
+                </div>
+                <div className='flex items-center justify-between rounded-md border border-dashed border-gray-300 px-3 py-2 dark:border-gray-700'>
+                  <div>
+                    <Label className='text-sm font-medium'>
+                      Enable Knowledge Graph
+                    </Label>
+                    <p className='text-xs text-muted-foreground'>
+                      Show visual relationship graph for this course (experimental).
+                    </p>
+                  </div>
+                  <Switch
+                    checked={courseForm.showKnowledgeGraph}
+                    onCheckedChange={checked =>
+                      handleCourseFieldChange('showKnowledgeGraph', checked)
                     }
                   />
                 </div>

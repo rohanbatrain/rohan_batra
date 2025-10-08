@@ -85,6 +85,9 @@ export const sanitizeDeck = (deck: any) => ({
   cardCount: deck.cardCount ?? 0,
   estimatedReviewMinutes: deck.estimatedReviewMinutes ?? null,
   analytics: deck.analytics ?? null,
+  parentDeckId: deck.parentDeckId ? deck.parentDeckId.toString() : null,
+  path: deck.path ?? null,
+  level: deck.level ?? 0,
   linkTargets:
     deck.linkTargets?.map((target: any) => ({
       scope: target.scope,

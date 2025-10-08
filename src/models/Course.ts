@@ -134,6 +134,11 @@ const CourseSchema = new Schema<ICourse>(
       type: Boolean,
       default: false,
     },
+    showKnowledgeGraph: {
+      type: Boolean,
+      default: false,
+      comment: 'Enable Knowledge Graph feature for this course (admin toggle)',
+    },
     seo: {
       title: { type: String, trim: true, maxlength: 70 },
       description: { type: String, trim: true, maxlength: 160 },

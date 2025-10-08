@@ -26,10 +26,11 @@ import {
 } from 'lucide-react';
 
 interface Props {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }
 
-export default async function SkillDetailPage({ params }: Props) {
+export default async function SkillDetailPage(props: Props) {
+  const params = await props.params;
   const { slug } = params;
   const skill = getSkillBySlug(slug);
   if (!skill) return notFound();

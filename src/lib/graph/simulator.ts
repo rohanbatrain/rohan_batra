@@ -57,7 +57,18 @@ export function simulateGraphLayout(
 
   // Create copies of nodes and edges for simulation
   const nodes = graph.nodes.map(node => ({ ...node }));
-  const edges = graph.edges.map(edge => ({ ...edge }));
+  
+  // Filter edges to only include those with valid source and target nodes
+  const nodeIds = new Set(nodes.map(n => n.id));
+  const edges = graph.edges
+    .filter(edge => {
+      const isValid = nodeIds.has(edge.source) && nodeIds.has(edge.target);
+      if (!isValid) {
+        console.warn(`[Simulator] Skipping invalid edge: ${edge.source} -> ${edge.target}`);
+      }
+      return isValid;
+    })
+    .map(edge => ({ ...edge }));
 
   // Create D3 force simulation
   const simulation = forceSimulation(nodes as any)
@@ -106,6 +117,16 @@ export function applyModuleGrouping(graph: KnowledgeGraph): KnowledgeGraph {
     return graph;
   }
 
+  // Filter edges to only include those with valid source and target nodes
+  const nodeIds = new Set(nodes.map(n => n.id));
+  const validEdges = edges.filter(edge => {
+    const isValid = nodeIds.has(edge.source) && nodeIds.has(edge.target);
+    if (!isValid) {
+      console.warn(`[Simulator] Skipping invalid edge in module grouping: ${edge.source} -> ${edge.target}`);
+    }
+    return isValid;
+  });
+
   // Group nodes by module
   const moduleGroups = new Map<string, GraphNode[]>();
   nodes.forEach(node => {
@@ -138,7 +159,7 @@ export function applyModuleGrouping(graph: KnowledgeGraph): KnowledgeGraph {
   const simulation = forceSimulation(nodes as any)
     .force(
       'link',
-      forceLink(edges as any)
+      forceLink(validEdges as any)
         .id((d: any) => d.id)
         .distance(80)
     )

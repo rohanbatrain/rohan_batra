@@ -43,21 +43,30 @@ function formatDuration(seconds?: number): string {
  */
 export function GraphNodeTooltip({ node, children }: GraphNodeTooltipProps) {
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider delayDuration={200}>
       <TooltipRoot>
         <TooltipTrigger asChild>{children}</TooltipTrigger>
         <TooltipContent
           side='top'
-          className='max-w-xs p-3 space-y-2'
-          sideOffset={5}
+          className='max-w-sm p-4 space-y-3 bg-popover/95 backdrop-blur-sm border-2 shadow-xl'
+          sideOffset={8}
         >
-          {/* Node Title */}
-          <div className='font-semibold text-sm'>{node.label}</div>
+          {/* Node Title with icon */}
+          <div className='flex items-start gap-2'>
+            <div className='flex-1'>
+              <div className='font-semibold text-sm leading-tight'>{node.label}</div>
+            </div>
+            {node.locked && <Lock className='h-4 w-4 text-amber-500 flex-shrink-0' />}
+            {node.completed && <Check className='h-4 w-4 text-green-500 flex-shrink-0' />}
+          </div>
 
-          {/* Node Type Badge */}
+          {/* Node Type Badges */}
           <div className='flex items-center gap-2 flex-wrap'>
-            <Badge variant='secondary' className='text-xs capitalize'>
-              {node.type}
+            <Badge 
+              variant='secondary' 
+              className='text-xs capitalize font-medium'
+            >
+              {node.type === 'sublesson' ? 'Sub-Lesson' : node.type}
             </Badge>
 
             {/* Content Type Badge */}
@@ -68,64 +77,84 @@ export function GraphNodeTooltip({ node, children }: GraphNodeTooltipProps) {
             )}
           </div>
 
-          {/* Metadata */}
-          <div className='space-y-1 text-xs text-muted-foreground'>
+          {/* Metadata Grid */}
+          <div className='space-y-2 text-xs'>
             {/* Duration */}
             {node.duration && (
-              <div className='flex items-center gap-1.5'>
-                <Clock className='h-3 w-3' />
-                <span>{formatDuration(node.duration)}</span>
+              <div className='flex items-center justify-between gap-2 p-2 rounded-md bg-muted/50'>
+                <div className='flex items-center gap-1.5 text-muted-foreground'>
+                  <Clock className='h-3.5 w-3.5' />
+                  <span>Duration</span>
+                </div>
+                <span className='font-medium'>{formatDuration(node.duration)}</span>
+              </div>
+            )}
+
+            {/* Progress Bar */}
+            {node.progress !== undefined && node.progress > 0 && !node.completed && (
+              <div className='space-y-1.5'>
+                <div className='flex items-center justify-between text-muted-foreground'>
+                  <span>Progress</span>
+                  <span className='font-medium'>{node.progress}%</span>
+                </div>
+                <div className='h-2 bg-muted rounded-full overflow-hidden'>
+                  <div
+                    className='h-full bg-gradient-to-r from-primary to-primary/80 rounded-full transition-all duration-300'
+                    style={{ width: `${node.progress}%` }}
+                  />
+                </div>
               </div>
             )}
 
             {/* Completion Status */}
             {node.completed !== undefined && (
-              <div className='flex items-center gap-1.5'>
-                {node.completed ? (
-                  <>
-                    <Check className='h-3 w-3 text-green-500' />
-                    <span className='text-green-500'>Completed</span>
-                  </>
-                ) : (
-                  <>
-                    <div className='h-3 w-3 rounded-full border-2 border-muted-foreground' />
-                    <span>Not completed</span>
-                  </>
-                )}
+              <div className='flex items-center justify-between gap-2 p-2 rounded-md bg-muted/50'>
+                <div className='flex items-center gap-1.5'>
+                  {node.completed ? (
+                    <>
+                      <Check className='h-3.5 w-3.5 text-green-500' />
+                      <span className='text-green-600 dark:text-green-400 font-medium'>Completed</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className='h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/50' />
+                      <span className='text-muted-foreground'>Not completed</span>
+                    </>
+                  )}
+                </div>
               </div>
             )}
 
             {/* Locked Status */}
             {node.locked && (
-              <div className='flex items-center gap-1.5 text-amber-500'>
-                <Lock className='h-3 w-3' />
-                <span>Prerequisites required</span>
-              </div>
-            )}
-
-            {/* Progress */}
-            {node.progress !== undefined && node.progress > 0 && (
-              <div className='flex items-center gap-1.5'>
-                <div className='flex-1 h-2 bg-muted rounded-full overflow-hidden'>
-                  <div
-                    className='h-full bg-primary rounded-full transition-all'
-                    style={{ width: `${node.progress}%` }}
-                  />
-                </div>
-                <span className='text-xs'>{node.progress}%</span>
+              <div className='flex items-center gap-2 p-2 rounded-md bg-amber-500/10 border border-amber-500/20'>
+                <Lock className='h-3.5 w-3.5 text-amber-600 dark:text-amber-500' />
+                <span className='text-amber-700 dark:text-amber-400 text-xs font-medium'>
+                  Complete prerequisites first
+                </span>
               </div>
             )}
 
             {/* Module Name */}
             {node.moduleName && (
-              <div className='text-xs italic'>Module: {node.moduleName}</div>
+              <div className='flex items-center gap-2 p-2 rounded-md bg-muted/30 text-muted-foreground'>
+                <svg className='h-3.5 w-3.5' fill='currentColor' viewBox='0 0 20 20'>
+                  <path d='M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z' />
+                </svg>
+                <span className='text-xs'>
+                  <span className='opacity-70'>Module:</span> {node.moduleName}
+                </span>
+              </div>
             )}
           </div>
 
           {/* Click hint */}
           {node.href && (
-            <div className='text-xs text-muted-foreground pt-1 border-t'>
-              Click to navigate →
+            <div className='flex items-center gap-1.5 text-xs text-primary pt-2 border-t border-border/50 font-medium'>
+              <span>Click to navigate</span>
+              <svg className='h-3 w-3' fill='none' stroke='currentColor' viewBox='0 0 24 24'>
+                <path strokeLinecap='round' strokeLinejoin='round' strokeWidth={2} d='M13 7l5 5m0 0l-5 5m5-5H6' />
+              </svg>
             </div>
           )}
         </TooltipContent>

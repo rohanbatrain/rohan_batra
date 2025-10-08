@@ -5,6 +5,9 @@ import BlogPageClient from './BlogPageClient';
 import { BlogErrorBoundary } from '@/components/ErrorBoundary';
 import { GridSkeleton } from '@/components/ui/skeleton';
 
+// Enable ISR with 30 minute revalidation (more frequent for blog)
+export const revalidate = 1800;
+
 // Server-side data fetching
 async function getBlogPosts(): Promise<{
   posts: BlogPostWithAuthor[];

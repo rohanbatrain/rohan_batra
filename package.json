@@ -17,6 +17,7 @@
     "admin:set-role": "DOTENV_CONFIG_PATH=.env.local tsx scripts/set-user-role.ts",
     "admin:create-db-admin": "DOTENV_CONFIG_PATH=.env.local tsx scripts/create-admin-user.ts",
     "admin:migrate-demo": "DOTENV_CONFIG_PATH=.env.local tsx scripts/migrate-demo-content-simple.ts",
+    "admin:migrate-flashcards": "DOTENV_CONFIG_PATH=.env.local node --import tsx -r dotenv/config scripts/migrate-flashcard-hierarchy.ts",
     "backup:safety": "./scripts/create-safety-backup.sh",
     "seed:portfolio": "DOTENV_CONFIG_PATH=.env.local tsx scripts/seed-portfolio-from-github.ts",
     "admin:unfeature-all": "DOTENV_CONFIG_PATH=.env.local node --import tsx -r dotenv/config scripts/unfeature-all-projects.ts",
