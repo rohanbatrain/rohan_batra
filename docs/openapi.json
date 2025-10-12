@@ -1,0 +1,783 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Braindump API",
+    "description": "API documentation for the Braindump platform - a knowledge sharing and collaboration system",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "email": "support@braindump.dev"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Development server"
+    },
+    {
+      "url": "https://yourdomain.com",
+      "description": "Production server"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Braindumps",
+      "description": "Public braindump operations"
+    },
+    {
+      "name": "Comments",
+      "description": "Comment management"
+    },
+    {
+      "name": "Reactions",
+      "description": "Reaction operations"
+    },
+    {
+      "name": "Search",
+      "description": "Search and discovery"
+    },
+    {
+      "name": "Admin",
+      "description": "Administrative operations (requires authentication)"
+    },
+    {
+      "name": "RSS",
+      "description": "RSS feed generation"
+    },
+    {
+      "name": "Security",
+      "description": "CSRF and security tokens"
+    }
+  ],
+  "paths": {
+    "/api/braindump": {
+      "get": {
+        "tags": ["Braindumps"],
+        "summary": "List public braindumps",
+        "description": "Retrieve a paginated list of public braindumps with optional filtering",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1, "minimum": 1 },
+            "description": "Page number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10, "minimum": 1, "maximum": 50 },
+            "description": "Items per page"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["recent", "popular", "trending"], "default": "recent" },
+            "description": "Sort order"
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Comma-separated tags to filter by"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "braindumps": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Braindump" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" }
+                  }
+                }
+              }
+            }
+          },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/braindump/{id}": {
+      "get": {
+        "tags": ["Braindumps"],
+        "summary": "Get braindump by ID or slug",
+        "description": "Retrieve a single braindump with comments and reactions",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Braindump ID or slug"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BraindumpDetail" }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/braindump/{id}/comments": {
+      "get": {
+        "tags": ["Comments"],
+        "summary": "List comments for a braindump",
+        "description": "Retrieve all comments including nested replies",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Braindump ID or slug"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["recent", "popular"], "default": "recent" },
+            "description": "Sort order"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["approved", "pending", "rejected"] },
+            "description": "Filter by status"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "comments": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Comment" }
+                    },
+                    "totalCount": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "post": {
+        "tags": ["Comments"],
+        "summary": "Create a comment",
+        "description": "Add a new comment to a braindump (requires authentication)",
+        "security": [{ "ClerkAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Braindump ID or slug"
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "CSRF token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["content"],
+                "properties": {
+                  "content": { "type": "string", "minLength": 1, "maxLength": 2000 },
+                  "parentId": { "type": "string", "description": "Parent comment ID for replies" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Comment created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Comment" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/braindump/{id}/reactions": {
+      "post": {
+        "tags": ["Reactions"],
+        "summary": "Toggle reaction",
+        "description": "Add or remove a reaction (requires authentication)",
+        "security": [{ "ClerkAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Braindump ID or slug"
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "CSRF token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["emoji"],
+                "properties": {
+                  "emoji": { "type": "string", "minLength": 1, "maxLength": 10 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Reaction toggled",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "added": { "type": "boolean" },
+                    "reactionCount": { "type": "integer" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/braindump/{id}/share": {
+      "post": {
+        "tags": ["Braindumps"],
+        "summary": "Grant share permissions",
+        "description": "Share a braindump with specific users (requires authentication)",
+        "security": [{ "ClerkAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Braindump ID or slug"
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "CSRF token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["userIds", "permission"],
+                "properties": {
+                  "userIds": { "type": "array", "items": { "type": "string" } },
+                  "permission": { "type": "string", "enum": ["view", "comment", "edit"] }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Permissions granted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" },
+                    "sharedWith": { "type": "array", "items": { "type": "string" } }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "$ref": "#/components/responses/ForbiddenError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/braindump/search": {
+      "get": {
+        "tags": ["Search"],
+        "summary": "Search braindumps",
+        "description": "Full-text search with MongoDB Atlas Search or regex fallback",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "minLength": 2, "maxLength": 100 },
+            "description": "Search query"
+          },
+          {
+            "name": "tags",
+            "in": "query",
+            "schema": { "type": "string" },
+            "description": "Comma-separated tags"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": { "type": "string", "enum": ["relevance", "recent", "popular"], "default": "relevance" },
+            "description": "Sort order"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": { "type": "integer", "default": 1, "minimum": 1 },
+            "description": "Page number"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": { "type": "integer", "default": 10, "minimum": 1, "maximum": 50 },
+            "description": "Items per page"
+          },
+          {
+            "name": "suggestions",
+            "in": "query",
+            "schema": { "type": "boolean", "default": false },
+            "description": "Return search suggestions instead"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "results": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/SearchResult" }
+                    },
+                    "pagination": { "$ref": "#/components/schemas/Pagination" },
+                    "suggestions": {
+                      "type": "object",
+                      "properties": {
+                        "tags": { "type": "array", "items": { "type": "string" } },
+                        "categories": { "type": "array", "items": { "type": "string" } }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/braindump/feed.xml": {
+      "get": {
+        "tags": ["RSS"],
+        "summary": "RSS feed",
+        "description": "Generate RSS 2.0 feed of public braindumps",
+        "responses": {
+          "200": {
+            "description": "RSS feed",
+            "content": {
+              "application/xml": {
+                "schema": { "type": "string" }
+              }
+            }
+          },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/admin/braindump": {
+      "post": {
+        "tags": ["Admin"],
+        "summary": "Create braindump (admin)",
+        "description": "Create a new braindump as an administrator",
+        "security": [{ "ClerkAuth": [] }],
+        "parameters": [
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "CSRF token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BraindumpInput" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Braindump created",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Braindump" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/admin/braindump/{id}": {
+      "put": {
+        "tags": ["Admin"],
+        "summary": "Update braindump (admin)",
+        "description": "Update an existing braindump as an administrator",
+        "security": [{ "ClerkAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Braindump ID"
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "CSRF token"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/BraindumpInput" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Braindump updated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/Braindump" }
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/ValidationError" },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      },
+      "delete": {
+        "tags": ["Admin"],
+        "summary": "Delete braindump (admin)",
+        "description": "Delete a braindump as an administrator",
+        "security": [{ "ClerkAuth": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "Braindump ID"
+          },
+          {
+            "name": "X-CSRF-Token",
+            "in": "header",
+            "required": true,
+            "schema": { "type": "string" },
+            "description": "CSRF token"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Braindump deleted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "404": { "$ref": "#/components/responses/NotFoundError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/api/csrf-token": {
+      "get": {
+        "tags": ["Security"],
+        "summary": "Get CSRF token",
+        "description": "Retrieve a CSRF token for protected operations",
+        "responses": {
+          "200": {
+            "description": "CSRF token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": { "type": "string" },
+                    "expiresAt": { "type": "string", "format": "date-time" }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "ClerkAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Clerk authentication token"
+      }
+    },
+    "schemas": {
+      "Braindump": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "content": { "type": "string" },
+          "slug": { "type": "string" },
+          "userId": { "type": "string" },
+          "tags": { "type": "array", "items": { "type": "string" } },
+          "category": { "type": "string" },
+          "visibility": { "type": "string", "enum": ["public", "unlisted", "private"] },
+          "viewCount": { "type": "integer" },
+          "shareCount": { "type": "integer" },
+          "commentCount": { "type": "integer" },
+          "reactionCount": { "type": "integer" },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "BraindumpDetail": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Braindump" },
+          {
+            "type": "object",
+            "properties": {
+              "comments": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Comment" }
+              },
+              "reactions": {
+                "type": "array",
+                "items": { "$ref": "#/components/schemas/Reaction" }
+              }
+            }
+          }
+        ]
+      },
+      "BraindumpInput": {
+        "type": "object",
+        "required": ["content"],
+        "properties": {
+          "content": { "type": "string", "minLength": 1, "maxLength": 10000 },
+          "tags": { "type": "array", "items": { "type": "string" }, "maxItems": 10 },
+          "category": { "type": "string" },
+          "visibility": { "type": "string", "enum": ["public", "unlisted", "private"], "default": "public" }
+        }
+      },
+      "Comment": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "braindumpId": { "type": "string" },
+          "content": { "type": "string" },
+          "userId": { "type": "string" },
+          "userName": { "type": "string" },
+          "parentId": { "type": "string", "nullable": true },
+          "status": { "type": "string", "enum": ["approved", "pending", "rejected"] },
+          "replies": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/Comment" }
+          },
+          "createdAt": { "type": "string", "format": "date-time" },
+          "updatedAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Reaction": {
+        "type": "object",
+        "properties": {
+          "_id": { "type": "string" },
+          "braindumpId": { "type": "string" },
+          "userId": { "type": "string" },
+          "emoji": { "type": "string" },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "SearchResult": {
+        "allOf": [
+          { "$ref": "#/components/schemas/Braindump" },
+          {
+            "type": "object",
+            "properties": {
+              "score": { "type": "number", "description": "Relevance score" },
+              "highlights": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "Highlighted text snippets"
+              }
+            }
+          }
+        ]
+      },
+      "Pagination": {
+        "type": "object",
+        "properties": {
+          "currentPage": { "type": "integer" },
+          "totalPages": { "type": "integer" },
+          "totalItems": { "type": "integer" },
+          "itemsPerPage": { "type": "integer" },
+          "hasNextPage": { "type": "boolean" },
+          "hasPreviousPage": { "type": "boolean" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string" },
+          "message": { "type": "string" },
+          "statusCode": { "type": "integer" }
+        }
+      }
+    },
+    "responses": {
+      "ValidationError": {
+        "description": "Validation error",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "error": "Validation Error",
+              "message": "Invalid input parameters",
+              "statusCode": 400
+            }
+          }
+        }
+      },
+      "UnauthorizedError": {
+        "description": "Unauthorized",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "error": "Unauthorized",
+              "message": "Authentication required",
+              "statusCode": 401
+            }
+          }
+        }
+      },
+      "ForbiddenError": {
+        "description": "Forbidden",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "error": "Forbidden",
+              "message": "Insufficient permissions",
+              "statusCode": 403
+            }
+          }
+        }
+      },
+      "NotFoundError": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "error": "Not Found",
+              "message": "Resource not found",
+              "statusCode": 404
+            }
+          }
+        }
+      },
+      "RateLimitError": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": {
+              "error": "Too Many Requests",
+              "message": "Rate limit exceeded",
+              "statusCode": 429
+            }
+          }
+        }
+      }
+    }
+  }
+}

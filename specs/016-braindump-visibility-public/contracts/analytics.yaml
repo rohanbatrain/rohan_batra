@@ -1,0 +1,405 @@
+openapi: 3.0.3
+info:
+  title: Analytics API
+  description: API endpoints for querying braindump analytics
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/analytics/braindump/{id}:
+    get:
+      summary: Get braindump analytics
+      description: Retrieve analytics data for a specific braindump. Only accessible by braindump owner.
+      operationId: getBraindumpAnalytics
+      tags:
+        - Analytics
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId)
+          example: "507f1f77bcf86cd799439011"
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, all]
+            default: 30d
+          description: Time period for analytics
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BraindumpAnalytics'
+        '401':
+          description: Unauthorized - must be braindump owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Braindump not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/analytics/dashboard:
+    get:
+      summary: Get user dashboard analytics
+      description: Retrieve aggregated analytics for all user's public braindumps
+      operationId: getDashboardAnalytics
+      tags:
+        - Analytics
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, all]
+            default: 30d
+          description: Time period for analytics
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DashboardAnalytics'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/analytics/trending:
+    get:
+      summary: Get trending braindumps
+      description: Get list of trending public braindumps based on recent engagement
+      operationId: getTrendingBraindumps
+      tags:
+        - Analytics
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 10
+          description: Number of trending braindumps to return
+        - name: period
+          in: query
+          schema:
+            type: string
+            enum: [24h, 7d, 30d]
+            default: 7d
+          description: Time window for trending calculation
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  trending:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TrendingBraindump'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    BraindumpAnalytics:
+      type: object
+      required:
+        - braindumpId
+        - period
+        - views
+        - shares
+        - comments
+        - reactions
+      properties:
+        braindumpId:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        period:
+          type: string
+          enum: [7d, 30d, 90d, all]
+          example: "30d"
+        views:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 1247
+            unique:
+              type: integer
+              example: 892
+            timeline:
+              type: array
+              items:
+                type: object
+                properties:
+                  date:
+                    type: string
+                    format: date
+                  count:
+                    type: integer
+              description: Daily view counts
+        shares:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 45
+            byPlatform:
+              type: object
+              properties:
+                twitter:
+                  type: integer
+                linkedin:
+                  type: integer
+                facebook:
+                  type: integer
+                email:
+                  type: integer
+                copy:
+                  type: integer
+        comments:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 18
+            approved:
+              type: integer
+              example: 16
+            pending:
+              type: integer
+              example: 2
+        reactions:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 89
+            breakdown:
+              type: object
+              properties:
+                "👍":
+                  type: integer
+                "❤️":
+                  type: integer
+                "🎯":
+                  type: integer
+                "💡":
+                  type: integer
+                "🔥":
+                  type: integer
+        referrers:
+          type: array
+          items:
+            type: object
+            properties:
+              source:
+                type: string
+                description: Referrer domain or "direct"
+              count:
+                type: integer
+          description: Top 10 traffic sources
+        topViewers:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+              userName:
+                type: string
+              viewCount:
+                type: integer
+          maxItems: 10
+          description: Top 10 viewers (authenticated only)
+
+    DashboardAnalytics:
+      type: object
+      required:
+        - period
+        - overview
+        - topBraindumps
+      properties:
+        period:
+          type: string
+          enum: [7d, 30d, 90d, all]
+          example: "30d"
+        overview:
+          type: object
+          properties:
+            totalViews:
+              type: integer
+              example: 5432
+            totalShares:
+              type: integer
+              example: 234
+            totalComments:
+              type: integer
+              example: 89
+            totalReactions:
+              type: integer
+              example: 456
+            publicBraindumps:
+              type: integer
+              description: Count of public braindumps
+              example: 12
+        topBraindumps:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              slug:
+                type: string
+              content:
+                type: string
+                maxLength: 100
+              views:
+                type: integer
+              shares:
+                type: integer
+              comments:
+                type: integer
+              reactions:
+                type: integer
+          maxItems: 10
+          description: Top 10 performing braindumps
+        growthMetrics:
+          type: object
+          properties:
+            viewsChange:
+              type: number
+              description: Percentage change vs previous period
+              example: 15.3
+            sharesChange:
+              type: number
+              example: 8.7
+            commentsChange:
+              type: number
+              example: -2.1
+            reactionsChange:
+              type: number
+              example: 12.5
+
+    TrendingBraindump:
+      type: object
+      required:
+        - id
+        - slug
+        - content
+        - trendingScore
+        - author
+      properties:
+        id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        slug:
+          type: string
+          example: "summer-vacation-reflections-lj3k9d"
+        content:
+          type: string
+          maxLength: 200
+          description: Preview (first 200 characters)
+        tags:
+          type: array
+          items:
+            type: string
+        author:
+          type: object
+          properties:
+            name:
+              type: string
+            image:
+              type: string
+              format: uri
+              nullable: true
+        trendingScore:
+          type: number
+          description: Calculated trending score (time-decayed)
+          example: 87.3
+        recentViews:
+          type: integer
+          description: Views in trending period
+          example: 342
+        recentShares:
+          type: integer
+          description: Shares in trending period
+          example: 28
+        recentComments:
+          type: integer
+          description: Comments in trending period
+          example: 12
+        recentReactions:
+          type: integer
+          description: Reactions in trending period
+          example: 45
+        createdAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "Unauthorized"
+        code:
+          type: string
+          example: "UNAUTHORIZED"
+        details:
+          type: object
+          additionalProperties: true
+
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk session token

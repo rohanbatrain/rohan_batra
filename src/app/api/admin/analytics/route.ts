@@ -115,6 +115,19 @@ export async function GET(request: NextRequest) {
       recentUsers,
       topLikedContent,
       engagementStats,
+      // New Course Analytics
+      totalCourses,
+      publishedCourses,
+      totalEnrollments,
+      activeEnrollments,
+      completedEnrollments,
+      totalCertificates,
+      // New Flashcard Analytics
+      totalFlashcardDecks,
+      publishedDecks,
+      totalFlashcardCards,
+      totalStudySessions,
+      totalFlashcardProgress,
     ] = await Promise.all([
       // Blog statistics
       BlogPost.countDocuments(),
@@ -200,6 +213,108 @@ export async function GET(request: NextRequest) {
         { $sort: { _id: 1 } },
         { $limit: 30 },
       ]),
+
+      // Course statistics (dynamic imports for models)
+      (async () => {
+        try {
+          const CourseModel = (await import('@/models/Course')).default;
+          return await CourseModel.countDocuments();
+        } catch {
+          return 0;
+        }
+      })(),
+      (async () => {
+        try {
+          const CourseModel = (await import('@/models/Course')).default;
+          return await CourseModel.countDocuments({ status: 'published' });
+        } catch {
+          return 0;
+        }
+      })(),
+      (async () => {
+        try {
+          const CourseEnrollmentModel = (await import('@/models/CourseEnrollment')).default;
+          return await CourseEnrollmentModel.countDocuments();
+        } catch {
+          return 0;
+        }
+      })(),
+      (async () => {
+        try {
+          const CourseEnrollmentModel = (await import('@/models/CourseEnrollment')).default;
+          return await CourseEnrollmentModel.countDocuments({ 
+            status: { $in: ['in_progress', 'active'] } 
+          });
+        } catch {
+          return 0;
+        }
+      })(),
+      (async () => {
+        try {
+          const CourseEnrollmentModel = (await import('@/models/CourseEnrollment')).default;
+          return await CourseEnrollmentModel.countDocuments({ status: 'completed' });
+        } catch {
+          return 0;
+        }
+      })(),
+      (async () => {
+        try {
+          const CertificateModel = (await import('@/models/Certificate')).default;
+          return await CertificateModel.countDocuments({ status: 'issued' });
+        } catch {
+          return 0;
+        }
+      })(),
+
+      // Flashcard statistics
+      (async () => {
+        try {
+          const FlashcardDeckModel = (await import('@/models/FlashcardDeck')).default;
+          return await FlashcardDeckModel.countDocuments();
+        } catch {
+          return 0;
+        }
+      })(),
+      (async () => {
+        try {
+          const FlashcardDeckModel = (await import('@/models/FlashcardDeck')).default;
+          return await FlashcardDeckModel.countDocuments({ status: 'published' });
+        } catch {
+          return 0;
+        }
+      })(),
+      (async () => {
+        try {
+          const FlashcardCardModel = (await import('@/models/FlashcardCard')).default;
+          return await FlashcardCardModel.countDocuments();
+        } catch {
+          return 0;
+        }
+      })(),
+      // Flashcard sessions count (sum of deck analytics reviewCount)
+      (async () => {
+        try {
+          const FlashcardDeckModel = (await import('@/models/FlashcardDeck')).default;
+          const result = await FlashcardDeckModel.aggregate([
+            { $group: { _id: null, total: { $sum: '$analytics.reviewCount' } } }
+          ]);
+          return result[0]?.total || 0;
+        } catch {
+          return 0;
+        }
+      })(),
+      // Flashcard unique learners (sum of deck analytics uniqueLearners)
+      (async () => {
+        try {
+          const FlashcardDeckModel = (await import('@/models/FlashcardDeck')).default;
+          const result = await FlashcardDeckModel.aggregate([
+            { $group: { _id: null, total: { $sum: '$analytics.uniqueLearners' } } }
+          ]);
+          return result[0]?.total || 0;
+        } catch {
+          return 0;
+        }
+      })(),
     ]);
 
     // Activity trends (daily activity over time)
@@ -330,6 +445,24 @@ export async function GET(request: NextRequest) {
           avgChaptersPerBook:
             totalBooks > 0 ? Math.round(totalChapters / totalBooks) : 0,
         },
+        courses: {
+          total: totalCourses,
+          published: publishedCourses,
+          drafts: totalCourses - publishedCourses,
+          publishedPercentage:
+            totalCourses > 0
+              ? Math.round((publishedCourses / totalCourses) * 100)
+              : 0,
+        },
+        flashcards: {
+          totalDecks: totalFlashcardDecks,
+          publishedDecks,
+          totalCards: totalFlashcardCards,
+          avgCardsPerDeck:
+            totalFlashcardDecks > 0
+              ? Math.round(totalFlashcardCards / totalFlashcardDecks)
+              : 0,
+        },
         assets: {
           lottieAnimations: totalLottieAssets,
         },
@@ -366,6 +499,29 @@ export async function GET(request: NextRequest) {
         regularUsers: totalUsers - adminUsers - editorUsers,
         activityRate:
           totalUsers > 0 ? Math.round((activeUsers / totalUsers) * 100) : 0,
+      },
+      learning: {
+        enrollments: {
+          total: totalEnrollments,
+          active: activeEnrollments,
+          completed: completedEnrollments,
+          completionRate:
+            totalEnrollments > 0
+              ? Math.round((completedEnrollments / totalEnrollments) * 100)
+              : 0,
+        },
+        certificates: {
+          total: totalCertificates,
+          issuedThisWeek: 0, // Can be enhanced with date filtering
+        },
+        flashcards: {
+          totalReviews: totalStudySessions,
+          uniqueLearners: totalFlashcardProgress,
+          avgReviewsPerDeck:
+            totalFlashcardDecks > 0
+              ? Math.round(totalStudySessions / totalFlashcardDecks)
+              : 0,
+        },
       },
       performance: performanceMetrics,
       recentActivity: {

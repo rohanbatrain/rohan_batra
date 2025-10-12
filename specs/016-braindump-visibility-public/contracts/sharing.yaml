@@ -1,0 +1,327 @@
+openapi: 3.0.3
+info:
+  title: Sharing API
+  description: API endpoints for managing braindump share permissions
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/braindump/{id}/share:
+    post:
+      summary: Grant share permission
+      description: Grant specific user permission to view, comment, or edit a private/unlisted braindump
+      operationId: grantSharePermission
+      tags:
+        - Sharing
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId)
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GrantShareRequest'
+      responses:
+        '201':
+          description: Share permission granted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharePermission'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - must be braindump owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Braindump not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: User already has share permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      summary: List share permissions
+      description: Get all users who have share permissions for this braindump
+      operationId: listSharePermissions
+      tags:
+        - Sharing
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId)
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  permissions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SharePermission'
+                  total:
+                    type: integer
+                    example: 5
+        '401':
+          description: Unauthorized - must be braindump owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Braindump not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/braindump/{braindumpId}/share/{userId}:
+    put:
+      summary: Update share permission
+      description: Update the permission level for a user
+      operationId: updateSharePermission
+      tags:
+        - Sharing
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: braindumpId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID
+          example: "507f1f77bcf86cd799439011"
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID (Clerk user ID)
+          example: "user_2abc123def456"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - permission
+              properties:
+                permission:
+                  type: string
+                  enum: [view, comment, edit]
+                  description: New permission level
+      responses:
+        '200':
+          description: Share permission updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SharePermission'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - must be braindump owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Share permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Revoke share permission
+      description: Remove user's share permission for the braindump
+      operationId: revokeSharePermission
+      tags:
+        - Sharing
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: braindumpId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID
+          example: "507f1f77bcf86cd799439011"
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: User ID (Clerk user ID)
+          example: "user_2abc123def456"
+      responses:
+        '204':
+          description: Share permission revoked successfully
+        '401':
+          description: Unauthorized - must be braindump owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Share permission not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    GrantShareRequest:
+      type: object
+      required:
+        - userId
+        - permission
+      properties:
+        userId:
+          type: string
+          description: Clerk user ID of the user to grant permission to
+          example: "user_2abc123def456"
+        permission:
+          type: string
+          enum: [view, comment, edit]
+          description: Permission level to grant
+          example: "comment"
+
+    SharePermission:
+      type: object
+      required:
+        - id
+        - braindumpId
+        - userId
+        - permission
+        - grantedAt
+      properties:
+        id:
+          type: string
+          description: Share permission unique identifier
+          example: "507f1f77bcf86cd799439014"
+        braindumpId:
+          type: string
+          description: Braindump ID
+          example: "507f1f77bcf86cd799439011"
+        userId:
+          type: string
+          description: User ID with permission
+          example: "user_2abc123def456"
+        userName:
+          type: string
+          description: Display name of the user
+          example: "Jane Smith"
+        userImage:
+          type: string
+          format: uri
+          nullable: true
+          description: User profile image URL
+          example: "https://example.com/avatars/jane.jpg"
+        permission:
+          type: string
+          enum: [view, comment, edit]
+          description: Permission level
+          example: "comment"
+        grantedAt:
+          type: string
+          format: date-time
+          description: When the permission was granted
+          example: "2025-10-03T11:20:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          description: When the permission was last updated
+          example: "2025-10-03T11:20:00Z"
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "User already has share permission"
+        code:
+          type: string
+          example: "DUPLICATE_PERMISSION"
+        details:
+          type: object
+          additionalProperties: true
+
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk session token

@@ -1,0 +1,249 @@
+openapi: 3.0.3
+info:
+  title: Reactions API
+  description: API endpoints for managing braindump reactions
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/braindump/{id}/reactions:
+    post:
+      summary: Toggle a reaction
+      description: Add or remove a reaction to a braindump. One reaction per user per emoji type. Idempotent.
+      operationId: toggleReaction
+      tags:
+        - Reactions
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId) or slug
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ToggleReactionRequest'
+      responses:
+        '200':
+          description: Reaction toggled successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReactionResponse'
+        '400':
+          description: Invalid request body or emoji type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Braindump not found or is private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    get:
+      summary: Get reaction summary
+      description: Get reaction counts and current user's reactions for a braindump
+      operationId: getReactions
+      tags:
+        - Reactions
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId) or slug
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReactionSummary'
+        '404':
+          description: Braindump not found or is private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    ToggleReactionRequest:
+      type: object
+      required:
+        - emoji
+      properties:
+        emoji:
+          type: string
+          enum: ["👍", "❤️", "🎯", "💡", "🔥"]
+          description: Reaction emoji type
+          example: "👍"
+
+    ReactionResponse:
+      type: object
+      required:
+        - action
+        - emoji
+        - totalCount
+      properties:
+        action:
+          type: string
+          enum: [added, removed]
+          description: Whether the reaction was added or removed
+          example: "added"
+        emoji:
+          type: string
+          enum: ["👍", "❤️", "🎯", "💡", "🔥"]
+          description: Reaction emoji type
+          example: "👍"
+        totalCount:
+          type: integer
+          minimum: 0
+          description: Total count of this reaction type on the braindump
+          example: 13
+        braindumpId:
+          type: string
+          description: Braindump ID
+          example: "507f1f77bcf86cd799439011"
+
+    ReactionSummary:
+      type: object
+      required:
+        - braindumpId
+        - counts
+        - userReactions
+      properties:
+        braindumpId:
+          type: string
+          description: Braindump ID
+          example: "507f1f77bcf86cd799439011"
+        counts:
+          type: object
+          required:
+            - "👍"
+            - "❤️"
+            - "🎯"
+            - "💡"
+            - "🔥"
+          properties:
+            "👍":
+              type: integer
+              minimum: 0
+              description: Total thumbs up reactions
+            "❤️":
+              type: integer
+              minimum: 0
+              description: Total heart reactions
+            "🎯":
+              type: integer
+              minimum: 0
+              description: Total bullseye reactions
+            "💡":
+              type: integer
+              minimum: 0
+              description: Total light bulb reactions
+            "🔥":
+              type: integer
+              minimum: 0
+              description: Total fire reactions
+          example:
+            "👍": 12
+            "❤️": 8
+            "🎯": 3
+            "💡": 15
+            "🔥": 6
+        userReactions:
+          type: array
+          items:
+            type: string
+            enum: ["👍", "❤️", "🎯", "💡", "🔥"]
+          description: Emoji types the current user has reacted with
+          example: ["👍", "💡"]
+        topReactors:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: string
+                description: User ID
+              userName:
+                type: string
+                description: User display name
+              userImage:
+                type: string
+                format: uri
+                nullable: true
+                description: User profile image
+              reactionCount:
+                type: integer
+                minimum: 1
+                description: Number of reactions from this user
+          maxItems: 5
+          description: Top 5 users who reacted most (for analytics)
+          example:
+            - userId: "user_2abc123def456"
+              userName: "Jane Smith"
+              userImage: "https://example.com/avatars/jane.jpg"
+              reactionCount: 3
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "Invalid emoji type"
+        code:
+          type: string
+          example: "VALIDATION_ERROR"
+        details:
+          type: object
+          additionalProperties: true
+
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk session token

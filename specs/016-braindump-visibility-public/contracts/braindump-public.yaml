@@ -1,0 +1,347 @@
+openapi: 3.0.3
+info:
+  title: Braindump Public API
+  description: Public API endpoints for viewing and discovering public braindumps
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/braindump/{id}:
+    get:
+      summary: Get a public braindump
+      description: Retrieve a single public or unlisted braindump by ID or slug. Private braindumps return 404.
+      operationId: getBraindump
+      tags:
+        - Public Braindumps
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId) or slug
+          example: "summer-vacation-reflections-lj3k9d"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicBraindump'
+        '404':
+          description: Braindump not found or is private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/braindump:
+    get:
+      summary: List public braindumps
+      description: Get a paginated list of public braindumps with optional filtering
+      operationId: listBraindumps
+      tags:
+        - Public Braindumps
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+          description: Items per page (max 50)
+        - name: tag
+          in: query
+          schema:
+            type: string
+          description: Filter by tag
+          example: "productivity"
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, views, shares]
+            default: newest
+          description: Sort order
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  braindumps:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BraindumpPreview'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        '400':
+          description: Invalid query parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/braindump/feed.xml:
+    get:
+      summary: RSS feed of public braindumps
+      description: Get RSS 2.0 feed of latest 50 public braindumps
+      operationId: getRSSFeed
+      tags:
+        - Public Braindumps
+      responses:
+        '200':
+          description: RSS feed
+          content:
+            application/xml:
+              schema:
+                type: string
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    PublicBraindump:
+      type: object
+      required:
+        - id
+        - content
+        - author
+        - createdAt
+        - viewCount
+      properties:
+        id:
+          type: string
+          description: Braindump unique identifier
+          example: "507f1f77bcf86cd799439011"
+        content:
+          type: string
+          description: Full braindump content
+          maxLength: 10000
+          example: "Had an interesting thought about knowledge management..."
+        slug:
+          type: string
+          description: URL-friendly slug
+          example: "summer-vacation-reflections-lj3k9d"
+        tags:
+          type: array
+          items:
+            type: string
+          description: Associated tags
+          example: ["productivity", "knowledge-management"]
+        category:
+          type: string
+          nullable: true
+          description: Optional category
+          example: "Personal Development"
+        author:
+          type: object
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              example: "John Doe"
+            image:
+              type: string
+              format: uri
+              nullable: true
+              example: "https://example.com/avatars/john.jpg"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-01T14:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-05T09:15:00Z"
+        viewCount:
+          type: integer
+          minimum: 0
+          example: 142
+        shareCount:
+          type: integer
+          minimum: 0
+          example: 28
+        commentCount:
+          type: integer
+          minimum: 0
+          example: 5
+        reactionCounts:
+          type: object
+          properties:
+            "👍":
+              type: integer
+              minimum: 0
+            "❤️":
+              type: integer
+              minimum: 0
+            "🎯":
+              type: integer
+              minimum: 0
+            "💡":
+              type: integer
+              minimum: 0
+            "🔥":
+              type: integer
+              minimum: 0
+          example:
+            "👍": 12
+            "❤️": 8
+            "🎯": 3
+        linkedBraindumps:
+          type: array
+          items:
+            $ref: '#/components/schemas/LinkedBraindump'
+          description: Related public braindumps
+
+    BraindumpPreview:
+      type: object
+      required:
+        - id
+        - content
+        - author
+        - createdAt
+        - viewCount
+      properties:
+        id:
+          type: string
+          example: "507f1f77bcf86cd799439011"
+        slug:
+          type: string
+          example: "summer-vacation-reflections-lj3k9d"
+        content:
+          type: string
+          maxLength: 200
+          description: Preview (first 200 characters)
+          example: "Had an interesting thought about knowledge management. It seems like most systems focus on storage rather than retrieval. What if we optimized for discovery instead..."
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["productivity", "knowledge-management"]
+        category:
+          type: string
+          nullable: true
+          example: "Personal Development"
+        author:
+          type: object
+          properties:
+            name:
+              type: string
+            image:
+              type: string
+              format: uri
+              nullable: true
+        createdAt:
+          type: string
+          format: date-time
+        viewCount:
+          type: integer
+          minimum: 0
+        shareCount:
+          type: integer
+          minimum: 0
+
+    LinkedBraindump:
+      type: object
+      required:
+        - id
+        - preview
+      properties:
+        id:
+          type: string
+          example: "507f1f77bcf86cd799439012"
+        slug:
+          type: string
+          example: "knowledge-graphs-exploration-mk2j8f"
+        preview:
+          type: string
+          maxLength: 100
+          example: "Exploring knowledge graphs as a way to organize thoughts..."
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    Pagination:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - pages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+          example: 20
+        total:
+          type: integer
+          minimum: 0
+          example: 156
+        pages:
+          type: integer
+          minimum: 0
+          example: 8
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "Braindump not found"
+        code:
+          type: string
+          example: "NOT_FOUND"
+        details:
+          type: object
+          additionalProperties: true
+
+  securitySchemes: {}

@@ -1,0 +1,316 @@
+openapi: 3.0.3
+info:
+  title: Notifications API
+  description: API endpoints for managing user notifications
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/notifications:
+    get:
+      summary: Get user notifications
+      description: Retrieve paginated list of notifications for the authenticated user
+      operationId: getNotifications
+      tags:
+        - Notifications
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 20
+          description: Items per page (max 50)
+        - name: unreadOnly
+          in: query
+          schema:
+            type: boolean
+            default: false
+          description: Filter to unread notifications only
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  notifications:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Notification'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+                  unreadCount:
+                    type: integer
+                    description: Total number of unread notifications
+                    example: 5
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/notifications/{id}/read:
+    put:
+      summary: Mark notification as read
+      description: Mark a specific notification as read
+      operationId: markNotificationRead
+      tags:
+        - Notifications
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Notification ID
+          example: "507f1f77bcf86cd799439015"
+      responses:
+        '200':
+          description: Notification marked as read
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Notification'
+        '401':
+          description: Unauthorized - must be notification owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/notifications/read-all:
+    put:
+      summary: Mark all notifications as read
+      description: Mark all unread notifications for the user as read
+      operationId: markAllNotificationsRead
+      tags:
+        - Notifications
+      security:
+        - clerkAuth: []
+      responses:
+        '200':
+          description: All notifications marked as read
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  markedCount:
+                    type: integer
+                    description: Number of notifications marked as read
+                    example: 8
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/notifications/{id}:
+    delete:
+      summary: Delete a notification
+      description: Delete a specific notification
+      operationId: deleteNotification
+      tags:
+        - Notifications
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Notification ID
+          example: "507f1f77bcf86cd799439015"
+      responses:
+        '204':
+          description: Notification deleted successfully
+        '401':
+          description: Unauthorized - must be notification owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Notification not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Notification:
+      type: object
+      required:
+        - id
+        - userId
+        - type
+        - title
+        - message
+        - read
+        - createdAt
+      properties:
+        id:
+          type: string
+          description: Notification unique identifier
+          example: "507f1f77bcf86cd799439015"
+        userId:
+          type: string
+          description: Clerk user ID of the recipient
+          example: "user_2abc123def456"
+        type:
+          type: string
+          enum: [comment, reply, reaction, share, mention, milestone]
+          description: Notification type
+          example: "comment"
+        title:
+          type: string
+          maxLength: 100
+          description: Notification title
+          example: "New comment on your braindump"
+        message:
+          type: string
+          maxLength: 500
+          description: Notification message
+          example: "Jane Smith commented: 'Great insights! I especially liked...'"
+        read:
+          type: boolean
+          description: Whether the notification has been read
+          example: false
+        createdAt:
+          type: string
+          format: date-time
+          description: When the notification was created
+          example: "2025-10-02T08:45:00Z"
+        relatedBraindumpId:
+          type: string
+          nullable: true
+          description: ID of the related braindump (if applicable)
+          example: "507f1f77bcf86cd799439011"
+        relatedCommentId:
+          type: string
+          nullable: true
+          description: ID of the related comment (if applicable)
+          example: "507f1f77bcf86cd799439012"
+        actionUrl:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to navigate to when notification is clicked
+          example: "/braindump/summer-vacation-reflections-lj3k9d#comment-507f1f77bcf86cd799439012"
+        actor:
+          type: object
+          nullable: true
+          description: User who triggered the notification
+          properties:
+            userId:
+              type: string
+            userName:
+              type: string
+            userImage:
+              type: string
+              format: uri
+              nullable: true
+
+    Pagination:
+      type: object
+      required:
+        - page
+        - limit
+        - total
+        - pages
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 50
+          example: 20
+        total:
+          type: integer
+          minimum: 0
+          example: 47
+        pages:
+          type: integer
+          minimum: 0
+          example: 3
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "Notification not found"
+        code:
+          type: string
+          example: "NOT_FOUND"
+        details:
+          type: object
+          additionalProperties: true
+
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk session token

@@ -100,25 +100,39 @@ interface AnalyticsData {
     blogPosts: {
       total: number;
       published: number;
-      draft: number;
-      scheduled: number;
+      draft?: number;
+      drafts?: number;
+      scheduled?: number;
       publishedPercentage: number;
     };
     projects: {
       total: number;
       featured: number;
-      archived: number;
+      archived?: number;
       featuredPercentage: number;
     };
     books: {
       total: number;
       published: number;
-      draft: number;
+      draft?: number;
       chapters: number;
       characters: number;
       characterJournals: number;
+      avgChaptersPerBook?: number;
     };
-    characters: {
+    courses?: {
+      total: number;
+      published: number;
+      drafts: number;
+      publishedPercentage: number;
+    };
+    flashcards?: {
+      totalDecks: number;
+      publishedDecks: number;
+      totalCards: number;
+      avgCardsPerDeck: number;
+    };
+    characters?: {
       total: number;
       active: number;
     };
@@ -144,12 +158,29 @@ interface AnalyticsData {
     total: number;
     admins: number;
     editors: number;
-    users: number;
+    users?: number;
     regularUsers: number;
     active: number;
-    thisWeek: number;
-    growth: number;
+    thisWeek?: number;
+    growth?: number;
     activityRate: number;
+  };
+  learning?: {
+    enrollments: {
+      total: number;
+      active: number;
+      completed: number;
+      completionRate: number;
+    };
+    certificates: {
+      total: number;
+      issuedThisWeek: number;
+    };
+    flashcards: {
+      totalReviews: number;
+      uniqueLearners: number;
+      avgReviewsPerDeck: number;
+    };
   };
   metrics: {
     avgPostsPerDay: number;
@@ -263,24 +294,28 @@ export default function AnalyticsPage() {
       value: data.content.blogPosts.total,
       icon: FileText,
       color: 'text-blue-600',
+      change: `${data.content.blogPosts.publishedPercentage}% published`,
     },
     {
       name: 'Projects',
       value: data.content.projects.total,
       icon: BookOpen,
       color: 'text-green-600',
+      change: `${data.content.projects.featuredPercentage}% featured`,
     },
     {
-      name: 'Books',
-      value: data.content.books.total,
+      name: 'Courses',
+      value: data.content.courses?.total || 0,
       icon: BookOpen,
-      color: 'text-purple-600',
+      color: 'text-indigo-600',
+      change: `${data.content.courses?.publishedPercentage || 0}% published`,
     },
     {
-      name: 'Characters',
-      value: data.content.books.characters,
-      icon: Users,
-      color: 'text-orange-600',
+      name: 'Flashcard Decks',
+      value: data.content.flashcards?.totalDecks || 0,
+      icon: Activity,
+      color: 'text-purple-600',
+      change: `${data.content.flashcards?.totalCards || 0} cards`,
     },
   ];
 
@@ -310,6 +345,39 @@ export default function AnalyticsPage() {
       color: 'text-purple-600',
     },
   ];
+
+  const learningStats = data.learning
+    ? [
+        {
+          name: 'Total Enrollments',
+          value: data.learning.enrollments.total,
+          icon: BookOpen,
+          color: 'text-blue-600',
+          change: `${data.learning.enrollments.completionRate}% completed`,
+        },
+        {
+          name: 'Active Learners',
+          value: data.learning.enrollments.active,
+          icon: Activity,
+          color: 'text-green-600',
+          change: `${data.learning.enrollments.completed} completed`,
+        },
+        {
+          name: 'Certificates Issued',
+          value: data.learning.certificates.total,
+          icon: FileText,
+          color: 'text-yellow-600',
+          change: `${data.learning.certificates.issuedThisWeek} this week`,
+        },
+        {
+          name: 'Flashcard Reviews',
+          value: data.learning.flashcards.totalReviews,
+          icon: Activity,
+          color: 'text-purple-600',
+          change: `${data.learning.flashcards.uniqueLearners} learners`,
+        },
+      ]
+    : [];
 
   const userDistribution = [
     { name: 'Admins', value: data.users.admins, color: COLORS[0] },
@@ -350,22 +418,68 @@ export default function AnalyticsPage() {
           return (
             <Card key={stat.name}>
               <CardContent className='p-6'>
-                <div className='flex items-center'>
-                  <Icon className={`h-8 w-8 ${stat.color}`} />
-                  <div className='ml-4'>
-                    <p className='text-sm font-medium text-gray-600'>
-                      {stat.name}
-                    </p>
-                    <p className='text-2xl font-bold'>
-                      {stat.value.toLocaleString()}
-                    </p>
+                <div className='flex items-center justify-between'>
+                  <div className='flex items-center'>
+                    <Icon className={`h-8 w-8 ${stat.color}`} />
+                    <div className='ml-4'>
+                      <p className='text-sm font-medium text-gray-600'>
+                        {stat.name}
+                      </p>
+                      <p className='text-2xl font-bold'>
+                        {stat.value.toLocaleString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
+                {stat.change && (
+                  <p className='text-xs text-gray-500 mt-2'>{stat.change}</p>
+                )}
               </CardContent>
             </Card>
           );
         })}
       </div>
+
+      {/* Learning & Education Statistics */}
+      {learningStats.length > 0 && (
+        <>
+          <div className='pt-4'>
+            <h2 className='text-2xl font-bold'>Learning & Education</h2>
+            <p className='text-gray-600 mt-1'>
+              Course enrollments, certificates, and flashcard activity
+            </p>
+          </div>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
+            {learningStats.map(stat => {
+              const Icon = stat.icon;
+              return (
+                <Card key={stat.name}>
+                  <CardContent className='p-6'>
+                    <div className='flex items-center justify-between'>
+                      <div className='flex items-center'>
+                        <Icon className={`h-8 w-8 ${stat.color}`} />
+                        <div className='ml-4'>
+                          <p className='text-sm font-medium text-gray-600'>
+                            {stat.name}
+                          </p>
+                          <p className='text-2xl font-bold'>
+                            {stat.value.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    {stat.change && (
+                      <p className='text-xs text-gray-500 mt-2'>
+                        {stat.change}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </>
+      )}
 
       {/* Engagement Statistics */}
       <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6'>
@@ -581,6 +695,19 @@ export default function AnalyticsPage() {
                   />
                 </div>
 
+                {data.content.courses && (
+                  <div>
+                    <div className='flex justify-between text-sm'>
+                      <span>Courses Published</span>
+                      <span>{data.content.courses.publishedPercentage}%</span>
+                    </div>
+                    <Progress
+                      value={data.content.courses.publishedPercentage}
+                      className='mt-1'
+                    />
+                  </div>
+                )}
+
                 <Separator />
 
                 <div className='space-y-2 text-sm'>
@@ -602,6 +729,22 @@ export default function AnalyticsPage() {
                       {data.content.books.characterJournals}
                     </Badge>
                   </div>
+                  {data.content.flashcards && (
+                    <>
+                      <div className='flex justify-between'>
+                        <span>Flashcard Decks</span>
+                        <Badge variant='outline'>
+                          {data.content.flashcards.totalDecks}
+                        </Badge>
+                      </div>
+                      <div className='flex justify-between'>
+                        <span>Flashcard Cards</span>
+                        <Badge variant='outline'>
+                          {data.content.flashcards.totalCards}
+                        </Badge>
+                      </div>
+                    </>
+                  )}
                   <div className='flex justify-between'>
                     <span>Lottie Assets</span>
                     <Badge variant='outline'>

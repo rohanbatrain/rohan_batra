@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Types } from 'mongoose';
 import FlashcardDeckModel from '@/models/FlashcardDeck';
 
 export interface DeckTreeNode {
@@ -14,16 +14,31 @@ export interface DeckTreeNode {
 }
 
 /**
+ * Deck input data for tree building
+ */
+interface DeckInput {
+  _id?: Types.ObjectId | string;
+  id?: string;
+  slug: string;
+  title: string;
+  parentDeckId?: Types.ObjectId | string | null;
+  path: string;
+  level: number;
+  cardCount?: number;
+  dueCount?: number;
+}
+
+/**
  * Build a hierarchical tree structure from flat deck list
  */
-export function buildDeckTree(decks: any[]): DeckTreeNode[] {
+export function buildDeckTree(decks: DeckInput[]): DeckTreeNode[] {
   const deckMap = new Map<string, DeckTreeNode>();
   const rootDecks: DeckTreeNode[] = [];
 
   // First pass: Create nodes
   for (const deck of decks) {
     const node: DeckTreeNode = {
-      id: deck.id || deck._id?.toString(),
+      id: deck.id || deck._id?.toString() || '',
       slug: deck.slug,
       title: deck.title,
       parentDeckId: deck.parentDeckId?.toString() || null,
@@ -156,17 +171,20 @@ export async function getDeckBreadcrumbs(
   if (!deck) return [];
 
   const breadcrumbs: Array<{ id: string; title: string; slug: string }> = [];
-  let current: any = deck;
-
-  while (current) {
+  
+  // Build breadcrumb trail
+  let currentDeck = deck;
+  while (currentDeck) {
     breadcrumbs.unshift({
-      id: current._id.toString(),
-      title: current.title,
-      slug: current.slug,
+      id: currentDeck._id.toString(),
+      title: currentDeck.title,
+      slug: currentDeck.slug,
     });
 
-    if (current.parentDeckId) {
-      current = await FlashcardDeckModel.findById(current.parentDeckId);
+    if (currentDeck.parentDeckId) {
+      const parentDeck = await FlashcardDeckModel.findById(currentDeck.parentDeckId);
+      if (!parentDeck) break;
+      currentDeck = parentDeck;
     } else {
       break;
     }

@@ -23,6 +23,7 @@ import {
   ChevronRight,
   Shield,
   Share2,
+  Brain,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import React from 'react';
@@ -87,6 +88,12 @@ export default function AdminSidebar({ userRole }: AdminSidebarProps) {
       icon: FileText,
       roles: ['editor', 'admin'],
       items: [
+        {
+          name: 'Braindump',
+          href: '/admin/braindump',
+          icon: Brain,
+          roles: ['editor', 'admin'],
+        },
         {
           name: 'Blog Posts',
           href: '/admin/blog',

@@ -1,0 +1,368 @@
+openapi: 3.0.3
+info:
+  title: Braindump Admin API
+  description: Admin API endpoints for managing braindump visibility and metadata
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/admin/braindump:
+    post:
+      summary: Create a new braindump
+      description: Create a new braindump with specified visibility
+      operationId: createBraindump
+      tags:
+        - Admin Braindumps
+      security:
+        - clerkAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBraindumpRequest'
+      responses:
+        '201':
+          description: Braindump created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BraindumpResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/admin/braindump/{id}:
+    put:
+      summary: Update a braindump
+      description: Update braindump content, visibility, or metadata. Tracks edit history.
+      operationId: updateBraindump
+      tags:
+        - Admin Braindumps
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId)
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBraindumpRequest'
+      responses:
+        '200':
+          description: Braindump updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BraindumpResponse'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - must be braindump owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Braindump not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a braindump
+      description: Permanently delete a braindump and all associated data (comments, reactions, shares)
+      operationId: deleteBraindump
+      tags:
+        - Admin Braindumps
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId)
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '204':
+          description: Braindump deleted successfully
+        '401':
+          description: Unauthorized - must be braindump owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Braindump not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CreateBraindumpRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: Braindump content
+          example: "Had an interesting thought about knowledge management..."
+        visibility:
+          type: string
+          enum: [private, unlisted, public]
+          default: private
+          description: Visibility level
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+          maxItems: 10
+          description: Associated tags
+          example: ["productivity", "knowledge-management"]
+        category:
+          type: string
+          nullable: true
+          maxLength: 50
+          description: Optional category
+          example: "Personal Development"
+        customSlug:
+          type: string
+          nullable: true
+          pattern: "^[a-z0-9-]+$"
+          minLength: 3
+          maxLength: 100
+          description: Custom URL slug (auto-generated if not provided)
+          example: "my-custom-slug"
+        ogImage:
+          type: string
+          format: uri
+          nullable: true
+          description: Custom Open Graph image URL
+          example: "https://example.com/images/og-braindump.jpg"
+        ogDescription:
+          type: string
+          nullable: true
+          maxLength: 160
+          description: Custom Open Graph description
+          example: "Exploring knowledge management systems and their trade-offs"
+
+    UpdateBraindumpRequest:
+      type: object
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: Updated braindump content
+        visibility:
+          type: string
+          enum: [private, unlisted, public]
+          description: Updated visibility level
+        tags:
+          type: array
+          items:
+            type: string
+            minLength: 1
+            maxLength: 30
+          maxItems: 10
+          description: Updated tags
+        category:
+          type: string
+          nullable: true
+          maxLength: 50
+          description: Updated category
+        customSlug:
+          type: string
+          nullable: true
+          pattern: "^[a-z0-9-]+$"
+          minLength: 3
+          maxLength: 100
+          description: Updated custom slug
+        ogImage:
+          type: string
+          format: uri
+          nullable: true
+          description: Updated Open Graph image URL
+        ogDescription:
+          type: string
+          nullable: true
+          maxLength: 160
+          description: Updated Open Graph description
+
+    BraindumpResponse:
+      type: object
+      required:
+        - id
+        - content
+        - visibility
+        - userId
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Braindump unique identifier
+          example: "507f1f77bcf86cd799439011"
+        content:
+          type: string
+          example: "Had an interesting thought about knowledge management..."
+        visibility:
+          type: string
+          enum: [private, unlisted, public]
+          example: "public"
+        slug:
+          type: string
+          example: "summer-vacation-reflections-lj3k9d"
+        tags:
+          type: array
+          items:
+            type: string
+          example: ["productivity", "knowledge-management"]
+        category:
+          type: string
+          nullable: true
+          example: "Personal Development"
+        userId:
+          type: string
+          description: Clerk user ID of the owner
+          example: "user_2abc123def456"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-01T14:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-05T09:15:00Z"
+        viewCount:
+          type: integer
+          minimum: 0
+          example: 142
+        shareCount:
+          type: integer
+          minimum: 0
+          example: 28
+        commentCount:
+          type: integer
+          minimum: 0
+          example: 5
+        publicMetadata:
+          type: object
+          nullable: true
+          properties:
+            ogImage:
+              type: string
+              format: uri
+              nullable: true
+            ogDescription:
+              type: string
+              nullable: true
+        editHistory:
+          type: array
+          items:
+            type: object
+            properties:
+              editedAt:
+                type: string
+                format: date-time
+              previousContent:
+                type: string
+                maxLength: 200
+                description: First 200 chars of previous content
+          description: Edit history (last 10 edits)
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "Invalid request body"
+        code:
+          type: string
+          example: "VALIDATION_ERROR"
+        details:
+          type: object
+          additionalProperties: true
+
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk session token

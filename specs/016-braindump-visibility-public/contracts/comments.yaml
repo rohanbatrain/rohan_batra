@@ -1,0 +1,335 @@
+openapi: 3.0.3
+info:
+  title: Comments API
+  description: API endpoints for managing braindump comments
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+
+servers:
+  - url: https://api.example.com
+    description: Production server
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/braindump/{id}/comments:
+    get:
+      summary: Get comments for a braindump
+      description: Retrieve all approved comments for a public/unlisted braindump. Returns threaded structure.
+      operationId: getComments
+      tags:
+        - Comments
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId) or slug
+          example: "507f1f77bcf86cd799439011"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comments:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Comment'
+                  total:
+                    type: integer
+                    example: 12
+        '404':
+          description: Braindump not found or is private
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create a comment
+      description: Add a new comment to a braindump. Requires authentication.
+      operationId: createComment
+      tags:
+        - Comments
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID (MongoDB ObjectId) or slug
+          example: "507f1f77bcf86cd799439011"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentRequest'
+      responses:
+        '201':
+          description: Comment created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - user does not have comment permission
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Braindump not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/braindump/{braindumpId}/comments/{commentId}:
+    put:
+      summary: Edit a comment
+      description: Edit an existing comment. Only the comment author can edit.
+      operationId: updateComment
+      tags:
+        - Comments
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: braindumpId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID
+          example: "507f1f77bcf86cd799439011"
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+          example: "507f1f77bcf86cd799439012"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - content
+              properties:
+                content:
+                  type: string
+                  minLength: 1
+                  maxLength: 2000
+                  description: Updated comment content
+      responses:
+        '200':
+          description: Comment updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized - must be comment author
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Comment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    delete:
+      summary: Delete a comment
+      description: Delete a comment. Only the comment author or braindump owner can delete.
+      operationId: deleteComment
+      tags:
+        - Comments
+      security:
+        - clerkAuth: []
+      parameters:
+        - name: braindumpId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Braindump ID
+          example: "507f1f77bcf86cd799439011"
+        - name: commentId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Comment ID
+          example: "507f1f77bcf86cd799439012"
+      responses:
+        '204':
+          description: Comment deleted successfully
+        '401':
+          description: Unauthorized - must be comment author or braindump owner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Comment not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    CreateCommentRequest:
+      type: object
+      required:
+        - content
+      properties:
+        content:
+          type: string
+          minLength: 1
+          maxLength: 2000
+          description: Comment content (HTML allowed, sanitized on server)
+          example: "Great insights! I especially liked your point about retrieval optimization."
+        parentId:
+          type: string
+          nullable: true
+          description: Parent comment ID for threading (1 level only)
+          example: "507f1f77bcf86cd799439013"
+
+    Comment:
+      type: object
+      required:
+        - id
+        - braindumpId
+        - authorId
+        - content
+        - status
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          description: Comment unique identifier
+          example: "507f1f77bcf86cd799439012"
+        braindumpId:
+          type: string
+          description: Parent braindump ID
+          example: "507f1f77bcf86cd799439011"
+        authorId:
+          type: string
+          description: Clerk user ID of the comment author
+          example: "user_2abc123def456"
+        authorName:
+          type: string
+          description: Display name of the author
+          example: "Jane Smith"
+        authorImage:
+          type: string
+          format: uri
+          nullable: true
+          description: Author's profile image URL
+          example: "https://example.com/avatars/jane.jpg"
+        content:
+          type: string
+          description: Comment content (sanitized HTML)
+          example: "Great insights! I especially liked your point about retrieval optimization."
+        parentId:
+          type: string
+          nullable: true
+          description: Parent comment ID for threading
+          example: "507f1f77bcf86cd799439013"
+        status:
+          type: string
+          enum: [pending, approved, flagged, deleted]
+          description: Moderation status
+          example: "approved"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2025-10-02T08:45:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2025-10-02T08:45:00Z"
+        replies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Comment'
+          description: Nested replies (1 level only)
+
+    Error:
+      type: object
+      required:
+        - error
+      properties:
+        error:
+          type: string
+          example: "Invalid request body"
+        code:
+          type: string
+          example: "VALIDATION_ERROR"
+        details:
+          type: object
+          additionalProperties: true
+
+  securitySchemes:
+    clerkAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk session token
