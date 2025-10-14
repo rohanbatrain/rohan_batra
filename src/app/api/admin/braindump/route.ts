@@ -17,11 +17,13 @@ import { requireCSRFToken, csrfErrorResponse } from '@/lib/csrf';
 
 // Validation schema
 const createBraindumpSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200),
   content: z.string().min(1).max(10000),
-  tags: z.array(z.string()).optional().default([]),
+  tags: z.array(z.string()).default([]),
   category: z.string().max(100).optional(),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).optional().default('medium'),
-  visibility: z.enum(['private', 'unlisted', 'public']).optional().default('private'),
+  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
+  status: z.enum(['captured', 'processed', 'archived']).default('captured'),
+  visibility: z.enum(['private', 'unlisted', 'public']).default('private'),
   associations: z.array(z.object({
     type: z.enum([
       'blog', 'project', 'course', 'book', 'character', 'portfolio',
@@ -32,14 +34,7 @@ const createBraindumpSchema = z.object({
     title: z.string().max(200).optional(),
     url: z.string().max(500).optional(),
     note: z.string().max(500).optional(),
-  })).optional().default([]),
-  metadata: z.object({
-    source: z.string().optional(),
-    relatedTo: z.object({
-      type: z.string(),
-      id: z.string().optional(),
-    }).optional(),
-  }).optional(),
+  })).optional(),
 });
 
 /**
@@ -78,6 +73,7 @@ export async function GET(request: NextRequest) {
     if (tags) query.tags = { $in: tags.split(',') };
     if (search) {
       query.$or = [
+        { title: { $regex: search, $options: 'i' } },
         { content: { $regex: search, $options: 'i' } },
         { tags: { $regex: search, $options: 'i' } },
         { category: { $regex: search, $options: 'i' } },
@@ -174,6 +170,12 @@ export async function POST(request: NextRequest) {
     
     // Validate input
     const validatedData = createBraindumpSchema.parse(body);
+    
+    console.log('[CREATE BRAINDUMP] Validated data:', {
+      title: validatedData.title,
+      contentLength: validatedData.content.length,
+      hasTitle: !!validatedData.title
+    });
 
     // Sanitize content
     const sanitizedContent = sanitizeBraindumpContent(validatedData.content);
@@ -195,6 +197,7 @@ export async function POST(request: NextRequest) {
     // Create braindump with MongoDB userId (already an ObjectId)
     const braindump = new BraindumpModel({
       userId,
+      title: validatedData.title,
       content: sanitizedContent,
       tags: validatedData.tags,
       category: validatedData.category || '',
@@ -202,7 +205,6 @@ export async function POST(request: NextRequest) {
       visibility: validatedData.visibility,
       slug,
       associations: validatedData.associations,
-      metadata: validatedData.metadata || {},
       linkedTo: validLinkedIds,  // Store outgoing links
     });
 

@@ -19,6 +19,8 @@ import { remarkStripTitleH1 } from '@/lib/mdx/plugins/remarkStripTitleH1';
 import MarkCompleteButton from '@/components/courses/MarkCompleteButton';
 import { KnowledgeGraph } from '@/components/courses/KnowledgeGraph';
 import { StudyButton } from '@/components/flashcards/StudyButton';
+import { buildOrderedOutline } from '@/lib/courses/outline';
+import { isLessonLocked, isSubLessonLocked } from '@/lib/courses/unlock-logic';
 
 // Helper function to convert external video URLs to embed URLs
 function toEmbedUrl(provider?: string, url?: string) {
@@ -267,6 +269,78 @@ export default async function LessonPage({ params }: LessonPageProps) {
   
   if (!isEnrolled && !isPreviewable) {
     redirect(`/courses/${slug}?message=enroll-required`);
+  }
+  
+  // Progressive unlock check: Verify user has access to this lesson
+  if (isEnrolled && progress) {
+    const completedLessonIds = progress.completedLessonIds?.map((id: any) => String(id)) || [];
+    
+    // Fetch all modules and lessons for unlock logic
+    const allModules = await CourseModuleModel.find({ courseId: course._id })
+      .select('_id lessonIds')
+      .sort({ order: 1 })
+      .lean();
+    
+    const allLessons = await CourseLessonModel.find({ courseId: course._id })
+      .select('_id moduleId parentLessonId')
+      .lean();
+    
+    // Build outline structure for unlock logic
+    const outlineForUnlock = buildOrderedOutline(allModules as any[], allLessons as any[]);
+    
+    // Find current lesson's position
+    let moduleIndex = -1;
+    let lessonIndex = -1;
+    let isSubLesson = false;
+    let parentLessonForSub: any = null;
+    let subLessonIndex = -1;
+    
+    for (let mi = 0; mi < outlineForUnlock.length; mi++) {
+      const mod = outlineForUnlock[mi];
+      for (let li = 0; li < mod.lessons.length; li++) {
+        const les = mod.lessons[li];
+        
+        // Check if this is the lesson
+        if (String(les._id) === lessonId) {
+          moduleIndex = mi;
+          lessonIndex = li;
+          break;
+        }
+        
+        // Check sub-lessons
+        if (Array.isArray(les.subLessons)) {
+          for (let si = 0; si < les.subLessons.length; si++) {
+            if (String(les.subLessons[si]._id) === lessonId) {
+              moduleIndex = mi;
+              lessonIndex = li;
+              isSubLesson = true;
+              parentLessonForSub = les;
+              subLessonIndex = si;
+              break;
+            }
+          }
+        }
+        
+        if (moduleIndex !== -1) break;
+      }
+      if (moduleIndex !== -1) break;
+    }
+    
+    // Check if lesson is locked
+    if (moduleIndex !== -1 && lessonIndex !== -1) {
+      let lockStatus;
+      
+      if (isSubLesson && parentLessonForSub) {
+        lockStatus = isSubLessonLocked(lessonId, subLessonIndex, parentLessonForSub, completedLessonIds);
+      } else {
+        lockStatus = isLessonLocked(lessonId, moduleIndex, lessonIndex, outlineForUnlock, completedLessonIds);
+      }
+      
+      if (lockStatus.isLocked) {
+        // Redirect to course page with a message
+        redirect(`/courses/${slug}?message=lesson-locked&reason=${encodeURIComponent(lockStatus.reason || 'Complete previous lessons first')}`);
+      }
+    }
   }
   
   // Check if lesson is completed

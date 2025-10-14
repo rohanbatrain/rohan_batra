@@ -15,10 +15,14 @@ import { KnowledgeGraph } from '@/components/courses/KnowledgeGraph';
 import { ViewModuleButton } from '@/components/courses/ViewModuleButton';
 import { StudyButton } from '@/components/flashcards/StudyButton';
 import { buildOrderedOutline } from '@/lib/courses/outline';
+import { enrichModulesWithUnlockStatus, calculateProgressStats, getNextUnlockedLesson } from '@/lib/courses/unlock-logic';
 
 export const dynamic = 'force-dynamic';
 
-type PageProps = { params: Promise<{ slug: string }> };
+type PageProps = { 
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ message?: string; reason?: string }>;
+};
 
 export async function generateMetadata(ctx: PageProps) {
   const { slug } = await ctx.params;
@@ -44,6 +48,7 @@ export async function generateMetadata(ctx: PageProps) {
 
 export default async function CoursePublicPage(ctx: PageProps) {
   const { slug } = await ctx.params;
+  const { message, reason } = await ctx.searchParams;
   
   try {
     await connectToDatabase();
@@ -93,6 +98,8 @@ export default async function CoursePublicPage(ctx: PageProps) {
   const { userId } = await auth();
   let enrollment: any = null;
   let progress: any = null;
+  let completedLessonIds: string[] = [];
+  
   if (userId) {
     const userDoc = (await User.findOne({ clerkId: userId }).lean()) as {
       _id: any;
@@ -106,9 +113,23 @@ export default async function CoursePublicPage(ctx: PageProps) {
         progress = await CourseProgress.findOne({
           enrollmentId: enrollment._id,
         }).lean();
+        
+        // Extract completed lesson IDs for unlock logic
+        if (progress && progress.completedLessonIds) {
+          completedLessonIds = progress.completedLessonIds.map((id: any) => String(id));
+        }
       }
     }
   }
+
+  // Enrich outline with unlock status (progressive unlock logic)
+  const enrichedOutline = enrollment 
+    ? enrichModulesWithUnlockStatus(outline, completedLessonIds)
+    : outline; // Non-enrolled users see everything as preview-only
+  
+  // Get next unlocked lesson recommendation
+  const nextLesson = enrollment ? getNextUnlockedLesson(enrichedOutline, completedLessonIds) : null;
+  const progressStats = enrollment ? calculateProgressStats(enrichedOutline, completedLessonIds) : null;
 
   return (
     <main className='min-h-screen bg-gradient-to-b from-background to-muted/20'>
@@ -328,6 +349,35 @@ export default async function CoursePublicPage(ctx: PageProps) {
 
       {/* Course Outline */}
       <div id='outline' className='container mx-auto max-w-6xl px-4 py-12'>
+        {/* Show notification messages */}
+        {message && (
+          <div className={`mb-6 rounded-lg border-2 p-4 shadow-sm backdrop-blur-sm ${
+            message === 'lesson-locked' || message === 'module-locked'
+              ? 'border-amber-500/30 bg-amber-50/80 dark:bg-amber-950/40'
+              : message === 'enroll-required'
+              ? 'border-blue-500/30 bg-blue-50/80 dark:bg-blue-950/40'
+              : 'border-border bg-muted/50'
+          }`}>
+            <div className='flex items-start gap-3'>
+              <span className='text-2xl'>
+                {message === 'lesson-locked' || message === 'module-locked' ? '🔒' : message === 'enroll-required' ? 'ℹ️' : '📢'}
+              </span>
+              <div className='flex-1'>
+                <p className='font-semibold mb-1 text-foreground'>
+                  {message === 'lesson-locked' && 'Lesson Locked'}
+                  {message === 'module-locked' && 'Module Locked'}
+                  {message === 'enroll-required' && 'Enrollment Required'}
+                </p>
+                <p className='text-sm text-muted-foreground'>
+                  {message === 'lesson-locked' && (reason || 'You need to complete previous lessons before accessing this one.')}
+                  {message === 'module-locked' && (reason || 'You need to complete all lessons in the previous module before accessing this one.')}
+                  {message === 'enroll-required' && 'Please enroll in this course to access the lessons.'}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+        
         <div className='mb-8'>
           <h2 className='mb-2 text-3xl font-bold text-gray-900 dark:text-white'>
             Course Curriculum
@@ -339,6 +389,60 @@ export default async function CoursePublicPage(ctx: PageProps) {
           </p>
         </div>
 
+        {/* Next Lesson Recommendation for Enrolled Users */}
+        {enrollment && nextLesson && progressStats && progressStats.remainingLessons > 0 && (
+          <div className='mb-6 rounded-xl border-2 border-blue-500/30 bg-gradient-to-br from-blue-50/80 to-indigo-50/80 dark:from-blue-950/40 dark:to-indigo-950/40 p-6 shadow-sm backdrop-blur-sm'>
+            <div className='flex items-start justify-between gap-4'>
+              <div className='flex-1'>
+                <div className='mb-2 flex items-center gap-2'>
+                  <span className='text-2xl'>🎯</span>
+                  <h3 className='text-lg font-semibold text-foreground'>
+                    Continue Your Learning Journey
+                  </h3>
+                </div>
+                <p className='text-sm text-muted-foreground mb-3'>
+                  You've completed {progressStats.completedCount} of {progressStats.totalLessons} lessons ({progressStats.percentageComplete}%)
+                </p>
+                <p className='text-sm text-foreground'>
+                  <strong>Next up:</strong> Module {nextLesson.moduleIndex + 1}, Lesson {nextLesson.lessonIndex + 1}
+                </p>
+              </div>
+              <Link
+                href={`/courses/${course.slug}/lesson/${nextLesson.lessonId}`}
+                className='inline-flex items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 text-sm font-medium text-white shadow-lg hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 whitespace-nowrap'
+              >
+                Start Next Lesson →
+              </Link>
+            </div>
+            {/* Mini progress bar */}
+            <div className='mt-4'>
+              <div className='h-2 w-full overflow-hidden rounded-full bg-muted/50'>
+                <div
+                  className='h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-300'
+                  style={{ width: `${progressStats.percentageComplete}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Course completed message */}
+        {enrollment && progressStats && progressStats.remainingLessons === 0 && (
+          <div className='mb-6 rounded-xl border-2 border-green-500/30 bg-gradient-to-br from-green-50/80 to-emerald-50/80 dark:from-green-950/40 dark:to-emerald-950/40 p-6 shadow-sm backdrop-blur-sm'>
+            <div className='flex items-start gap-4'>
+              <span className='text-4xl'>🎉</span>
+              <div className='flex-1'>
+                <h3 className='text-xl font-bold text-foreground mb-2'>
+                  Congratulations! Course Completed!
+                </h3>
+                <p className='text-muted-foreground'>
+                  You've successfully completed all {progressStats.totalLessons} lessons in this course. Great work!
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {outline.length === 0 ? (
           <div className='rounded-xl border border-dashed border-gray-300 bg-gray-50 p-12 text-center dark:border-gray-700 dark:bg-gray-800/50'>
             <div className='text-4xl mb-4'>📝</div>
@@ -348,12 +452,28 @@ export default async function CoursePublicPage(ctx: PageProps) {
           </div>
         ) : (
           <div className='space-y-4'>
-            {outline.map((m: any, i: number) => (
-              <details
-                key={String(m._id)}
-                open={i === 0}
-                className='group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 [&>summary::-webkit-details-marker]:hidden'
-              >
+            {enrichedOutline.map((m: any, i: number) => {
+              // Calculate module progress
+              const moduleLessonIds = m.lessons.flatMap((l: any) => {
+                const ids = [String(l._id)];
+                if (Array.isArray(l.subLessons)) {
+                  ids.push(...l.subLessons.map((s: any) => String(s._id)));
+                }
+                return ids;
+              });
+              const moduleCompletedCount = moduleLessonIds.filter((id: string) => 
+                completedLessonIds.includes(id)
+              ).length;
+              const moduleProgress = moduleLessonIds.length > 0 
+                ? Math.round((moduleCompletedCount / moduleLessonIds.length) * 100)
+                : 0;
+              
+              return (
+                <details
+                  key={String(m._id)}
+                  open={i === 0}
+                  className='group overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition-all duration-200 hover:shadow-md dark:border-gray-700 dark:bg-gray-800 [&>summary::-webkit-details-marker]:hidden'
+                >
                 {/* Module Header (summary) */}
                 <summary className='cursor-pointer border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white p-6 list-none marker:content-none dark:border-gray-700 dark:from-gray-800 dark:to-gray-800/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded-xl hover:bg-white/60 dark:hover:bg-gray-800/60 transition-colors'>
                   <div className='flex items-start justify-between gap-4'>
@@ -362,8 +482,13 @@ export default async function CoursePublicPage(ctx: PageProps) {
                         <span className='flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 text-sm font-bold text-white'>
                           {i + 1}
                         </span>
-                        <h3 className='text-xl font-semibold text-gray-900 dark:text-white'>
+                        <h3 className='text-xl font-semibold text-gray-900 dark:text-white flex items-center gap-2'>
                           {m.title}
+                          {m.isLocked && enrollment && (
+                            <span className='inline-flex items-center rounded-full bg-gray-100 px-2 py-1 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
+                              🔒 Locked
+                            </span>
+                          )}
                         </h3>
                       </div>
                       {m.summary && (
@@ -377,6 +502,8 @@ export default async function CoursePublicPage(ctx: PageProps) {
                         courseSlug={course.slug}
                         moduleId={String(m._id)}
                         moduleTitle={m.title}
+                        isLocked={m.isLocked}
+                        isEnrolled={!!enrollment}
                       />
                       <div className='flex flex-col items-end gap-1 text-right'>
                         <span className='text-sm font-medium text-gray-900 dark:text-white'>
@@ -386,6 +513,11 @@ export default async function CoursePublicPage(ctx: PageProps) {
                           {m.lessons.length}{' '}
                           {m.lessons.length === 1 ? 'lesson' : 'lessons'}
                         </span>
+                        {enrollment && moduleProgress > 0 && (
+                          <span className='text-xs font-semibold text-blue-600 dark:text-blue-400'>
+                            {moduleProgress}% complete
+                          </span>
+                        )}
                       </div>
                       {/* Single chevron toggle indicator on the right */}
                       <span
@@ -410,54 +542,80 @@ export default async function CoursePublicPage(ctx: PageProps) {
 
                 {/* Lessons List */}
                 <ul className='divide-y divide-gray-100 dark:divide-gray-700'>
-                  {m.lessons.map((l: any, idx: number) => (
-                    <li
-                      id={`lesson-${String(l._id)}`}
-                      key={String(l._id)}
-                      className='group/lesson transition-colors'
-                    >
-                      {/* Parent Lesson */}
-                      <div className='flex items-center justify-between gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-800/50'>
-                        <div className='flex flex-1 items-center gap-3'>
-                          <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
-                            {idx + 1}
-                          </span>
-                          <div className='flex-1'>
-                            <div className='font-medium text-gray-900 dark:text-white'>
-                              {l.title}
-                            </div>
-                            <div className='mt-0.5 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
-                              <span className='capitalize'>
-                                {l.contentType}
-                              </span>
-                              <span>•</span>
-                              <span>
-                                {formatMinutes(l.estimatedDurationMinutes)}
-                              </span>
-                              {Array.isArray(l.subLessons) &&
-                                l.subLessons.length > 0 && (
+                  {m.lessons.map((l: any, idx: number) => {
+                    const isLessonLocked = enrollment && l.isLocked;
+                    const isLessonCompleted = completedLessonIds.includes(String(l._id));
+                    
+                    return (
+                      <li
+                        id={`lesson-${String(l._id)}`}
+                        key={String(l._id)}
+                        className='group/lesson transition-colors'
+                      >
+                        {/* Parent Lesson */}
+                        <div className={`flex items-center justify-between gap-4 p-4 ${isLessonLocked ? 'opacity-60 bg-gray-50/50 dark:bg-gray-900/50' : 'hover:bg-gray-50 dark:hover:bg-gray-800/50'}`}>
+                          <div className='flex flex-1 items-center gap-3'>
+                            <span className='flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-gray-100 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-400'>
+                              {isLessonCompleted ? '✓' : idx + 1}
+                            </span>
+                            <div className='flex-1'>
+                              <div className={`font-medium ${isLessonLocked ? 'text-gray-500 dark:text-gray-500' : 'text-gray-900 dark:text-white'} flex items-center gap-2`}>
+                                {l.title}
+                                {isLessonLocked && (
+                                  <span className='text-xs'>🔒</span>
+                                )}
+                              </div>
+                              <div className='mt-0.5 flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400'>
+                                <span className='capitalize'>
+                                  {l.contentType}
+                                </span>
+                                <span>•</span>
+                                <span>
+                                  {formatMinutes(l.estimatedDurationMinutes)}
+                                </span>
+                                {Array.isArray(l.subLessons) &&
+                                  l.subLessons.length > 0 && (
+                                    <>
+                                      <span>•</span>
+                                      <span className='text-blue-600 dark:text-blue-400'>
+                                        {l.subLessons.length} sub-lesson
+                                        {l.subLessons.length !== 1 ? 's' : ''}
+                                      </span>
+                                    </>
+                                  )}
+                                {isLessonLocked && l.lockReason && (
                                   <>
                                     <span>•</span>
-                                    <span className='text-blue-600 dark:text-blue-400'>
-                                      {l.subLessons.length} sub-lesson
-                                      {l.subLessons.length !== 1 ? 's' : ''}
+                                    <span className='text-amber-600 dark:text-amber-400 italic'>
+                                      {l.lockReason}
                                     </span>
                                   </>
                                 )}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                        <div className='flex items-center gap-2'>
-                          {/* Start button for enrolled users - links to lesson viewer */}
-                          {enrollment ? (
-                            <Link
-                              href={`/courses/${course.slug}/lesson/${String(l._id)}`}
-                              className='rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors'
-                              aria-label={`Start lesson: ${l.title}`}
-                            >
-                              Start
-                            </Link>
-                          ) : null}
+                          <div className='flex items-center gap-2'>
+                            {/* Start button for enrolled users - disabled if locked */}
+                            {enrollment ? (
+                              isLessonLocked ? (
+                                <button
+                                  disabled
+                                  className='rounded-lg border border-gray-300 bg-gray-100 px-3 py-1.5 text-xs font-medium text-gray-400 cursor-not-allowed dark:border-gray-600 dark:bg-gray-700 dark:text-gray-500'
+                                  aria-label='Lesson locked'
+                                  title={l.lockReason || 'Complete previous lessons to unlock'}
+                                >
+                                  🔒 Locked
+                                </button>
+                              ) : (
+                                <Link
+                                  href={`/courses/${course.slug}/lesson/${String(l._id)}`}
+                                  className='rounded-lg border border-blue-600 bg-blue-600 px-3 py-1.5 text-xs font-medium text-white hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors'
+                                  aria-label={`Start lesson: ${l.title}`}
+                                >
+                                  {isLessonCompleted ? 'Review' : 'Start'}
+                                </Link>
+                              )
+                            ) : null}
 
                           {/* Preview button - only show for NON-enrolled users */}
                           {!enrollment && l.isPreviewable ? (
@@ -491,47 +649,73 @@ export default async function CoursePublicPage(ctx: PageProps) {
                         l.subLessons.length > 0 && (
                           <div className='border-t border-gray-100 bg-gradient-to-r from-blue-50/30 to-purple-50/30 dark:border-gray-700 dark:from-blue-950/10 dark:to-purple-950/10'>
                             <ul className='divide-y divide-gray-100 dark:divide-gray-700'>
-                              {l.subLessons.map((s: any, sIdx: number) => (
-                                <li
-                                  key={String(s._id)}
-                                  id={`lesson-${String(s._id)}`}
-                                  className='group/sublesson flex items-center justify-between gap-3 p-4 pl-14 hover:bg-white/60 dark:hover:bg-gray-800/40 transition-colors'
-                                >
-                                  <div className='flex flex-1 items-center gap-3'>
-                                    <span className='text-gray-400 dark:text-gray-600'>
-                                      └─
-                                    </span>
-                                    <span className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-blue-100 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'>
-                                      {idx + 1}.{sIdx + 1}
-                                    </span>
-                                    <div className='flex-1'>
-                                      <div className='text-sm font-medium text-gray-900 dark:text-white'>
-                                        {s.title}
-                                      </div>
-                                      <div className='mt-0.5 flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400'>
-                                        <span className='capitalize'>
-                                          {s.contentType}
-                                        </span>
-                                        <span>•</span>
-                                        <span>
-                                          {formatMinutes(
-                                            s.estimatedDurationMinutes
+                              {l.subLessons.map((s: any, sIdx: number) => {
+                                const isSubLessonLocked = enrollment && s.isLocked;
+                                const isSubLessonCompleted = completedLessonIds.includes(String(s._id));
+                                
+                                return (
+                                  <li
+                                    key={String(s._id)}
+                                    id={`lesson-${String(s._id)}`}
+                                    className={`group/sublesson flex items-center justify-between gap-3 p-4 pl-14 ${isSubLessonLocked ? 'opacity-60 bg-gray-50/30 dark:bg-gray-900/30' : 'hover:bg-white/60 dark:hover:bg-gray-800/40'} transition-colors`}
+                                  >
+                                    <div className='flex flex-1 items-center gap-3'>
+                                      <span className='text-gray-400 dark:text-gray-600'>
+                                        └─
+                                      </span>
+                                      <span className='flex h-5 w-5 flex-shrink-0 items-center justify-center rounded bg-blue-100 text-[10px] font-medium text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'>
+                                        {isSubLessonCompleted ? '✓' : `${idx + 1}.${sIdx + 1}`}
+                                      </span>
+                                      <div className='flex-1'>
+                                        <div className={`text-sm font-medium ${isSubLessonLocked ? 'text-gray-500 dark:text-gray-500' : 'text-gray-900 dark:text-white'} flex items-center gap-2`}>
+                                          {s.title}
+                                          {isSubLessonLocked && (
+                                            <span className='text-xs'>🔒</span>
                                           )}
-                                        </span>
+                                        </div>
+                                        <div className='mt-0.5 flex items-center gap-2 text-[11px] text-gray-500 dark:text-gray-400'>
+                                          <span className='capitalize'>
+                                            {s.contentType}
+                                          </span>
+                                          <span>•</span>
+                                          <span>
+                                            {formatMinutes(
+                                              s.estimatedDurationMinutes
+                                            )}
+                                          </span>
+                                          {isSubLessonLocked && s.lockReason && (
+                                            <>
+                                              <span>•</span>
+                                              <span className='text-amber-600 dark:text-amber-400 italic'>
+                                                {s.lockReason}
+                                              </span>
+                                            </>
+                                          )}
+                                        </div>
                                       </div>
                                     </div>
-                                  </div>
-                                  <div className='flex items-center gap-2'>
-                                    {/* Start button for enrolled users */}
-                                    {enrollment ? (
-                                      <Link
-                                        href={`/courses/${course.slug}/lesson/${String(s._id)}`}
-                                        className='rounded-md border border-blue-600 bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors'
-                                        aria-label={`Start sub-lesson: ${s.title}`}
-                                      >
-                                        Start
-                                      </Link>
-                                    ) : null}
+                                    <div className='flex items-center gap-2'>
+                                      {/* Start button for enrolled users */}
+                                      {enrollment ? (
+                                        isSubLessonLocked ? (
+                                          <button
+                                            disabled
+                                            className='rounded-md border border-gray-300 bg-gray-100 px-2.5 py-1 text-[11px] font-medium text-gray-400 cursor-not-allowed dark:border-gray-600 dark:bg-gray-700 dark:text-gray-500'
+                                            aria-label='Sub-lesson locked'
+                                            title={s.lockReason || 'Complete previous sub-lessons to unlock'}
+                                          >
+                                            🔒
+                                          </button>
+                                        ) : (
+                                          <Link
+                                            href={`/courses/${course.slug}/lesson/${String(s._id)}`}
+                                            className='rounded-md border border-blue-600 bg-blue-600 px-2.5 py-1 text-[11px] font-medium text-white hover:bg-blue-700 dark:border-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600 transition-colors'
+                                            aria-label={`Start sub-lesson: ${s.title}`}
+                                          >
+                                            {isSubLessonCompleted ? 'Review' : 'Start'}
+                                          </Link>
+                                        )
+                                      ) : null}
 
                                     {/* Preview button - only show for NON-enrolled users */}
                                     {!enrollment && s.isPreviewable ? (
@@ -559,15 +743,18 @@ export default async function CoursePublicPage(ctx: PageProps) {
                                     ) : null}
                                   </div>
                                 </li>
-                              ))}
+                                );
+                              })}
                             </ul>
                           </div>
                         )}
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </details>
-            ))}
+              );
+            })}
           </div>
         )}
 

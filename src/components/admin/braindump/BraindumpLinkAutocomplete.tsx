@@ -7,6 +7,7 @@ import { Loader2, Link2 } from 'lucide-react';
 
 interface BraindumpSuggestion {
   _id: string;
+  title?: string;
   preview: string;
   tags?: string[];
   category?: string;
@@ -97,10 +98,13 @@ export function BraindumpLinkAutocomplete({
     const value = textarea.value;
     const cursorPos = textarea.selectionStart;
     
-    // Replace [[query with [[braindumpId|preview]]
+    // Replace [[query with [[braindumpId|<title or preview>]]
     const before = value.slice(0, linkStartPos.current - 2); // Remove [[
     const after = value.slice(cursorPos);
-    const displayText = suggestion.preview.slice(0, 50).trim();
+    const baseText = (suggestion.title && suggestion.title.trim().length > 0)
+      ? suggestion.title.trim()
+      : suggestion.preview.slice(0, 50).trim();
+    const displayText = baseText;
     const linkText = `[[${suggestion._id}|${displayText}]]`;
     
     const newValue = before + linkText + after;
@@ -200,7 +204,9 @@ export function BraindumpLinkAutocomplete({
                     <Link2 className="mr-2 h-4 w-4" />
                     <div className="flex flex-col flex-1">
                       <span className="text-sm font-medium line-clamp-1">
-                        {suggestion.preview.slice(0, 60)}...
+                        {suggestion.title && suggestion.title.trim().length > 0
+                          ? suggestion.title
+                          : suggestion.preview.slice(0, 60)}
                       </span>
                       {suggestion.tags && suggestion.tags.length > 0 && (
                         <span className="text-xs text-muted-foreground">

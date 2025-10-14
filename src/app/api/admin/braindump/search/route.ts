@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
     if (!query.trim()) {
       // Return recent braindumps if no query
       const recent = await BraindumpModel.find({ userId })
-        .select('_id content tags createdAt')
+        .select('_id title content tags createdAt')
         .sort({ createdAt: -1 })
         .limit(limit)
         .lean();
@@ -39,22 +39,24 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({
         results: recent.map(b => ({
           _id: b._id,
+          title: (b as any).title || undefined,
           preview: b.content.slice(0, 100),
           createdAt: b.createdAt,
         })),
       });
     }
     
-    // Search by content
+    // Search by title or content (plus tags/category)
     const results = await BraindumpModel.find({
       userId,
       $or: [
+        { title: { $regex: query, $options: 'i' } },
         { content: { $regex: query, $options: 'i' } },
         { tags: { $regex: query, $options: 'i' } },
         { category: { $regex: query, $options: 'i' } },
       ],
     })
-      .select('_id content tags category createdAt')
+      .select('_id title content tags category createdAt')
       .sort({ createdAt: -1 })
       .limit(limit)
       .lean();
@@ -62,6 +64,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       results: results.map(b => ({
         _id: b._id,
+        title: (b as any).title || undefined,
         preview: b.content.slice(0, 100),
         tags: b.tags,
         category: b.category,

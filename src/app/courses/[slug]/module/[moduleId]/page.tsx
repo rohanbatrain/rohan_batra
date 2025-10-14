@@ -14,6 +14,7 @@ import { formatMinutes } from '@/lib/courses/format';
 import { BookOpen, CheckCircle2, Circle, Clock, ChevronDown } from 'lucide-react';
 import { KnowledgeGraph } from '@/components/courses/KnowledgeGraph';
 import { StudyButton } from '@/components/flashcards/StudyButton';
+import { isModuleLocked } from '@/lib/courses/unlock-logic';
 
 export const dynamic = 'force-dynamic';
 
@@ -201,6 +202,40 @@ export default async function ModulePage(ctx: PageProps) {
   const nextModule = currentModuleIndex < allModules.length - 1
     ? allModules[currentModuleIndex + 1]
     : null;
+
+  // Check if module is locked for enrolled users
+  if (enrollment) {
+    // Build full course outline to check module lock status
+    const allCourseModules = await CourseModuleModel.find({ courseId: course._id })
+      .select('_id title order lessonIds')
+      .sort({ order: 1 })
+      .lean();
+    
+    // Fetch all lessons for all modules to properly check completion
+    const allLessons = await CourseLessonModel.find({ courseId: course._id })
+      .select('_id moduleId parentLessonId childOrder')
+      .lean();
+    
+    // Build module structure with lessons
+    const modulesWithLessons = allCourseModules.map((m: any) => {
+      const moduleLessons = allLessons.filter(
+        (l: any) => String(l.moduleId) === String(m._id)
+      );
+      return {
+        ...m,
+        lessons: buildOrderedLessons(m, moduleLessons as any[]),
+      };
+    });
+    
+    // Check if current module is locked
+    const completedIds = progress?.completedLessonIds?.map((id: any) => String(id)) || [];
+    const lockStatus = isModuleLocked(currentModuleIndex, modulesWithLessons as any[], completedIds);
+    
+    if (lockStatus.isLocked) {
+      // Redirect to course page with error message
+      redirect(`/courses/${course.slug}?message=module-locked&reason=${encodeURIComponent(lockStatus.reason || 'Complete previous modules first')}`);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-background">

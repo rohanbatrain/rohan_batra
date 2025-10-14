@@ -18,68 +18,72 @@ interface CSRFTokenData {
 
 /**
  * Generate a new CSRF token
- * Stores a secret in httpOnly cookie and returns a token derived from it
+ * Stores the token itself in httpOnly cookie (simple and reliable)
  */
 export async function generateCSRFToken(): Promise<string> {
   const cookieStore = await cookies();
   
-  // Generate random secret
-  const secret = crypto.randomBytes(TOKEN_LENGTH).toString('hex');
+  // Generate random token
+  const token = crypto.randomBytes(TOKEN_LENGTH).toString('hex');
   
-  // Create token by hashing secret with timestamp
-  const timestamp = Date.now();
-  const token = crypto
-    .createHmac('sha256', secret)
-    .update(`${timestamp}`)
-    .digest('hex');
-  
-  // Store secret in httpOnly cookie
-  cookieStore.set(CSRF_COOKIE_NAME, secret, {
+  // Store token in httpOnly cookie
+  cookieStore.set(CSRF_COOKIE_NAME, token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
-    sameSite: 'strict',
+    sameSite: 'lax',
     maxAge: TOKEN_EXPIRY / 1000,
     path: '/',
   });
+
+  console.log('[CSRF] Generated new token:', token.substring(0, 20) + '...');
+  console.log('[CSRF] Cookie set:', CSRF_COOKIE_NAME);
   
-  // Return token to be included in forms/headers
+  // Return the same token to be included in forms/headers
   return token;
 }
 
 /**
  * Validate CSRF token from request
- * Compares provided token against one generated from stored secret
+ * Compares provided token against stored token in cookie
  */
 export async function validateCSRFToken(providedToken: string): Promise<boolean> {
   if (!providedToken) {
+    console.warn('[CSRF] No token provided');
     return false;
   }
   
   const cookieStore = await cookies();
-  const secret = cookieStore.get(CSRF_COOKIE_NAME)?.value;
+  const storedToken = cookieStore.get(CSRF_COOKIE_NAME)?.value;
   
-  if (!secret) {
+  if (!storedToken) {
+    console.warn('[CSRF] No stored token found in cookie');
+    console.warn('[CSRF] Available cookies:', cookieStore.getAll().map(c => ({ name: c.name, value: c.value.substring(0, 20) + '...' })));
     return false;
   }
   
+  console.log('[CSRF] Comparing tokens:');
+  console.log('[CSRF]   Provided:', providedToken.substring(0, 30) + '...');
+  console.log('[CSRF]   Stored:  ', storedToken.substring(0, 30) + '...');
+  console.log('[CSRF]   Same length?', providedToken.length === storedToken.length);
+  console.log('[CSRF]   Exact match?', providedToken === storedToken);
+  
   try {
-    // Extract timestamp from token (we don't validate timestamp for now)
-    // In production, you might want to add timestamp validation
-    
-    // Generate expected token from secret
-    const timestamp = Date.now();
-    const expectedToken = crypto
-      .createHmac('sha256', secret)
-      .update(`${timestamp}`)
-      .digest('hex');
-    
-    // Use timing-safe comparison
-    return crypto.timingSafeEqual(
+    // Use timing-safe comparison to prevent timing attacks
+    const isValid = crypto.timingSafeEqual(
       Buffer.from(providedToken, 'hex'),
-      Buffer.from(expectedToken, 'hex')
+      Buffer.from(storedToken, 'hex')
     );
+    
+    if (!isValid) {
+      console.warn('[CSRF] Token mismatch');
+    } else {
+      console.log('[CSRF] ✅ Tokens match!');
+    }
+    
+    return isValid;
   } catch (error) {
-    // Invalid token format
+    // Invalid token format (e.g., not hex)
+    console.error('[CSRF] Token validation error:', error);
     return false;
   }
 }
@@ -90,6 +94,11 @@ export async function validateCSRFToken(providedToken: string): Promise<boolean>
 export function getCSRFTokenFromRequest(request: Request): string | null {
   // Check X-CSRF-Token header
   const headerToken = request.headers.get('X-CSRF-Token');
+  
+  console.log('[CSRF] Request headers check:');
+  console.log('[CSRF]   X-CSRF-Token:', headerToken ? headerToken.substring(0, 20) + '...' : 'NOT FOUND');
+  console.log('[CSRF]   All headers:', Array.from(request.headers.keys()));
+  
   if (headerToken) {
     return headerToken;
   }
@@ -113,10 +122,23 @@ export async function requireCSRFToken(request: Request): Promise<boolean> {
   const token = getCSRFTokenFromRequest(request);
   
   if (!token) {
+    console.warn(`[CSRF] No token found in ${method} request to ${request.url}`);
     return false;
   }
   
-  return await validateCSRFToken(token);
+  // Get cookie from request headers directly
+  const cookieHeader = request.headers.get('cookie');
+  console.log('[CSRF] Cookie header:', cookieHeader?.substring(0, 100) + '...');
+  
+  const isValid = await validateCSRFToken(token);
+  
+  if (!isValid) {
+    console.warn(`[CSRF] Invalid token for ${method} request to ${request.url}`);
+  } else {
+    console.log(`[CSRF] Valid token for ${method} request to ${request.url}`);
+  }
+  
+  return isValid;
 }
 
 /**

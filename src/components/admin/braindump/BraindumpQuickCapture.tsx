@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/select';
 import { Plus, Loader2, Eye, EyeOff, Lock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useCSRFToken } from '@/hooks/useCSRFToken';
 import { BraindumpLinkAutocomplete } from './BraindumpLinkAutocomplete';
 
 type Visibility = 'private' | 'unlisted' | 'public';
@@ -26,12 +27,14 @@ interface BraindumpQuickCaptureProps {
 export function BraindumpQuickCapture({ onSuccess }: BraindumpQuickCaptureProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [tags, setTags] = useState('');
   const [category, setCategory] = useState('');
   const [priority, setPriority] = useState<'low' | 'medium' | 'high' | 'urgent'>('medium');
   const [visibility, setVisibility] = useState<Visibility>('private');
   const { toast } = useToast();
+  const { withCSRF } = useCSRFToken();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleLinkSelect = (braindumpId: string, displayText: string) => {
@@ -41,7 +44,7 @@ export function BraindumpQuickCapture({ onSuccess }: BraindumpQuickCaptureProps)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!content.trim()) {
       toast({
         title: 'Error',
@@ -51,22 +54,39 @@ export function BraindumpQuickCapture({ onSuccess }: BraindumpQuickCaptureProps)
       return;
     }
 
+    if (!title.trim()) {
+      toast({
+        title: 'Error',
+        description: 'Title is required for linking braindumps',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
+      const requestBody = {
+        title: title.trim(),
+        content: content.trim(),
+        tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        category: category.trim() || undefined,
+        priority,
+        visibility,
+      };
+      
+      console.log('[QuickCapture] Sending request:', {
+        title: requestBody.title,
+        hasTitle: !!requestBody.title,
+        contentLength: requestBody.content.length
+      });
+      
       const response = await fetch('/api/admin/braindump', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          content: content.trim(),
-          tags: tags ? tags.split(',').map(t => t.trim()).filter(Boolean) : [],
-          category: category.trim() || undefined,
-          priority,
-          visibility,
-        }),
-      });
-
-      if (!response.ok) {
+        credentials: 'include', // Ensure cookies are sent
+        headers: withCSRF({ 'Content-Type': 'application/json' }),
+        body: JSON.stringify(requestBody),
+      });      if (!response.ok) {
         throw new Error('Failed to create braindump');
       }
 
@@ -76,6 +96,7 @@ export function BraindumpQuickCapture({ onSuccess }: BraindumpQuickCaptureProps)
       });
 
       // Reset form
+      setTitle('');
       setContent('');
       setTags('');
       setCategory('');
@@ -123,6 +144,22 @@ export function BraindumpQuickCapture({ onSuccess }: BraindumpQuickCaptureProps)
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className='space-y-4'>
+          <div>
+            <Label htmlFor='title'>Title</Label>
+            <Input
+              id='title'
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="Give your braindump a title..."
+              maxLength={200}
+              className='mt-1'
+              required
+            />
+            <p className='text-xs text-muted-foreground mt-1'>
+              {title.length} / 200 characters · Used for [[id]] linking
+            </p>
+          </div>
+
           <div className="relative">
             <Label htmlFor='content'>Content *</Label>
             <Textarea

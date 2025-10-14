@@ -2,6 +2,7 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
 
 export interface IBraindump extends Document {
   _id: mongoose.Types.ObjectId;
+  title?: string;
   content: string;
   tags: string[];
   category?: string;
@@ -86,6 +87,11 @@ export interface IBraindump extends Document {
 
 const braindumpSchema = new Schema<IBraindump>(
   {
+    title: {
+      type: String,
+      trim: true,
+      maxlength: 200,
+    },
     content: {
       type: String,
       required: true,

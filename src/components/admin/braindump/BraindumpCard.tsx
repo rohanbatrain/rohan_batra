@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,16 +17,17 @@ import {
   Edit,
   Trash2,
   ExternalLink,
+  Eye,
   Tag,
   Calendar,
   Link2,
-  Eye,
   EyeOff,
   Lock,
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { parseBraindumpLinks } from '@/lib/braindump/link-parser';
+import { useCSRFToken } from '@/hooks/useCSRFToken';
 
 interface Association {
   type: string;
@@ -38,6 +39,7 @@ interface Association {
 
 interface Braindump {
   _id: string;
+  title?: string;
   content: string;
   tags: string[];
   category?: string;
@@ -107,7 +109,71 @@ const associationTypeColors = {
 
 export function BraindumpCard({ braindump, onUpdate, onEdit }: BraindumpCardProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const [linkedBraindumps, setLinkedBraindumps] = useState<Map<string, { title?: string }>>(new Map());
   const { toast } = useToast();
+  const { withCSRF } = useCSRFToken();
+
+  // Derive a display title: prefer explicit title, otherwise fall back to first content line
+  const displayTitle = useMemo(() => {
+    if (braindump.title && braindump.title.trim().length > 0) return braindump.title.trim();
+    const firstLine = braindump.content
+      .split('\n')
+      .map((l) => l.trim())
+      .find((l) => l.length > 0) || '';
+    return firstLine.slice(0, 120);
+  }, [braindump.title, braindump.content]);
+
+  // Determine if there is more content beyond the first non-empty line
+  const hasMoreThanTitleLine = useMemo(() => {
+    const lines = braindump.content.split('\n');
+    const firstLineIndex = lines.findIndex((l) => l.trim().length > 0);
+    if (firstLineIndex === -1) return false;
+    const rest = lines.slice(firstLineIndex + 1).join('\n').trim();
+    return rest.length > 0;
+  }, [braindump.content]);
+
+  // Debug: Log braindump data
+  useEffect(() => {
+    console.log('[BraindumpCard] Braindump data:', {
+      id: braindump._id,
+      title: braindump.title,
+      hasTitle: !!braindump.title,
+      content: braindump.content.substring(0, 50)
+    });
+  }, [braindump]);
+
+  // Fetch linked braindumps metadata
+  useEffect(() => {
+    const links = parseBraindumpLinks(braindump.content);
+    const idBasedLinks = links.filter(l => l.linkType === 'id' && l.braindumpId);
+    
+    if (idBasedLinks.length === 0) return;
+
+    // Fetch metadata for linked braindumps
+    const fetchLinkedData = async () => {
+      const dataMap = new Map<string, { title?: string }>();
+      
+      await Promise.all(
+        idBasedLinks.map(async (link) => {
+          if (!link.braindumpId) return;
+          
+          try {
+            const res = await fetch(`/api/admin/braindump/${link.braindumpId}`);
+            if (res.ok) {
+              const data = await res.json();
+              dataMap.set(link.braindumpId, { title: data.title });
+            }
+          } catch (err) {
+            console.error(`Failed to fetch braindump ${link.braindumpId}:`, err);
+          }
+        })
+      );
+      
+      setLinkedBraindumps(dataMap);
+    };
+
+    fetchLinkedData();
+  }, [braindump.content]);
 
   // Parse and render internal links
   const renderedContent = useMemo(() => {
@@ -131,20 +197,40 @@ export function BraindumpCard({ braindump, onUpdate, onEdit }: BraindumpCardProp
         );
       }
 
+      // Determine display text based on link type
+      let displayText: string;
+      let href: string;
+      
+      if (link.linkType === 'id' && link.braindumpId) {
+        // ID-based link: [[671d4f8e9a8b2c3d4e5f6789]] or [[671d4f8e9a8b2c3d4e5f6789|Custom]]
+        const linkedData = linkedBraindumps.get(link.braindumpId);
+  displayText = link.displayText || linkedData?.title || `Note ${link.braindumpId.slice(-6)}`;
+        href = `/admin/braindump?id=${link.braindumpId}`;
+      } else if (link.linkType === 'title' && link.linkText) {
+        // Title-based link: [[My Note Title]] or [[My Note Title|Custom]]
+        displayText = link.displayText || link.linkText;
+        // For title-based links, we'll search by title
+        href = `/admin/braindump?search=${encodeURIComponent(link.linkText)}`;
+      } else {
+        // Fallback
+        displayText = 'Unknown Link';
+        href = '#';
+      }
+
       // Link
       parts.push(
         <a
           key={`link-${i}`}
-          href={`/admin/braindump?id=${link.braindumpId}`}
+          href={href}
           className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 underline decoration-dotted hover:decoration-solid transition-colors"
           onClick={(e) => {
             e.preventDefault();
-            window.location.href = `/admin/braindump?id=${link.braindumpId}`;
+            window.location.href = href;
           }}
-          title={`Link to braindump ${link.braindumpId}`}
+          title={link.linkType === 'title' ? `Search for: ${link.linkText}` : `Link to braindump ${link.braindumpId}`}
         >
           <Link2 className="h-3 w-3" />
-          {link.displayText || `Note ${link.braindumpId.slice(-6)}`}
+          {displayText}
         </a>
       );
 
@@ -168,7 +254,8 @@ export function BraindumpCard({ braindump, onUpdate, onEdit }: BraindumpCardProp
     try {
       const response = await fetch(`/api/admin/braindump/${braindump._id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include', // Ensure cookies are sent
+        headers: withCSRF({ 'Content-Type': 'application/json' }),
         body: JSON.stringify({ status: newStatus }),
       });
 
@@ -196,11 +283,22 @@ export function BraindumpCard({ braindump, onUpdate, onEdit }: BraindumpCardProp
 
     setIsLoading(true);
     try {
+      const headers = withCSRF();
+      console.log('[CLIENT] DELETE request headers:', headers);
+      console.log('[CLIENT] Has X-CSRF-Token?', 'X-CSRF-Token' in headers);
+      
       const response = await fetch(`/api/admin/braindump/${braindump._id}`, {
         method: 'DELETE',
+        credentials: 'include', // Ensure cookies are sent
+        headers,
       });
 
-      if (!response.ok) throw new Error('Failed to delete');
+      console.log('[CLIENT] Response status:', response.status);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('[CLIENT] Error response:', errorData);
+        throw new Error('Failed to delete');
+      }
 
       toast({
         title: 'Success',
@@ -222,6 +320,7 @@ export function BraindumpCard({ braindump, onUpdate, onEdit }: BraindumpCardProp
   return (
     <Card>
       <CardHeader className='pb-3'>
+        <h3 className='text-lg font-semibold mb-2 truncate'>{displayTitle}</h3>
         <div className='flex items-start justify-between'>
           <div className='flex gap-2 flex-wrap'>
             <Badge className={priorityColors[braindump.priority]}>
@@ -259,6 +358,20 @@ export function BraindumpCard({ braindump, onUpdate, onEdit }: BraindumpCardProp
                 <Edit className='mr-2 h-4 w-4' />
                 Edit
               </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => window.open(`/braindump/preview/${braindump._id}`, '_blank')}
+              >
+                <Eye className='mr-2 h-4 w-4' />
+                Preview
+              </DropdownMenuItem>
+              {braindump.visibility !== 'private' && braindump.slug && (
+                <DropdownMenuItem 
+                  onClick={() => window.open(`/braindump/${braindump.slug}`, '_blank')}
+                >
+                  <ExternalLink className='mr-2 h-4 w-4' />
+                  View Public Page
+                </DropdownMenuItem>
+              )}
               {braindump.status === 'captured' && (
                 <DropdownMenuItem onClick={() => handleStatusChange('processed')}>
                   <CheckCircle className='mr-2 h-4 w-4' />
@@ -284,9 +397,11 @@ export function BraindumpCard({ braindump, onUpdate, onEdit }: BraindumpCardProp
       </CardHeader>
 
       <CardContent className='space-y-3'>
-        <div className='text-sm'>
-          {renderedContent}
-        </div>
+        {(braindump.title || hasMoreThanTitleLine) && (
+          <div className='text-sm text-muted-foreground'>
+            {renderedContent}
+          </div>
+        )}
 
         {/* Show linked notes count */}
         {braindump.linkedTo && braindump.linkedTo.length > 0 && (

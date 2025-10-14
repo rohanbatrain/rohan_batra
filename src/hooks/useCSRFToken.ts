@@ -27,7 +27,9 @@ export function useCSRFToken() {
       setIsLoading(true);
       setError(null);
 
-      const response = await fetch('/api/csrf-token');
+      const response = await fetch('/api/csrf-token', {
+        credentials: 'include', // Ensure cookies are sent/received
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch CSRF token');
@@ -36,6 +38,7 @@ export function useCSRFToken() {
       const data = await response.json();
       
       if (data.success && data.data.token) {
+        console.log('[useCSRFToken] Fetched token:', data.data.token.substring(0, 30) + '...');
         setCSRFToken(data.data.token);
         
         // Calculate expiry time
@@ -89,15 +92,22 @@ export function useCSRFToken() {
   const withCSRF = (headers: HeadersInit = {}): HeadersInit => {
     const token = getToken();
     
+    console.log('[useCSRFToken] withCSRF called');
+    console.log('[useCSRFToken] Token from getToken():', token ? token.substring(0, 20) + '...' : 'NULL');
+    
     if (!token) {
-      console.warn('No CSRF token available');
+      console.warn('[useCSRFToken] No CSRF token available');
       return headers;
     }
 
-    return {
+    const result = {
       ...headers,
       'X-CSRF-Token': token,
     };
+    
+    console.log('[useCSRFToken] Final headers:', result);
+    
+    return result;
   };
 
   return {

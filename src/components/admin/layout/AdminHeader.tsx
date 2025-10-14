@@ -1,7 +1,8 @@
 'use client';
 
 import { UserButton, useAuth } from '@clerk/nextjs';
-import { Bell, Search } from 'lucide-react';
+import { Bell, Search, Sun, Moon } from 'lucide-react';
+import { useTheme } from '@/lib/theme-provider';
 
 interface AdminHeaderProps {
   user: {
@@ -13,6 +14,7 @@ interface AdminHeaderProps {
 
 export default function AdminHeader({ user, userRole }: AdminHeaderProps) {
   const { isLoaded } = useAuth();
+  const { isDarkMode, toggleDarkMode } = useTheme();
   return (
     <header className='bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700'>
       <div className='px-6 py-4'>
@@ -29,8 +31,19 @@ export default function AdminHeader({ user, userRole }: AdminHeaderProps) {
             </div>
           </div>
 
-          {/* Right side - Notifications and User */}
+          {/* Right side - Theme, Notifications and User */}
           <div className='flex items-center space-x-4'>
+            {/* Dark mode toggle */}
+            <button
+              type='button'
+              onClick={toggleDarkMode}
+              className='p-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors'
+              aria-label='Toggle dark mode'
+              title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDarkMode ? <Sun className='h-5 w-5' /> : <Moon className='h-5 w-5' />}
+            </button>
+
             {/* Notifications */}
             <button
               type='button'
