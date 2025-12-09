@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resumes - Rohan Batra</title>
+  <meta name="description" content="Download Rohan Batra's professional resumes" />
+  <style>
+    :root { --bg-dark: #0f172a; --fg-light: #ffffff; --accent: #38bdf8; --muted: #94a3b8; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: radial-gradient(ellipse at top, #0f172a, #020617);
+      color: var(--fg-light);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 2rem;
+    }
+    .container { max-width: 700px; }
+    h1 { font-size: 3rem; font-weight: 800; margin-bottom: 0.5rem; }
+    p { color: var(--muted); font-size: 1.25rem; margin-bottom: 2.5rem; }
+    .resume-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+    .resume-card {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 2rem;
+      border-radius: 1rem;
+      text-decoration: none;
+      color: var(--fg-light);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1rem;
+    }
+    .resume-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+      border-color: var(--accent);
+    }
+    .resume-icon { font-size: 2.5rem; }
+    .resume-title { font-size: 1.5rem; font-weight: 700; }
+    .resume-version { font-size: 0.875rem; color: var(--muted); }
+    footer { margin-top: 3rem; font-size: 0.875rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <h1>📄 Resume Collection</h1>
+    <p>Choose a resume variant</p>
+    <div class="resume-grid">
+<a class="resume-card" href="SoftwareEngineering/"><div class="resume-icon">📋</div><div class="resume-title">SoftwareEngineering</div><div class="resume-version">v0.0.5</div></a>
+    </div>
+    <footer>
+      &copy; 2025 Rohan Batra — <a href="https://rohanbatra.in" style="color:inherit;">rohanbatra.in</a>
+    </footer>
+  </main>
+</body>
+</html>
